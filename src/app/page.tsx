@@ -162,9 +162,6 @@ export default function HomePage() {
             <Link href="/menu" className="btn-primary">
               Order for Pickup
             </Link>
-            <Link href="/catering" className="btn-secondary">
-              Cater Your Event
-            </Link>
           </div>
         </div>
       </section>
