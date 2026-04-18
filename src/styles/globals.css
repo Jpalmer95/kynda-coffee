@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Kynda brand palette */
+    --color-cream: #faf7f2;
+    --color-espresso: #2c1810;
+    --color-latte: #c4a882;
+    --color-mocha: #8b6f4e;
+    --color-sage: #a8b5a0;
+    --color-rust: #c4724e;
+  }
+
+  body {
+    @apply bg-[var(--color-cream)] text-[var(--color-espresso)] antialiased;
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading), system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-[var(--color-espresso)] px-6 py-3 text-sm font-medium text-[var(--color-cream)] transition-all hover:bg-[var(--color-mocha)] active:scale-[0.98] disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-[var(--color-espresso)] px-6 py-3 text-sm font-medium text-[var(--color-espresso)] transition-all hover:bg-[var(--color-espresso)] hover:text-[var(--color-cream)] active:scale-[0.98];
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center rounded-full bg-[var(--color-rust)] px-6 py-3 text-sm font-medium text-white transition-all hover:opacity-90 active:scale-[0.98];
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-[var(--color-latte)] bg-white px-4 py-3 text-[var(--color-espresso)] placeholder:text-[var(--color-mocha)]/50 focus:border-[var(--color-espresso)] focus:outline-none focus:ring-2 focus:ring-[var(--color-espresso)]/20;
+  }
+
+  .section-padding {
+    @apply px-4 py-16 sm:px-6 lg:px-8 lg:py-24;
+  }
+
+  .container-max {
+    @apply mx-auto max-w-7xl;
+  }
+}
