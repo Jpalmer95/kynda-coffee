@@ -1,14 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/supabase";
+// Browser-side Supabase client
+// Use in Client Components ("use client")
+import { createBrowserClient } from "@supabase/ssr";
 
-// Client-side Supabase (uses anon key, respects RLS)
-export const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
-// Server-side Supabase (bypasses RLS — use in API routes only)
-export const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const createClient = () =>
+  createBrowserClient(supabaseUrl, supabaseKey);

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, STORE_CONFIG } from "@/lib/stripe/client";
-import { supabaseAdmin } from "@/lib/supabase/client";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { z } from "zod";
+
+// Force dynamic — don't try to build statically (needs env vars at runtime)
+export const dynamic = "force-dynamic";
 
 const checkoutSchema = z.object({
   items: z.array(
@@ -29,30 +32,30 @@ export async function POST(req: NextRequest) {
 
     // Fetch products from Supabase
     const productIds = parsed.items.map((i) => i.product_id);
-    const { data: products, error } = await supabaseAdmin
+    const { data: products, error } = await supabaseAdmin()
       .from("products")
       .select("*")
       .in("id", productIds)
       .eq("is_active", true);
 
-    if (error || !products) {
+    if (error || !products || products.length === 0) {
       return NextResponse.json({ error: "Products not found" }, { status: 404 });
     }
 
     // Build Stripe line items
     const lineItems = parsed.items.map((item) => {
-      const product = products.find((p) => p.id === item.product_id);
+      const product = products.find((p: any) => p.id === item.product_id);
       if (!product) throw new Error(`Product ${item.product_id} not found`);
 
       return {
         price_data: {
           currency: STORE_CONFIG.currency,
           product_data: {
-            name: product.name,
-            description: product.description,
-            images: product.images.slice(0, 1), // Stripe limits to 1 image
+            name: (product as any).name,
+            description: (product as any).description ?? "",
+            images: ((product as any).images ?? []).slice(0, 1),
           },
-          unit_amount: product.price_cents,
+          unit_amount: (product as any).price_cents,
         },
         quantity: item.quantity,
       };
@@ -60,12 +63,13 @@ export async function POST(req: NextRequest) {
 
     // Calculate totals for order record
     const subtotal = parsed.items.reduce((sum, item) => {
-      const product = products.find((p) => p.id === item.product_id)!;
-      return sum + product.price_cents * item.quantity;
+      const product = products.find((p: any) => p.id === item.product_id)!;
+      return sum + (product as any).price_cents * item.quantity;
     }, 0);
 
     // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const stripeClient = stripe();
+    const session = await stripeClient.checkout.sessions.create({
       mode: "payment",
       customer_email: parsed.customer_email,
       line_items: lineItems,

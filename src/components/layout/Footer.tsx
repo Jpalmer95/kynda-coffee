@@ -55,7 +55,7 @@ export function Footer() {
             <p className="mb-3 text-sm text-latte/70">
               Join Kynda Coffee Mail for exclusive deals and 10% off your first order.
             </p>
-            <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex gap-2" action="#">{/**/}
               <input
                 type="email"
                 placeholder="your@email.com"

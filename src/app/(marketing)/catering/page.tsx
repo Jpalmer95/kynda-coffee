@@ -9,7 +9,7 @@ export default function CateringPage() {
           From corporate meetings to weddings, bring Kynda Coffee to your special occasion.
         </p>
 
-        <form className="mt-12 space-y-6" onSubmit={(e) => e.preventDefault()}>
+        <form className="mt-12 space-y-6" action="#">{/**/}
           <div className="grid gap-6 sm:grid-cols-2">
             <div>
               <label className="mb-2 block text-sm font-medium text-espresso">

@@ -12,33 +12,34 @@
     "db:push": "supabase db push"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
-    "@stripe/stripe-js": "^4.9.0",
     "@stripe/react-stripe-js": "^3.1.0",
-    "stripe": "^17.4.0",
-    "square": "^33.0.0",
+    "@stripe/stripe-js": "^4.9.0",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.45.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.460.0",
     "next": "16.0.10",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "resend": "^6.9.4",
+    "square": "^33.0.0",
+    "stripe": "^17.4.0",
+    "tailwind-merge": "^2.5.5",
     "twilio": "^5.13.1",
     "zod": "^3.23.8",
-    "zustand": "^5.0.0",
-    "lucide-react": "^0.460.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.5.5"
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
-    "typescript": "^5",
-    "tailwindcss": "^3.4.16",
     "postcss": "^8.4.49",
-    "autoprefixer": "^10.4.20",
-    "supabase": "^2.0.0"
+    "supabase": "^2.0.0",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5"
   }
 }

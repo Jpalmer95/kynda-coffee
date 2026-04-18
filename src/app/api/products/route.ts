@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/client";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+
+// Force dynamic — don't try to build statically (needs env vars at runtime)
+export const dynamic = "force-dynamic";
 
 // GET /api/products — list products with optional filters
 export async function GET(req: NextRequest) {
@@ -8,7 +11,7 @@ export async function GET(req: NextRequest) {
   const featured = searchParams.get("featured");
   const limit = parseInt(searchParams.get("limit") ?? "50");
 
-  let query = supabaseAdmin
+  let query = supabaseAdmin()
     .from("products")
     .select("*")
     .eq("is_active", true)

@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/client";
-import { supabaseAdmin } from "@/lib/supabase/client";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+
+// Force dynamic — don't try to build statically (needs env vars at runtime)
+export const dynamic = "force-dynamic";
 
 // Stripe webhook handler — creates orders, updates inventory, sends confirmations
 export async function POST(req: NextRequest) {
+  const stripeClient = stripe();
   const body = await req.text();
   const sig = req.headers.get("stripe-signature")!;
 
   let event;
   try {
-    event = stripe.webhooks.constructEvent(
+    event = stripeClient.webhooks.constructEvent(
       body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!
@@ -24,7 +28,7 @@ export async function POST(req: NextRequest) {
       const session = event.data.object;
 
       // Get line items
-      const lineItems = await stripe.checkout.sessions.listLineItems(
+      const lineItems = await stripeClient.checkout.sessions.listLineItems(
         session.id,
         { expand: ["data.price.product"] }
       );
@@ -60,7 +64,7 @@ export async function POST(req: NextRequest) {
       };
 
       // Insert order into Supabase
-      const { error } = await supabaseAdmin.from("orders").insert(order);
+      const { error } = await supabaseAdmin().from("orders").insert(order as any);
       if (error) console.error("Failed to create order:", error);
 
       // TODO: Send confirmation email via Resend
@@ -75,14 +79,14 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.deleted": {
       // Handle Coffee Club subscription changes
       const subscription = event.data.object;
-      const { error } = await supabaseAdmin
+      const { error } = await supabaseAdmin()
         .from("subscriptions")
         .upsert({
           stripe_subscription_id: subscription.id,
           status: subscription.status,
           customer_id: subscription.customer as string,
           // Map more fields as needed
-        });
+        } as any);
       if (error) console.error("Subscription sync error:", error);
       break;
     }

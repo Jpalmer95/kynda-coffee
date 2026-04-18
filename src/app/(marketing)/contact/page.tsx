@@ -43,7 +43,7 @@ export default function ContactPage() {
           </div>
 
           <div>
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-4" action="#">{/**/}
               <div>
                 <label className="mb-2 block text-sm font-medium text-espresso">
                   Name

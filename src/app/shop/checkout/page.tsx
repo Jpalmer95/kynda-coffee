@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 
-export default function CheckoutSuccessPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams();
   const success = searchParams.get("success");
 
@@ -30,7 +31,7 @@ export default function CheckoutSuccessPage() {
           Order Confirmed!
         </h1>
         <p className="mt-2 text-mocha">
-          Thank you for your order. You'll receive a confirmation email shortly
+          Thank you for your order. You&apos;ll receive a confirmation email shortly
           with tracking information.
         </p>
         <div className="mt-8 space-y-3">
@@ -43,5 +44,13 @@ export default function CheckoutSuccessPage() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={<div className="section-padding text-center">Loading...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }
