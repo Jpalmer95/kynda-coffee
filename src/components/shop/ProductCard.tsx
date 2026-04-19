@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
@@ -22,6 +21,15 @@ function getCategoryGradient(category: string): string {
   return gradients[category] ?? "from-stone-600 to-stone-800";
 }
 
+// Default product images by category
+function getDefaultImage(category: string): string | null {
+  const images: Record<string, string> = {
+    "coffee-beans": "/images/coffee-beans.jpg",
+    "merch-mugs": "/images/ceramic-mug.jpg",
+  };
+  return images[category] ?? null;
+}
+
 function getCategoryIcon(category: string): string {
   const icons: Record<string, string> = {
     "coffee-beans": "☕",
@@ -37,7 +45,9 @@ function getCategoryIcon(category: string): string {
 export function ProductCard({ product }: ProductCardProps) {
   const gradient = getCategoryGradient(product.category);
   const icon = getCategoryIcon(product.category);
+  const defaultImage = getDefaultImage(product.category);
   const hasImage = product.images && product.images.length > 0;
+  const displayImage = hasImage ? product.images[0] : defaultImage;
 
   return (
     <Link
@@ -46,13 +56,11 @@ export function ProductCard({ product }: ProductCardProps) {
     >
       {/* Product Image */}
       <div className={`relative aspect-square overflow-hidden bg-gradient-to-br ${gradient}`}>
-        {hasImage ? (
-          <Image
-            src={product.images[0]}
+        {displayImage ? (
+          <img
+            src={displayImage}
             alt={product.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center">

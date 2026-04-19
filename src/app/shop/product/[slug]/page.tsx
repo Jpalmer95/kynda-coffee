@@ -8,6 +8,14 @@ import { useCartStore } from "@/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
 import type { Product, GrindType } from "@/types";
 
+function getDefaultImage(category: string): string | null {
+  const images: Record<string, string> = {
+    "coffee-beans": "/images/coffee-beans.jpg",
+    "merch-mugs": "/images/ceramic-mug.jpg",
+  };
+  return images[category] ?? null;
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -106,9 +114,9 @@ export default function ProductDetailPage() {
         <div className="grid gap-12 lg:grid-cols-2">
           {/* Product Image */}
           <div className="relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-amber-800 to-stone-900">
-            {product.images && product.images.length > 0 ? (
+            {(product.images && product.images.length > 0) || getDefaultImage(product.category) ? (
               <img
-                src={product.images[0]}
+                src={(product.images && product.images[0]) || getDefaultImage(product.category)!}
                 alt={product.name}
                 className="h-full w-full object-cover"
               />
