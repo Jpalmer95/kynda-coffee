@@ -47,6 +47,9 @@ export async function POST(req: NextRequest) {
     let imageUrl: string | null = null;
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000); // 25s max
+
       // Submit generation request
       const submitRes = await fetch("https://queue.fal.run/fal-ai/flux/dev", {
         method: "POST",
@@ -60,15 +63,18 @@ export async function POST(req: NextRequest) {
           num_images: 1,
           enable_safety_checker: true,
         }),
+        signal: controller.signal,
       });
 
       if (!submitRes.ok) {
         const err = await submitRes.text();
         console.error("FAL submit error:", submitRes.status, err);
+        clearTimeout(timeout);
         throw new Error(`FAL API error: ${submitRes.status}`);
       }
 
       const { request_id } = await submitRes.json();
+      clearTimeout(timeout);
 
       // Poll for result (up to 30 seconds)
       let attempts = 0;
