@@ -1,12 +1,63 @@
+import Link from "next/link";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Palette,
+  RefreshCw,
+  Megaphone,
+  Settings,
+} from "lucide-react";
+
 export default function AdminPage() {
+  const sections = [
+    {
+      href: "/admin/products",
+      label: "Products",
+      desc: "Manage catalog, prices, inventory",
+      icon: Package,
+    },
+    {
+      href: "/admin/orders",
+      label: "Orders",
+      desc: "View and manage all orders",
+      icon: ShoppingCart,
+    },
+    {
+      href: "/admin/designs",
+      label: "AI Designs",
+      desc: "Review and publish AI-generated designs",
+      icon: Palette,
+    },
+    {
+      href: "/admin/square",
+      label: "Square Sync",
+      desc: "Sync POS catalog, inventory, and orders",
+      icon: RefreshCw,
+    },
+    {
+      href: "/admin/marketing",
+      label: "Marketing Agent",
+      desc: "AI-powered email, SMS, and social campaigns",
+      icon: Megaphone,
+    },
+  ];
+
   return (
     <section className="section-padding">
       <div className="container-max">
-        <h1 className="font-heading text-3xl font-bold text-espresso">Dashboard</h1>
-        <p className="mt-2 text-mocha">Kynda Coffee admin panel</p>
+        <div className="mb-8 flex items-center gap-3">
+          <LayoutDashboard className="h-8 w-8 text-espresso" />
+          <div>
+            <h1 className="font-heading text-3xl font-bold text-espresso">
+              Dashboard
+            </h1>
+            <p className="text-sm text-mocha">Kynda Coffee admin panel</p>
+          </div>
+        </div>
 
-        {/* Stats grid placeholder */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Stats Grid */}
+        <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { label: "Today's Revenue", value: "$—" },
             { label: "Orders", value: "—" },
@@ -25,21 +76,20 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Quick links */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { href: "/admin/products", label: "Products" },
-            { href: "/admin/orders", label: "Orders" },
-            { href: "/admin/designs", label: "AI Designs" },
-            { href: "/admin/marketing", label: "Marketing" },
-          ].map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="rounded-xl border border-latte/20 bg-white p-4 text-center font-medium text-espresso transition-colors hover:bg-latte/10"
+        {/* Admin Sections */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sections.map((section) => (
+            <Link
+              key={section.href}
+              href={section.href}
+              className="group rounded-xl border border-latte/20 bg-white p-6 transition-all hover:shadow-lg hover:-translate-y-0.5"
             >
-              {link.label}
-            </a>
+              <section.icon className="h-6 w-6 text-mocha transition-colors group-hover:text-rust" />
+              <h2 className="mt-3 font-heading text-lg font-semibold text-espresso">
+                {section.label}
+              </h2>
+              <p className="mt-1 text-sm text-mocha">{section.desc}</p>
+            </Link>
           ))}
         </div>
       </div>
