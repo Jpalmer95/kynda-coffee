@@ -10,6 +10,7 @@ export default function AccountPage() {
           {[
             { href: "/account/orders", title: "Order History", desc: "View past orders and tracking" },
             { href: "/account/subscriptions", title: "Coffee Club", desc: "Manage your subscription" },
+            { href: "/training", title: "Team Training", desc: "Complete your barista training modules" },
           ].map((link) => (
             <Link
               key={link.href}

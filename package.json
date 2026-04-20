@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:generate": "supabase gen types typescript --local > src/types/supabase.ts",
     "db:migrate": "supabase migration up",
-    "db:push": "supabase db push"
+    "db:push": "supabase db push",
+    "training:seed": "npx tsx src/scripts/seed.ts"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^3.1.0",
@@ -40,6 +41,7 @@
     "postcss": "^8.4.49",
     "supabase": "^2.0.0",
     "tailwindcss": "^3.4.16",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

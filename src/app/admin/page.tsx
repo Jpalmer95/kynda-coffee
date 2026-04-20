@@ -7,6 +7,7 @@ import {
   RefreshCw,
   Megaphone,
   Settings,
+  GraduationCap,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -40,6 +41,12 @@ export default function AdminPage() {
       label: "Marketing Agent",
       desc: "AI-powered email, SMS, and social campaigns",
       icon: Megaphone,
+    },
+    {
+      href: "/admin/training",
+      label: "Team Training",
+      desc: "Employee progress, completions, and course management",
+      icon: GraduationCap,
     },
   ];
 

@@ -285,3 +285,92 @@ export interface Cart {
   subtotal_cents: number;
   item_count: number;
 }
+
+// ---- Training Platform ----
+
+export type UserRole = "employee" | "admin";
+
+export interface TrainingProfile {
+  id: string;
+  full_name: string;
+  role: UserRole;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TrainingCourse {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  image_url: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TrainingModule {
+  id: string;
+  course_id: string;
+  title: string;
+  slug: string;
+  description: string;
+  sort_order: number;
+  is_required: boolean;
+  created_at: string;
+}
+
+export interface TrainingLesson {
+  id: string;
+  module_id: string;
+  title: string;
+  slug: string;
+  content: string;
+  video_url: string | null;
+  video_title: string | null;
+  sort_order: number;
+  lesson_type: "text" | "video" | "mixed";
+  created_at: string;
+}
+
+export interface TrainingQuiz {
+  id: string;
+  module_id: string;
+  question: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+  sort_order: number;
+}
+
+export interface TrainingModuleProgress {
+  id: string;
+  user_id: string;
+  module_id: string;
+  lessons_completed: number;
+  total_lessons: number;
+  quizzes_passed: number;
+  total_quizzes: number;
+  is_complete: boolean;
+  completed_at: string | null;
+  updated_at: string;
+}
+
+export interface TrainingCourseCompletion {
+  id: string;
+  user_id: string;
+  course_id: string;
+  completed_at: string;
+}
+
+export interface TrainingEmployeeProgress {
+  id: string;
+  full_name: string;
+  email: string;
+  modules_completed: number;
+  total_modules: number;
+  is_course_complete: boolean;
+  completion_date: string | null;
+  last_activity: string | null;
+  created_at: string;
+}

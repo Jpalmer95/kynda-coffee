@@ -176,6 +176,8 @@ export default function DesignStudioPage() {
       category: `merch-${selectedProduct === "tshirt" ? "apparel" : selectedProduct === "mug" ? "mugs" : "accessories"}` as any,
       price_cents: target.price,
       images: [generatedDesign.image_url],
+      source: "online" as const,
+      track_inventory: false,
       is_active: true,
       is_featured: false,
       created_at: new Date().toISOString(),
