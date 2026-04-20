@@ -37,6 +37,12 @@ export interface Product {
   images: string[];
   stripe_product_id?: string;
   stripe_price_id?: string;
+  // Source tracking
+  source: "square" | "online" | "both";
+  square_item_id?: string;
+  square_variation_id?: string;
+  track_inventory: boolean;
+  inventory_synced_at?: string;
   // Coffee-specific
   roast_level?: RoastLevel;
   grind_options?: GrindType[];
