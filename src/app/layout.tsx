@@ -47,8 +47,6 @@ export const viewport: Viewport = {
   themeColor: "#2c1810",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -61,7 +59,7 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="flex min-h-screen flex-col">
+      <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

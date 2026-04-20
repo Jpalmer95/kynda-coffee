@@ -2,140 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* Kynda brand palette */
-    --color-cream: #faf7f2;
-    --color-espresso: #2c1810;
-    --color-latte: #c4a882;
-    --color-mocha: #8b6f4e;
-    --color-sage: #a8b5a0;
-    --color-rust: #c4724e;
-  }
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
 
-  html {
-    scroll-behavior: smooth;
-  }
+::selection {
+  background-color: #c4724e;
+  color: #faf7f2;
+}
 
-  body {
-    @apply bg-[var(--color-cream)] text-[var(--color-espresso)] antialiased;
-    font-family: var(--font-body), system-ui, sans-serif;
-  }
+/* Component classes */
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-full bg-espresso px-6 py-3 text-sm font-medium text-cream transition-all duration-200 hover:bg-mocha active:scale-[0.98] disabled:opacity-50;
+}
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading), system-ui, sans-serif;
-  }
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-full border-2 border-espresso px-6 py-3 text-sm font-medium text-espresso transition-all duration-200 hover:bg-espresso hover:text-cream active:scale-[0.98];
+}
 
-  /* Selection color */
-  ::selection {
-    background-color: var(--color-rust);
-    color: var(--color-cream);
+.btn-accent {
+  @apply inline-flex items-center justify-center rounded-full bg-rust px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98];
+}
+
+.input-field {
+  @apply w-full rounded-lg border border-latte bg-white px-4 py-3 text-espresso placeholder:text-mocha/50 transition-all duration-200 focus:border-espresso focus:outline-none focus:ring-2 focus:ring-espresso/20;
+}
+
+.section-padding {
+  @apply px-4 py-16 sm:px-6 lg:px-8 lg:py-24;
+}
+
+.container-max {
+  @apply mx-auto max-w-7xl;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-[var(--color-espresso)] px-6 py-3 text-sm font-medium text-[var(--color-cream)] transition-all duration-200 hover:bg-[var(--color-mocha)] active:scale-[0.98] disabled:opacity-50;
-  }
-
-  .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-[var(--color-espresso)] px-6 py-3 text-sm font-medium text-[var(--color-espresso)] transition-all duration-200 hover:bg-[var(--color-espresso)] hover:text-[var(--color-cream)] active:scale-[0.98];
-  }
-
-  .btn-accent {
-    @apply inline-flex items-center justify-center rounded-full bg-[var(--color-rust)] px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98];
-  }
-
-  .input-field {
-    @apply w-full rounded-lg border border-[var(--color-latte)] bg-white px-4 py-3 text-[var(--color-espresso)] placeholder:text-[var(--color-mocha)]/50 transition-all duration-200 focus:border-[var(--color-espresso)] focus:outline-none focus:ring-2 focus:ring-[var(--color-espresso)]/20;
-  }
-
-  .section-padding {
-    @apply px-4 py-16 sm:px-6 lg:px-8 lg:py-24;
-  }
-
-  .container-max {
-    @apply mx-auto max-w-7xl;
-  }
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
 }
 
-@layer utilities {
-  /* Fade in animation */
-  .animate-fade-in {
-    animation: fadeIn 0.8s ease-out forwards;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Fade in up with delay */
-  .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out forwards;
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* Subtle pulse for loading states */
-  .animate-pulse-soft {
-    animation: pulseSoft 2s ease-in-out infinite;
-  }
-
-  @keyframes pulseSoft {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
-  }
-
-  /* Line clamp for text truncation */
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+/* Line clamping */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Scrollbar styling */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-cream);
+  background: #faf7f2;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-latte);
+  background: #c4a882;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-mocha);
+  background: #8b6f4e;
 }
