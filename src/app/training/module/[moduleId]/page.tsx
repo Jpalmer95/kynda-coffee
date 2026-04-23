@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -13,6 +14,23 @@ import {
 
 interface Props {
   params: Promise<{ moduleId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { moduleId } = await params;
+  const supabase = await createClient();
+  const { data: mod } = await supabase
+    .from("modules")
+    .select("title, description")
+    .eq("id", moduleId)
+    .single();
+
+  if (!mod) return { title: "Module Not Found | Kynda Coffee" };
+
+  return {
+    title: `${mod.title} | Kynda Training`,
+    description: mod.description ?? "Barista training module for Kynda Coffee team members.",
+  };
 }
 
 export default async function TrainingModulePage({ params }: Props) {

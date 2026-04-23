@@ -284,7 +284,27 @@ export interface Cart {
   items: CartItem[];
   subtotal_cents: number;
   item_count: number;
+  discount_cents?: number;
+  promo_code?: string;
 }
+
+// ---- Promo / Gift Cards ----
+
+export type PromoType = "percentage" | "fixed_amount" | "free_shipping";
+
+export interface PromoCode {
+  id: string;
+  code: string;
+  type: PromoType;
+  value: number; // percentage (0-100) or fixed amount in cents
+  min_order_cents?: number;
+  max_uses?: number;
+  uses_count: number;
+  expires_at?: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 
 // ---- Training Platform ----
 

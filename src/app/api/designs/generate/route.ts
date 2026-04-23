@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 // POST /api/designs/generate — Generate an AI design image
 export async function POST(req: NextRequest) {
+  // Rate limit: 10 generations per IP per hour
+  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
+  const { allowed, remaining } = checkRateLimit(`designs:${ip}`, 10, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Generation limit reached. Please try again later." },
+      { status: 429, headers: { "X-RateLimit-Remaining": String(remaining) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const { prompt, style_preset, product_type } = body;

@@ -2,9 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles */
+/* ============================================================
+   Base Reset & Accessibility
+   ============================================================ */
+
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 ::selection {
@@ -12,32 +30,106 @@ html {
   color: #faf7f2;
 }
 
-/* Component classes */
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #c4724e;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ============================================================
+   Mobile & PWA Optimizations
+   ============================================================ */
+
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  /* Safe area insets for notched phones */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* PWA standalone mode adjustments */
+@media all and (display-mode: standalone) {
+  body {
+    /* Extra bottom padding when bottom nav is present */
+    padding-bottom: calc(env(safe-area-inset-bottom) + 64px);
+  }
+}
+
+/* Touch targets - minimum 44px */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Allow smaller for inline elements */
+a.inline,
+button.inline {
+  min-height: auto;
+  min-width: auto;
+}
+
+/* ============================================================
+   Component Classes
+   ============================================================ */
+
 .btn-primary {
   @apply inline-flex items-center justify-center rounded-full bg-espresso px-6 py-3 text-sm font-medium text-cream transition-all duration-200 hover:bg-mocha active:scale-[0.98] disabled:opacity-50;
+  min-height: 44px;
 }
 
 .btn-secondary {
   @apply inline-flex items-center justify-center rounded-full border-2 border-espresso px-6 py-3 text-sm font-medium text-espresso transition-all duration-200 hover:bg-espresso hover:text-cream active:scale-[0.98];
+  min-height: 44px;
 }
 
 .btn-accent {
   @apply inline-flex items-center justify-center rounded-full bg-rust px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98];
+  min-height: 44px;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-mocha transition-all duration-200 hover:bg-latte/20 active:scale-[0.98];
+  min-height: 44px;
 }
 
 .input-field {
   @apply w-full rounded-lg border border-latte bg-white px-4 py-3 text-espresso placeholder:text-mocha/50 transition-all duration-200 focus:border-espresso focus:outline-none focus:ring-2 focus:ring-espresso/20;
+  min-height: 44px;
+  font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+.select-field {
+  @apply w-full rounded-lg border border-latte bg-white px-4 py-3 text-espresso transition-all duration-200 focus:border-espresso focus:outline-none focus:ring-2 focus:ring-espresso/20;
+  min-height: 44px;
+  font-size: 16px;
 }
 
 .section-padding {
-  @apply px-4 py-16 sm:px-6 lg:px-8 lg:py-24;
+  @apply px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-24;
 }
 
 .container-max {
   @apply mx-auto max-w-7xl;
 }
 
-/* Animations */
+/* ============================================================
+   Animations (with reduced motion fallback)
+   ============================================================ */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -49,11 +141,108 @@ html {
   }
 }
 
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastSlide {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.8s ease-out forwards;
 }
 
-/* Line clamping */
+.animate-fade-in-scale {
+  animation: fadeInScale 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-toast-in {
+  animation: toastSlide 0.3s ease-out forwards;
+}
+
+.animate-toast-out {
+  animation: toastSlideOut 0.3s ease-in forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-in-scale,
+  .animate-slide-up,
+  .animate-toast-in,
+  .animate-toast-out {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Line Clamping
+   ============================================================ */
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -68,20 +257,111 @@ html {
   overflow: hidden;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* ============================================================
+   Scrollbar (desktop only)
+   ============================================================ */
+
+@media (hover: hover) and (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #faf7f2;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c4a882;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8b6f4e;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: #faf7f2;
+/* Hide scrollbar on mobile for cleaner look */
+@media (hover: none) and (pointer: coarse) {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
-::-webkit-scrollbar-thumb {
-  background: #c4a882;
-  border-radius: 4px;
+/* ============================================================
+   Utility Classes
+   ============================================================ */
+
+.touch-pan-y {
+  touch-action: pan-y;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #8b6f4e;
+.touch-none {
+  touch-action: none;
+}
+
+/* Safe area utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Sticky bottom for mobile actions */
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  padding-bottom: max(env(safe-area-inset-bottom), 12px);
+  background: linear-gradient(to top, rgba(250, 247, 242, 1) 0%, rgba(250, 247, 242, 0.9) 80%, transparent);
+}
+
+/* Image aspect ratios */
+.aspect-product {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-hero {
+  aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 640px) {
+  .aspect-hero {
+    aspect-ratio: 3 / 4;
+  }
+}
+
+/* Card hover lift */
+.card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -8px rgba(44, 24, 16, 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-lift {
+    transition: none;
+  }
+  .card-lift:hover {
+    transform: none;
+  }
+}
+
+/* Skeleton loading */
+.skeleton {
+  @apply animate-pulse rounded bg-latte/20;
+}
+
+.skeleton-shimmer {
+  @apply relative overflow-hidden rounded bg-latte/20;
+}
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 1.5s infinite;
 }

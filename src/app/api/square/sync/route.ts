@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fullSync, syncCatalog, syncInventory, syncRecentOrders } from "@/lib/square/sync";
+import { getAdminUser } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
 // POST /api/square/sync — Trigger Square POS sync
 // Body: { type: "all" | "catalog" | "inventory" | "orders" }
 export async function POST(req: NextRequest) {
+  const { user } = await getAdminUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const type = body.type ?? "all";
@@ -35,8 +41,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/square/sync — Get sync status
-export async function GET() {
+// GET /api/square/sync — Get sync status (admin only)
+export async function GET(req: NextRequest) {
+  const { user } = await getAdminUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   return NextResponse.json({
     square_connected: !!process.env.SQUARE_ACCESS_TOKEN,
     environment: process.env.SQUARE_ENVIRONMENT ?? "not set",

@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /account
+Disallow: /api/
+Disallow: /studio/generate
+Disallow: /checkout
+
+Sitemap: https://kyndacoffee.com/sitemap.xml

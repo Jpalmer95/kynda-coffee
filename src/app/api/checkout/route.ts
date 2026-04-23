@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, STORE_CONFIG } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { z } from "zod";
 
 // Force dynamic — don't try to build statically (needs env vars at runtime)
@@ -23,10 +24,19 @@ const checkoutSchema = z.object({
   customer_email: z.string().email(),
   success_url: z.string().url(),
   cancel_url: z.string().url(),
+  promo_code: z.string().optional(),
+  gift_card_id: z.string().uuid().optional(),
+  discount_cents: z.number().int().min(0).optional(),
 });
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const limit = rateLimit(ip, { identifier: "checkout", windowMs: 60_000, maxRequests: 10 });
+    if (!limit.success) {
+      return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) } });
+    }
+
     const body = await req.json();
     const parsed = checkoutSchema.parse(body);
 
@@ -67,13 +77,40 @@ export async function POST(req: NextRequest) {
       return sum + (product as any).price_cents * item.quantity;
     }, 0);
 
+    const discount_cents = parsed.discount_cents ?? 0;
+    const adjustedSubtotal = Math.max(0, subtotal - discount_cents);
+
+    // Prepare line items — add discount as a separate negative line item if applicable
+    const finalLineItems = [...lineItems];
+    if (discount_cents > 0) {
+      finalLineItems.push({
+        price_data: {
+          currency: STORE_CONFIG.currency,
+          product_data: {
+            name: parsed.promo_code ? `Promo: ${parsed.promo_code}` : "Discount",
+            description: "Applied at checkout",
+            images: [],
+          },
+          unit_amount: -discount_cents,
+        },
+        quantity: 1,
+      });
+    }
+
+    const metadata: Record<string, string> = {
+      source: "kynda-website",
+      subtotal_cents: String(subtotal),
+    };
+    if (parsed.promo_code) metadata.promo_code = parsed.promo_code;
+    if (parsed.gift_card_id) metadata.gift_card_id = parsed.gift_card_id;
+
     // Create Stripe Checkout Session
     const stripeClient = stripe();
     const session = await stripeClient.checkout.sessions.create({
       mode: "payment",
       customer_email: parsed.customer_email,
-      line_items: lineItems,
-      success_url: `${parsed.success_url}?session_id={CHECKOUT_SESSION_ID}`,
+      line_items: finalLineItems,
+      success_url: `${parsed.success_url}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: parsed.cancel_url,
       shipping_address_collection: {
         allowed_countries: ["US"],
@@ -83,11 +120,11 @@ export async function POST(req: NextRequest) {
           shipping_rate_data: {
             type: "fixed_amount",
             fixed_amount: {
-              amount: subtotal >= STORE_CONFIG.free_shipping_threshold_cents ? 0 : STORE_CONFIG.flat_shipping_cents,
+              amount: adjustedSubtotal >= STORE_CONFIG.free_shipping_threshold_cents ? 0 : STORE_CONFIG.flat_shipping_cents,
               currency: STORE_CONFIG.currency,
             },
             display_name:
-              subtotal >= STORE_CONFIG.free_shipping_threshold_cents
+              adjustedSubtotal >= STORE_CONFIG.free_shipping_threshold_cents
                 ? "Free Shipping"
                 : "Standard Shipping",
             delivery_estimate: {
@@ -97,9 +134,7 @@ export async function POST(req: NextRequest) {
           },
         },
       ],
-      metadata: {
-        source: "kynda-website",
-      },
+      metadata,
     });
 
     return NextResponse.json({ url: session.url, session_id: session.id });

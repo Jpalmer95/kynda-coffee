@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAdminUser } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
 // POST /api/marketing/agent — AI marketing agent chat
 export async function POST(req: NextRequest) {
+  const { user } = await getAdminUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const { messages } = body;
@@ -145,7 +151,7 @@ function getGeneralResponse(message: string): string {
   }
 
   if (lower.includes("help") || lower.includes("what can")) {
-    return "I can help you with:\n\n**Content Creation:**\n• Draft emails (welcome series, promos, newsletters)\n• Write SMS campaigns\n• Create social media posts\n\n**Strategy:**\n• Plan weekly content calendars\n• Suggest campaign ideas\n• Analyze what's working\n\n**Automation:**\n• Set up email sequences\n• Plan loyalty program outreach\n\nJust tell me what you need!";
+    return "I can help you with:\n\n**Content Creation:**\n• Draft emails (welcome series, promos, newsletters)\n• Write SMS campaigns\n• Create social media posts\n\n**Strategy:**\n• Plan weekly content calendars\n• Suggest campaign ideas\n• Analyze what's working\n\n**Automation:**\n• Set up email sequences\n• Plan loyalty program outreach\n\nJust tell me what need!";
   }
 
   return "That's a great idea! Want me to draft something specific? I can create emails, SMS messages, or social posts — all ready for your review before anything goes out.";

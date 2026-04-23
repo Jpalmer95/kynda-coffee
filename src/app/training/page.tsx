@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, BookOpen, CheckCircle2, ArrowRight } from "lucide-react";
+import { TrainingWrapper } from "./TrainingWrapper";
 
 export default async function TrainingDashboard() {
   const supabase = await createClient();
@@ -69,8 +70,9 @@ export default async function TrainingDashboard() {
   const isComplete = !!completion;
 
   return (
-    <section className="section-padding">
-      <div className="container-max">
+    <TrainingWrapper>
+      <section className="section-padding">
+        <div className="container-max">
         {/* Header */}
         <div className="mb-8 flex items-center gap-3">
           <GraduationCap className="h-8 w-8 text-rust" />
@@ -221,5 +223,6 @@ export default async function TrainingDashboard() {
         </div>
       </div>
     </section>
+    </TrainingWrapper>
   );
 }

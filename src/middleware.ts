@@ -1,24 +1,42 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/middleware";
 
+const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim().toLowerCase()) ?? [];
+
 export async function middleware(request: NextRequest) {
-  const supabaseResponse = createClient(request);
+  const { supabase, response } = createClient(request);
 
   // Refresh auth session if expired
-  // This is handled by the Supabase SSR client automatically
+  const { data: { user } } = await supabase.auth.getUser();
 
-  return supabaseResponse;
+  // Protect admin routes (pages only, not API)
+  if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/api/")) {
+    if (!user) {
+      const redirectUrl = new URL("/account", request.url);
+      redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const isAdmin = ADMIN_EMAILS.includes(user.email?.toLowerCase() ?? "");
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
+
+  // Protect account routes (must be logged in)
+  if (request.nextUrl.pathname.startsWith("/account")) {
+    if (!user) {
+      const redirectUrl = new URL("/account", request.url);
+      redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico
-     * - public assets
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).+)",
   ],
 };

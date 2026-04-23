@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   RefreshCw,
   Package,
@@ -53,9 +53,9 @@ export default function AdminSquarePage() {
   }
 
   // Load status on first render
-  useState(() => {
+  useEffect(() => {
     checkStatus();
-  });
+  }, []);
 
   const syncOptions = [
     {
