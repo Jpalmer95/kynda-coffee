@@ -11,10 +11,14 @@ import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 export function CartDrawer() {
   const { open, setOpen } = useCartDrawer();
   const { items, subtotal_cents, item_count, updateQuantity, removeItem } = useCartStore();
-  const drawerRef = useRef<HTMLDivElement>(null);
   const trapRef = useFocusTrap(open);
   const touchStartX = useRef(0);
   const [swipeOffset, setSwipeOffset] = useState(0);
+
+  // Force closed on mount — ensures it never opens by default on page load
+  useEffect(() => {
+    setOpen(false);
+  }, [setOpen]);
 
   // Close on escape
   useEffect(() => {
@@ -93,12 +97,14 @@ export function CartDrawer() {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         className={`fixed inset-y-0 right-0 z-50 w-full max-w-md transform bg-cream shadow-2xl transition-transform duration-300 ease-out touch-pan-y ${
-          open ? "" : "translate-x-full"
+          open ? "" : "translate-x-full pointer-events-none"
         }`}
-        style={{ transform: transformStyle }}
+        style={open ? { transform: transformStyle } : undefined}
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
+        aria-hidden={!open}
+        inert={!open}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
@@ -107,6 +113,7 @@ export function CartDrawer() {
               Your Cart ({item_count})
             </h2>
             <button
+              type="button"
               onClick={() => setOpen(false)}
               className="rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20 hover:text-espresso"
               aria-label="Close cart"
@@ -123,6 +130,7 @@ export function CartDrawer() {
                 <p className="mt-4 font-medium text-espresso">Your cart is empty</p>
                 <p className="mt-1 text-sm text-mocha">Browse our shop and add something you love.</p>
                 <button
+                  type="button"
                   onClick={() => setOpen(false)}
                   className="btn-primary mt-6"
                 >
@@ -171,6 +179,7 @@ export function CartDrawer() {
                       <div className="mt-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <button
+                            type="button"
                             onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                             className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-white text-espresso hover:bg-latte/20"
                             aria-label="Decrease quantity"
@@ -179,6 +188,7 @@ export function CartDrawer() {
                           </button>
                           <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
                           <button
+                            type="button"
                             onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                             className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-white text-espresso hover:bg-latte/20"
                             aria-label="Increase quantity"
@@ -191,6 +201,7 @@ export function CartDrawer() {
                             {formatPrice(item.product.price_cents * item.quantity)}
                           </span>
                           <button
+                            type="button"
                             onClick={() => removeItem(item.product.id)}
                             className="flex h-9 w-9 items-center justify-center rounded-full text-mocha hover:bg-rust/10 hover:text-rust"
                             aria-label={`Remove ${item.product.name} from cart`}
