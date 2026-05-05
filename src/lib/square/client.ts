@@ -21,3 +21,5 @@ export const squareInventory = () => getSquare().inventoryApi;
 export const squareOrders = () => getSquare().ordersApi;
 export const squarePayments = () => getSquare().paymentsApi;
 export const squareCustomers = () => getSquare().customersApi;
+export const squareLocations = () => getSquare().locationsApi;
+export const squareClient = () => getSquare();

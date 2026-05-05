@@ -1,7 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/middleware";
 
-const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim().toLowerCase()) ?? [];
+const ADMIN_EMAILS = [
+  ...(process.env.ADMIN_EMAILS?.split(",") ?? []),
+  ...(process.env.ADMIN_EMAIL?.split(",") ?? []),
+]
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 
 export async function middleware(request: NextRequest) {
   const { supabase, response } = createClient(request);

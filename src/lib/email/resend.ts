@@ -1,5 +1,7 @@
 import { Resend } from "resend";
 
+type RetentionTemplate = "win-back" | "abandoned-cart" | "birthday";
+
 function getResend() {
   const key = process.env.RESEND_API_KEY;
   if (!key) return null;
@@ -123,5 +125,66 @@ export async function sendShippingNotification({
     });
   } catch (err) {
     console.error("Failed to send shipping notification:", err);
+  }
+}
+
+export async function sendRetentionEmail({
+  to,
+  template,
+  variables = {},
+}: {
+  to: string;
+  template: RetentionTemplate;
+  variables?: Record<string, string>;
+}) {
+  const resend = getResend();
+  if (!resend) {
+    console.warn("RESEND_API_KEY not set — skipping retention email");
+    return;
+  }
+
+  const name = variables.name || "Friend";
+  const days = variables.days || "30";
+  const templateConfig: Record<RetentionTemplate, { subject: string; heading: string; body: string; cta: string }> = {
+    "win-back": {
+      subject: "We saved you a fresh cup at Kynda",
+      heading: `We miss you, ${name}`,
+      body: `It has been about ${days} days since your last visit. Come back for organic specialty coffee, scratch kitchen favorites, and new seasonal drinks.`,
+      cta: "Order Ahead",
+    },
+    "abandoned-cart": {
+      subject: "Still thinking it over? Your Kynda cart is waiting",
+      heading: "Your cart is still here",
+      body: "Finish your order whenever you are ready. Fresh coffee is worth coming back for.",
+      cta: "Return to Cart",
+    },
+    birthday: {
+      subject: "Happy birthday from Kynda Coffee",
+      heading: `Happy birthday, ${name}`,
+      body: "We hope your day is full of good people, good food, and great coffee.",
+      cta: "Visit Kynda",
+    },
+  };
+
+  const config = templateConfig[template];
+
+  try {
+    await resend.emails.send({
+      from: process.env.FROM_EMAIL || "Kynda Coffee <orders@kyndacoffee.com>",
+      to,
+      subject: config.subject,
+      html: `<!DOCTYPE html>
+<html><body style="margin:0;padding:0;background:#f6f2ec;font-family:Georgia,serif;color:#2a1e14;">
+<div style="max-width:520px;margin:0 auto;padding:24px 16px;">
+<div style="background:#fff;border-radius:16px;padding:28px;">
+  <h1 style="font-size:22px;margin:0 0 8px;">${config.heading}</h1>
+  <p style="margin-top:16px;line-height:1.55;">${config.body}</p>
+  <div style="margin-top:24px;text-align:center;">
+    <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://kynda.167.99.125.127.sslip.io"}/shop" style="display:inline-block;padding:12px 20px;background:#b85c38;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">${config.cta}</a>
+  </div>
+</div></div></body></html>`,
+    });
+  } catch (err) {
+    console.error("Failed to send retention email:", err);
   }
 }

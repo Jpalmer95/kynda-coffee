@@ -3,7 +3,12 @@ import { type NextRequest, NextResponse } from "next/server";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim().toLowerCase()) ?? [];
+const ADMIN_EMAILS = [
+  ...(process.env.ADMIN_EMAILS?.split(",") ?? []),
+  ...(process.env.ADMIN_EMAIL?.split(",") ?? []),
+]
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 
 export async function getAdminUser(req: NextRequest) {
   let response = NextResponse.next();
