@@ -61,10 +61,11 @@ export default function AccountPage() {
     setAuthLoading(true);
     setMessage(null);
 
+    const next = redirectTo.startsWith("/") ? redirectTo : "/account";
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${window.location.origin}${redirectTo}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
 

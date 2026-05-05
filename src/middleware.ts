@@ -8,17 +8,24 @@ const ADMIN_EMAILS = [
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
+const PUBLIC_ACCOUNT_PATHS = new Set([
+  "/account",
+  "/account/forgot-password",
+  "/account/reset-password",
+]);
+
 export async function middleware(request: NextRequest) {
   const { supabase, response } = createClient(request);
+  const pathname = request.nextUrl.pathname;
 
   // Refresh auth session if expired
   const { data: { user } } = await supabase.auth.getUser();
 
   // Protect admin routes (pages only, not API)
-  if (request.nextUrl.pathname.startsWith("/admin") && !request.nextUrl.pathname.startsWith("/api/")) {
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/api/")) {
     if (!user) {
       const redirectUrl = new URL("/account", request.url);
-      redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
+      redirectUrl.searchParams.set("redirectTo", pathname);
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -28,11 +35,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Protect account routes (must be logged in)
-  if (request.nextUrl.pathname.startsWith("/account")) {
+  // Protect private account subroutes while keeping the account login page public.
+  if (pathname.startsWith("/account") && !PUBLIC_ACCOUNT_PATHS.has(pathname)) {
     if (!user) {
       const redirectUrl = new URL("/account", request.url);
-      redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname);
+      redirectUrl.searchParams.set("redirectTo", pathname);
       return NextResponse.redirect(redirectUrl);
     }
   }
