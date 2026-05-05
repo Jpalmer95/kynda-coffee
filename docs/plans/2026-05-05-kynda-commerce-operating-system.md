@@ -578,3 +578,18 @@ Next recommended step: use `/admin/catalog` while logged in as an admin to curat
 - Latest hot-copy backup image before final deploy: `sha256:130ea810f7153e385c1040de31653c23efa5ccd23993d0d0d8528a076717be93`.
 
 Next recommended phase remains interactive QR/pickup cart and order submission, using the curated POS catalog as source.
+
+## 2026-05-05 update — interactive QR/pickup order phase
+
+- Built the first interactive QR ordering slice. `/qr-order` now renders a client-side order builder from the curated POS catalog with variation selection, modifier selection, quantity, item notes, customer name/phone/email, table/lobby/parking/pickup context, order notes, and pay-at-counter preference.
+- Added TDD-backed order domain helpers in `src/lib/orders/qr-order.ts` with tests in `src/lib/orders/qr-order.test.ts`. Coverage includes validation, table/parking label requirements, variation/modifier pricing, modifier max rules, hidden/unavailable item rejection, and order draft metadata.
+- Added public submission API `POST /api/orders/submit`; it reloads the QR POS catalog server-side, validates/prices the request against authoritative catalog data, and inserts into `orders`.
+- Added migration `010_qr_order_metadata.sql` to extend `orders` with `fulfillment_metadata`, `payment_preference`, `order_channel`, and `submitted_at`, keeping existing admin/account/analytics compatibility.
+- During live smoke testing, the existing `trg_update_metrics_on_order` trigger failed guest QR orders with `customer_id NULL`. Added/applied `011_order_metrics_guest_guard.sql` so guest/walk-up QR orders skip customer metrics until a customer/profile is attached.
+- Verified tests: 16/16 passing across QR order, POS catalog, and Square catalog transform suites.
+- Verified local and droplet builds pass, route `/api/orders/submit` appears in Next build output, and `/qr-order` renders the interactive builder on live.
+- Verified API smoke insert succeeded for a live Latte QR order, then deleted the smoke-test row.
+- Hot-copied host build into Coolify container. Backup image before QR deploy: `sha256:3f41cce8aef8985e42369966028375ee9c89511127f769dd814e9d5f5ee3c39b`.
+- Commits pushed: `cfa3fc8` and `8c8b1ac`.
+
+Next recommended phase: build an admin/KDS queue over `orders` where `source=qr` and `status in (pending, confirmed, processing)`, with status transitions Pending -> Confirmed/In Progress -> Ready -> Completed, plus optional staff notifications. Then add Stripe/Square payment/reconciliation.
