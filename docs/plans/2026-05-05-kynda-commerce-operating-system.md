@@ -1,0 +1,523 @@
+# Kynda Coffee Commerce Operating System Build Plan
+
+> **Purpose:** Persistent source-of-truth plan/status document for the Kynda Coffee next-gen website, ordering, ecommerce, AI merch, POS, admin, and agent-commerce platform. Use this to resume work without relying on chat context.
+>
+> **Current production temp URL:** https://kynda.167.99.125.127.sslip.io
+>
+> **Canonical domain:** kyndacoffee.com is transferring from Wix to Porkbun and may be unavailable for DNS/email/webhook changes for a few days.
+
+## 1. North Star
+
+Build Kynda Coffee’s own next-gen commerce operating system, not just a Wix replacement.
+
+The platform should support:
+
+- Beautiful public website and PWA.
+- Pickup ordering.
+- QR table ordering.
+- Lobby / parking spot QR ordering.
+- KDS / kitchen workflow.
+- Shipped beans nationwide.
+- Coffee club subscriptions.
+- Kynda branded merch.
+- AI-generated/custom user merch via dropshipping.
+- Gift cards, rewards, referrals, reviews.
+- Owner/admin cockpit with analytics, marketing, training, and automations.
+- MenuMetrics integration for recipe costing, inventory, par levels, purchase recommendations, and eventual autonomous inventory ordering.
+- Agent-friendly product/menu/policy APIs and feeds so AI agents can discover, compare, recommend, and eventually transact.
+
+## 2. Architecture Principles
+
+### 2.1 POS-Agnostic Core
+
+Do not let Square become the canonical data model.
+
+Square is the current provider adapter. Kynda should own the normalized commerce layer.
+
+Recommended data flow:
+
+```text
+Square / future Toast / Clover / Shopify / custom POS
+  -> provider adapter
+  -> pos_raw_objects          # lossless provider cache/audit
+  -> normalized pos_* tables  # provider-neutral catalog/menu data
+  -> Kynda canonical views/APIs
+  -> web, QR, KDS, admin, MenuMetrics, agent APIs
+```
+
+Benefits:
+
+- Full autonomy if Kynda switches POS later.
+- Ability to normalize multiple providers.
+- Raw data remains available for reprocessing/debugging.
+- Web, QR, KDS, MenuMetrics, and AI agent features do not need to know Square-specific object shapes.
+
+### 2.2 Square as Current Source Adapter
+
+Current Square production credentials are injected through Coolify runtime env. Host `.env.production` may be stale; inspect both.
+
+Use Square for:
+
+- Current menu/POS catalog.
+- Categories.
+- Variations.
+- Modifiers/add-ons.
+- Taxes.
+- Orders/payment integration where useful for POS reconciliation.
+
+Use Stripe for:
+
+- Online ecommerce payments.
+- Subscriptions.
+- Shipped beans.
+- AI/custom merch checkout.
+- B2B/office coffee invoicing or recurring plans.
+
+Use Supabase for:
+
+- Unified app data model.
+- Catalog normalization.
+- Orders.
+- Customers/profiles.
+- Admin analytics.
+- Designs.
+- Subscriptions.
+- Training.
+- MenuMetrics integration.
+
+## 3. Environment / Deployment Notes
+
+### 3.1 Live Infrastructure
+
+- Droplet/Coolify host: `kynda-droplet` SSH alias.
+- Live source-ish host directory: `/var/www/kynda-coffee-new`.
+- Git-backed repo on local workstation: `/home/jonathan/dev/kynda-coffee`.
+- GitHub: `https://github.com/Jpalmer95/kynda-coffee`.
+- Live container: `yzrvkel3jnw2lviu3cwaegnq-192513517135`.
+- App is Coolify-managed, not PM2.
+- Host `/var/www/kynda-coffee-new` is **not mounted** into the running container. Hot-copying has been used as a temporary deployment workaround.
+
+### 3.2 Important Runtime Env Findings
+
+Coolify runtime env had better/newer values than host `.env.production`.
+
+Important runtime values observed:
+
+- `SQUARE_ENVIRONMENT=production`
+- Square production application/location/token worked against the Square API.
+- `ADMIN_EMAIL=jpkorstad@gmail.com` existed, while code expected `ADMIN_EMAILS`; code now supports both.
+- `NEXT_PUBLIC_APP_URL=https://kyndacoffee.com` exists in Coolify, but temp URL should be used until domain transfer completes.
+
+Host `.env.production` was stale and contained sandbox/local values. Treat Coolify runtime env as the live source of truth.
+
+### 3.3 Supabase DDL Access
+
+Supabase service role key is not enough for SQL DDL migrations. A direct Postgres URL is needed.
+
+A root-only pooler env file was created on the droplet:
+
+```text
+/root/kynda-supabase-db.env
+```
+
+Permissions: `600`.
+
+Use:
+
+```bash
+ssh kynda-droplet
+set -a; . /root/kynda-supabase-db.env; set +a
+psql "$SUPABASE_DB_URL?sslmode=require" -c 'select now();'
+```
+
+## 4. Recently Completed Work
+
+### 4.1 Supabase Migration / Square Production Sync Baseline
+
+Applied important migrations:
+
+- `002_product_source_tracking.sql`
+- `006_square_inventory_sync.sql`
+- `006_growth_engine_tables.sql`
+
+Verified tables:
+
+- `products`
+- `profiles`
+- `newsletter_subscribers`
+- `gift_cards`
+- `loyalty_transactions`
+- `coffee_subscriptions`
+- `table_orders`
+- `qr_orders`
+- `square_catalog_items`
+- `square_inventory_snapshots`
+- `square_sync_log`
+
+Square production API test succeeded:
+
+- Location: `B3EM39DWRT1CX`
+- Name: `Kynda Coffee`
+- Status: `ACTIVE`
+
+Initial sync succeeded with 85 item rows, but all were effectively General/retail due to insufficient category/object handling.
+
+### 4.2 Build and Admin Fixes
+
+Fixed:
+
+- `src/lib/auth/admin.ts`: supports both `ADMIN_EMAILS` and `ADMIN_EMAIL`.
+- `src/middleware.ts`: supports both `ADMIN_EMAILS` and `ADMIN_EMAIL`.
+- `src/components/cart/CartDrawer.tsx`: missing closing JSX/function tags repaired; cart drawer starts closed.
+- `src/lib/email/resend.ts`: added `sendRetentionEmail` export used by retention trigger route.
+
+### 4.3 POS-Agnostic Catalog Foundation
+
+Added migration:
+
+```text
+supabase/migrations/007_pos_agnostic_catalog.sql
+```
+
+Created provider-neutral tables:
+
+- `pos_raw_objects`
+- `pos_categories`
+- `pos_items`
+- `pos_item_variations`
+- `pos_modifier_lists`
+- `pos_modifiers`
+- `pos_taxes`
+- `pos_sync_runs`
+
+Extended `square_catalog_items` with:
+
+- `provider_raw`
+- `category_id`
+- `variation_name`
+- `modifier_list_ids`
+- `tax_ids`
+- `available_shipping`
+- `available_qr`
+
+### 4.4 Square Adapter / Transform Layer
+
+Added:
+
+- `src/lib/square/catalog-transform.ts`
+- `src/lib/square/catalog-transform.test.ts`
+- `src/lib/square/catalog.ts`
+- `src/app/api/square/sync-catalog/route.ts`
+
+The transform layer:
+
+- Builds category lookup from Square `CATEGORY` objects.
+- Builds image lookup from Square `IMAGE` objects.
+- Resolves category IDs to names.
+- Normalizes all item variations, not just the first variation.
+- Preserves modifier list IDs and tax IDs.
+- Serializes BigInt values safely for JSONB.
+- Classifies items into portable types:
+  - `menu`
+  - `retail`
+  - `merch`
+  - `modifier`
+  - `service`
+  - `gift_card`
+  - `unknown`
+
+Test command:
+
+```bash
+npx tsx --test src/lib/square/catalog-transform.test.ts
+```
+
+Last result: 5 passed, 0 failed.
+
+### 4.5 Enhanced Square Sync Results
+
+After deploying and triggering:
+
+```bash
+curl -X POST https://kynda.167.99.125.127.sslip.io/api/square/sync-catalog \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+```
+
+Final successful result:
+
+```json
+{
+  "success": true,
+  "synced": 115,
+  "failed": 0,
+  "total": 115,
+  "rawObjects": 494,
+  "categories": 26,
+  "modifiers": 96,
+  "taxes": 1,
+  "errors": []
+}
+```
+
+Verified normalized counts:
+
+- `pos_raw_objects`: 494
+- `pos_categories`: 26
+- `pos_items`: 85
+- `pos_item_variations`: 115
+- `pos_modifier_lists`: 8
+- `pos_modifiers`: 96
+- `pos_taxes`: 1
+
+`pos_items` type classification:
+
+- `menu`: 50
+- `retail`: 17
+- `merch`: 11
+- `modifier`: 7
+
+Notable categories:
+
+- Food
+- Coffee Drinks
+- Merchandise
+- Additions
+- Fridge Items
+- Teas
+- Catering
+- Smoothies
+- Ice Cream
+- Refreshers
+- Specialty Organic Coffee Beans
+- Seasonal Pastry
+- Uncategorized
+
+### 4.6 GitHub Commit
+
+Local commit created and pushed after PAT was restored:
+
+```text
+82e0e18 feat: add POS-agnostic Square catalog sync
+```
+
+Pushed to:
+
+```text
+https://github.com/Jpalmer95/kynda-coffee
+```
+
+## 5. Current Known Caveats
+
+1. Hot-copy deployment is not durable.
+   - The running container has been patched by copying `src` and `.next` into `/app`.
+   - A future Coolify redeploy could overwrite this unless Coolify deploys from GitHub commit `82e0e18` or later.
+
+2. App start command still uses `next start -p 3000` with `output: "standalone"`.
+   - Logs warn this is wrong for Next 16 standalone.
+   - Durable fix: use `node .next/standalone/server.js`, or remove standalone output.
+
+3. Public shop still reads the old `products` table and shows seeded/demo products.
+   - Square/POS data is now synced into normalized tables but not yet used by menu/shop/QR UI.
+
+4. Classification is heuristic.
+   - Needs admin override UI for item type, channel visibility, featured/hidden, display names, descriptions, images, and MenuMetrics recipe links.
+
+5. Domain transfer blocks final canonical settings.
+   - Keep using temp URL until Porkbun transfer completes.
+   - Later update sitemap, robots, Stripe webhooks, Resend sender/domain, Coolify FQDN/certs.
+
+## 6. Recommended Build Sequence From Here
+
+### Phase A — Make Real Menu/QR Use POS Catalog
+
+Goal: Replace fake/seeded menu experience with real Square/POS data.
+
+Tasks:
+
+1. Add read API for normalized catalog.
+   - Create `src/app/api/pos/catalog/route.ts`.
+   - Query `pos_items` + `pos_item_variations` + modifiers by channel.
+   - Parameters: `channel=menu|qr|pickup|delivery|shipping|shop`, `category`, `includeModifiers=true`.
+
+2. Add reusable client/server data helpers.
+   - `src/lib/pos/catalog.ts` for query/format helpers.
+
+3. Update menu page.
+   - Use real `pos_items` where `available_pickup` or `available_qr` is true.
+   - Group by category.
+   - Show item variations and prices.
+
+4. Update QR order page.
+   - Use `available_qr` items.
+   - Display modifiers/options.
+   - Cart should store provider item/variation IDs.
+
+5. Update KDS/table order creation.
+   - Ensure QR/table order payload includes provider IDs, selected modifiers, quantities, notes, table/parking/lobby metadata.
+
+Verification:
+
+```bash
+curl https://kynda.167.99.125.127.sslip.io/api/pos/catalog?channel=qr
+curl https://kynda.167.99.125.127.sslip.io/menu
+curl https://kynda.167.99.125.127.sslip.io/qr-order
+```
+
+### Phase B — Admin Catalog Override Layer
+
+Goal: Human-owner control over normalized POS data.
+
+Add table:
+
+- `catalog_overrides`
+
+Fields:
+
+- provider
+- provider_item_id
+- provider_variation_id nullable
+- display_name
+- display_description
+- image_url
+- item_type_override
+- available_online
+- available_pickup
+- available_delivery
+- available_shipping
+- available_qr
+- is_featured
+- is_hidden
+- menu_metrics_recipe_id
+- sort_order
+
+Admin pages:
+
+- `/admin/catalog`
+- `/admin/square` can link to catalog overrides.
+
+### Phase C — Visible Shop / Ecommerce Catalog
+
+Goal: Keep shop clean and commerce-focused rather than dumping all cafe items.
+
+Use:
+
+- `products` for online-native products/subscriptions/custom merch.
+- `pos_items` for Square retail/merch/beans available shipping/pickup.
+- future `catalog_overrides` to curate what appears.
+
+### Phase D — Ordering and Checkout
+
+Goal: Real end-to-end ordering.
+
+- Pickup checkout.
+- QR order checkout/pay-at-counter/pay-online.
+- KDS status workflow.
+- Optional Square Orders API injection for POS reconciliation.
+- Stripe for ecommerce/subscriptions/merch.
+
+### Phase E — AI Merch / Dropship Engine
+
+Goal: Turn Design Studio from prototype into revenue engine.
+
+- Save generated designs to `designs`.
+- Add Printful/Printify/Gelato provider abstraction.
+- Product mockup generation.
+- Admin moderation.
+- Checkout success creates fulfillment order.
+- Public gallery / curated drops.
+
+### Phase F — MenuMetrics Integration
+
+Goal: Owner intelligence and inventory autonomy.
+
+- Link `pos_items`/`products` to MenuMetrics recipes.
+- Pull sales data into costing/margin analytics.
+- Track COGS, price drift, pars, theoretical vs actual usage.
+- Suggest purchase orders and price updates.
+
+### Phase G — Agent-Friendly Commerce
+
+Goal: Be discoverable/actionable by AI agents.
+
+Add:
+
+- `/llms.txt`
+- `/agents/catalog.json`
+- `/agents/menu.json`
+- `/agents/policies.json`
+- `/feeds/products.json`
+- Product JSON-LD.
+- LocalBusiness/Cafe schema.
+- Machine-readable policy pages.
+- Track AI crawler/user-agent traffic.
+
+## 7. Useful Commands
+
+### Test Square transform
+
+```bash
+cd /home/jonathan/dev/kynda-coffee
+npx tsx --test src/lib/square/catalog-transform.test.ts
+```
+
+### Build on droplet
+
+```bash
+ssh kynda-droplet
+cd /var/www/kynda-coffee-new
+npm run build
+```
+
+### Apply Supabase migration
+
+```bash
+ssh kynda-droplet
+cd /var/www/kynda-coffee-new
+set -a; . /root/kynda-supabase-db.env; set +a
+psql "$SUPABASE_DB_URL?sslmode=require" -v ON_ERROR_STOP=1 -f supabase/migrations/<file>.sql
+```
+
+### Hot-copy build into current Coolify container
+
+Use only as temporary workaround until Coolify deploys from GitHub.
+
+```bash
+ssh kynda-droplet
+cd /var/www/kynda-coffee-new
+npm run build
+docker commit yzrvkel3jnw2lviu3cwaegnq-192513517135 kynda-coffee-before-hotcopy-$(date +%Y%m%d%H%M%S)
+docker cp src/. yzrvkel3jnw2lviu3cwaegnq-192513517135:/app/src/
+docker cp .next/. yzrvkel3jnw2lviu3cwaegnq-192513517135:/app/.next/
+docker cp package.json yzrvkel3jnw2lviu3cwaegnq-192513517135:/app/package.json
+docker restart yzrvkel3jnw2lviu3cwaegnq-192513517135
+```
+
+### Trigger Square sync
+
+```bash
+curl -sS -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{}' \
+  https://kynda.167.99.125.127.sslip.io/api/square/sync-catalog
+```
+
+### Inspect normalized catalog counts
+
+```bash
+ssh kynda-droplet
+set -a; . /root/kynda-supabase-db.env; set +a
+DB="$SUPABASE_DB_URL?sslmode=require"
+psql "$DB" -c "select item_type, count(*) from pos_items group by item_type order by count desc;"
+psql "$DB" -c "select category_name, item_type, count(*) from pos_items group by category_name,item_type order by count desc, category_name;"
+```
+
+## 8. Efficiency Recommendations
+
+1. Keep this document current after each major build step.
+2. Prefer small commits per phase.
+3. Use tests around transform/business logic before UI work.
+4. Use GitHub as durable source of truth; avoid relying on hot-copy deployments.
+5. Add a `/docs/ops/DEPLOYMENT.md` next to document Coolify-specific durable deployment once fixed.
+6. Add admin override tables before overfitting heuristics.
+7. Use provider-neutral names in app-facing code; keep Square-specific logic inside `src/lib/square/*` and `/api/square/*` only.
