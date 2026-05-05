@@ -521,3 +521,17 @@ psql "$DB" -c "select category_name, item_type, count(*) from pos_items group by
 5. Add a `/docs/ops/DEPLOYMENT.md` next to document Coolify-specific durable deployment once fixed.
 6. Add admin override tables before overfitting heuristics.
 7. Use provider-neutral names in app-facing code; keep Square-specific logic inside `src/lib/square/*` and `/api/square/*` only.
+
+## 2026-05-05 update — POS catalog now powers public menu and QR catalog
+
+- Added `src/lib/pos/catalog.ts` and `src/app/api/pos/catalog/route.ts`.
+- `/menu` now server-renders from normalized `pos_items` / `pos_item_variations`.
+- Added `/qr-order` and `/qr-menu` backed by normalized POS items/modifiers. Cart/payment submission is intentionally marked as the next wiring step.
+- `/api/products` now appends POS shop-compatible merch/retail items unless `includePos=false`; `source=pos` returns only normalized POS products mapped into existing product-card shape.
+- Tests: `npx tsx --test src/lib/square/catalog-transform.test.ts src/lib/pos/catalog.test.ts` passes 9/9.
+- Build passes locally and on droplet.
+- Commit pushed: `3b31229 feat: serve menu and QR ordering from POS catalog`.
+- Deployed by tactical hot-copy into Coolify container after backup image `sha256:314266a0e529b34f22384e9e1052ea77be105a5c1ba0febb1cf31ddad33fc912`.
+- Verified live 200s: `/api/pos/catalog`, `/api/products?source=pos`, `/menu`, `/qr-order`, `/qr-menu`, `/shop`.
+
+Next recommended step: implement the interactive QR/pickup cart and order submission flow using `providerItemId`, `providerVariationId`, selected modifiers, quantity, notes, and table/lobby/parking metadata. Then connect payment/KDS/Square order reconciliation.
