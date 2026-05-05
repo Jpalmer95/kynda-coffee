@@ -68,6 +68,29 @@ export interface PosCatalogRow {
   tax_ids: string[] | null;
   variations?: PosCatalogVariationRow[];
   modifierLists?: PosCatalogModifierListRow[];
+  override?: CatalogOverrideRow | null;
+}
+
+export interface CatalogOverrideRow {
+  id: string;
+  provider: string;
+  provider_item_id: string;
+  provider_variation_id: string | null;
+  display_name: string | null;
+  display_description: string | null;
+  image_urls: string[] | null;
+  category_name: string | null;
+  item_type: string | null;
+  available_online: boolean | null;
+  available_pickup: boolean | null;
+  available_delivery: boolean | null;
+  available_shipping: boolean | null;
+  available_qr: boolean | null;
+  is_hidden: boolean;
+  is_featured: boolean | null;
+  sort_order: number | null;
+  menu_metrics_recipe_id: string | null;
+  admin_notes: string | null;
 }
 
 export interface PosCatalogVariation {
@@ -155,6 +178,7 @@ export interface MapPosCatalogOptions {
 export interface GetPosCatalogOptions extends MapPosCatalogOptions {
   category?: string | null;
   limit?: number;
+  includeOverrides?: boolean;
 }
 
 const DEFAULT_CURRENCY = "USD";
@@ -222,6 +246,7 @@ export function mapPosCatalogRows(
   const includeModifiers = options.includeModifiers ?? true;
 
   return rows
+    .filter((row) => !row.override?.is_hidden)
     .filter((row) => shouldIncludeItemForChannel(row, channel))
     .map((row) => {
       const variations = [...(row.variations ?? [])]
@@ -305,10 +330,51 @@ export function mapPosCatalogRows(
       };
     })
     .sort((a, b) => {
+      const aOverride = rows.find((row) => row.id === a.id)?.override;
+      const bOverride = rows.find((row) => row.id === b.id)?.override;
+      const ao = aOverride?.sort_order ?? Number.MAX_SAFE_INTEGER;
+      const bo = bOverride?.sort_order ?? Number.MAX_SAFE_INTEGER;
+      if (ao !== bo) return ao - bo;
       const categoryCompare = a.categoryName.localeCompare(b.categoryName);
       if (categoryCompare !== 0) return categoryCompare;
       return a.name.localeCompare(b.name);
     });
+}
+
+function overrideKey(provider: string, providerItemId: string, providerVariationId?: string | null): string {
+  return `${provider}:${providerItemId}:${providerVariationId ?? ""}`;
+}
+
+export function applyCatalogOverrides(rows: PosCatalogRow[], overrides: CatalogOverrideRow[]): PosCatalogRow[] {
+  const overridesByExactKey = new Map(
+    overrides.map((override) => [
+      overrideKey(override.provider, override.provider_item_id, override.provider_variation_id),
+      override,
+    ])
+  );
+
+  return rows.map((row) => {
+    const override =
+      overridesByExactKey.get(overrideKey(row.provider, row.provider_item_id, null)) ??
+      overridesByExactKey.get(overrideKey(row.provider, row.provider_item_id, ""));
+
+    if (!override) return row;
+
+    return {
+      ...row,
+      name: override.display_name ?? row.name,
+      description: override.display_description ?? row.description,
+      category_name: override.category_name ?? row.category_name,
+      item_type: override.item_type ?? row.item_type,
+      available_online: override.available_online ?? row.available_online,
+      available_pickup: override.available_pickup ?? row.available_pickup,
+      available_delivery: override.available_delivery ?? row.available_delivery,
+      available_shipping: override.available_shipping ?? row.available_shipping,
+      available_qr: override.available_qr ?? row.available_qr,
+      image_urls: override.image_urls ?? row.image_urls,
+      override,
+    };
+  });
 }
 
 export function groupCatalogByCategory(items: PosCatalogItem[]): PosCatalogCategoryGroup[] {
@@ -380,6 +446,7 @@ export function mapPosCatalogItemToProduct(item: PosCatalogItem): Product {
 export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise<PosCatalogResult> {
   const channel = options.channel ?? "menu";
   const includeModifiers = options.includeModifiers ?? true;
+  const includeOverrides = options.includeOverrides ?? true;
   const limit = Math.min(Math.max(options.limit ?? 250, 1), 500);
 
   let itemQuery = supabaseAdmin()
@@ -465,6 +532,19 @@ export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise
     }
   }
 
+  let overrides: CatalogOverrideRow[] = [];
+  if (includeOverrides && providerItemIds.length > 0) {
+    const { data, error } = await supabaseAdmin()
+      .from("catalog_overrides")
+      .select(
+        "id, provider, provider_item_id, provider_variation_id, display_name, display_description, image_urls, category_name, item_type, available_online, available_pickup, available_delivery, available_shipping, available_qr, is_hidden, is_featured, sort_order, menu_metrics_recipe_id, admin_notes"
+      )
+      .in("provider_item_id", providerItemIds);
+
+    if (error) throw new Error(`Failed to load catalog overrides: ${error.message}`);
+    overrides = (data ?? []) as CatalogOverrideRow[];
+  }
+
   const hydratedRows = rows.map((row) => ({
     ...row,
     variations: variationsByItemId.get(row.provider_item_id) ?? [],
@@ -473,7 +553,8 @@ export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise
       .filter(Boolean) as PosCatalogModifierListRow[],
   }));
 
-  const items = mapPosCatalogRows(hydratedRows, { channel, includeModifiers });
+  const rowsWithOverrides = includeOverrides ? applyCatalogOverrides(hydratedRows, overrides) : hydratedRows;
+  const items = mapPosCatalogRows(rowsWithOverrides, { channel, includeModifiers });
 
   return {
     channel,

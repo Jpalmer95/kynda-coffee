@@ -3,11 +3,58 @@ import { describe, it } from "node:test";
 import {
   formatMoney,
   groupCatalogByCategory,
+  applyCatalogOverrides,
   mapPosCatalogItemToProduct,
   mapPosCatalogRows,
   shouldIncludeItemForChannel,
+  type CatalogOverrideRow,
   type PosCatalogRow,
 } from "./catalog";
+
+const overrides: CatalogOverrideRow[] = [
+  {
+    id: "override-latte",
+    provider: "square",
+    provider_item_id: "SQ_ITEM_LATTE",
+    provider_variation_id: null,
+    display_name: "Kynda Signature Latte",
+    display_description: "Owner-approved public description",
+    image_urls: ["https://example.com/override-latte.jpg"],
+    category_name: "Signature Drinks",
+    item_type: "menu",
+    available_online: true,
+    available_pickup: true,
+    available_delivery: false,
+    available_shipping: false,
+    available_qr: false,
+    is_hidden: false,
+    is_featured: true,
+    sort_order: 10,
+    menu_metrics_recipe_id: "recipe-latte",
+    admin_notes: "Keep visible on menu but not QR.",
+  },
+  {
+    id: "override-hoodie",
+    provider: "square",
+    provider_item_id: "SQ_ITEM_HOODIE",
+    provider_variation_id: null,
+    display_name: null,
+    display_description: null,
+    image_urls: null,
+    category_name: null,
+    item_type: null,
+    available_online: null,
+    available_pickup: null,
+    available_delivery: null,
+    available_shipping: null,
+    available_qr: null,
+    is_hidden: true,
+    is_featured: null,
+    sort_order: null,
+    menu_metrics_recipe_id: null,
+    admin_notes: "Hide until photo is ready.",
+  },
+];
 
 const rows: PosCatalogRow[] = [
   {
@@ -172,5 +219,18 @@ describe("POS catalog formatting", () => {
     assert.equal(product.square_variation_id, "SQ_VAR_HOODIE");
     assert.equal(product.price_cents, 4200);
     assert.equal(product.track_inventory, true);
+  });
+
+  it("applies owner catalog overrides before channel filtering", () => {
+    const overriddenRows = applyCatalogOverrides(rows, overrides);
+    const qrItems = mapPosCatalogRows(overriddenRows, { channel: "qr", includeModifiers: false });
+    const allItems = mapPosCatalogRows(overriddenRows, { channel: "all", includeModifiers: false });
+
+    assert.equal(allItems[0].name, "Kynda Signature Latte");
+    assert.equal(allItems[0].description, "Owner-approved public description");
+    assert.equal(allItems[0].categoryName, "Signature Drinks");
+    assert.deepEqual(allItems[0].imageUrls, ["https://example.com/override-latte.jpg"]);
+    assert.equal(qrItems.some((item) => item.providerItemId === "SQ_ITEM_LATTE"), false);
+    assert.equal(allItems.some((item) => item.providerItemId === "SQ_ITEM_HOODIE"), false);
   });
 });
