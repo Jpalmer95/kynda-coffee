@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Coffee, Heart, Award, MapPin, Phone, Clock } from "lucide-react";
+import { Coffee, Heart, Award, MapPin, Phone, Clock, Flame } from "lucide-react";
 
 export const metadata = {
   title: "Our Story | Kynda Coffee",
-  description: "Kynda Coffee is an independently owned specialty coffee shop in Horseshoe Bay, Texas. Organic beans, scratch kitchen, and a whole lot of heart since 2020.",
+  description: "Kynda Coffee is a family-owned specialty coffee shop in Horseshoe Bay, Texas. Organic beans, scratch kitchen, and a whole lot of heart since 2020.",
 };
 
 export default function AboutPage() {
@@ -21,29 +21,80 @@ export default function AboutPage() {
             </p>
           </div>
 
+          {/* Etymology Block */}
+          <div className="rounded-2xl bg-espresso p-6 sm:p-8 text-center mb-10">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/20 mb-4">
+              <Flame className="h-6 w-6 text-cream" aria-hidden="true" />
+            </div>
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-cream tracking-wide">
+              KYNDA <span className="text-latte/70 font-normal italic">/KEN-DUH/</span>
+            </h2>
+            <p className="mt-3 text-base sm:text-lg text-latte/80 max-w-xl mx-auto">
+              To light or tend a fire. To heat a room. To kindle a flame.
+            </p>
+          </div>
+
           {/* Story Content */}
           <div className="prose prose-lg prose-espresso max-w-none text-mocha space-y-4">
             <p>
-              Kynda Coffee started with a dream, a lot of late nights, and zero
-              outside funding. Founded in late 2019 and opened in March 2020 — right
-              at the start of everything — we&apos;ve built this shop with our own
-              hands.
+              Welcome to Kynda Coffee, a family-owned and operated specialty coffee shop
+              in Horseshoe Bay, Texas. Our name, Kynda, means &ldquo;to light or tend a
+              fire, to heat a room, to kindle a flame.&rdquo; It&apos;s a name that represents
+              the warmth and gathering of the community coming together, and nods toward
+              our Norwegian heritage. We believe that our coffee shop is more than just a
+              place to grab a cup of coffee or a pastry &ndash; it&apos;s a space where people
+              can come together, relax, and kindle the flame of their own growth.
             </p>
             <p>
-              From barista to baker, manager to electrician, plumber to graphic
-              designer — every role has been filled by someone who believes that
-              specialty coffee should be organic, honest, and crafted with care.
+              At Kynda Coffee, our mission is to bring the community together around the
+              best possible coffee and scratch baked goods. We&apos;re passionate about
+              providing a warm and comfortable atmosphere for our customers to work, relax,
+              and come together in our shop each day. Whether you&apos;re here for a quick
+              caffeine fix, a morning pastry, or a leisurely afternoon with friends, we
+              strive to make every visit to Kynda Coffee a pleasant and memorable experience.
             </p>
             <p>
-              Six years later, our team has grown, our community has rallied around
-              us, and our commitment remains the same: serve the top 5% of coffee
-              beans from around the world, roasted locally, with a smile.
+              Our commitment to quality is evident in every cup of coffee we serve. We take
+              quality seriously, which is why we only use the top 5% of coffee beans in the
+              world for our hand-selected micro-lot roasts. We roast our beans fresh every
+              week to ensure that you always enjoy a delicious and aromatic cup of coffee.
+              Our commitment to freshness means that you&apos;ll taste the full flavor and
+              richness of our carefully selected beans in every sip.
             </p>
             <p>
-              Whether you&apos;re grabbing your morning ritual, ordering beans to
-              brew at home, or designing your own Kynda merch — you&apos;re part of
-              this story.
+              We offer a wide range of coffee options to suit every taste, including our
+              signature blends and handpicked single origin coffees. From bold and full-bodied
+              roasts to smooth and mellow blends, we have something for everyone. Our expert
+              baristas take pride in their craft, and they&apos;re always happy to help you find
+              the perfect coffee for your taste buds.
             </p>
+            <p>
+              In addition to our coffee, we also offer scratch baked goods that are made with
+              the same commitment to quality as our coffee. Our breakfast and lunch paninis,
+              jumbo muffins, and kolaches are made fresh every day, and our famous chocolate
+              chip cookies are always a hit. We even offer gluten-free scratch baked cookies
+              and paninis for our customers with dietary restrictions.
+            </p>
+            <p>
+              If you&apos;re in the mood for something sweet, we have a wide variety of milkshakes,
+              ice cream cookie sandwiches, and fruit smoothies to choose from. And for those who
+              want something refreshing, our organic teas and fresh squeezed lemonade are the
+              perfect option.
+            </p>
+            <p>
+              At Kynda Coffee, we&apos;re more than just a coffee shop &ndash; we&apos;re a community.
+              We believe in the power of coffee and baked goods to bring people together, to
+              kindle the flame of growth in our community, and to create a warm and welcoming
+              atmosphere for all. So come on in, grab a cup of coffee, and stay awhile. We
+              can&apos;t wait to see you!
+            </p>
+          </div>
+
+          {/* Hashtag */}
+          <div className="mt-8 text-center">
+            <span className="inline-block rounded-full bg-rust/10 px-4 py-2 text-sm font-semibold tracking-widest text-rust uppercase">
+              #FUELYOURFIRE
+            </span>
           </div>
 
           {/* Values */}
