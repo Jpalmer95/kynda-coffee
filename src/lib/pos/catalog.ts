@@ -449,6 +449,9 @@ export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise
   const includeOverrides = options.includeOverrides ?? true;
   const limit = Math.min(Math.max(options.limit ?? 250, 1), 500);
 
+  // Pull the full synced catalog first, then apply owner overrides, channel
+  // filters, sort order, and the API limit. Limiting at the DB query layer can
+  // drop all useful items when early alphabetical rows are hidden by overrides.
   let itemQuery = supabaseAdmin()
     .from("pos_items")
     .select(
@@ -457,7 +460,7 @@ export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise
     .eq("is_active", true)
     .order("category_name", { ascending: true })
     .order("name", { ascending: true })
-    .limit(limit);
+    .limit(500);
 
   if (options.category) {
     itemQuery = itemQuery.eq("category_name", options.category);
@@ -554,7 +557,7 @@ export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise
   }));
 
   const rowsWithOverrides = includeOverrides ? applyCatalogOverrides(hydratedRows, overrides) : hydratedRows;
-  const items = mapPosCatalogRows(rowsWithOverrides, { channel, includeModifiers });
+  const items = mapPosCatalogRows(rowsWithOverrides, { channel, includeModifiers }).slice(0, limit);
 
   return {
     channel,
