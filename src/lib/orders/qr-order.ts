@@ -88,6 +88,10 @@ export interface QrOrderDraft {
     customer_phone: string;
     payment_preference: QrPaymentPreference;
   };
+  payment_status: "unpaid";
+  payment_method: "pay_at_counter";
+  paid_at: null;
+  payment_metadata: Record<string, unknown>;
 }
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
@@ -273,6 +277,12 @@ export function buildQrOrderDraft(
         customer_name: normalized.value.customer.name,
         customer_phone: normalized.value.customer.phone,
         payment_preference: normalized.value.paymentPreference,
+      },
+      payment_status: "unpaid",
+      payment_method: "pay_at_counter",
+      paid_at: null,
+      payment_metadata: {
+        initial_preference: normalized.value.paymentPreference,
       },
     },
   };

@@ -5,12 +5,17 @@ import Link from "next/link";
 import { ArrowLeft, Clock, Loader2, MonitorCheck, Phone, RefreshCw, User, XCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { getKdsNextActions, type KdsOrderLike, type KdsAction } from "@/lib/orders/kds";
+import { getPaymentBadge, type PaymentMethod, type PaymentStatus } from "@/lib/orders/payment";
 import type { OrderItem, OrderStatus } from "@/types";
 
 interface KdsOrder extends KdsOrderLike {
   email: string;
   notes?: string | null;
   payment_preference?: string | null;
+  payment_status?: PaymentStatus | null;
+  payment_method?: PaymentMethod | string | null;
+  paid_at?: string | null;
+  payment_metadata?: Record<string, unknown> | null;
   subtotal_cents: number;
   tax_cents: number;
   shipping_cents: number;
@@ -45,6 +50,13 @@ function actionClass(action: KdsAction) {
   return "border border-latte bg-white text-espresso hover:bg-latte/20";
 }
 
+function paymentBadgeClass(tone: ReturnType<typeof getPaymentBadge>["tone"]) {
+  if (tone === "success") return "border-emerald-200 bg-emerald-50 text-emerald-800";
+  if (tone === "danger") return "border-red-200 bg-red-50 text-red-800";
+  if (tone === "neutral") return "border-mocha/20 bg-mocha/10 text-mocha";
+  return "border-amber-200 bg-amber-50 text-amber-800";
+}
+
 function minutesSince(iso: string) {
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
 }
@@ -71,6 +83,7 @@ export default function AdminKdsPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [paymentUpdatingId, setPaymentUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [lastLoadedAt, setLastLoadedAt] = useState<Date | null>(null);
 
@@ -121,6 +134,29 @@ export default function AdminKdsPage() {
       setError(err instanceof Error ? err.message : "Failed to update order.");
     } finally {
       setUpdatingId(null);
+    }
+  }
+
+  async function markPaid(order: KdsOrder, payment_method: PaymentMethod) {
+    setPaymentUpdatingId(order.id);
+    setError("");
+    try {
+      const response = await fetch(`/api/admin/orders/${order.id}/payment`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payment_status: "paid",
+          payment_method,
+          note: `Marked paid from KDS via ${payment_method}`,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to update payment.");
+      await loadOrders(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update payment.");
+    } finally {
+      setPaymentUpdatingId(null);
     }
   }
 
@@ -182,6 +218,7 @@ export default function AdminKdsPage() {
               const actions = getKdsNextActions(order.status);
               const meta = order.fulfillment_metadata ?? {};
               const age = minutesSince(order.created_at);
+              const paymentBadge = getPaymentBadge(order);
               return (
                 <article key={order.id} className="flex min-h-[26rem] flex-col rounded-3xl border border-latte/20 bg-white p-5 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
@@ -198,7 +235,32 @@ export default function AdminKdsPage() {
                     <div className="flex items-center gap-2"><User className="h-4 w-4" />{String(meta.customer_name ?? "Guest")}</div>
                     {meta.customer_phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4" />{String(meta.customer_phone)}</div>}
                     <div className="flex items-center gap-2"><Clock className="h-4 w-4" />{age} min ago · {new Date(order.created_at).toLocaleTimeString()}</div>
-                    <div className="text-xs uppercase tracking-wider text-mocha/70">{order.payment_preference || meta.payment_preference || "pay_at_counter"}</div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs uppercase tracking-wider text-mocha/70">{order.payment_preference || meta.payment_preference || "pay_at_counter"}</span>
+                      <span className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${paymentBadgeClass(paymentBadge.tone)}`}>
+                        {paymentBadge.label}
+                      </span>
+                    </div>
+                    {paymentBadge.tone !== "success" && (
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          disabled={paymentUpdatingId === order.id}
+                          onClick={() => markPaid(order, "cash")}
+                          className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50"
+                        >
+                          {paymentUpdatingId === order.id ? "Saving..." : "Paid Cash"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={paymentUpdatingId === order.id}
+                          onClick={() => markPaid(order, "card")}
+                          className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50"
+                        >
+                          {paymentUpdatingId === order.id ? "Saving..." : "Paid Card"}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-4 flex-1 space-y-3 overflow-y-auto pr-1">

@@ -79,6 +79,8 @@ export type OrderStatus =
   | "refunded";
 
 export type OrderSource = "website" | "pos" | "qr" | "delivery" | "subscription";
+export type PaymentStatus = "unpaid" | "paid" | "refunded" | "partially_refunded" | "void";
+export type PaymentMethod = "unknown" | "pay_at_counter" | "cash" | "card" | "stripe" | "square" | "comp" | "gift_card";
 
 export interface Order {
   id: string;
@@ -98,6 +100,13 @@ export interface Order {
   printful_order_id?: string;
   shipping_address?: Address;
   notes?: string;
+  payment_status?: PaymentStatus;
+  payment_method?: PaymentMethod;
+  payment_preference?: string;
+  payment_metadata?: Record<string, unknown>;
+  fulfillment_metadata?: Record<string, unknown>;
+  order_channel?: string;
+  paid_at?: string | null;
   created_at: string;
   updated_at: string;
 }

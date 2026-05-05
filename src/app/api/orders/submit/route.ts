@@ -27,6 +27,10 @@ function serializeOrder(draft: QrOrderDraft) {
     fulfillment_metadata: draft.fulfillment_metadata,
     payment_preference: draft.fulfillment_metadata.payment_preference,
     order_channel: orderChannelForMode(draft.fulfillment_metadata.mode),
+    payment_status: draft.payment_status,
+    payment_method: draft.payment_method,
+    paid_at: draft.paid_at,
+    payment_metadata: draft.payment_metadata,
     submitted_at: new Date().toISOString(),
   };
 }
@@ -45,7 +49,7 @@ export async function POST(request: Request) {
     const { data: order, error } = await supabaseAdmin()
       .from("orders")
       .insert(insert as any)
-      .select("id, order_number, status, source, total_cents, items, fulfillment_metadata, payment_preference, order_channel, created_at")
+      .select("id, order_number, status, source, total_cents, items, fulfillment_metadata, payment_preference, order_channel, payment_status, payment_method, paid_at, payment_metadata, created_at")
       .single();
 
     if (error) {

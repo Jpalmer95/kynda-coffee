@@ -224,6 +224,10 @@ describe("QR order draft builder", () => {
       customer_phone: "512-555-0100",
       payment_preference: "pay_at_counter",
     });
+    assert.equal(result.value.payment_status, "unpaid");
+    assert.equal(result.value.payment_method, "pay_at_counter");
+    assert.equal(result.value.paid_at, null);
+    assert.deepEqual(result.value.payment_metadata, { initial_preference: "pay_at_counter" });
   });
 
   it("rejects unavailable items, invalid variations, invalid modifiers, and excessive modifier counts", () => {

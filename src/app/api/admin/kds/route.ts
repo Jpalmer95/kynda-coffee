@@ -6,7 +6,7 @@ import type { OrderStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-const ORDER_SELECT = "id, order_number, email, status, source, items, subtotal_cents, tax_cents, shipping_cents, total_cents, notes, fulfillment_metadata, payment_preference, order_channel, created_at, updated_at";
+const ORDER_SELECT = "id, order_number, email, status, source, items, subtotal_cents, tax_cents, shipping_cents, total_cents, notes, fulfillment_metadata, payment_preference, order_channel, payment_status, payment_method, paid_at, payment_metadata, created_at, updated_at";
 
 export async function GET(req: NextRequest) {
   const { user } = await getAdminUser(req);
