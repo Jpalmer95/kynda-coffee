@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Clock, Loader2, MonitorCheck, Phone, RefreshCw, User, XCircle } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, Clock, Loader2, MonitorCheck, Phone, RefreshCw, User, XCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { getKdsNextActions, type KdsOrderLike, type KdsAction } from "@/lib/orders/kds";
 import { getPaymentBadge, type PaymentMethod, type PaymentStatus } from "@/lib/orders/payment";
+import { detectNewKdsOrders, kdsNewOrderMessage, shouldPlayKdsNotificationSound } from "@/lib/orders/kds-notifications";
 import type { OrderItem, OrderStatus } from "@/types";
 
 interface KdsOrder extends KdsOrderLike {
@@ -86,12 +87,46 @@ export default function AdminKdsPage() {
   const [paymentUpdatingId, setPaymentUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [lastLoadedAt, setLastLoadedAt] = useState<Date | null>(null);
+  const [alertsEnabled, setAlertsEnabled] = useState(false);
+  const [newOrderNotice, setNewOrderNotice] = useState("");
+  const ordersRef = useRef<KdsOrder[] | null>(null);
+  const alertsEnabledRef = useRef(false);
 
   const counts = useMemo(() => ({
     pending: orders.filter((order) => order.status === "pending").length,
     confirmed: orders.filter((order) => order.status === "confirmed").length,
     processing: orders.filter((order) => order.status === "processing").length,
   }), [orders]);
+
+  const playNewOrderSound = useCallback(() => {
+    try {
+      const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const audioContext = new AudioContextClass();
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(660, audioContext.currentTime + 0.16);
+      gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.25, audioContext.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.42);
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.45);
+      window.setTimeout(() => void audioContext.close(), 650);
+    } catch {
+      // Browsers can block audio until staff explicitly enables alerts. The UI notice still works.
+    }
+  }, []);
+
+  const enableAlerts = useCallback(() => {
+    alertsEnabledRef.current = true;
+    setAlertsEnabled(true);
+    setNewOrderNotice("KDS alerts enabled. New orders will play a sound and appear here.");
+    playNewOrderSound();
+  }, [playNewOrderSound]);
 
   const loadOrders = useCallback(async (quiet = false) => {
     setError("");
@@ -102,7 +137,24 @@ export default function AdminKdsPage() {
       const response = await fetch("/api/admin/kds", { cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to load KDS orders.");
-      setOrders(data.orders ?? []);
+      const nextOrders = (data.orders ?? []) as KdsOrder[];
+      const notificationState = detectNewKdsOrders({
+        previousOrders: ordersRef.current,
+        nextOrders,
+      });
+
+      if (notificationState.newOrders.length > 0) {
+        setNewOrderNotice(kdsNewOrderMessage(notificationState.newOrders));
+        if (shouldPlayKdsNotificationSound({
+          alertsEnabled: alertsEnabledRef.current,
+          newOrderCount: notificationState.newOrders.length,
+        })) {
+          playNewOrderSound();
+        }
+      }
+
+      ordersRef.current = nextOrders;
+      setOrders(nextOrders);
       setLastLoadedAt(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load KDS orders.");
@@ -110,7 +162,7 @@ export default function AdminKdsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [playNewOrderSound]);
 
   useEffect(() => {
     loadOrders();
@@ -178,10 +230,21 @@ export default function AdminKdsPage() {
               </p>
             </div>
           </div>
-          <button onClick={() => loadOrders(true)} disabled={refreshing} className="btn-secondary flex items-center justify-center text-sm disabled:opacity-60">
-            {refreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-            Refresh
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={enableAlerts}
+              disabled={alertsEnabled}
+              className="btn-secondary flex items-center justify-center text-sm disabled:opacity-70"
+            >
+              {alertsEnabled ? <Bell className="mr-2 h-4 w-4" /> : <BellOff className="mr-2 h-4 w-4" />}
+              {alertsEnabled ? "Alerts On" : "Enable Sound"}
+            </button>
+            <button onClick={() => loadOrders(true)} disabled={refreshing} className="btn-secondary flex items-center justify-center text-sm disabled:opacity-60">
+              {refreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+              Refresh
+            </button>
+          </div>
         </div>
 
         <div className="mb-6 grid gap-3 sm:grid-cols-3">
@@ -200,6 +263,12 @@ export default function AdminKdsPage() {
         </div>
 
         {lastLoadedAt && <p className="mb-4 text-xs text-mocha/70">Last loaded {lastLoadedAt.toLocaleTimeString()}</p>}
+        {newOrderNotice && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900" role="status">
+            <Bell className="h-4 w-4" />
+            {newOrderNotice}
+          </div>
+        )}
         {error && <p className="mb-4 rounded-xl bg-rust/10 p-3 text-sm text-rust">{error}</p>}
 
         {loading ? (
