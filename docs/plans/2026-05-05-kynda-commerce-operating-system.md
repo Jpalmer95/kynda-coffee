@@ -562,3 +562,19 @@ Next recommended step: use `/admin/catalog` while logged in as an admin to curat
 - Deployed by tactical hot-copy after backup image `sha256:e6807f847942bd20903f48e5da4599f45c895224c465d8c6b8ed7080fe48fa55`.
 - Verified live: `/account` returns 200 with no redirects, `/account?redirectTo=/admin/catalog` returns 200 with no redirects, `/admin/catalog` redirects once to account login with redirect target.
 - Current runtime admin email: `jpkorstad@gmail.com`.
+
+## 2026-05-05 update — first-pass catalog cleanup and cart drawer fix
+
+- Root-caused cart drawer bug: closed drawer still had inline transform behavior fighting Tailwind/viewport positioning, leaving a visible right-side strip/panel and close button confusion.
+- Fixed `src/components/cart/CartDrawer.tsx` so closed state explicitly transforms to `translateX(calc(100% + 16px))`; verified live drawer is fully offscreen and opens/closes correctly.
+- Added migration `supabase/migrations/009_catalog_overrides_unique_item_key.sql` for a null-safe override uniqueness index.
+- Hardened `/api/admin/catalog/overrides` to update/insert item-level overrides without relying on nullable `provider_variation_id` conflict handling.
+- Created 44 first-pass `catalog_overrides` rows directly in Supabase: 18 hidden add-on/modifier/internal items, Uncategorized items recategorized/hidden, important drink descriptions/sort orders added, and beans/merch marked online/pickup/QR/shipping/featured where appropriate.
+- Fixed `getPosCatalog()` to apply API limits after override filtering so hidden early alphabetical items do not starve shop/featured results.
+- Verified `/api/pos/catalog?channel=menu` has no CBD Oil / Extra Espresso Shot / cream cheese / Whipped Cream / Refill leaks and now starts with Kynda beans + top drinks.
+- Verified `/api/products?source=pos` returns beans/merch instead of additions; homepage featured products show Kynda Coffee 12 oz Bag, Kynda Coffee 2.5 oz Bag, Kynda Coffee Mug, and Kynda Glass Cup.
+- Tests pass 11/11 and builds passed locally + droplet.
+- Commits pushed: `0114168`, `9e05f00`, `832d879`, `86957d3`.
+- Latest hot-copy backup image before final deploy: `sha256:130ea810f7153e385c1040de31653c23efa5ccd23993d0d0d8528a076717be93`.
+
+Next recommended phase remains interactive QR/pickup cart and order submission, using the curated POS catalog as source.
