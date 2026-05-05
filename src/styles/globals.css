@@ -332,13 +332,13 @@ button.inline {
   }
 }
 
-/* Card hover lift */
+/* Card hover lift - Deprecated */
 .card-lift {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .card-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px -8px rgba(44, 24, 16, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
 @media (prefers-reduced-motion: reduce) {
