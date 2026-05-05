@@ -552,3 +552,13 @@ Next recommended step: implement the interactive QR/pickup cart and order submis
 - Verified live: `/api/pos/catalog` returns 200, `/menu` returns 200, `/admin/catalog` correctly redirects unauthenticated users to account login.
 
 Next recommended step: use `/admin/catalog` while logged in as an admin to curate/clean the live POS catalog. First high-impact cleanup should hide Additions/modifier-only items from menu/shop/QR, hide Uncategorized noise, and mark true shippable merch/beans. After curation, proceed with interactive QR/pickup cart and order submission.
+
+## 2026-05-05 update — account login redirect-loop fix
+
+- Root cause: middleware protected all `/account*` routes, including `/account` itself. Unauthenticated users were redirected from `/account` to `/account?redirectTo=/account`, causing `ERR_TOO_MANY_REDIRECTS`.
+- Fixed middleware so `/account`, `/account/forgot-password`, and `/account/reset-password` are public, while private account subroutes remain protected.
+- Fixed magic-link auth redirect to use `/auth/callback?next=...` so Supabase can exchange the code before sending admins/customers to the requested page.
+- Commit pushed: `aae204d fix: allow account login page without redirect loop`.
+- Deployed by tactical hot-copy after backup image `sha256:e6807f847942bd20903f48e5da4599f45c895224c465d8c6b8ed7080fe48fa55`.
+- Verified live: `/account` returns 200 with no redirects, `/account?redirectTo=/admin/catalog` returns 200 with no redirects, `/admin/catalog` redirects once to account login with redirect target.
+- Current runtime admin email: `jpkorstad@gmail.com`.
