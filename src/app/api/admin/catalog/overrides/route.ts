@@ -79,12 +79,33 @@ export async function POST(req: NextRequest) {
     const payload = normalizeBody(body, user.id);
     payload.created_by = user.id;
 
-    const { data, error } = await supabaseAdmin()
+    let existingQuery = supabaseAdmin()
       .from("catalog_overrides")
-      .upsert(payload, { onConflict: "provider,provider_item_id,provider_variation_id" })
-      .select()
-      .single();
+      .select("id, created_by")
+      .eq("provider", payload.provider as string)
+      .eq("provider_item_id", payload.provider_item_id as string);
 
+    existingQuery = payload.provider_variation_id
+      ? existingQuery.eq("provider_variation_id", payload.provider_variation_id as string)
+      : existingQuery.is("provider_variation_id", null);
+
+    const { data: existing, error: existingError } = await existingQuery.maybeSingle();
+    if (existingError) throw existingError;
+
+    const write = existing
+      ? supabaseAdmin()
+          .from("catalog_overrides")
+          .update(payload)
+          .eq("id", existing.id)
+          .select()
+          .single()
+      : supabaseAdmin()
+          .from("catalog_overrides")
+          .insert(payload)
+          .select()
+          .single();
+
+    const { data, error } = await write;
     if (error) throw error;
     return NextResponse.json({ override: data });
   } catch (error) {

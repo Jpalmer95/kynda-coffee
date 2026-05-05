@@ -20,12 +20,6 @@ export function CartDrawer() {
   useEffect(() => {
     setOpen(false);
   }, [setOpen]);
-
-
-  // Force closed on mount — ensures it never opens by default on page load
-  useEffect(() => {
-    setOpen(false);
-  }, [setOpen]);
   // Close on escape
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -67,9 +61,11 @@ export function CartDrawer() {
     setSwipeOffset(0);
   }, [swipeOffset, setOpen]);
 
-  const transformStyle = open
-    ? `translateX(${swipeOffset}px)`
-    : `translateX(${Math.max(0, swipeOffset)}px)`;
+  // Only apply an inline transform while the drawer is open for swipe gestures.
+  // When closed, Tailwind's translate-x-full class must control the transform.
+  // Otherwise an inline translateX(0) overrides the closed class and leaves the
+  // drawer permanently visible.
+  const transformStyle = open ? `translateX(${swipeOffset}px)` : undefined;
 
   return (
     <>
