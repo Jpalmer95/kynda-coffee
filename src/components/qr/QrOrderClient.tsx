@@ -53,7 +53,7 @@ export function QrOrderClient({ categories, generatedAt }: Props) {
   const [paymentPreference, setPaymentPreference] = useState<QrPaymentPreference>("pay_at_counter");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState<{ order_number: string; total_cents: number } | null>(null);
+  const [success, setSuccess] = useState<{ id: string; order_number: string; total_cents: number; payment_status?: string | null } | null>(null);
 
   const itemCount = useMemo(() => cart.reduce((sum, line) => sum + line.quantity, 0), [cart]);
   const subtotalCents = useMemo(() => cart.reduce((sum, line) => sum + line.quantity * line.unitPriceCents, 0), [cart]);
@@ -104,6 +104,20 @@ export function QrOrderClient({ categories, generatedAt }: Props) {
     );
   }
 
+  async function payOnline(orderId: string) {
+    setError("");
+    setSubmitting(true);
+    try {
+      const response = await fetch(`/api/orders/${orderId}/pay`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to start online payment.");
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start online payment.");
+      setSubmitting(false);
+    }
+  }
+
   async function submitOrder() {
     setError("");
     setSuccess(null);
@@ -134,7 +148,12 @@ export function QrOrderClient({ categories, generatedAt }: Props) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Order submission failed.");
-      setSuccess({ order_number: data.order.order_number, total_cents: data.order.total_cents });
+      setSuccess({
+        id: data.order.id,
+        order_number: data.order.order_number,
+        total_cents: data.order.total_cents,
+        payment_status: data.order.payment_status,
+      });
       setCart([]);
       setOrderNotes("");
     } catch (err) {
@@ -358,7 +377,18 @@ export function QrOrderClient({ categories, generatedAt }: Props) {
         {success && (
           <div className="mt-4 rounded-xl bg-sage/15 p-3 text-sm text-espresso">
             <p className="font-semibold">Order submitted: {success.order_number}</p>
-            <p>Please check in with the Kynda team and pay at the counter.</p>
+            <p>Total: {formatMoney(success.total_cents)}</p>
+            <p>Please check in with the Kynda team and pay at the counter, or pay online now.</p>
+            {success.payment_status !== "paid" && (
+              <button
+                type="button"
+                onClick={() => payOnline(success.id)}
+                disabled={submitting}
+                className="mt-3 w-full rounded-xl bg-espresso px-3 py-2 text-sm font-semibold text-cream hover:bg-espresso/90 disabled:opacity-50"
+              >
+                {submitting ? "Opening payment..." : "Pay Online Now"}
+              </button>
+            )}
           </div>
         )}
 

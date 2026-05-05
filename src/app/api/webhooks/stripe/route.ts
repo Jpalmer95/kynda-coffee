@@ -25,6 +25,51 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object;
+      const existingOrderId = session.metadata?.order_id;
+
+      if (existingOrderId && session.metadata?.source === "kynda-qr-order") {
+        const { data: current } = await supabaseAdmin()
+          .from("orders")
+          .select("payment_metadata")
+          .eq("id", existingOrderId)
+          .maybeSingle();
+
+        const existingMetadata = (current?.payment_metadata as Record<string, unknown> | null) ?? {};
+        const existingEvents = Array.isArray(existingMetadata.payment_events)
+          ? existingMetadata.payment_events
+          : [];
+
+        const paidAt = new Date().toISOString();
+        const { error } = await supabaseAdmin()
+          .from("orders")
+          .update({
+            payment_status: "paid",
+            payment_method: "stripe",
+            paid_at: paidAt,
+            stripe_checkout_session_id: session.id,
+            stripe_payment_intent_id: session.payment_intent as string,
+            payment_metadata: {
+              ...existingMetadata,
+              stripe_checkout_session_id: session.id,
+              stripe_payment_intent_id: session.payment_intent,
+              payment_events: [
+                ...existingEvents,
+                {
+                  status: "paid",
+                  method: "stripe",
+                  actor: "stripe-webhook",
+                  at: paidAt,
+                  note: "Stripe checkout.session.completed",
+                },
+              ],
+            },
+            updated_at: paidAt,
+          })
+          .eq("id", existingOrderId);
+
+        if (error) console.error("Failed to mark existing QR order paid:", error);
+        break;
+      }
 
       const lineItems = await stripeClient.checkout.sessions.listLineItems(
         session.id,
