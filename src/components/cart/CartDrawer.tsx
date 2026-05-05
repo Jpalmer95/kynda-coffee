@@ -65,7 +65,7 @@ export function CartDrawer() {
   // When closed, Tailwind's translate-x-full class must control the transform.
   // Otherwise an inline translateX(0) overrides the closed class and leaves the
   // drawer permanently visible.
-  const transformStyle = open ? `translateX(${swipeOffset}px)` : undefined;
+  const transformStyle = open ? `translateX(${swipeOffset}px)` : `translateX(100%)`;
 
   return (
     <>
