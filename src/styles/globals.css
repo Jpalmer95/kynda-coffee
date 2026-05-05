@@ -87,17 +87,17 @@ button.inline {
    ============================================================ */
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-xl bg-espresso px-6 py-3 text-sm font-medium text-cream shadow-sm transition-all duration-200 hover:bg-espresso-100 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
+  @apply inline-flex items-center justify-center rounded-xl bg-espresso px-6 py-3 text-sm font-medium text-cream shadow-sm transition-all duration-200 hover:bg-espresso/90 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
   min-height: 44px;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-xl border border-latte px-6 py-3 text-sm font-medium text-espresso transition-all duration-200 hover:bg-latte-50 active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-xl border border-latte px-6 py-3 text-sm font-medium text-espresso transition-all duration-200 hover:bg-latte/10 active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
   min-height: 44px;
 }
 
 .btn-accent {
-  @apply inline-flex items-center justify-center rounded-xl bg-rust px-6 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-rust-600 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-rust focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-xl bg-rust px-6 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-rust/90 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-rust focus:ring-offset-2;
   min-height: 44px;
 }
 
@@ -107,7 +107,7 @@ button.inline {
 }
 
 .input-field {
-  @apply w-full rounded-lg border border-latte bg-white px-4 py-3 text-espresso placeholder:text-latte-400 shadow-sm transition-all duration-200 focus:border-rust focus:outline-none focus:ring-2 focus:ring-rust/20;
+  @apply w-full rounded-lg border border-latte bg-white px-4 py-3 text-espresso placeholder:text-latte/50 shadow-sm transition-all duration-200 focus:border-rust focus:outline-none focus:ring-2 focus:ring-rust/20;
   min-height: 44px;
   font-size: 16px; /* Prevents iOS zoom on focus */
 }

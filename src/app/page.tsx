@@ -15,11 +15,11 @@ function FeaturedProducts() {
       <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="animate-pulse rounded-2xl border border-latte/20 bg-white">
-            <div className="aspect-square rounded-t-2xl bg-latte/20" />
+            <div className="aspect-square rounded-t-2xl bg-latte/10" />
             <div className="p-4 sm:p-5 space-y-3">
-              <div className="h-3 w-16 rounded bg-latte/20" />
+              <div className="h-3 w-16 rounded bg-latte/10" />
               <div className="h-5 w-3/4 rounded bg-latte/20" />
-              <div className="h-5 w-16 rounded bg-latte/20" />
+              <div className="h-4 w-1/4 rounded bg-latte/20" />
             </div>
           </div>
         ))}
@@ -206,7 +206,7 @@ export default function HomePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="group relative overflow-hidden rounded-2xl border border-latte/20 bg-white p-6 sm:p-8 text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1 card-lift"
+                className="group relative overflow-hidden rounded-[24px] border border-latte/10 bg-white p-6 sm:p-8 text-center transition-all duration-300 hover:shadow-hover hover:-translate-y-1"
               >
                 <div className={`absolute inset-0 bg-gradient-to-b ${item.accent} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
                 <div className="relative">

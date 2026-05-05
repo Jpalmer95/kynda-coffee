@@ -63,7 +63,7 @@ export default function GalleryPage() {
             {designs.map((design) => (
               <div
                 key={design.id}
-                className="group rounded-2xl border border-latte/20 bg-white overflow-hidden transition-all hover:shadow-lg card-lift"
+                className="group rounded-[24px] border border-latte/10 bg-white overflow-hidden transition-all hover:shadow-hover hover:-translate-y-1"
               >
                 <div className="aspect-square bg-gradient-to-br from-amber-800 to-stone-900 relative">
                   {design.image_url ? (

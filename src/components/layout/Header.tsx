@@ -121,7 +121,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="rounded-xl p-2 text-espresso transition-colors hover:bg-latte-50 focus-visible:ring-2 focus-visible:ring-rust lg:hidden"
+              className="rounded-xl p-2 text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-rust lg:hidden"
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}

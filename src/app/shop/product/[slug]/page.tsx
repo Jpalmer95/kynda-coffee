@@ -505,7 +505,7 @@ export default function ProductDetailPage() {
                 <Link
                   key={p.id}
                   href={`/shop/product/${p.slug}`}
-                  className="group rounded-2xl border border-latte/20 bg-white p-3 sm:p-4 transition-all hover:shadow-lg hover:-translate-y-0.5 card-lift"
+                  className="group rounded-[24px] border border-latte/10 bg-white p-3 sm:p-4 transition-all hover:shadow-hover hover:-translate-y-0.5"
                 >
                   <div className="aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-amber-800 to-stone-900">
                     {p.images?.[0] ? (
