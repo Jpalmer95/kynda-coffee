@@ -593,3 +593,19 @@ Next recommended phase remains interactive QR/pickup cart and order submission, 
 - Commits pushed: `cfa3fc8` and `8c8b1ac`.
 
 Next recommended phase: build an admin/KDS queue over `orders` where `source=qr` and `status in (pending, confirmed, processing)`, with status transitions Pending -> Confirmed/In Progress -> Ready -> Completed, plus optional staff notifications. Then add Stripe/Square payment/reconciliation.
+
+## 2026-05-05 update — admin KDS queue phase
+
+- Added the first admin Kitchen Display / QR Queue at `/admin/kds`. It is protected by the existing admin middleware and linked in the admin sidebar/mobile nav as `KDS`.
+- Added `src/lib/orders/kds.ts` with TDD coverage in `src/lib/orders/kds.test.ts` for active queue filtering, oldest-first sorting, and safe staff transitions.
+- Active KDS orders are canonical `orders` rows where `source=qr` or `order_channel in (qr,pickup,table,lobby,parking)` and `status in (pending, confirmed, processing)`.
+- Staff workflow transitions: pending -> confirmed/processing/cancelled, confirmed -> processing/cancelled, processing -> delivered/cancelled. Existing `delivered` status is used as the completed/handoff state to avoid expanding the order status enum prematurely.
+- Added admin API `GET/PATCH /api/admin/kds` for active queue fetch and status updates. PATCH records `kds_last_status`, `kds_last_status_at`, and `kds_last_status_by` in `fulfillment_metadata`.
+- KDS UI shows table/lobby/parking context, customer name/phone, age, payment preference, line items, variations, modifiers, item notes, order notes, totals, and action buttons. It auto-refreshes every 15 seconds.
+- Verified tests: 20/20 passing across KDS, QR order, POS catalog, and Square transform suites.
+- Verified local and droplet builds pass; Next build output includes `/admin/kds` and `/api/admin/kds`.
+- Deployed via tactical hot-copy into Coolify container. Backup image before KDS deploy: `sha256:ac512b6a0e7b9831a420a75d678dc4ca0ccd2740a3c681d1d4787d1e1fb8b647`.
+- Smoke tested a live QR table order insert, verified it appears/queryable as active KDS-compatible data, updated status to confirmed, then deleted the smoke-test row. Unauthenticated `/admin/kds` redirects to `/account`; unauthenticated `/api/admin/kds` returns 401.
+- Commit pushed: `998d86f`.
+
+Next recommended phases: (1) Stripe/Square payment and reconciliation for QR/pickup orders, including paid/unpaid state; (2) notification layer for new KDS orders (sound/toast/push/SMS); (3) MenuMetrics recipe/inventory decrement hooks when QR orders are completed.
