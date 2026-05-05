@@ -70,7 +70,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
   const categoryLabel = getCategoryLabel(product.category);
 
   return (
-    <div className="group relative block overflow-hidden rounded-2xl border border-latte/20 bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 card-lift">
+    <div className="group relative block overflow-hidden rounded-[24px] border border-latte/10 bg-white transition-all duration-300 hover:shadow-hover hover:-translate-y-1">
       {/* Product Image */}
       <Link
         href={`/shop/product/${product.slug}`}
