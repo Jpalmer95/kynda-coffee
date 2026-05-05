@@ -535,3 +535,20 @@ psql "$DB" -c "select category_name, item_type, count(*) from pos_items group by
 - Verified live 200s: `/api/pos/catalog`, `/api/products?source=pos`, `/menu`, `/qr-order`, `/qr-menu`, `/shop`.
 
 Next recommended step: implement the interactive QR/pickup cart and order submission flow using `providerItemId`, `providerVariationId`, selected modifiers, quantity, notes, and table/lobby/parking metadata. Then connect payment/KDS/Square order reconciliation.
+
+## 2026-05-05 update — Admin POS catalog override layer
+
+- Added migration `supabase/migrations/008_catalog_overrides.sql`.
+- Added `catalog_overrides` table for Kynda-owned display/channel curation over synced POS items.
+- Added public catalog merge logic so overrides affect `/api/pos/catalog`, `/menu`, `/qr-order`, `/qr-menu`, and POS-backed `/api/products`.
+- Added admin APIs: `/api/admin/catalog` and `/api/admin/catalog/overrides`.
+- Added admin UI: `/admin/catalog`, linked in admin sidebar as POS Catalog.
+- Admin UI supports search, channel/type filters, hide/show, featured, display name, description, category, item type, image URL, sort order, MenuMetrics recipe ID, admin notes, and per-channel overrides.
+- Tests now cover override application before channel filtering.
+- Tests pass 11/11. Build passed locally and on droplet.
+- Supabase migration applied successfully; `catalog_overrides` currently has 0 rows.
+- Commit pushed: `a245e5a feat: add admin POS catalog overrides`.
+- Deployed by tactical hot-copy after backup image `sha256:d50f6b3cd3733bba8dbed7c431c3f64efde397deb920d4ddde57ff00ae653ee0`.
+- Verified live: `/api/pos/catalog` returns 200, `/menu` returns 200, `/admin/catalog` correctly redirects unauthenticated users to account login.
+
+Next recommended step: use `/admin/catalog` while logged in as an admin to curate/clean the live POS catalog. First high-impact cleanup should hide Additions/modifier-only items from menu/shop/QR, hide Uncategorized noise, and mark true shippable merch/beans. After curation, proceed with interactive QR/pickup cart and order submission.
