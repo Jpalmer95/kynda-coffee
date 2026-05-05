@@ -609,3 +609,20 @@ Next recommended phase: build an admin/KDS queue over `orders` where `source=qr`
 - Commit pushed: `998d86f`.
 
 Next recommended phases: (1) Stripe/Square payment and reconciliation for QR/pickup orders, including paid/unpaid state; (2) notification layer for new KDS orders (sound/toast/push/SMS); (3) MenuMetrics recipe/inventory decrement hooks when QR orders are completed.
+
+## 2026-05-05 update — payment state foundation for QR/pay-at-counter
+
+- Added payment state columns to canonical `orders` via `supabase/migrations/012_order_payment_state.sql`: `payment_status`, `payment_method`, `paid_at`, and `payment_metadata`. Fulfillment `status` now remains prep/lifecycle state while `payment_status` tracks money state.
+- Backfill in migration marks existing Stripe-linked orders as paid/stripe when Stripe IDs are present.
+- Added TDD-backed payment helper module `src/lib/orders/payment.ts` with tests in `src/lib/orders/payment.test.ts`. It normalizes payment status, builds UI badges, validates safe transitions, and builds audited payment updates.
+- QR order drafts and `POST /api/orders/submit` now initialize QR/pay-at-counter orders as `payment_status=unpaid`, `payment_method=pay_at_counter`, `paid_at=null`, with payment metadata preserving the initial preference.
+- Added admin API `PATCH /api/admin/orders/[id]/payment` to mark payment state with audit events. It requires admin auth and rejects invalid transitions.
+- KDS API now returns payment fields, and `/admin/kds` shows payment badges plus quick `Paid Cash` / `Paid Card` buttons for unpaid orders.
+- Tests now pass 25/25 across payment, KDS, QR order, POS catalog, and Square transform suites.
+- Local and droplet builds pass; Next build output includes `/api/admin/orders/[id]/payment`.
+- Applied migration 012 on Supabase.
+- Deployed via tactical hot-copy into Coolify container. Backup image before payment-state deploy: `sha256:e6f79302f49ed173f09c55f95bc7bc291a1b1520d52a80083e8e0d7c3288beab`.
+- Live smoke test: created a QR pay-at-counter order, verified it initializes unpaid/pay_at_counter, marked it paid/cash directly in DB to verify columns/audit shape, deleted smoke row, and confirmed unauthenticated payment API returns 401.
+- Commit pushed: `21e6270`.
+
+Next recommended phases: add true Stripe online payment for QR/pickup (PaymentIntent/Checkout linked to existing order), Square order/reconciliation path, and KDS audible/new-order notifications.
