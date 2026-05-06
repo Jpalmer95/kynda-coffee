@@ -38,6 +38,7 @@ export async function syncCatalog(): Promise<SyncResult> {
           ? Number(variation.itemVariationData.priceMoney.amount)
           : 0;
 
+        const isSellable = variation?.itemVariationData?.sellable;
         const product = {
           slug: item.itemData?.name
             ?.toLowerCase()
@@ -48,8 +49,8 @@ export async function syncCatalog(): Promise<SyncResult> {
           category: mapSquareCategory((item.itemData as any)?.categories?.[0]?.name),
           price_cents: priceCents,
           is_active: item.itemData?.isArchived !== true,
-          inventory_count: variation?.itemVariationData?.sellable ?? undefined,
-          images: item.imageIds?.map(id => images[id]).filter(Boolean) ?? null,
+          inventory_count: typeof isSellable === "boolean" ? (isSellable ? 100 : 0) : undefined,
+          images: item.imageIds?.map(id => images[id]).filter(Boolean) ?? [],
         };
 
         // Upsert into Supabase
