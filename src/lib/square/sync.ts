@@ -39,7 +39,13 @@ export async function syncCatalog(): Promise<SyncResult> {
           : 0;
 
         const isSellable = variation?.itemVariationData?.sellable;
-        const imageIds = (item as any).imageIds ? (item as any).imageIds : (((item as any).imageId ? [(item as any).imageId] : (item.itemData as any)?.imageIds) || []);
+        const imageIds = item.itemData?.imageIds || [];
+        const imageUrls = imageIds.map(id => images[id]).filter(Boolean);
+        
+        if ((item as any).imageId && images[(item as any).imageId] && !imageUrls.includes(images[(item as any).imageId])) {
+          imageUrls.unshift(images[(item as any).imageId]);
+        }
+        
         const product = {
           slug: item.itemData?.name
             ?.toLowerCase()
@@ -51,7 +57,7 @@ export async function syncCatalog(): Promise<SyncResult> {
           price_cents: priceCents,
           is_active: item.itemData?.isArchived !== true,
           inventory_count: typeof isSellable === "boolean" ? (isSellable ? 100 : 0) : undefined,
-          images: imageIds.map((id: string) => images[id]).filter(Boolean) ?? [],
+          images: imageUrls,
         };
 
         // Upsert into Supabase
