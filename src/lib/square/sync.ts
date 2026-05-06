@@ -10,6 +10,8 @@ interface SyncResult {
   timestamp: string;
 }
 
+import { buildImageLookup } from "@/lib/square/catalog-transform";
+
 // ---- Catalog Sync (Square → Supabase) ----
 
 export async function syncCatalog(): Promise<SyncResult> {
@@ -22,8 +24,12 @@ export async function syncCatalog(): Promise<SyncResult> {
 
   try {
     // Fetch all catalog items from Square
-    const response = await squareCatalog().listCatalog(undefined, "ITEM");
-    const items = response.result?.objects ?? [];
+    const response = await squareCatalog().listCatalog(undefined, "ITEM,IMAGE");
+    const objects = response.result?.objects ?? [];
+    
+    // We need images mapped so items can find their image data
+    const images = buildImageLookup(objects as any);
+    const items = objects.filter((obj) => obj.type === "ITEM");
 
     for (const item of items) {
       try {
@@ -43,6 +49,7 @@ export async function syncCatalog(): Promise<SyncResult> {
           price_cents: priceCents,
           is_active: item.itemData?.isArchived !== true,
           inventory_count: variation?.itemVariationData?.sellable ?? undefined,
+          images: item.imageIds?.map(id => images[id]).filter(Boolean) ?? null,
         };
 
         // Upsert into Supabase
