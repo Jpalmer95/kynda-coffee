@@ -153,7 +153,6 @@ export function classifySquareItem(name: string, category: string): NormalizedSq
 export function cafeOrRetailForItemType(itemType: NormalizedSquareItem["itemType"]): "cafe" | "retail" {
   return itemType === "menu" || itemType === "modifier" || itemType === "service" ? "cafe" : "retail";
 }
-
 export function normalizeSquareItems(
   objects: SquareObjectLike[],
   categories: CategoryLookup = buildCategoryLookup(objects),
@@ -162,14 +161,16 @@ export function normalizeSquareItems(
   const normalized: NormalizedSquareItem[] = [];
 
   for (const obj of objects) {
-    if (obj.type !== "ITEM" || !obj.id || !obj.itemData) continue;
+    if (obj.type !== "ITEM" || !obj.itemData) continue;
+
     const itemData = obj.itemData;
-    const itemName = itemData.name || "Unnamed Item";
+    const itemName = itemData.name || "Unknown Item";
     const category = getCategoryForItem(obj, categories);
     const itemType = classifySquareItem(itemName, category.name);
     const cafeOrRetail = cafeOrRetailForItemType(itemType);
-    const imageIds = itemData.imageIds || [];
-    const imageUrl = imageIds.map((id) => images[id]).find(Boolean);
+    const objAny = obj as any;
+    const imageIds = objAny.imageIds ? objAny.imageIds : ((objAny.imageId ? [objAny.imageId] : itemData.imageIds) || []);
+    const imageUrl = imageIds.map((id: string) => images[id]).find(Boolean);
     const modifierListIds = (itemData.modifierListInfo || [])
       .filter((info) => info.enabled !== false && info.modifierListId)
       .map((info) => info.modifierListId!)

@@ -10,10 +10,13 @@ export const metadata = {
   description: "Order from your table, the lobby, or a parking spot at Kynda Coffee.",
 };
 
-export default async function QrOrderPage() {
+export default async function QrOrderPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const catalog = await getPosCatalog({ channel: "qr", includeModifiers: true, limit: 500 });
   const categories = catalog.categories.filter((category) => category.items.length > 0);
   const itemCount = catalog.items.length;
+  
+  const modeParam = searchParams?.mode as string | undefined;
+  const labelParam = searchParams?.label as string | undefined;
 
   return (
     <section className="section-padding">
@@ -50,7 +53,7 @@ export default async function QrOrderPage() {
           ))}
         </div>
 
-        <QrOrderClient categories={categories} generatedAt={catalog.generatedAt} />
+        <QrOrderClient categories={categories} generatedAt={catalog.generatedAt} initialMode={modeParam} initialLabel={labelParam} />
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 text-center sm:flex-row">
           <Link href="/menu" className="btn-secondary">

@@ -10,8 +10,19 @@ export default function ContactPage() {
     email: "",
     message: "",
   });
+  const [teamFormState, setTeamFormState] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    availability: "",
+    experience: "",
+  });
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [teamStatus, setTeamStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [teamErrorMsg, setTeamErrorMsg] = useState("");
+
+  const [activeTab, setActiveTab] = useState<"general" | "team">("general");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +52,37 @@ export default function ContactPage() {
     } catch (err) {
       setStatus("error");
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong");
+    }
+  }
+
+  async function handleTeamSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setTeamStatus("submitting");
+    setTeamErrorMsg("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: teamFormState.name,
+          email: teamFormState.email,
+          message: `Phone: ${teamFormState.phone}\nAvailability: ${teamFormState.availability}\nExperience: ${teamFormState.experience}`,
+          type: "application",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit application");
+      }
+
+      setTeamStatus("success");
+      setTeamFormState({ name: "", email: "", phone: "", availability: "", experience: "" });
+    } catch (err) {
+      setTeamStatus("error");
+      setTeamErrorMsg(err instanceof Error ? err.message : "Something went wrong");
     }
   }
 
@@ -113,89 +155,229 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Form */}
+          {/* Form Area */}
           <div className="rounded-2xl border border-latte/20 bg-white p-5 sm:p-6">
-            {status === "success" ? (
-              <div className="py-8 text-center">
-                <CheckCircle className="mx-auto h-10 w-10 text-sage" aria-hidden="true" />
-                <p className="mt-3 font-medium text-espresso">Message sent!</p>
-                <p className="mt-1 text-sm text-mocha">
-                  We&apos;ll get back to you as soon as possible.
-                </p>
-                <button
-                  onClick={() => setStatus("idle")}
-                  className="btn-primary mt-4 text-sm"
-                >
-                  Send Another
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {status === "error" && (
-                  <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
-                    {errorMsg}
-                  </div>
-                )}
-                <div>
-                  <label htmlFor="name" className="mb-1 block text-sm font-medium text-espresso">
-                    Name
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    required
-                    value={formState.name}
-                    onChange={(e) => setFormState((s) => ({ ...s, name: e.target.value }))}
-                    className="input-field"
-                    placeholder="Your name"
-                  />
+            <div className="mb-6 flex gap-2 border-b border-latte/20 pb-4">
+              <button
+                type="button"
+                onClick={() => setActiveTab("general")}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === "general"
+                    ? "bg-espresso text-cream"
+                    : "text-mocha hover:bg-latte/20 hover:text-espresso"
+                }`}
+              >
+                Contact
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("team")}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  activeTab === "team"
+                    ? "bg-espresso text-cream"
+                    : "text-mocha hover:bg-latte/20 hover:text-espresso"
+                }`}
+              >
+                Join Our Team
+              </button>
+            </div>
+
+            {activeTab === "general" ? (
+              status === "success" ? (
+                <div className="py-8 text-center">
+                  <CheckCircle className="mx-auto h-10 w-10 text-sage" aria-hidden="true" />
+                  <p className="mt-3 font-medium text-espresso">Message sent!</p>
+                  <p className="mt-1 text-sm text-mocha">
+                    We&apos;ll get back to you as soon as possible.
+                  </p>
+                  <button
+                    onClick={() => setStatus("idle")}
+                    className="btn-primary mt-4 text-sm"
+                  >
+                    Send Another
+                  </button>
                 </div>
-                <div>
-                  <label htmlFor="email" className="mb-1 block text-sm font-medium text-espresso">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={formState.email}
-                    onChange={(e) => setFormState((s) => ({ ...s, email: e.target.value }))}
-                    className="input-field"
-                    placeholder="you@email.com"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="message" className="mb-1 block text-sm font-medium text-espresso">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    rows={4}
-                    required
-                    value={formState.message}
-                    onChange={(e) => setFormState((s) => ({ ...s, message: e.target.value }))}
-                    className="input-field resize-none"
-                    placeholder="How can we help?"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={status === "submitting"}
-                  className="btn-primary w-full"
-                >
-                  {status === "submitting" ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="mr-2 h-4 w-4" />
-                      Send Message
-                    </>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {status === "error" && (
+                    <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
+                      {errorMsg}
+                    </div>
                   )}
-                </button>
-              </form>
+                  <div>
+                    <label htmlFor="name" className="mb-1 block text-sm font-medium text-espresso">
+                      Name
+                    </label>
+                    <input
+                      id="name"
+                      type="text"
+                      required
+                      value={formState.name}
+                      onChange={(e) => setFormState((s) => ({ ...s, name: e.target.value }))}
+                      className="input-field"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="mb-1 block text-sm font-medium text-espresso">
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      required
+                      value={formState.email}
+                      onChange={(e) => setFormState((s) => ({ ...s, email: e.target.value }))}
+                      className="input-field"
+                      placeholder="you@email.com"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="message" className="mb-1 block text-sm font-medium text-espresso">
+                      Message
+                    </label>
+                    <textarea
+                      id="message"
+                      rows={4}
+                      required
+                      value={formState.message}
+                      onChange={(e) => setFormState((s) => ({ ...s, message: e.target.value }))}
+                      className="input-field resize-none"
+                      placeholder="How can we help?"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={status === "submitting"}
+                    className="btn-primary w-full"
+                  >
+                    {status === "submitting" ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Send Message
+                      </>
+                    )}
+                  </button>
+                </form>
+              )
+            ) : (
+              teamStatus === "success" ? (
+                <div className="py-8 text-center">
+                  <CheckCircle className="mx-auto h-10 w-10 text-sage" aria-hidden="true" />
+                  <p className="mt-3 font-medium text-espresso">Application Received!</p>
+                  <p className="mt-1 text-sm text-mocha">
+                    Thanks for your interest. We&apos;ll be in touch soon.
+                  </p>
+                  <button
+                    onClick={() => setTeamStatus("idle")}
+                    className="btn-primary mt-4 text-sm"
+                  >
+                    Submit Another
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleTeamSubmit} className="space-y-4">
+                  {teamStatus === "error" && (
+                    <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
+                      {teamErrorMsg}
+                    </div>
+                  )}
+                  <div>
+                    <label htmlFor="team-name" className="mb-1 block text-sm font-medium text-espresso">
+                      Name
+                    </label>
+                    <input
+                      id="team-name"
+                      type="text"
+                      required
+                      value={teamFormState.name}
+                      onChange={(e) => setTeamFormState((s) => ({ ...s, name: e.target.value }))}
+                      className="input-field"
+                      placeholder="Your name"
+                    />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="team-email" className="mb-1 block text-sm font-medium text-espresso">
+                        Email
+                      </label>
+                      <input
+                        id="team-email"
+                        type="email"
+                        required
+                        value={teamFormState.email}
+                        onChange={(e) => setTeamFormState((s) => ({ ...s, email: e.target.value }))}
+                        className="input-field"
+                        placeholder="you@email.com"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="team-phone" className="mb-1 block text-sm font-medium text-espresso">
+                        Phone
+                      </label>
+                      <input
+                        id="team-phone"
+                        type="tel"
+                        required
+                        value={teamFormState.phone}
+                        onChange={(e) => setTeamFormState((s) => ({ ...s, phone: e.target.value }))}
+                        className="input-field"
+                        placeholder="(555) 555-5555"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="team-avail" className="mb-1 block text-sm font-medium text-espresso">
+                      Availability
+                    </label>
+                    <input
+                      id="team-avail"
+                      type="text"
+                      required
+                      value={teamFormState.availability}
+                      onChange={(e) => setTeamFormState((s) => ({ ...s, availability: e.target.value }))}
+                      className="input-field"
+                      placeholder="e.g. Weekdays open, Weekends morning"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="team-exp" className="mb-1 block text-sm font-medium text-espresso">
+                      Relevant Experience
+                    </label>
+                    <textarea
+                      id="team-exp"
+                      rows={3}
+                      required
+                      value={teamFormState.experience}
+                      onChange={(e) => setTeamFormState((s) => ({ ...s, experience: e.target.value }))}
+                      className="input-field resize-none"
+                      placeholder="Tell us about yourself..."
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={teamStatus === "submitting"}
+                    className="btn-primary w-full"
+                  >
+                    {teamStatus === "submitting" ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        Submit Application
+                      </>
+                    )}
+                  </button>
+                </form>
+              )
             )}
           </div>
         </div>

@@ -22,6 +22,8 @@ interface QrCartLine {
 interface Props {
   categories: PosCatalogCategoryGroup[];
   generatedAt: string;
+  initialMode?: string;
+  initialLabel?: string;
 }
 
 function selectedVariationId(item: PosCatalogItem, formData: FormData) {
@@ -42,13 +44,15 @@ function lineKey(providerItemId: string, providerVariationId: string | undefined
   return [providerItemId, providerVariationId ?? "", [...modifierIds].sort().join(","), notes.trim()].join("|");
 }
 
-export function QrOrderClient({ categories, generatedAt }: Props) {
+export function QrOrderClient({ categories, generatedAt, initialMode, initialLabel }: Props) {
   const [cart, setCart] = useState<QrCartLine[]>([]);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  const [fulfillmentMode, setFulfillmentMode] = useState<QrFulfillmentMode>("lobby");
-  const [fulfillmentLabel, setFulfillmentLabel] = useState("");
+  const [fulfillmentMode, setFulfillmentMode] = useState<QrFulfillmentMode>(
+    (initialMode === "table" || initialMode === "parking") ? initialMode : "lobby"
+  );
+  const [fulfillmentLabel, setFulfillmentLabel] = useState(initialLabel || "");
   const [orderNotes, setOrderNotes] = useState("");
   const [paymentPreference, setPaymentPreference] = useState<QrPaymentPreference>("pay_at_counter");
   const [submitting, setSubmitting] = useState(false);
@@ -235,14 +239,19 @@ export function QrOrderClient({ categories, generatedAt }: Props) {
                                 </legend>
                                 <div className="mt-2 flex flex-wrap gap-2">
                                   {list.modifiers.map((modifier) => (
-                                    <label key={modifier.id} className="inline-flex items-center gap-1 rounded-full bg-latte/20 px-2 py-1 text-xs text-mocha">
+                                    <label key={modifier.id} className="relative cursor-pointer">
                                       <input
                                         type={type}
                                         name={`modifier:${item.providerItemId}:${list.providerModifierListId}`}
                                         value={modifier.providerModifierId}
-                                        className="accent-rust"
+                                        className="peer sr-only"
                                       />
-                                      {modifier.name}{modifier.priceCents > 0 ? ` +${modifier.priceLabel}` : ""}
+                                      <div className="inline-flex items-center gap-1 rounded-full border border-latte/20 bg-white px-3 py-1.5 text-xs font-medium text-mocha transition-all peer-checked:border-rust peer-checked:bg-rust/5 peer-checked:text-rust hover:border-latte/40 active:scale-95">
+                                        {modifier.name}
+                                        {modifier.priceCents > 0 && (
+                                          <span className="opacity-70">+{modifier.priceLabel}</span>
+                                        )}
+                                      </div>
                                     </label>
                                   ))}
                                 </div>

@@ -14,9 +14,13 @@ export default async function TrainingDashboard() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*")
+    .select("role")
     .eq("id", user.id)
     .single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "staff")) {
+    redirect("/");
+  }
 
   const { data: courses } = await supabase
     .from("courses")

@@ -62,41 +62,53 @@ export default async function MenuPage() {
                   {section.items.map((item) => (
                     <div
                       key={item.id}
-                      className="rounded-xl border border-latte/20 bg-white p-4 transition-all hover:shadow-md hover:border-latte/40"
+                      className="flex gap-4 rounded-[24px] border border-latte/10 bg-white p-4 transition-all hover:shadow-hover"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="font-medium text-espresso">{item.name}</h3>
-                        <span className="font-semibold text-espresso whitespace-nowrap">{item.priceLabel}</span>
-                      </div>
-                      {item.description && <p className="mt-1 text-sm text-mocha">{item.description}</p>}
-                      {item.variationLabels.length > 1 && (
-                        <div className="mt-3 space-y-1 rounded-lg bg-cream/60 p-2">
-                          {item.variationLabels.map((variation) => (
-                            <div key={variation} className="text-xs text-mocha">
-                              {variation}
-                            </div>
-                          ))}
+                      {item.imageUrls?.[0] && (
+                        <div className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl bg-latte/10">
+                          <img
+                            src={item.imageUrls[0]}
+                            alt={item.name}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
                         </div>
                       )}
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_STYLES[item.itemType] || "bg-latte/20 text-mocha"}`}>
-                          {item.itemType}
-                        </span>
-                        {item.availableQr && (
-                          <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_STYLES.qr}`}>
-                            QR order
-                          </span>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="font-medium text-espresso">{item.name}</h3>
+                          <span className="font-semibold text-espresso whitespace-nowrap">{item.priceLabel}</span>
+                        </div>
+                        {item.description && <p className="mt-1 text-sm text-mocha">{item.description}</p>}
+                        {item.variationLabels.length > 1 && (
+                          <div className="mt-3 space-y-1 rounded-lg bg-cream/60 p-2">
+                            {item.variationLabels.map((variation) => (
+                              <div key={variation} className="text-xs text-mocha">
+                                {variation}
+                              </div>
+                            ))}
+                          </div>
                         )}
-                        {item.availablePickup && (
-                          <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_STYLES.pickup}`}>
-                            Pickup
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_STYLES[item.itemType] || "bg-latte/20 text-mocha"}`}>
+                            {item.itemType}
                           </span>
-                        )}
-                        {item.availableShipping && (
-                          <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_STYLES.shipping}`}>
-                            Shippable
-                          </span>
-                        )}
+                          {item.availableQr && (
+                            <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_STYLES.qr}`}>
+                              QR order
+                            </span>
+                          )}
+                          {item.availablePickup && (
+                            <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_STYLES.pickup}`}>
+                              Pickup
+                            </span>
+                          )}
+                          {item.availableShipping && (
+                            <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${TAG_STYLES.shipping}`}>
+                              Shippable
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
