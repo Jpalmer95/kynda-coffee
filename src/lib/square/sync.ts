@@ -39,7 +39,7 @@ export async function syncCatalog(): Promise<SyncResult> {
           : 0;
 
         const isSellable = variation?.itemVariationData?.sellable;
-        const imageIds = item.imageIds ? item.imageIds : ((item.imageId ? [item.imageId] : (item.itemData as any)?.imageIds) || []);
+        const imageIds = (item as any).imageIds ? (item as any).imageIds : (((item as any).imageId ? [(item as any).imageId] : (item.itemData as any)?.imageIds) || []);
         const product = {
           slug: item.itemData?.name
             ?.toLowerCase()
