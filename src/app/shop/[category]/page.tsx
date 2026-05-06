@@ -81,13 +81,13 @@ export default function CategoryPage() {
         {loading ? (
           <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="animate-pulse rounded-2xl border border-latte/20 bg-white">
-                <div className="aspect-square rounded-t-2xl bg-latte/20" />
+              <div key={i} className="animate-pulse rounded-[24px] border border-latte/10 bg-white">
+                <div className="aspect-square rounded-t-[24px] bg-latte/10" />
                 <div className="p-4 space-y-3">
-                  <div className="h-3 w-16 rounded bg-latte/20" />
+                  <div className="h-3 w-16 rounded bg-latte/10" />
                   <div className="h-5 w-3/4 rounded bg-latte/20" />
-                  <div className="h-3 w-full rounded bg-latte/20" />
-                  <div className="h-5 w-16 rounded bg-latte/20" />
+                  <div className="h-3 w-full rounded bg-latte/10" />
+                  <div className="h-4 w-1/4 rounded bg-latte/20" />
                 </div>
               </div>
             ))}

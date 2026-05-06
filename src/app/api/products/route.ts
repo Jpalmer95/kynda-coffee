@@ -38,7 +38,8 @@ export async function GET(req: NextRequest) {
 
   if (includePos && source !== "online") {
     try {
-      const catalog = await getPosCatalog({ channel: "shop", includeModifiers: false, limit });
+      const channelLabel = source === "menu" ? "menu" : "shop";
+      const catalog = await getPosCatalog({ channel: channelLabel, includeModifiers: false, limit });
       const posProducts = catalog.items
         .map(mapPosCatalogItemToProduct)
         .filter((product) => !category || product.category === category)

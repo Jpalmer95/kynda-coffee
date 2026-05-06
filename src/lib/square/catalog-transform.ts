@@ -183,8 +183,8 @@ export function normalizeSquareItems(
       if (!variationObject.id || !variation) continue;
       const money = variation.priceMoney;
       normalized.push({
-        squareItemId: obj.id,
-        squareVariationId: variationObject.id,
+        squareItemId: obj.id as string,
+        squareVariationId: variationObject.id as string,
         name: itemName,
         description: itemData.descriptionPlaintext || itemData.description || undefined,
         categoryId: category.id,

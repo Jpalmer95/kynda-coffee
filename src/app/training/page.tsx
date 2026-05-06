@@ -14,7 +14,7 @@ export default async function TrainingDashboard() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, full_name")
     .eq("id", user.id)
     .single();
 

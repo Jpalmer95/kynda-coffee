@@ -435,7 +435,7 @@ export function mapPosCatalogItemToProduct(item: PosCatalogItem): Product {
     square_variation_id: primaryVariation?.providerVariationId,
     track_inventory: primaryVariation?.trackInventory ?? false,
     inventory_synced_at: undefined,
-    is_active: true,
+    is_active: item.availableOnline ?? true,
     is_featured: item.itemType === "merch" || item.availableShipping,
     inventory_count: undefined,
     created_at: new Date(0).toISOString(),
@@ -460,7 +460,7 @@ export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise
     .eq("is_active", true)
     .order("category_name", { ascending: true })
     .order("name", { ascending: true })
-    .limit(500);
+    .limit(limit);
 
   if (options.category) {
     itemQuery = itemQuery.eq("category_name", options.category);
