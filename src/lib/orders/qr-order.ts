@@ -1,7 +1,7 @@
 import type { PosCatalogItem, PosCatalogModifier, PosCatalogVariation } from "@/lib/pos/catalog";
 
 export type QrFulfillmentMode = "table" | "lobby" | "parking" | "pickup";
-export type QrPaymentPreference = "pay_at_counter" | "online_later";
+export type QrPaymentPreference = "pay_at_counter" | "stripe";
 
 export interface QrOrderRequestItem {
   providerItemId: string;

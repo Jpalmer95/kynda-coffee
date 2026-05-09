@@ -336,7 +336,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
             Payment
             <select value={paymentPreference} onChange={(e) => setPaymentPreference(e.target.value as QrPaymentPreference)} className="mt-1 w-full rounded-xl border border-latte/40 px-3 py-2">
               <option value="pay_at_counter">Pay at counter</option>
-              <option value="online_later">Online payment coming next</option>
+              <option value="online_later">Pay online now with card (Stripe)</option>
             </select>
           </label>
           <label className="text-sm font-medium text-espresso">
