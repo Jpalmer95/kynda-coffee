@@ -39,6 +39,28 @@ export default async function MenuPage() {
           </p>
         </div>
 
+        {/* Ordering Hub - Digital first */}
+        <div className="mb-16 rounded-3xl bg-espresso p-8 text-center text-cream">
+          <h2 className="font-heading text-3xl font-bold">Ready to Order?</h2>
+          <p className="mt-3 max-w-xl mx-auto text-latte/90">
+            Order ahead for pickup or curbside. Tables, lobby, and parking QR codes give you fast access to the same system.
+          </p>
+
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/qr-order" className="rounded-[24px] bg-white px-8 py-4 text-lg font-semibold text-espresso hover:bg-rust hover:text-white transition">
+              Order for Pickup
+            </a>
+            <a href="/qr-order?mode=curbside" className="rounded-[24px] border-2 border-white px-8 py-4 text-lg font-medium hover:bg-white hover:text-espresso transition">
+              Curbside / Car Pickup
+            </a>
+          </div>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-x-8 text-sm opacity-90">
+            <a href="https://www.doordash.com" target="_blank" rel="noopener" className="underline hover:opacity-100">DoorDash</a>
+            <a href="https://www.ubereats.com" target="_blank" rel="noopener" className="underline hover:opacity-100">Uber Eats</a>
+          </div>
+        </div>
+
         {categories.length === 0 ? (
           <div className="rounded-2xl border border-latte/20 bg-white p-8 text-center">
             <h2 className="font-heading text-2xl font-bold text-espresso">Menu sync in progress</h2>
@@ -64,16 +86,20 @@ export default async function MenuPage() {
                       key={item.id}
                       className="flex gap-4 rounded-[24px] border border-latte/10 bg-white p-4 transition-all hover:shadow-hover"
                     >
-                      {item.imageUrls?.[0] && (
-                        <div className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl bg-latte/10">
+                      <div className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl bg-latte/10 ring-1 ring-latte/10">
+                        {item.imageUrls?.[0] ? (
                           <img
                             src={item.imageUrls[0]}
                             alt={item.name}
                             className="h-full w-full object-cover"
                             loading="lazy"
                           />
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-3xl text-latte/40">
+                            ☕
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1">
                         <div className="flex items-start justify-between gap-3">
                           <h3 className="font-medium text-espresso">{item.name}</h3>

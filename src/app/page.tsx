@@ -164,7 +164,7 @@ export default function HomePage() {
                 Shop Coffee Beans
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
-              <Link href="/menu" className="btn-secondary w-full sm:w-auto border-cream text-cream hover:bg-cream hover:text-espresso text-base px-8 py-4">
+              <Link href="/menu" className="w-full sm:w-auto rounded-[24px] border-2 border-white bg-white px-8 py-4 text-base font-medium text-espresso shadow-sm transition-all hover:bg-cream hover:border-cream">
                 View Our Menu
               </Link>
             </div>
