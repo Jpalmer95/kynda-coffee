@@ -53,9 +53,12 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  const [fulfillmentMode, setFulfillmentMode] = useState<QrFulfillmentMode>(
-    (initialMode === "table" || initialMode === "parking" || initialMode === "curbside") ? (initialMode as any) : "lobby"
-  );
+  const initialFulfillment: QrFulfillmentMode = 
+    initialMode === "table" ? "table" :
+    initialMode === "parking" ? "parking" :
+    initialMode === "pickup" || initialMode === "pickup" ? "pickup" : "lobby";
+
+  const [fulfillmentMode, setFulfillmentMode] = useState<QrFulfillmentMode>(initialFulfillment);
   const [fulfillmentLabel, setFulfillmentLabel] = useState(initialLabel || "");
   const [orderNotes, setOrderNotes] = useState("");
   const [paymentPreference, setPaymentPreference] = useState<QrPaymentPreference>("pay_at_counter");
@@ -168,7 +171,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
     <div className="mt-12">
       {/* Fulfillment mode selector */}
       <div className="mb-8 flex flex-wrap gap-2">
-        {(["table", "lobby", "curbside", "parking"] as const).map((mode) => (
+        {(["table", "lobby", "pickup", "parking"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setFulfillmentMode(mode)}
@@ -178,12 +181,12 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                 : "bg-white text-espresso ring-1 ring-latte/30 hover:bg-latte/10"
             }`}
           >
-            {mode === "table" ? "At a Table" : mode === "parking" ? "Parking Spot" : mode === "curbside" ? "Curbside Pickup" : "In the Lobby"}
+            {mode === "table" ? "At a Table" : mode === "parking" ? "Parking Spot" : mode === "pickup" ? "Curbside Pickup" : "In the Lobby"}
           </button>
         ))}
       </div>
 
-      {fulfillmentMode !== "lobby" && (
+      {fulfillmentMode !== "lobby" && fulfillmentMode !== "pickup" && (
         <div className="mb-10 max-w-sm">
           <label className="block text-sm font-medium text-mocha mb-1">
             {fulfillmentMode === "table" ? "Table number or name" : fulfillmentMode === "parking" ? "Parking spot #" : "Car description / spot"}
