@@ -216,7 +216,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
       {/* Menu */}
       <div className="space-y-12">
-        {categories.map((category) => (
+        {categories.map((category, idx) => (
           <div key={idx}>
             <h2 className="mb-5 font-heading text-2xl tracking-tight text-espresso">
               {category.name}
