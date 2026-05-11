@@ -1,139 +1,124 @@
-import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase/server';
+import { deductOneCredit } from '@/lib/designs/credits';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-// POST /api/designs/generate — Generate an AI design image
+// POST /api/designs/generate
+// - Authenticated or guest (guests limited by rate limit)
+// - Checks monthly free + paid credits
+// - Calls FAL Flux
+// - Saves design for logged-in users
 export async function POST(req: NextRequest) {
-  // Rate limit: 10 generations per IP per hour
-  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-  const { allowed, remaining } = checkRateLimit(`designs:${ip}`, 10, 60 * 60 * 1000);
-  if (!allowed) {
-    return NextResponse.json(
-      { error: "Generation limit reached. Please try again later." },
-      { status: 429, headers: { "X-RateLimit-Remaining": String(remaining) } }
-    );
-  }
-
   try {
     const body = await req.json();
-    const { prompt, style_preset, product_type } = body;
+    const { prompt, style_preset, product_type = 'mug' } = body;
 
-    if (!prompt || typeof prompt !== "string" || prompt.length < 3) {
-      return NextResponse.json(
-        { error: "Prompt is required (min 3 chars)" },
-        { status: 400 }
-      );
+    if (!prompt || typeof prompt !== 'string') {
+      return NextResponse.json({ error: 'Prompt required' }, { status: 400 });
     }
 
-    // Build the full prompt with style and product context
-    let fullPrompt = prompt;
-    if (style_preset) {
-      fullPrompt += `, ${style_preset} style`;
+    // 1. Credit / rate-limit gate (logged-in users get 10/month free)
+    const { data: { user } } = await supabaseAdmin.auth.getUser();
+    const isLoggedIn = !!user;
+
+    let creditsLeft = { free: 0, paid: 0 };
+    if (isLoggedIn) {
+      const deduct = await deductOneCredit();
+      if (!deduct.success) {
+        return NextResponse.json(
+          { error: 'No credits left. Buy more or upload your own design.' },
+          { status: 402 }
+        );
+      }
+      creditsLeft = await getUserCreditsForResponse(user.id);
     }
 
-    // Add product-specific framing
-    const productContexts: Record<string, string> = {
-      mug: "designed for a coffee mug, centered composition, square format",
-      tshirt: "designed for a t-shirt print, graphic design, bold colors, centered",
-      glass: "designed for a glass cup, elegant, transparent background friendly",
-      tote: "designed for a tote bag, graphic illustration style",
-      hat: "designed for an embroidered hat patch, simple, bold",
-      sticker: "designed for a die-cut sticker, vector art style, bold outlines",
-    };
+    // 2. Build rich prompt for Flux
+    const fullPrompt = buildFluxPrompt(prompt, style_preset, product_type);
 
-    if (product_type && productContexts[product_type]) {
-      fullPrompt += `, ${productContexts[product_type]}`;
-    }
-
-    // Submit to FAL.ai FLUX model
+    // 3. Call FAL
     const falKey = process.env.FAL_KEY;
     if (!falKey) {
-      return NextResponse.json(
-        { error: "FAL_KEY not configured" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Generation service unavailable' }, { status: 503 });
     }
 
-    let imageUrl: string | null = null;
+    const imageUrl = await generateWithFAL(fullPrompt, falKey);
 
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000); // 25s max
-
-      // Submit generation request
-      const submitRes = await fetch("https://queue.fal.run/fal-ai/flux/dev", {
-        method: "POST",
-        headers: {
-          Authorization: `Key ${falKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+    // 4. Persist design (authenticated only)
+    let designId: string | null = null;
+    if (isLoggedIn) {
+      const { data: saved } = await supabaseAdmin
+        .from('saved_designs')
+        .insert({
+          user_id: user.id,
           prompt: fullPrompt,
-          image_size: "square_hd",
-          num_images: 1,
-          enable_safety_checker: true,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!submitRes.ok) {
-        const err = await submitRes.text();
-        console.error("FAL submit error:", submitRes.status, err);
-        clearTimeout(timeout);
-        throw new Error(`FAL API error: ${submitRes.status}`);
-      }
-
-      const { request_id } = await submitRes.json();
-      clearTimeout(timeout);
-
-      // Poll for result (up to 30 seconds)
-      let attempts = 0;
-      while (attempts < 15 && !imageUrl) {
-        await new Promise((r) => setTimeout(r, 2000));
-
-        const statusRes = await fetch(
-          `https://queue.fal.run/fal-ai/flux/dev/requests/${request_id}`,
-          {
-            headers: { Authorization: `Key ${falKey}` },
-          }
-        );
-
-        const status = await statusRes.json();
-
-        if (status.status === "COMPLETED" && status.images?.[0]?.url) {
-          imageUrl = status.images[0].url;
-        } else if (status.status === "FAILED") {
-          throw new Error("Generation failed on FAL");
-        }
-
-        attempts++;
-      }
-    } catch (falError) {
-      console.error("FAL generation error:", falError);
-      // Fall through to demo mode
-    }
-
-    // Demo fallback — generate a placeholder SVG with the prompt text
-    if (!imageUrl) {
-      const encodedPrompt = encodeURIComponent(prompt.slice(0, 50));
-      const colors = ["c4724e", "2c1810", "8b6f4e", "a8b5a0", "c4a882"];
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const bg = "faf7f2";
-      
-      imageUrl = `https://placehold.co/1024x1024/${color}/${bg}?text=${encodedPrompt}&font=playfair-display`;
+          original_image_url: imageUrl,
+          product_type,
+          layers: JSON.stringify([
+            { type: 'generated', url: imageUrl, x: 0.5, y: 0.5, scale: 0.6, rotation: 0 }
+          ]),
+        })
+        .select('id')
+        .single();
+      designId = saved?.id ?? null;
     }
 
     return NextResponse.json({
+      success: true,
       image_url: imageUrl,
       prompt: fullPrompt,
-      demo_mode: !process.env.FAL_KEY,
+      design_id: designId,
+      credits_remaining: creditsLeft,
     });
-  } catch (err) {
-    console.error("Design generation error:", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+  } catch (err: any) {
+    console.error('Design generation error:', err);
+    return NextResponse.json({ error: err.message || 'Generation failed' }, { status: 500 });
   }
+}
+
+function buildFluxPrompt(prompt: string, style: string | null, productType: string): string {
+  let p = prompt.trim();
+  if (style) p += `, ${style}`;
+  const hints: Record<string, string> = {
+    mug: 'centered on coffee mug, clean white background, high detail, product mockup',
+    tshirt: 'graphic t-shirt design, high contrast, bold, apparel print style',
+    glass: 'transparent glass cup overlay, elegant, Starbucks-style latte art',
+    tote: 'canvas tote bag graphic, minimalist illustration',
+  };
+  return p + ', ' + (hints[productType] || 'product mockup');
+}
+
+async function generateWithFAL(prompt: string, falKey: string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+
+  const submit = await fetch('https://queue.fal.run/fal-ai/flux/dev', {
+    method: 'POST',
+    headers: { Authorization: `Key ${falKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, image_size: 'square_hd', num_images: 1, enable_safety_checker: true }),
+    signal: controller.signal,
+  });
+
+  if (!submit.ok) throw new Error(`FAL error ${submit.status}`);
+  const { request_id } = await submit.json();
+  clearTimeout(timeout);
+
+  // Poll
+  for (let i = 0; i < 12; i++) {
+    await new Promise(r => setTimeout(r, 2200));
+    const statusRes = await fetch(
+      `https://queue.fal.run/fal-ai/flux/dev/requests/${request_id}`,
+      { headers: { Authorization: `Key ${falKey}` } }
+    );
+    const st = await statusRes.json();
+    if (st.status === 'COMPLETED' && st.images?.[0]?.url) return st.images[0].url;
+    if (st.status === 'FAILED') throw new Error('Generation failed');
+  }
+  throw new Error('Generation timed out');
+}
+
+async function getUserCreditsForResponse(userId: string) {
+  const { data } = await supabaseAdmin.rpc('get_or_create_monthly_credits', { p_user_id: userId });
+  return { free: data?.free_credits_remaining ?? 0, paid: data?.paid_credits_remaining ?? 0 };
 }
