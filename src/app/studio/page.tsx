@@ -63,7 +63,14 @@ export default function DesignStudioPage() {
       slug: `custom-${selectedProduct}`,
       name: `Custom ${selectedProduct}`,
       description: generatedDesign.prompt,
-      category: 'merch',
+      category:
+        selectedProduct === 'tshirt'
+          ? 'merch-apparel'
+          : selectedProduct === 'mug'
+            ? 'merch-mugs'
+            : selectedProduct === 'glass'
+              ? 'merch-glassware'
+              : 'merch-accessories',
       price_cents: PRODUCT_PRICES[selectedProduct],
       images: [generatedDesign.url],
       source: 'online',
