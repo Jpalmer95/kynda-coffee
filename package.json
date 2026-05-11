@@ -7,10 +7,7 @@
     "build": "next build",
     "start": "next start -p 3000 -H 0.0.0.0",
     "lint": "eslint",
-    "db:generate": "supabase gen types typescript --local > src/types/supabase.ts",
-    "db:migrate": "supabase migration up",
-    "db:push": "supabase db push",
-    "training:seed": "npx tsx src/scripts/seed.ts"
+    "prepare": "husky"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^3.1.0",
@@ -35,16 +32,25 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
     "postcss": "^8.4.49",
     "supabase": "^2.0.0",
     "tailwindcss": "^3.4.16",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
+    ]
   }
 }
