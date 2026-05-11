@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import type { Product } from '@/types';
 import { Sparkles, Save, CreditCard } from 'lucide-react';
 import { DesignCanvas, DesignLayer } from '@/components/design-studio/DesignCanvas';
 import { useCartStore } from '@/hooks/useCart';
@@ -57,13 +58,20 @@ export default function DesignStudioPage() {
   const handleAddToCart = () => {
     if (!generatedDesign) return;
 
-    addItem({
+    const product: Product = {
       id: `custom-${Date.now()}`,
+      slug: `custom-${selectedProduct}`,
       name: `Custom ${selectedProduct}`,
-      price: PRODUCT_PRICES[selectedProduct],
-      quantity: 1,
-      image: generatedDesign.url,
-      customization: {
+      description: generatedDesign.prompt,
+      category: 'merch',
+      price_cents: PRODUCT_PRICES[selectedProduct],
+      images: [generatedDesign.url],
+      source: 'online',
+      track_inventory: false,
+    };
+
+    addItem(product, 1, {
+      design: {
         prompt: generatedDesign.prompt,
         product: selectedProduct,
         layers: currentLayers,
