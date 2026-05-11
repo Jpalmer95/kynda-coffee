@@ -5,7 +5,7 @@ import { Stage, Layer, Image as KonvaImage, Rect } from "react-konva";
 import Konva from "konva";
 import { Trash2, RotateCw, Download, Upload, Palette } from "lucide-react";
 
-interface DesignLayer {
+export interface DesignLayer {
   id: string;
   type: "generated" | "sticker" | "upload";
   url: string;
