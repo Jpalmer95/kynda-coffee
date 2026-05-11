@@ -64,18 +64,22 @@ export default function DesignStudioPage() {
       name: `Custom ${selectedProduct}`,
       description: generatedDesign.prompt,
       category:
-        selectedProduct === 'tshirt'
-          ? 'merch-apparel'
-          : selectedProduct === 'mug'
-            ? 'merch-mugs'
-            : selectedProduct === 'glass'
-              ? 'merch-glassware'
-              : 'merch-accessories',
-      price_cents: PRODUCT_PRICES[selectedProduct],
+        selectedProduct === "tshirt"
+          ? "merch-apparel"
+          : selectedProduct === "mug"
+            ? "merch-mugs"
+            : selectedProduct === "glass"
+              ? "merch-glassware"
+              : "merch-accessories",
+      price_cents: getRetailPrice(selectedProduct),
       images: [generatedDesign.url],
-      source: 'online',
+      source: "online",
       track_inventory: false,
-    };
+      is_active: true,
+      is_featured: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as Product;
 
     addItem(product, 1, {
       design: {
