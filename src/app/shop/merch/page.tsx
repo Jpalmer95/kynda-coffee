@@ -86,7 +86,7 @@ export default function MerchPage() {
           )}
 
           <div className="mt-16 text-center">
-            <Link href="/studio" className="inline-flex items-center gap-3 rounded-[22px] px-10 py-4 bg-espresso hover:bg-[#2c2522] text-white transition">
+            <Link href="/studio" className="inline-flex items-center gap-3 rounded-[22px] px-10 py-4 bg-espresso hover:bg-espresso/80 text-white transition">
               <Sparkles className="h-5 w-5" /> Start Designing in the Studio
             </Link>
             <p className="text-xs text-mocha/60 mt-2">Mugs, apparel, glassware &amp; more. Ships fast.</p>

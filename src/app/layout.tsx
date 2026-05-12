@@ -87,17 +87,17 @@ export const metadata: Metadata = {
       { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
     other: [
-      { rel: "mask-icon", url: "/icons/safari-pinned-tab.svg", color: "#2c1810" },
+      { rel: "mask-icon", url: "/icons/safari-pinned-tab.svg", color: "#286849" },
     ],
   },
   other: {
-    "msapplication-TileColor": "#2c1810",
+    "msapplication-TileColor": "#286849",
     "msapplication-config": "/icons/browserconfig.xml",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2c1810",
+  themeColor: "#286849",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,

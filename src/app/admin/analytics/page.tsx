@@ -116,7 +116,7 @@ export default function AnalyticsPage() {
 
         <div className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
           <h2 className="font-heading text-lg font-semibold text-espresso mb-4">New Customers (Last 14 Days)</h2>
-          <BarChart data={customerEntries} color="#4a7c59" />
+          <BarChart data={customerEntries} color="#286849" />
         </div>
       </div>
 

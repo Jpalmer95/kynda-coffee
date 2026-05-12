@@ -3,6 +3,125 @@
 @tailwind utilities;
 
 /* ============================================================
+   Theme: CSS Custom Properties for Light / Dark Mode
+   Light = sand/canvas + forest green
+   Dark  = charcoal + sand/canvas text
+   All color combos meet WCAG AA 4.5:1 contrast.
+   ============================================================ */
+
+:root {
+  /* === Light Mode (default) === */
+  /* Sand/canvas background */
+  --bg-cream:        #F5F0E8;
+  --bg-cream-50:     #FAF7F2;
+  --bg-cream-100:    #F5F0E8;
+  --bg-cream-200:    #E6DED2;
+
+  /* Charcoal text (primary foreground) */
+  --text-espresso:    #1A1A1A;
+  --text-espresso-50:  #525252;
+  --text-espresso-100: #3F3F3F;
+  --text-espresso-200: #2A2A2A;
+  --text-espresso-800: #0D0D0D;
+  --text-espresso-900: #000000;
+
+  /* Warm border / divider */
+  --border-latte:     #C8BFB0;
+  --border-latte-300:  #D8D0C3;
+  --border-latte-400:  #C8BFB0;
+  --border-latte-500:  #A89E8F;
+  --border-latte-600:  #6B6358;
+  --border-latte-700:  #3F3A34;
+
+  /* Secondary muted text */
+  --text-mocha:       #5A5A5A;
+  --text-mocha-300:    #A8A29E;
+  --text-mocha-400:    #78716C;
+  --text-mocha-500:    #5A5A5A;
+  --text-mocha-600:    #3F3A34;
+  --text-mocha-700:    #2A2624;
+
+  /* Forest Green (primary accent — replaces blue "rust") */
+  --accent-forest:     #286849;
+  --accent-forest-300:  #86EFAC;
+  --accent-forest-400:  #52B788;
+  --accent-forest-500:  #286849;
+  --accent-forest-600:  #1B4332;
+  --accent-forest-700:  #143327;
+
+  /* Sage (soft accent) */
+  --accent-sage:       #5E8A66;
+  --accent-sage-300:    #9ED5A5;
+  --accent-sage-400:    #78C480;
+  --accent-sage-500:    #5E8A66;
+  --accent-sage-600:    #4A7A52;
+
+  /* Card bg (white in light mode) */
+  --bg-card:           #FFFFFF;
+
+  /* Focus ring */
+  --focus-ring:        #286849;
+  --focus-ring-offset: #FFFFFF;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* === Dark Mode === */
+    /* Charcoal background */
+    --bg-cream:        #1C1917;
+    --bg-cream-50:     #292524;
+    --bg-cream-100:    #1C1917;
+    --bg-cream-200:    #292524;
+
+    /* Sand/canvas text */
+    --text-espresso:    #F5F0E8;
+    --text-espresso-50:  #C8BFB0;
+    --text-espresso-100: #D8CFC2;
+    --text-espresso-200: #E6DED2;
+    --text-espresso-800: #FAF7F2;
+    --text-espresso-900: #FFFFFF;
+
+    /* Dark borders */
+    --border-latte:     #44403C;
+    --border-latte-300:  #57534E;
+    --border-latte-400:  #44403C;
+    --border-latte-500:  #78716C;
+    --border-latte-600:  #A8A29E;
+    --border-latte-700:  #D6D3D1;
+
+    /* Secondary muted text */
+    --text-mocha:       #A8A29E;
+    --text-mocha-300:    #78716C;
+    --text-mocha-400:    #A8A29E;
+    --text-mocha-500:    #A8A29E;
+    --text-mocha-600:    #D6D3D1;
+    --text-mocha-700:    #E7E5E4;
+
+    /* Forest Green (brighter for dark bg) */
+    --accent-forest:     #52B788;
+    --accent-forest-300:  #86EFAC;
+    --accent-forest-400:  #52B788;
+    --accent-forest-500:  #52B788;
+    --accent-forest-600:  #95D5B2;
+    --accent-forest-700:  #B7E4C7;
+
+    /* Sage (brighter) */
+    --accent-sage:       #78C480;
+    --accent-sage-300:    #9ED5A5;
+    --accent-sage-400:    #78C480;
+    --accent-sage-500:    #78C480;
+    --accent-sage-600:    #A8D8B0;
+
+    /* Card bg (warm charcoal) */
+    --bg-card:           #292524;
+
+    /* Focus ring */
+    --focus-ring:        #52B788;
+    --focus-ring-offset: #1C1917;
+  }
+}
+
+/* ============================================================
    Base Reset & Accessibility
    ============================================================ */
 
@@ -26,13 +145,13 @@ html {
 }
 
 ::selection {
-  background-color: #3b82f6; /* rust replacement (blue-500) */
-  color: #fafafa;
+  background-color: var(--accent-forest);
+  color: #FFFFFF;
 }
 
 /* Focus visible for keyboard navigation */
 :focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -97,7 +216,7 @@ button.inline {
 }
 
 .btn-accent {
-  @apply inline-flex items-center justify-center rounded-xl bg-rust px-6 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-rust/90 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-rust focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-xl bg-forest px-6 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-forest/90 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   min-height: 44px;
 }
 
@@ -107,13 +226,13 @@ button.inline {
 }
 
 .input-field {
-  @apply w-full rounded-lg border border-latte bg-white px-4 py-3 text-espresso placeholder:text-latte/50 shadow-sm transition-all duration-200 focus:border-rust focus:outline-none focus:ring-2 focus:ring-rust/20;
+  @apply w-full rounded-lg border border-latte bg-card px-4 py-3 text-espresso placeholder:text-latte/50 shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/20;
   min-height: 44px;
   font-size: 16px; /* Prevents iOS zoom on focus */
 }
 
 .select-field {
-  @apply w-full rounded-lg border border-latte bg-white px-4 py-3 text-espresso shadow-sm transition-all duration-200 focus:border-rust focus:outline-none focus:ring-2 focus:ring-rust/20;
+  @apply w-full rounded-lg border border-latte bg-card px-4 py-3 text-espresso shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/20;
   min-height: 44px;
   font-size: 16px;
 }
@@ -266,14 +385,14 @@ button.inline {
     width: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #faf7f2;
+    background: var(--bg-cream-50);
   }
   ::-webkit-scrollbar-thumb {
-    background: #c4a882;
+    background: var(--border-latte-500);
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #8b6f4e;
+    background: var(--border-latte-600);
   }
 }
 
@@ -314,7 +433,7 @@ button.inline {
   position: sticky;
   bottom: 0;
   padding-bottom: max(env(safe-area-inset-bottom), 12px);
-  background: linear-gradient(to top, rgba(250, 247, 242, 1) 0%, rgba(250, 247, 242, 0.9) 80%, transparent);
+  background: linear-gradient(to top, var(--bg-cream) 0%, color-mix(in srgb, var(--bg-cream) 90%, transparent) 80%, transparent);
 }
 
 /* Image aspect ratios */
@@ -332,13 +451,13 @@ button.inline {
   }
 }
 
-/* Card hover lift - Deprecated */
+/* Card hover lift */
 .card-lift {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .card-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {

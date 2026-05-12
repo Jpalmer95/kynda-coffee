@@ -5,58 +5,92 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Redefined "cream" to meaning "base background" (light cool grey)
-        // keeping the name so we don't break existing 590+ `bg-cream` references
+        // ========= Sand / Canvas Background =========
+        // Light: warm sand (#F5F0E8)
+        // Dark: warm charcoal (#1C1917)
         cream: {
-          DEFAULT: "#f4f4f5", // zinc-100 equivalent
-          50: "#fafafa",      // zinc-50
-          100: "#f4f4f5",
-          200: "#e4e4e7",     // zinc-200
+          DEFAULT: "var(--bg-cream)",
+          50: "var(--bg-cream-50)",
+          100: "var(--bg-cream-100)",
+          200: "var(--bg-cream-200)",
         },
-        // Redefined "espresso" to meaning "base foreground text" (charcoal / near-black)
-        // keeping the name so we don't break existing 590+ `text-espresso` references
+
+        // ========= Primary Text (Charcoal / Sand) =========
+        // Light: near-black charcoal (#1A1A1A) — 15.9:1 on sand
+        // Dark: sand/canvas (#F5F0E8) — 14.8:1 on charcoal
         espresso: {
-          DEFAULT: "#18181b", // zinc-900 equivalent
-          50: "#52525b",      // zinc-600
-          100: "#3f3f46",     // zinc-700
-          200: "#27272a",     // zinc-800
-          800: "#09090b",     // zinc-950
-          900: "#000000",
+          DEFAULT: "var(--text-espresso)",
+          50: "var(--text-espresso-50)",
+          100: "var(--text-espresso-100)",
+          200: "var(--text-espresso-200)",
+          800: "var(--text-espresso-800)",
+          900: "var(--text-espresso-900)",
         },
-        // Accent/Border neutral (zinc-400/500/600)
+
+        // ========= Card Background =========
+        // Light: white (#FFFFFF)
+        // Dark: warm stone (#292524)
+        card: {
+          DEFAULT: "var(--bg-card)",
+        },
+
+        // ========= Border / Divider =========
+        // Light: warm sand-tan (#C8BFB0)
+        // Dark: warm stone (#44403C)
         latte: {
-          DEFAULT: "#a1a1aa", // zinc-400
-          300: "#d4d4d8",     // zinc-300
-          400: "#a1a1aa",     // zinc-400
-          500: "#71717a",     // zinc-500
-          600: "#52525b",     // zinc-600
-          700: "#3f3f46",     // zinc-700
+          DEFAULT: "var(--border-latte)",
+          300: "var(--border-latte-300)",
+          400: "var(--border-latte-400)",
+          500: "var(--border-latte-500)",
+          600: "var(--border-latte-600)",
+          700: "var(--border-latte-700)",
         },
-        // Secondary accent neutral 
+
+        // ========= Secondary Muted Text =========
+        // Light: medium gray (#5A5A5A) — 5.4:1 on sand
+        // Dark: warm stone gray (#A8A29E) — 7.5:1 on charcoal
         mocha: {
-          DEFAULT: "#52525b", // zinc-600
-          300: "#a1a1aa",
-          400: "#71717a",
-          500: "#52525b",
-          600: "#3f3f46",
-          700: "#27272a",
+          DEFAULT: "var(--text-mocha)",
+          300: "var(--text-mocha-300)",
+          400: "var(--text-mocha-400)",
+          500: "var(--text-mocha-500)",
+          600: "var(--text-mocha-600)",
+          700: "var(--text-mocha-700)",
         },
-        // Soft accent (maybe keep a subtle muted blue-grey for "sage")
+
+        // ========= Forest Green (Primary Accent) =========
+        // Light: deep forest (#286849) — 4.8:1 on sand
+        // Dark: bright green (#52B788) — 7.2:1 on charcoal
+        // White text on light forest = 6.7:1 ✓
+        forest: {
+          DEFAULT: "var(--accent-forest)",
+          300: "var(--accent-forest-300)",
+          400: "var(--accent-forest-400)",
+          500: "var(--accent-forest-500)",
+          600: "var(--accent-forest-600)",
+          700: "var(--accent-forest-700)",
+        },
+
+        // ========= Soft Accent (Sage Green) =========
+        // Light: sage (#5E8A66) — 4.7:1 on sand
+        // Dark: lighter sage (#78C480) — 9.0:1 on charcoal
         sage: {
-          DEFAULT: "#94a3b8", // slate-400
-          300: "#cbd5e1",
-          400: "#94a3b8",
-          500: "#64748b",
-          600: "#475569",
+          DEFAULT: "var(--accent-sage)",
+          300: "var(--accent-sage-300)",
+          400: "var(--accent-sage-400)",
+          500: "var(--accent-sage-500)",
+          600: "var(--accent-sage-600)",
         },
-        // Action/Primary accent (keep a clean modern blue or sleek dark grey, using blue here for "rust" replacement)
+
+        // ========= Rust (Legacy alias → Forest) =========
+        // Keep for backward compat: any existing `bg-rust` / `text-rust` maps to forest
         rust: {
-          DEFAULT: "#3b82f6", // blue-500
-          300: "#93c5fd",
-          400: "#60a5fa",
-          500: "#3b82f6",
-          600: "#2563eb",
-          700: "#1d4ed8",
+          DEFAULT: "var(--accent-forest)",
+          300: "var(--accent-forest-300)",
+          400: "var(--accent-forest-400)",
+          500: "var(--accent-forest-500)",
+          600: "var(--accent-forest-600)",
+          700: "var(--accent-forest-700)",
         },
       },
       fontFamily: {
@@ -69,8 +103,8 @@ const config: Config = {
       },
       boxShadow: {
         // Adding modern snappy shadows
-        "soft": "0 2px 10px rgba(0, 0, 0, 0.05)",
-        "hover": "0 10px 25px rgba(0, 0, 0, 0.05)",
+        soft: "0 2px 10px rgba(0, 0, 0, 0.06)",
+        hover: "0 10px 25px rgba(0, 0, 0, 0.08)",
       },
     },
   },

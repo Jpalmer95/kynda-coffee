@@ -99,7 +99,7 @@ export default function DesignStudioPage() {
   return (
     <div className="max-w-6xl mx-auto px-6 pt-10 pb-20 text-espresso">
       <div className="text-center mb-14">
-        <div className="inline bg-[#f0ebff] px-4 py-1 text-sm rounded-full text-[#6b3fcf]">✨ AI-Powered</div>
+        <div className="inline bg-forest-300/30 px-4 py-1 text-sm rounded-full text-forest-600">✨ AI-Powered</div>
         <h1 className="font-heading text-6xl mt-3 tracking-tighter">Design Studio</h1>
         <p className="text-xl text-mocha mt-3">Create custom merch that is truly yours.</p>
       </div>

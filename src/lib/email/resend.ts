@@ -31,14 +31,14 @@ export async function sendOrderConfirmation({
     .map(
       (item) =>
         `<tr>
-          <td style="padding:8px 0;border-bottom:1px solid #e5e0d8;">${item.product_name} × ${item.quantity}</td>
-          <td style="padding:8px 0;border-bottom:1px solid #e5e0d8;text-align:right;">$${(item.total_cents / 100).toFixed(2)}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #E5E7EB;">${item.product_name} × ${item.quantity}</td>
+          <td style="padding:8px 0;border-bottom:1px solid #E5E7EB;text-align:right;">$${(item.total_cents / 100).toFixed(2)}</td>
         </tr>`
     )
     .join("");
 
   const addressBlock = shippingAddress
-    ? `<p style="margin:4px 0 0;color:#5a4d3b;">
+    ? `<p style="margin:4px 0 0;color:#52525B;">
         ${shippingAddress.line1}${shippingAddress.line2 ? `, ${shippingAddress.line2}` : ""}<br/>
         ${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postal_code}
        </p>`
@@ -55,14 +55,14 @@ export async function sendOrderConfirmation({
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { margin:0;padding:0;background:#f6f2ec;font-family:Georgia,serif;color:#2a1e14; }
+    body { margin:0;padding:0;background:#F5F0E8;font-family:Georgia,serif;color:#1A1A1A; }
     .wrap { max-width:520px;margin:0 auto;padding:24px 16px; }
     .card { background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.04); }
     h1 { font-size:22px;margin:0 0 8px; }
-    .muted { color:#7a6e5e;font-size:13px; }
-    .btn { display:inline-block;padding:12px 20px;background:#b85c38;color:#fff;text-decoration:none;border-radius:10px;font-weight:600; }
+    .muted { color:#52525B;font-size:13px; }
+    .btn { display:inline-block;padding:12px 20px;background:#286849;color:#fff;text-decoration:none;border-radius:10px;font-weight:600; }
     table { width:100%;border-collapse:collapse;font-size:14px; }
-    .total { font-size:16px;font-weight:700;border-top:2px solid #2a1e14; }
+    .total { font-size:16px;font-weight:700;border-top:2px solid #1A1A1A; }
   </style>
 </head>
 <body>
@@ -84,8 +84,8 @@ export async function sendOrderConfirmation({
       <div style="margin-top:24px;text-align:center;">
         <a href="https://kyndacoffee.com/track-order" class="btn">Track Your Order</a>
       </div>
-      <p style="margin-top:20px;font-size:12px;color:#9a8e7e;text-align:center;">
-        Questions? Reply to this email or visit <a href="https://kyndacoffee.com/help" style="color:#b85c38;">Help Center</a>
+      <p style="margin-top:20px;font-size:12px;color:#71717A;text-align:center;">
+        Questions? Reply to this email or visit <a href="https://kyndacoffee.com/help" style="color:#286849;">Help Center</a>
       </p>
     </div>
   </div>
@@ -114,13 +114,13 @@ export async function sendShippingNotification({
       to,
       subject: `Your order is on the way — ${orderNumber}`,
       html: `<!DOCTYPE html>
-<html><body style="margin:0;padding:0;background:#f6f2ec;font-family:Georgia,serif;color:#2a1e14;">
+<html><body style="margin:0;padding:0;background:#F5F0E8;font-family:Georgia,serif;color:#1A1A1A;">
 <div style="max-width:520px;margin:0 auto;padding:24px 16px;">
 <div style="background:#fff;border-radius:16px;padding:28px;">
   <h1 style="font-size:22px;margin:0 0 8px;">Your order is on the way!</h1>
-  <p style="color:#7a6e5e;font-size:13px;">Order ${orderNumber}</p>
+  <p style="color:#52525B;font-size:13px;">Order ${orderNumber}</p>
   <p style="margin-top:16px;">Your coffee has shipped and is heading your way. Freshness guaranteed.</p>
-  ${trackingUrl ? `<div style="margin-top:24px;text-align:center;"><a href="${trackingUrl}" style="display:inline-block;padding:12px 20px;background:#b85c38;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">Track Shipment</a></div>` : ""}
+  ${trackingUrl ? `<div style="margin-top:24px;text-align:center;"><a href="${trackingUrl}" style="display:inline-block;padding:12px 20px;background:#286849;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">Track Shipment</a></div>` : ""}
 </div></div></body></html>`,
     });
   } catch (err) {
@@ -174,13 +174,13 @@ export async function sendRetentionEmail({
       to,
       subject: config.subject,
       html: `<!DOCTYPE html>
-<html><body style="margin:0;padding:0;background:#f6f2ec;font-family:Georgia,serif;color:#2a1e14;">
+<html><body style="margin:0;padding:0;background:#F5F0E8;font-family:Georgia,serif;color:#1A1A1A;">
 <div style="max-width:520px;margin:0 auto;padding:24px 16px;">
 <div style="background:#fff;border-radius:16px;padding:28px;">
   <h1 style="font-size:22px;margin:0 0 8px;">${config.heading}</h1>
   <p style="margin-top:16px;line-height:1.55;">${config.body}</p>
   <div style="margin-top:24px;text-align:center;">
-    <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://kynda.167.99.125.127.sslip.io"}/shop" style="display:inline-block;padding:12px 20px;background:#b85c38;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">${config.cta}</a>
+    <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://kynda.167.99.125.127.sslip.io"}/shop" style="display:inline-block;padding:12px 20px;background:#286849;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">${config.cta}</a>
   </div>
 </div></div></body></html>`,
     });
