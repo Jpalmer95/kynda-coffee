@@ -113,7 +113,7 @@ function isQrFulfillmentMode(value: unknown): value is QrFulfillmentMode {
 }
 
 function isQrPaymentPreference(value: unknown): value is QrPaymentPreference {
-  return value === "pay_at_counter" || value === "online_later";
+  return value === "pay_at_counter" || value === "stripe";
 }
 
 function orderNumberFromDate(now: Date): string {

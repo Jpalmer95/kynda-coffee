@@ -12,7 +12,7 @@ import {
 const category = {
   id: "CAT_DRINKS",
   type: "CATEGORY",
-  categoryData: { name: "Coffee Drinks", ordinal: 1n },
+  categoryData: { name: "Coffee Drinks", ordinal: BigInt(1) },
 };
 
 const image = {
@@ -24,7 +24,7 @@ const image = {
 const latte = {
   id: "ITEM_LATTE",
   type: "ITEM",
-  version: 123n,
+  version: BigInt(123),
   itemData: {
     name: "Latte",
     descriptionPlaintext: "Espresso and steamed milk",
@@ -39,7 +39,7 @@ const latte = {
         itemVariationData: {
           itemId: "ITEM_LATTE",
           name: "Small",
-          priceMoney: { amount: 450n, currency: "USD" },
+          priceMoney: { amount: BigInt(450), currency: "USD" },
           trackInventory: false,
         },
       },
@@ -49,7 +49,7 @@ const latte = {
         itemVariationData: {
           itemId: "ITEM_LATTE",
           name: "Large",
-          priceMoney: { amount: 650n, currency: "USD" },
+          priceMoney: { amount: BigInt(650), currency: "USD" },
           trackInventory: false,
         },
       },
@@ -98,7 +98,7 @@ describe("Square catalog transforms", () => {
   });
 
   it("serializes BigInt values before JSONB persistence", () => {
-    assert.deepEqual(serializeSquareRaw({ version: 123n, nested: [1n] }), {
+    assert.deepEqual(serializeSquareRaw({ version: BigInt(123), nested: [BigInt(1)] }), {
       version: "123",
       nested: ["1"],
     });

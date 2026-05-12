@@ -34,8 +34,11 @@ const order: StripePayableOrder = {
 describe("Stripe payment helpers for existing QR orders", () => {
   it("allows payment sessions only for unpaid positive-total QR/pickup orders", () => {
     assert.equal(canCreateStripePaymentForOrder(order).ok, true);
-    assert.equal(canCreateStripePaymentForOrder({ ...order, payment_status: "paid" }).ok, false);
-    assert.match(canCreateStripePaymentForOrder({ ...order, payment_status: "paid" }).error, /already paid/i);
+
+    const unpaidResult = canCreateStripePaymentForOrder({ ...order, payment_status: "paid" });
+    assert.equal(unpaidResult.ok, false);
+    assert.match((unpaidResult as { ok: false; error: string }).error, /already paid/i);
+
     assert.equal(canCreateStripePaymentForOrder({ ...order, total_cents: 0 }).ok, false);
     assert.equal(canCreateStripePaymentForOrder({ ...order, source: "website", order_channel: "shipping" }).ok, false);
   });

@@ -6,8 +6,11 @@ export type ActiveKdsStatus = (typeof ACTIVE_KDS_STATUSES)[number];
 export const KDS_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   pending: ["confirmed", "processing", "cancelled"],
   confirmed: ["processing", "cancelled"],
-  processing: ["delivered", "cancelled"],
+  processing: ["ready", "cancelled"],
   shipped: ["delivered"],
+  ready: ["complete", "fulfilled", "cancelled"],
+  complete: ["fulfilled", "delivered", "shipped"],
+  fulfilled: [],
   delivered: [],
   cancelled: [],
   refunded: [],
@@ -63,7 +66,7 @@ export function getKdsNextActions(status: OrderStatus): KdsAction[] {
     if (next === "cancelled") return { status: next, label: "Cancel", tone: "danger" };
     if (next === "confirmed") return { status: next, label: "Accept", tone: "secondary" };
     if (next === "processing") return { status: next, label: "Start", tone: "primary" };
-    if (next === "delivered") return { status: next, label: "Complete", tone: "primary" };
+    if (next === "ready" || next === "complete" || next === "fulfilled" || next === "delivered") return { status: next, label: "Complete", tone: "primary" };
     return { status: next, label: next, tone: "secondary" };
   });
 }

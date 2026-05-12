@@ -233,11 +233,11 @@ describe("QR order draft builder", () => {
   it("rejects unavailable items, invalid variations, invalid modifiers, and excessive modifier counts", () => {
     const unavailable = buildQrOrderDraft(validRequest, [catalogItem({ availableQr: false })]);
     const badVariation = buildQrOrderDraft(
-      { ...validRequest, items: [{ ...validRequest.items[0], providerVariationId: "BAD" }] },
+      { ...validRequest, items: [{ ...validRequest.items![0], providerVariationId: "BAD" }] },
       [catalogItem()]
     );
     const tooManyModifiers = buildQrOrderDraft(
-      { ...validRequest, items: [{ ...validRequest.items[0], modifierIds: ["MOD_OAT", "MOD_VANILLA"] }] },
+      { ...validRequest, items: [{ ...validRequest.items![0], modifierIds: ["MOD_OAT", "MOD_VANILLA"] }] },
       [catalogItem({
         modifierLists: [{ ...catalogItem().modifierLists[0], maxSelectedModifiers: 1 }],
         modifierListIds: ["MOD_MILK"],

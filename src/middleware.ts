@@ -12,6 +12,7 @@ const PUBLIC_ACCOUNT_PATHS = new Set([
   "/account",
   "/account/forgot-password",
   "/account/reset-password",
+  "/auth/callback",
 ]);
 
 export async function middleware(request: NextRequest) {

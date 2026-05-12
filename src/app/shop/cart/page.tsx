@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCartStore } from "@/hooks/useCart";
+import type { CartItem } from "@/types";
 import { useToast } from "@/components/ui/Toast";
 import { formatPrice, calculateTax, calculateShipping } from "@/lib/utils";
 import { LoyaltyRedemption } from "@/components/cart/LoyaltyRedemption";
@@ -64,7 +65,7 @@ export default function CartPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items.map((i) => ({
+          items: items.map((i: CartItem) => ({
             product_id: i.product.id,
             quantity: i.quantity,
             variant: i.selectedVariant,

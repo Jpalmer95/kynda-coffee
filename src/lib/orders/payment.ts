@@ -100,7 +100,15 @@ export function buildPaymentUpdate({
 }> {
   const currentStatus = normalizePaymentStatus(order);
   const transition = assertPaymentTransition(currentStatus, nextStatus);
-  if (!transition.ok) return transition;
+  if (!transition.ok) return {
+    ok: false,
+    error: (transition as { ok: false; error: string }).error,
+  } as Result<{
+    payment_status: PaymentStatus;
+    payment_method: PaymentMethod;
+    paid_at: string | null;
+    payment_metadata: PaymentMetadata;
+  }>;
 
   const at = now.toISOString();
   const paymentMethod = normalizeMethod(method, nextStatus);
