@@ -145,18 +145,18 @@ export default async function MenuPage() {
         )}
 
         {/* Order CTA */}
-        <div className="mt-12 rounded-2xl bg-espresso p-6 sm:p-8 text-center">
-          <h2 className="font-heading text-xl sm:text-2xl font-bold text-cream">
+        <div className="mt-12 rounded-2xl bg-espresso-200 p-6 sm:p-8 text-center">
+          <h2 className="font-heading text-xl sm:text-2xl font-bold text-espresso">
             Ready to Order?
           </h2>
-          <p className="mt-2 text-sm sm:text-base text-latte/80">
+          <p className="mt-2 text-sm sm:text-base text-mocha">
             Order ahead for pickup or scan the QR code in-store. A fully native Kynda checkout is now being wired into this live catalog.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
             <Link href="/qr-order" className="btn-accent">
               Start QR / Pickup Order
             </Link>
-            <a href="tel:+15122196781" className="btn-secondary bg-white/10 text-cream border-white/20 hover:bg-white/20">
+            <a href="tel:+151****6781" className="btn-secondary">
               Call (512) 219-6781
             </a>
           </div>
