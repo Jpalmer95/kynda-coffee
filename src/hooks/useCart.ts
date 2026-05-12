@@ -15,6 +15,9 @@ interface CartStore extends Cart {
   loyalty_value_cents: number;
   setLoyaltyRedemption: (points: number, valueCents: number) => void;
   clearLoyaltyRedemption: () => void;
+  // Aliases expected by LoyaltyRedemption component
+  applyLoyalty: (points: number, valueCents: number) => void;
+  removeLoyalty: () => void;
 }
 
 function calcTotals(items: CartItem[]) {
@@ -116,17 +119,20 @@ export const useCartStore = create<CartStore>()(
       },
 
       setLoyaltyRedemption: (points, valueCents) => {
-        set({
-          loyalty_points_used: points,
-          loyalty_value_cents: valueCents,
-        });
+        set({ loyalty_points_used: points, loyalty_value_cents: valueCents });
       },
 
       clearLoyaltyRedemption: () => {
-        set({
-          loyalty_points_used: 0,
-          loyalty_value_cents: 0,
-        });
+        set({ loyalty_points_used: 0, loyalty_value_cents: 0 });
+      },
+
+      // Aliases expected by LoyaltyRedemption component
+      applyLoyalty: (points, valueCents) => {
+        set({ loyalty_points_used: points, loyalty_value_cents: valueCents });
+      },
+
+      removeLoyalty: () => {
+        set({ loyalty_points_used: 0, loyalty_value_cents: 0 });
       },
     }),
     { name: "kynda-cart" }
