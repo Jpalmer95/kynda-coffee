@@ -1,4 +1,4 @@
-export function abandonedCartTemplate(data: any) {
+export function abandonedCartHtml(data: any) {
   return `
     <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #3C2F2F;">
       <h1 style="color: #8B5E3C;">You left something behind ☕</h1>
