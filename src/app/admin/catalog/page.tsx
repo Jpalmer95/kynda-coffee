@@ -261,7 +261,7 @@ export default function AdminCatalogPage() {
                       <button onClick={() => setExpanded(isExpanded ? null : key)} className="rounded-full bg-latte/20 px-3 py-1.5 text-xs font-medium text-mocha">
                         <SlidersHorizontal className="mr-1 inline h-3 w-3" /> Edit
                       </button>
-                      <button onClick={() => saveOverride(item)} disabled={savingKey === key} className="rounded-full bg-espresso px-3 py-1.5 text-xs font-medium text-cream disabled:opacity-50">
+                      <button onClick={() => saveOverride(item)} disabled={savingKey === key} className="rounded-full bg-surface px-3 py-1.5 text-xs font-medium text-sand disabled:opacity-50">
                         {savingKey === key ? <Loader2 className="mr-1 inline h-3 w-3 animate-spin" /> : <Save className="mr-1 inline h-3 w-3" />}
                         Save
                       </button>

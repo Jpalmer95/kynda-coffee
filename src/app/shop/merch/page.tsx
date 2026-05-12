@@ -23,7 +23,7 @@ export default function MerchPage() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <div className="bg-gradient-to-b from-espresso to-mocha text-white py-16 sm:py-24">
+      <div className="bg-gradient-to-b from-surface to-surface-800 text-sand py-16 sm:py-24">
         <div className="container-max text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-sm mb-4">
             <Sparkles className="h-4 w-4" /> Kynda Originals
@@ -86,7 +86,7 @@ export default function MerchPage() {
           )}
 
           <div className="mt-16 text-center">
-            <Link href="/studio" className="inline-flex items-center gap-3 rounded-[22px] px-10 py-4 bg-espresso hover:bg-espresso/80 text-white transition">
+            <Link href="/studio" className="inline-flex items-center gap-3 rounded-[22px] px-10 py-4 bg-surface hover:bg-surface/80 text-sand transition">
               <Sparkles className="h-5 w-5" /> Start Designing in the Studio
             </Link>
             <p className="text-xs text-mocha/60 mt-2">Mugs, apparel, glassware &amp; more. Ships fast.</p>

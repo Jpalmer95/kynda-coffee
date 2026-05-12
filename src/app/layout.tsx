@@ -10,6 +10,7 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { BackToTop } from "@/components/ui/BackToTop";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
+import { ThemeProvider } from "@/lib/theme/context";
 
 const body = Inter({
   subsets: ["latin"],
@@ -111,41 +112,60 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${heading.variable} ${body.variable}`}>
+    <html lang="en" className={`${heading.variable} ${body.variable}`} suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="format-detection" content="telephone=no" />
+        {/* Theme initialiser: set the correct class before JS to avoid FOUC */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(){
+                try {
+                  var t = localStorage.getItem('kynda-theme') || 'system';
+                  if (t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme','dark');
+                  } else {
+                    document.documentElement.removeAttribute('data-theme');
+                  }
+                } catch(e){}
+              })();
+            `,
+          }}
+        />
       </head>
       <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased touch-pan-y">
-        <ToastProvider>
-          <OfflineBanner />
-          <SkipLink />
-          <Header />
-          <main id="main-content" className="flex-1 focus:outline-none" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer />
-          <BottomNav />
-          <CartDrawer />
-          <BackToTop />
-          <InstallPrompt />
-          {/* Screen reader announcements for dynamic cart updates */}
-          <div id="cart-announcer" aria-live="polite" aria-atomic="true" className="sr-only" />
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                if ('serviceWorker' in navigator) {
-                  window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js').catch(() => {});
-                  });
-                }
-              `,
-            }}
-          />
-        </ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <OfflineBanner />
+            <SkipLink />
+            <Header />
+            <main id="main-content" className="flex-1 focus:outline-none" tabIndex={-1}>
+              {children}
+            </main>
+            <Footer />
+            <BottomNav />
+            <CartDrawer />
+            <BackToTop />
+            <InstallPrompt />
+            <div id="cart-announcer" aria-live="polite" aria-atomic="true" className="sr-only" />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                      navigator.serviceWorker.register('/sw.js').catch(() => {});
+                    });
+                  }
+                `,
+              }}
+            />
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

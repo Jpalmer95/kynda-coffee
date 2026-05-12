@@ -53,7 +53,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           )}
           {/* Out of stock badge */}
           {product.track_inventory && (product.inventory_count ?? 0) <= 0 && (
-            <div className="absolute inset-x-0 bottom-0 bg-espresso/80 py-2 text-center text-xs font-medium text-white backdrop-blur-sm">
+            <div className="absolute inset-x-0 bottom-0 bg-surface/80 py-2 text-center text-xs font-medium text-white backdrop-blur-sm">
               Out of Stock
             </div>
           )}

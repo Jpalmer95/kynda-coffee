@@ -77,7 +77,7 @@ export default function AdminDesignsPage() {
               onClick={() => setFilter(f)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 filter === f
-                  ? "bg-espresso text-cream"
+                  ? "bg-surface text-sand"
                   : "bg-latte/20 text-mocha hover:bg-latte/40"
               }`}
             >

@@ -71,7 +71,7 @@ function SearchContent() {
             <button
               type="submit"
               disabled={loading || inputValue.length < 2}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-espresso px-4 py-2 text-sm font-medium text-cream transition-colors hover:bg-espresso/90 disabled:opacity-50"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-surface px-4 py-2 text-sm font-medium text-sand transition-colors hover:bg-surface/90 disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -123,7 +123,7 @@ function SearchContent() {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <Coffee className="h-6 w-6 text-cream/60" />
+                      <Coffee className="h-6 w-6 text-sand/60" />
                     </div>
                   )}
                 </div>

@@ -289,7 +289,7 @@ export default function DashboardPage() {
                 onClick={() => setSelectedPeriod(period)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                   selectedPeriod === period
-                    ? "bg-espresso text-cream"
+                    ? "bg-surface text-sand"
                     : "bg-latte/20 text-mocha hover:bg-latte/40"
                 }`}
               >

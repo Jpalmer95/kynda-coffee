@@ -393,7 +393,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                 type="button"
                 onClick={() => payOnline(success.id)}
                 disabled={submitting}
-                className="mt-3 w-full rounded-xl bg-espresso px-3 py-2 text-sm font-semibold text-cream hover:bg-espresso/90 disabled:opacity-50"
+                className="mt-3 w-full rounded-xl bg-surface px-3 py-2 text-sm font-semibold text-sand hover:bg-surface/90 disabled:opacity-50"
               >
                 {submitting ? "Opening payment..." : "Pay Online Now"}
               </button>

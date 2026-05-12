@@ -30,7 +30,7 @@ export default function GlobalError({
           )}
           <button
             onClick={reset}
-            className="mt-6 rounded-xl bg-espresso px-6 py-3 text-sm font-medium text-cream transition-colors hover:bg-espresso/90"
+            className="mt-6 rounded-xl bg-surface px-6 py-3 text-sm font-medium text-sand transition-colors hover:bg-surface/90"
           >
             Reload Page
           </button>

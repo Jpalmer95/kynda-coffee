@@ -120,7 +120,7 @@ export function DesignCanvas({ productMockup, initialDesign, onLayersChange, onS
         </div>
         <button 
           onClick={() => onSave(layers)} 
-          className="px-4 py-1.5 rounded-full bg-espresso text-white text-sm hover:bg-black"
+          className="px-4 py-1.5 rounded-full bg-surface text-sand text-sm hover:bg-black"
         >
           Save Design
         </button>

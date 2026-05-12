@@ -197,7 +197,7 @@ export function DesignCanvas({ onSave, onPriceChange, initialDesignUrl }: Design
             onClick={() => setSelectedProduct(product.id)}
             className={`px-5 py-2 rounded-full text-sm border transition ${
               selectedProduct === product.id
-                ? "bg-espresso text-white border-espresso"
+                ? "bg-surface text-sand border-surface"
                 : "bg-white text-espresso border-latte/30 hover:bg-latte/5"
             }`}
           >

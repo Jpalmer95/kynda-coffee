@@ -228,7 +228,7 @@ export default function ProductDetailPage() {
                     onClick={() => setSelectedImage(i)}
                     className={`relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
                       selectedImage === i
-                        ? "border-espresso"
+                        ? "border-surface"
                         : "border-transparent hover:border-latte"
                     }`}
                     aria-label={`View image ${i + 1} of ${allImages.length}`}
@@ -342,8 +342,8 @@ export default function ProductDetailPage() {
                       onClick={() => setSelectedGrind(grind)}
                       className={`rounded-full px-3.5 py-2 text-xs sm:text-sm font-medium transition-all ${
                         selectedGrind === grind
-                          ? "bg-espresso text-cream"
-                          : "border border-latte bg-white text-mocha hover:border-espresso"
+                          ? "bg-surface text-sand"
+                          : "border border-latte bg-white text-mocha hover:border-surface"
                       }`}
                       aria-pressed={selectedGrind === grind}
                     >
@@ -367,8 +367,8 @@ export default function ProductDetailPage() {
                       onClick={() => setSelectedSize(size)}
                       className={`rounded-lg border px-4 py-2 text-xs sm:text-sm font-medium transition-all ${
                         selectedSize === size
-                          ? "border-espresso bg-espresso text-cream"
-                          : "border-latte bg-white text-mocha hover:border-espresso"
+                          ? "border-surface bg-surface text-sand"
+                          : "border-latte bg-white text-mocha hover:border-surface"
                       }`}
                       aria-pressed={selectedSize === size}
                     >
@@ -393,7 +393,7 @@ export default function ProductDetailPage() {
                         onClick={() => setSelectedColor(color.name)}
                         className={`relative h-9 w-9 sm:h-10 sm:w-10 rounded-full border-2 transition-all ${
                           selectedColor === color.name
-                            ? "border-espresso scale-110"
+                            ? "border-surface scale-110"
                             : "border-latte hover:scale-105"
                         }`}
                         style={{ backgroundColor: color.hex }}

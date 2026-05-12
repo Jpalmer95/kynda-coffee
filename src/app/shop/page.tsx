@@ -91,7 +91,7 @@ export default function ShopPage() {
               onClick={() => setActiveCategory(cat.slug)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 activeCategory === cat.slug
-                  ? "bg-espresso text-cream"
+                  ? "bg-surface text-sand"
                   : "bg-latte/20 text-mocha hover:bg-latte/40 hover:text-espresso"
               }`}
             >
@@ -130,7 +130,7 @@ export default function ShopPage() {
                     }}
                     className={`rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
                       activeCategory === cat.slug
-                        ? "bg-espresso text-cream"
+                        ? "bg-surface text-sand"
                         : "bg-latte/20 text-mocha hover:bg-latte/40"
                     }`}
                   >
@@ -180,10 +180,10 @@ export default function ShopPage() {
         <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} />
 
         {/* AI Design Studio CTA */}
-        <div className="mt-16 sm:mt-20 overflow-hidden rounded-2xl sm:rounded-3xl bg-espresso p-6 sm:p-12 text-center">
+        <div className="mt-16 sm:mt-20 overflow-hidden rounded-2xl sm:rounded-3xl bg-surface p-6 sm:p-12 text-center">
           <div className="mx-auto max-w-2xl">
             <Sparkles className="mx-auto h-8 w-8 sm:h-10 sm:w-10 text-rust" aria-hidden="true" />
-            <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-cream">
+            <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-sand">
               Want Something Unique?
             </h2>
             <p className="mt-3 text-sm sm:text-base text-latte/70">

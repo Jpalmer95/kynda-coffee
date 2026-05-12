@@ -68,10 +68,10 @@ function NewsletterSection() {
   }
 
   return (
-    <section className="section-padding bg-espresso">
+    <section className="section-padding bg-surface">
       <div className="container-max max-w-2xl mx-auto text-center">
         <Mail className="mx-auto h-8 w-8 text-rust" aria-hidden="true" />
-        <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-cream">
+        <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-sand">
           Stay in the Loop
         </h2>
         <p className="mt-2 text-base text-latte/80">
@@ -91,7 +91,7 @@ function NewsletterSection() {
               placeholder="you@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-field flex-1 bg-white/10 border-white/20 text-cream placeholder:text-latte/50 focus:border-rust"
+              className="input-field flex-1 bg-white/10 border-white/20 text-sand placeholder:text-latte/50 focus:border-rust"
             />
             <button
               type="submit"
@@ -132,7 +132,7 @@ export default function HomePage() {
             loading="eager"
             fetchPriority="high"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-espresso/90 via-espresso/70 to-espresso/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/70 to-surface/40" />
         </div>
         {/* Subtle texture */}
         <div
@@ -147,7 +147,7 @@ export default function HomePage() {
             <p className="mb-4 sm:mb-6 inline-block rounded-full border border-latte/30 px-3 py-1.5 text-xs sm:text-sm font-medium uppercase tracking-widest text-latte">
               Organic Specialty Coffee · Est. 2020 · Horseshoe Bay, TX
             </p>
-            <h1 className="font-heading text-4xl font-bold leading-[1.1] text-cream sm:text-6xl lg:text-7xl">
+            <h1 className="font-heading text-4xl font-bold leading-[1.1] text-sand sm:text-6xl lg:text-7xl">
               Every Cup
               <br />
               <span className="relative inline-block">
@@ -258,13 +258,13 @@ export default function HomePage() {
       {/* AI Design Studio CTA */}
       <section className="section-padding">
         <div className="container-max">
-          <div className="overflow-hidden rounded-2xl sm:rounded-3xl bg-espresso">
+          <div className="overflow-hidden rounded-2xl sm:rounded-3xl bg-surface">
             <div className="grid items-center lg:grid-cols-2">
               <div className="p-6 sm:p-12 lg:p-16">
                 <p className="text-xs sm:text-sm font-medium uppercase tracking-widest text-rust">
                   New Feature
                 </p>
-                <h2 className="mt-3 font-heading text-2xl sm:text-3xl font-bold leading-tight text-cream lg:text-4xl">
+                <h2 className="mt-3 font-heading text-2xl sm:text-3xl font-bold leading-tight text-sand lg:text-4xl">
                   Design Your Own
                   <br />
                   Kynda Merch
@@ -279,7 +279,7 @@ export default function HomePage() {
                     <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
                     Open Design Studio
                   </Link>
-                  <Link href="/shop" className="btn-secondary border-cream text-cream hover:bg-cream hover:text-espresso text-base px-6 sm:px-8 py-3.5 sm:py-4">
+                  <Link href="/shop" className="btn-secondary border-cream text-sand hover:bg-cream hover:text-espresso text-base px-6 sm:px-8 py-3.5 sm:py-4">
                     Shop Core Collection
                   </Link>
                 </div>

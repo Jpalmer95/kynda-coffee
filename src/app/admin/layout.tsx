@@ -80,7 +80,7 @@ export default function AdminLayout({
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-espresso text-cream"
+                      ? "bg-surface text-sand"
                       : "text-mocha hover:bg-latte/20 hover:text-espresso"
                   )}
                   aria-current={isActive ? "page" : undefined}

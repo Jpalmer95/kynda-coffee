@@ -5,9 +5,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ========= Sand / Canvas Background =========
-        // Light: warm sand (#F5F0E8)
-        // Dark: warm charcoal (#1C1917)
+        // ========= Page Background (switches light<->dark) =========
         cream: {
           DEFAULT: "rgb(var(--bg-cream) / <alpha-value>)",
           50: "rgb(var(--bg-cream-50) / <alpha-value>)",
@@ -15,9 +13,7 @@ const config: Config = {
           200: "rgb(var(--bg-cream-200) / <alpha-value>)",
         },
 
-        // ========= Primary Text (Charcoal / Sand) =========
-        // Light: near-black charcoal (#1A1A1A) -- 15.9:1 on sand
-        // Dark: sand/canvas (#F5F0E8) -- 14.8:1 on charcoal
+        // ========= Primary Text (switches light<->dark) =========
         espresso: {
           DEFAULT: "rgb(var(--text-espresso) / <alpha-value>)",
           50: "rgb(var(--text-espresso-50) / <alpha-value>)",
@@ -27,16 +23,16 @@ const config: Config = {
           900: "rgb(var(--text-espresso-900) / <alpha-value>)",
         },
 
-        // ========= Card Background =========
-        // Light: white (#FFFFFF)
-        // Dark: warm stone (#292524)
-        card: {
-          DEFAULT: "rgb(var(--bg-card) / <alpha-value>)",
+        // ========= Card Surface (switches light<->dark) =========
+        card: { DEFAULT: "rgb(var(--bg-card) / <alpha-value>)" },
+
+        // ========= Dark Container Surface (always dark, both modes) =========
+        surface: {
+          DEFAULT: "rgb(var(--bg-surface) / <alpha-value>)",
+          800: "rgb(var(--bg-surface-800) / <alpha-value>)",
         },
 
-        // ========= Border / Divider =========
-        // Light: warm sand-tan (#C8BFB0)
-        // Dark: warm stone (#44403C)
+        // ========= Border (switches light<->dark) =========
         latte: {
           DEFAULT: "rgb(var(--border-latte) / <alpha-value>)",
           300: "rgb(var(--border-latte-300) / <alpha-value>)",
@@ -46,9 +42,7 @@ const config: Config = {
           700: "rgb(var(--border-latte-700) / <alpha-value>)",
         },
 
-        // ========= Secondary Muted Text =========
-        // Light: medium gray (#5A5A5A) -- 5.4:1 on sand
-        // Dark: warm stone gray (#A8A29E) -- 7.5:1 on charcoal
+        // ========= Secondary Muted Text (switches light<->dark) =========
         mocha: {
           DEFAULT: "rgb(var(--text-mocha) / <alpha-value>)",
           300: "rgb(var(--text-mocha-300) / <alpha-value>)",
@@ -58,10 +52,7 @@ const config: Config = {
           700: "rgb(var(--text-mocha-700) / <alpha-value>)",
         },
 
-        // ========= Forest Green (Primary Accent) =========
-        // Light: deep forest (#286849) -- 4.8:1 on sand
-        // Dark: bright green (#52B788) -- 7.2:1 on charcoal
-        // White text on light forest = 6.7:1
+        // ========= Forest Green (switches light<->dark) =========
         forest: {
           DEFAULT: "rgb(var(--accent-forest) / <alpha-value>)",
           300: "rgb(var(--accent-forest-300) / <alpha-value>)",
@@ -71,9 +62,7 @@ const config: Config = {
           700: "rgb(var(--accent-forest-700) / <alpha-value>)",
         },
 
-        // ========= Soft Accent (Sage Green) =========
-        // Light: sage (#5E8A66) -- 4.7:1 on sand
-        // Dark: lighter sage (#78C480) -- 9.0:1 on charcoal
+        // ========= Sage (switches light<->dark) =========
         sage: {
           DEFAULT: "rgb(var(--accent-sage) / <alpha-value>)",
           300: "rgb(var(--accent-sage-300) / <alpha-value>)",
@@ -82,8 +71,14 @@ const config: Config = {
           600: "rgb(var(--accent-sage-600) / <alpha-value>)",
         },
 
-        // ========= Rust (Legacy alias to Forest) =========
-        // Keep for backward compat: existing bg-rust / text-rust maps to forest
+        // ========= Light text for dark surfaces (always #F5F0E8) =========
+        // Used as text-sand on bg-surface. This NEVER switches modes.
+        sand: {
+          DEFAULT: "rgb(var(--text-cream) / <alpha-value>)",
+          50: "rgb(var(--text-cream-50) / <alpha-value>)",
+        },
+
+        // ========= Rust (legacy alias to forest) =========
         rust: {
           DEFAULT: "rgb(var(--accent-forest) / <alpha-value>)",
           300: "rgb(var(--accent-forest-300) / <alpha-value>)",
@@ -97,9 +92,7 @@ const config: Config = {
         heading: ["Inter", "system-ui", "sans-serif"],
         body: ["Inter", "system-ui", "sans-serif"],
       },
-      borderRadius: {
-        "4xl": "2rem",
-      },
+      borderRadius: { "4xl": "2rem" },
       boxShadow: {
         soft: "0 2px 10px rgba(0, 0, 0, 0.06)",
         hover: "0 10px 25px rgba(0, 0, 0, 0.08)",

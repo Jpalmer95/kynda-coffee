@@ -58,7 +58,7 @@ export function InstallPrompt() {
     <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+80px)] left-4 right-4 z-50 sm:left-auto sm:right-6 sm:w-80 sm:bottom-6">
       <div className="rounded-2xl border border-latte/30 bg-white p-4 shadow-xl animate-slide-up">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-espresso">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-surface">
             <span className="text-lg">☕</span>
           </div>
           <div className="flex-1">
@@ -69,7 +69,7 @@ export function InstallPrompt() {
             <div className="mt-3 flex gap-2">
               <button
                 onClick={handleInstall}
-                className="inline-flex items-center gap-1.5 rounded-full bg-espresso px-4 py-2 text-xs font-medium text-cream hover:bg-mocha transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full bg-surface px-4 py-2 text-xs font-medium text-sand hover:bg-mocha transition-colors"
               >
                 <Download className="h-3.5 w-3.5" />
                 Install

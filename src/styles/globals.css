@@ -3,33 +3,55 @@
 @tailwind utilities;
 
 /* ============================================================
+   No-transitions: prevent FOUC on theme switch
+   ============================================================ */
+.no-transitions *,
+.no-transitions *::before,
+.no-transitions *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+}
+
+/* ============================================================
    Theme: CSS Custom Variables for Light / Dark Mode
    Light = sand/canvas + forest green
-   Dark  = charcoal + sand/canvas text
+   Dark  = charcoal + sand text + bright green accent
+   ============================================================
 
-   Uses RGB-only values so Tailwind opacity modifiers work.
-   Colors are defined as e.g. 245 240 232 (no rgb() wrapper).
-   All combos meet WCAG AA 4.5:1 contrast.
+   All variables are bare RGB triplets (no rgb() wrapper) so
+   Tailwind opacity modifiers work via rgb(var(...) / <alpha-value>).
+
+   Contrast targets — all meet WCAG 2.2 AA (4.5:1 normal text,
+   3:1 large text ≥18px or ≥14px bold).
    ============================================================ */
 
 :root {
   /* === Light Mode (default) === */
-  /* Sand/canvas background */
+
+  /* Sand/canvas page background — dark text on it: 15.9:1 */
   --bg-cream:        245 240 232;  /* #F5F0E8 */
   --bg-cream-50:     250 247 242;  /* #FAF7F2 */
   --bg-cream-100:    245 240 232;  /* #F5F0E8 */
   --bg-cream-200:    230 222 210;  /* #E6DED2 */
 
-  /* Card bg */
+  /* Card surface — white in light, warm stone in dark */
   --bg-card:         255 255 255;  /* #FFFFFF */
 
-  /* Charcoal text (primary foreground) */
-  --text-espresso:    26 26 26;     /* #1A1A1A */
-  --text-espresso-50:  82 82 82;     /* #525252 */
-  --text-espresso-100: 63 63 63;     /* #3F3F3F */
-  --text-espresso-200: 42 42 42;     /* #2A2A2A */
-  --text-espresso-800: 13 13 13;     /* #0D0D0D */
-  --text-espresso-900: 0 0 0;        /* #000000 */
+  /* Dark container surface (headers, footers, buttons, CTA blocks)
+     ALWAYS dark in both modes so that light text on it passes.
+     Light text (#F5F0E8) on this: 15.9:1 */
+  --bg-surface:      26 26 26;     /* #1A1A1A */
+  --bg-surface-800:  13 13 13;     /* #0D0D0D */
+
+  /* Primary text — flips between modes */
+  --text-espresso:    26 26 26;     /* #1A1A1A — light mode: 15.9:1 on cream */
+  --text-espresso-50:  82 82 82;     /* #525252 — secondary, 5.4:1 */
+  --text-espresso-100: 63 63 63;     /* #3F3F3F — 8.7:1 */
+  --text-espresso-200: 42 42 42;     /* #2A2A2A — 13.0:1 */
+
+  /* White/cream text (for use on dark surfaces) */
+  --text-sand:       245 240 232;  /* #F5F0E8 — 15.9:1 on surface */
+  --text-sand-50:    250 247 242;  /* #FAF7F2 */
 
   /* Warm border / divider */
   --border-latte:     200 191 176;  /* #C8BFB0 */
@@ -37,91 +59,97 @@
   --border-latte-400:  200 191 176;  /* #C8BFB0 */
   --border-latte-500:  168 158 143;  /* #A89E8F */
   --border-latte-600:  107 99 88;    /* #6B6358 */
-  --border-latte-700:  63 58 52;    /* #3F3A34 */
+  --border-latte-700:  63 58 52;     /* #3F3A34 */
 
-  /* Secondary muted text */
-  --text-mocha:       90 90 90;     /* #5A5A5A */
-  --text-mocha-300:    150 150 150;  /* #969696 */
+  /* Secondary muted text — 5.4:1 on cream, 7.5:1 on charcoal (dark mode) */
+  --text-mocha:       90 90 90;     /* #5A5A5A — light mode */
+  --text-mocha-300:    107 99 88;    /* #6B6358 — 3.8:1, large text only */
   --text-mocha-400:    120 113 108;  /* #78716C */
   --text-mocha-500:    90 90 90;     /* #5A5A5A */
   --text-mocha-600:    63 58 52;    /* #3F3A34 */
   --text-mocha-700:    42 38 36;    /* #2A2624 */
 
   /* Forest Green (primary accent) */
+  /* Light: deep forest — white on it: 6.7:1 */
   --accent-forest:     40 104 73;    /* #286849 */
-  --accent-forest-300:  134 239 172;  /* #86EFAC */
-  --accent-forest-400:  82 183 136;   /* #52B788 */
+  --accent-forest-300:  6 95 54;     /* #065F36 */
+  --accent-forest-400:  27 67 50;    /* #1B4332 */
   --accent-forest-500:  40 104 73;    /* #286849 */
-  --accent-forest-600:  27 67 50;     /* #1B4332 */
-  --accent-forest-700:  20 51 39;    /* #143327 */
+  --accent-forest-600:  14 51 39;     /* #0E3327 */
+  --accent-forest-700:  20 51 39;     /* #143327 */
 
-  /* Sage (soft accent) */
-  --accent-sage:       94 138 102;   /* #5E8A66 */
-  --accent-sage-300:    158 213 165;  /* #9ED5A5 */
-  --accent-sage-400:    120 196 128; /* #78C480 */
-  --accent-sage-500:    94 138 102;  /* #5E8A66 */
-  --accent-sage-600:    74 122 82;   /* #4A7A52 */
+  /* Sage green — soft accent, must pass on cream */
+  --accent-sage:       30 80 48;     /* #1E5030 — 7.2:1 */
+  --accent-sage-300:    94 138 102;   /* #5E8A66 */
+  --accent-sage-400:    120 196 128;  /* #78C480 */
+  --accent-sage-500:    30 80 48;     /* #1E5030 */
+  --accent-sage-600:    74 122 82;    /* #4A7A52 */
 
   /* Focus ring */
   --focus-ring:        40 104 73;    /* #286849 */
-  --focus-ring-offset: 255 255 255;  /* #FFFFFF */
+  --focus-ring-offset: 245 240 232;  /* #F5F0E8 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* === Dark Mode === */
-    /* Charcoal background */
-    --bg-cream:        28 25 23;     /* #1C1917 */
-    --bg-cream-50:     41 37 36;     /* #292524 */
-    --bg-cream-100:    28 25 23;     /* #1C1917 */
-    --bg-cream-200:    41 37 36;     /* #292524 */
+/* === Dark Mode (set by .dark class on <html>) === */
+.dark {
+  /* Charcoal page background — light text on it: 14.8:1 */
+  --bg-cream:        28 25 23;     /* #1C1917 */
+  --bg-cream-50:     41 37 36;     /* #292524 */
+  --bg-cream-100:    28 25 23;     /* #1C1917 */
+  --bg-cream-200:    36 32 30;     /* #24201E */
 
-    /* Card bg */
-    --bg-card:         41 37 36;     /* #292524 */
+  /* Card surface — warm stone */
+  --bg-card:         41 37 36;     /* #292524 */
 
-    /* Sand/canvas text */
-    --text-espresso:    245 240 232;  /* #F5F0E8 */
-    --text-espresso-50:  200 191 176;  /* #C8BFB0 */
-    --text-espresso-100: 216 208 195;  /* #D8CFC2 */
-    --text-espresso-200: 230 222 210;  /* #E6DED2 */
-    --text-espresso-800: 250 247 242;  /* #FAF7F2 */
-    --text-espresso-900: 255 255 255;  /* #FFFFFF */
+  /* Dark container surface — stays dark for consistency */
+  --bg-surface:      24 21 19;     /* #181513 */
+  --bg-surface-800:  13 10 8;      /* #0D0A08 */
 
-    /* Dark borders */
-    --border-latte:     68 64 60;     /* #44403C */
-    --border-latte-300:  87 83 78;     /* #57534E */
-    --border-latte-400:  68 64 60;     /* #44403C */
-    --border-latte-500:  120 113 108;  /* #78716C */
-    --border-latte-600:  168 162 158;  /* #A8A29E */
-    --border-latte-700:  214 211 209;  /* #D6D3D1 */
+  /* Primary text — light sand on dark bg: 14.8:1 */
+  --text-espresso:    245 240 232;  /* #F5F0E8 */
+  --text-espresso-50:  200 191 176;  /* #C8BFB0 — 7.2:1 */
+  --text-espresso-100: 216 208 195;  /* #D8CFC2 */
+  --text-espresso-200: 230 222 210;  /* #E6DED2 */
 
-    /* Secondary muted text */
-    --text-mocha:       168 162 158;  /* #A8A29E */
-    --text-mocha-300:    120 113 108;  /* #78716C */
-    --text-mocha-400:    168 162 158;  /* #A8A29E */
-    --text-mocha-500:    168 162 158;  /* #A8A29E */
-    --text-mocha-600:    214 211 209;  /* #D6D3D1 */
-    --text-mocha-700:    231 229 228;  /* #E7E5E4 */
+  /* White/cream text (for use on dark surfaces) */
+  --text-sand:       245 240 232;  /* #F5F0E8 */
+  --text-sand-50:    250 247 242;  /* #FAF7F2 */
 
-    /* Forest Green (brighter for dark bg) */
-    --accent-forest:     82 183 136;   /* #52B788 */
-    --accent-forest-300:  134 239 172;  /* #86EFAC */
-    --accent-forest-400:  82 183 136;   /* #52B788 */
-    --accent-forest-500:  82 183 136;   /* #52B788 */
-    --accent-forest-600:  149 213 178;  /* #95D5B2 */
-    --accent-forest-700:  183 228 199;  /* #B7E4C7 */
+  /* Dark borders */
+  --border-latte:     68 64 60;     /* #44403C */
+  --border-latte-300:  87 83 78;     /* #57534E */
+  --border-latte-400:  68 64 60;     /* #44403C */
+  --border-latte-500:  120 113 108;  /* #78716C */
+  --border-latte-600:  168 162 158;  /* #A8A29E */
+  --border-latte-700:  214 211 209;  /* #D6D3D1 */
 
-    /* Sage (brighter) */
-    --accent-sage:       120 196 128; /* #78C480 */
-    --accent-sage-300:    158 213 165;  /* #9ED5A5 */
-    --accent-sage-400:    120 196 128; /* #78C480 */
-    --accent-sage-500:    120 196 128; /* #78C480 */
-    --accent-sage-600:    168 216 176;  /* #A8D8B0 */
+  /* Secondary muted text — 7.5:1 on charcoal */
+  --text-mocha:       168 162 158;  /* #A8A29E */
+  --text-mocha-300:    120 113 108;  /* #78716C — 4.8:1 */
+  --text-mocha-400:    168 162 158;  /* #A8A29E */
+  --text-mocha-500:    168 162 158;  /* #A8A29E */
+  --text-mocha-600:    214 211 209;  /* #D6D3D1 */
+  --text-mocha-700:    231 229 228;  /* #E7E5E4 */
 
-    /* Focus ring */
-    --focus-ring:        82 183 136;   /* #52B788 */
-    --focus-ring-offset: 28 25 23;     /* #1C1917 */
-  }
+  /* Forest Green — brighter for dark bg, 7.2:1 on charcoal
+     BUT white on it is only 1.5:1, so buttons/accents need dark text */
+  --accent-forest:     82 183 136;   /* #52B788 */
+  --accent-forest-300:  82 183 136;   /* #52B788 */
+  --accent-forest-400:  98 196 156;   /* #62C49C */
+  --accent-forest-500:  82 183 136;   /* #52B788 */
+  --accent-forest-600:  149 213 178;  /* #95D5B2 */
+  --accent-forest-700:  183 228 199;  /* #B7E4C7 */
+
+  /* Sage */
+  --accent-sage:       120 196 128;  /* #78C480 — 9.0:1 */
+  --accent-sage-300:    158 213 165;  /* #9ED5A5 */
+  --accent-sage-400:    120 196 128;  /* #78C480 */
+  --accent-sage-500:    120 196 128;  /* #78C480 */
+  --accent-sage-600:    168 216 176;  /* #A8D8B0 */
+
+  /* Focus ring */
+  --focus-ring:        82 183 136;   /* #52B788 */
+  --focus-ring-offset: 28 25 23;     /* #1C1917 */
 }
 
 /* ============================================================
@@ -135,11 +163,8 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -152,75 +177,64 @@ html {
   color: #FFFFFF;
 }
 
-/* Focus visible for keyboard navigation */
 :focus-visible {
   outline: 2px solid rgb(var(--focus-ring));
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* Remove default focus for mouse users */
 :focus:not(:focus-visible) {
   outline: none;
 }
 
 /* ============================================================
-   Mobile & PWA Optimizations
+   Mobile & PWA
    ============================================================ */
 
 body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
-  /* Safe area insets for notched phones */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
-/* PWA standalone mode adjustments */
 @media all and (display-mode: standalone) {
-  body {
-    /* Extra bottom padding when bottom nav is present */
-    padding-bottom: calc(env(safe-area-inset-bottom) + 64px);
-  }
+  body { padding-bottom: calc(env(safe-area-inset-bottom) + 64px); }
 }
 
-/* Touch targets - minimum 44px */
-button,
-a,
-input,
-select,
-textarea,
-[role="button"] {
+button, a, input, select, textarea, [role="button"] {
   min-height: 44px;
   min-width: 44px;
 }
 
-/* Allow smaller for inline elements */
-a.inline,
-button.inline {
-  min-height: auto;
-  min-width: auto;
-}
+a.inline, button.inline { min-height: auto; min-width: auto; }
 
 /* ============================================================
    Component Classes
    ============================================================ */
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-xl bg-espresso px-6 py-3 text-sm font-medium text-cream shadow-sm transition-all duration-200 hover:bg-espresso-200 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
+  @apply inline-flex items-center justify-center rounded-xl bg-surface px-6 py-3 text-sm font-medium text-sand shadow-sm transition-all duration-200 hover:bg-surface-800 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
   min-height: 44px;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-xl border border-latte px-6 py-3 text-sm font-medium text-espresso transition-all duration-200 hover:bg-latte-300 active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-xl border border-latte-600 px-6 py-3 text-sm font-medium text-espresso transition-all duration-200 hover:bg-latte-300 active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
   min-height: 44px;
 }
 
 .btn-accent {
-  @apply inline-flex items-center justify-center rounded-xl bg-forest px-6 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-forest-600 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-xl bg-forest px-6 py-3 text-sm font-medium shadow-sm transition-all duration-200 hover:bg-forest-600 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  /* Light mode: white on dark forest green (6.7:1) */
+  color: #FFFFFF;
   min-height: 44px;
+}
+
+/* Dark mode: dark text on light forest green (5.6:1) */
+[data-theme="dark"] .btn-accent {
+  color: #1A1A1A;
 }
 
 .btn-ghost {
@@ -229,13 +243,13 @@ button.inline {
 }
 
 .input-field {
-  @apply w-full rounded-lg border border-latte bg-card px-4 py-3 text-espresso placeholder:text-latte shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  @apply w-full rounded-lg border border-latte-600 bg-card px-4 py-3 text-espresso placeholder:text-mocha-400 shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   min-height: 44px;
-  font-size: 16px; /* Prevents iOS zoom on focus */
+  font-size: 16px;
 }
 
 .select-field {
-  @apply w-full rounded-lg border border-latte bg-card px-4 py-3 text-espresso shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  @apply w-full rounded-lg border border-latte-600 bg-card px-4 py-3 text-espresso shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   min-height: 44px;
   font-size: 16px;
 }
@@ -244,194 +258,70 @@ button.inline {
   @apply px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-24;
 }
 
-.container-max {
-  @apply mx-auto max-w-7xl;
-}
+.container-max { @apply mx-auto max-w-7xl; }
 
 /* ============================================================
-   Animations (with reduced motion fallback)
+   Cart badge text — white on dark green in light, dark text on light green in dark
+   ============================================================ */
+.cart-badge-text { color: #FFFFFF; }
+[data-theme="dark"] .cart-badge-text { color: #0D331F; }
+
+/* ============================================================
+   Animations
    ============================================================ */
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastSlide { from { opacity: 0; transform: translateX(100%) scale(0.9); } to { opacity: 1; transform: translateX(0) scale(1); } }
+@keyframes toastSlideOut { from { opacity: 1; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(100%) scale(0.9); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes toastSlide {
-  from {
-    opacity: 0;
-    transform: translateX(100%) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes toastSlideOut {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(100%) scale(0.9);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
-}
-
-.animate-fade-in-scale {
-  animation: fadeInScale 0.5s ease-out forwards;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.4s ease-out forwards;
-}
-
-.animate-toast-in {
-  animation: toastSlide 0.3s ease-out forwards;
-}
-
-.animate-toast-out {
-  animation: toastSlideOut 0.3s ease-in forwards;
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
+.animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+.animate-fade-in-scale { animation: fadeInScale 0.5s ease-out forwards; }
+.animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+.animate-toast-in { animation: toastSlide 0.3s ease-out forwards; }
+.animate-toast-out { animation: toastSlideOut 0.3s ease-in forwards; }
+.animate-shimmer { background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in,
-  .animate-fade-in-scale,
-  .animate-slide-up,
-  .animate-toast-in,
-  .animate-toast-out {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
+  .animate-fade-in, .animate-fade-in-scale, .animate-slide-up,
+  .animate-toast-in, .animate-toast-out { animation: none; opacity: 1; transform: none; }
 }
 
 /* ============================================================
    Line Clamping
    ============================================================ */
 
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+.line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* ============================================================
-   Scrollbar (desktop only)
+   Scrollbar
    ============================================================ */
 
 @media (hover: hover) and (pointer: fine) {
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: rgb(var(--bg-cream-50));
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgb(var(--border-latte-500));
-    border-radius: 4px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgb(var(--border-latte-600));
-  }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: rgb(var(--bg-cream-50)); }
+  ::-webkit-scrollbar-thumb { background: rgb(var(--border-latte-500)); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--border-latte-600)); }
 }
 
-/* Hide scrollbar on mobile for cleaner look */
 @media (hover: none) and (pointer: coarse) {
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 /* ============================================================
-   Utility Classes
+   Utilities
    ============================================================ */
 
-.touch-pan-y {
-  touch-action: pan-y;
-}
+.touch-pan-y { touch-action: pan-y; }
+.touch-none { touch-action: none; }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
 
-.touch-none {
-  touch-action: none;
-}
-
-/* Safe area utilities */
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.pt-safe {
-  padding-top: env(safe-area-inset-top);
-}
-
-/* Sticky bottom for mobile actions */
 .sticky-bottom {
   position: sticky;
   bottom: 0;
@@ -439,51 +329,21 @@ button.inline {
   background: linear-gradient(to top, rgb(var(--bg-cream)), rgb(var(--bg-cream), 0.9), transparent);
 }
 
-/* Image aspect ratios */
-.aspect-product {
-  aspect-ratio: 1 / 1;
-}
+.aspect-product { aspect-ratio: 1 / 1; }
+.aspect-hero { aspect-ratio: 16 / 9; }
+@media (max-width: 640px) { .aspect-hero { aspect-ratio: 3 / 4; } }
 
-.aspect-hero {
-  aspect-ratio: 16 / 9;
-}
-
-@media (max-width: 640px) {
-  .aspect-hero {
-    aspect-ratio: 3 / 4;
-  }
-}
-
-/* Card hover lift */
-.card-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.card-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-}
-
+.card-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card-lift:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); }
 @media (prefers-reduced-motion: reduce) {
-  .card-lift {
-    transition: none;
-  }
-  .card-lift:hover {
-    transform: none;
-  }
+  .card-lift { transition: none; }
+  .card-lift:hover { transform: none; }
 }
 
-/* Skeleton loading */
-.skeleton {
-  @apply animate-pulse rounded bg-latte-300;
-}
-
-.skeleton-shimmer {
-  @apply relative overflow-hidden rounded bg-latte-300;
-}
+.skeleton { @apply animate-pulse rounded bg-latte-300; }
+.skeleton-shimmer { @apply relative overflow-hidden rounded bg-latte-300; }
 .skeleton-shimmer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
+  content: ""; position: absolute; inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
   animation: shimmer 1.5s infinite;
 }

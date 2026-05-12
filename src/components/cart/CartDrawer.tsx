@@ -72,7 +72,7 @@ export function CartDrawer() {
       {/* Floating cart button (mobile) */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed right-4 bottom-24 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-espresso text-cream shadow-lg transition-transform hover:scale-105 active:scale-95 lg:hidden"
+        className="fixed right-4 bottom-24 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-surface text-sand shadow-lg transition-transform hover:scale-105 active:scale-95 lg:hidden"
         aria-label={`Open cart (${item_count} items)`}
       >
         <ShoppingBag className="h-5 w-5" />
@@ -86,7 +86,7 @@ export function CartDrawer() {
       {/* Overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-espresso/40 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-50 bg-surface/40 backdrop-blur-sm transition-opacity"
           onClick={() => setOpen(false)}
           aria-hidden="true"
         />

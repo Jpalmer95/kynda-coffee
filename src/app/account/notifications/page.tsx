@@ -133,7 +133,7 @@ export default function NotificationsPage() {
                 className={`rounded-full px-4 py-2 text-xs font-medium transition-colors ${
                   subscribed
                     ? "bg-sage/10 text-sage hover:bg-sage/20"
-                    : "bg-espresso text-cream hover:bg-mocha"
+                    : "bg-surface text-sand hover:bg-mocha"
                 }`}
               >
                 {pushLoading ? (

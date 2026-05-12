@@ -36,7 +36,7 @@ export function BottomNav() {
           className={cn(
             "flex h-12 w-12 items-center justify-center rounded-full shadow-lg border-2 transition-all",
             pathname === "/search"
-              ? "bg-espresso text-cream border-espresso"
+              ? "bg-surface text-sand border-surface"
               : "bg-white text-espresso border-latte/30 hover:border-rust hover:text-rust"
           )}
           aria-label="Search"
@@ -63,7 +63,7 @@ export function BottomNav() {
               <div className="relative">
                 <item.icon className={cn("h-6 w-6", isActive && "text-rust")} strokeWidth={isActive ? 2.5 : 1.5} />
                 {isCart && itemCount > 0 && (
-                  <span className="absolute -right-2.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rust text-[10px] font-bold text-white ring-2 ring-cream">
+                  <span className="absolute -right-2.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rust text-[10px] font-bold text-white ring-2 ring-sand">
                     {itemCount > 9 ? "9+" : itemCount}
                   </span>
                 )}

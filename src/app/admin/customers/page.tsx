@@ -136,7 +136,7 @@ export default function AdminCustomersPage() {
                   <div className="font-mono text-2xl font-semibold text-rust">{customer.points}</div>
                   <div className="text-xs text-mocha">Points</div>
                 </div>
-                <div className="px-4 py-1 rounded-full bg-espresso text-white text-xs font-medium self-center">
+                <div className="px-4 py-1 rounded-full bg-surface text-white text-xs font-medium self-center">
                   {customer.tier}
                 </div>
               </div>

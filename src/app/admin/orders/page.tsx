@@ -151,7 +151,7 @@ export default function AdminOrdersPage() {
         ) : (
           <div className="space-y-3">
             {/* Desktop Table Header */}
-            <div className="hidden sm:grid sm:grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 rounded-xl bg-espresso px-4 py-3 text-xs font-medium uppercase tracking-wider text-cream">
+            <div className="hidden sm:grid sm:grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 rounded-xl bg-surface px-4 py-3 text-xs font-medium uppercase tracking-wider text-sand">
               <span>Order</span>
               <span>Customer</span>
               <span>Items</span>

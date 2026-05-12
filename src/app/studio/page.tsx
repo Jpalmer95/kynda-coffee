@@ -127,7 +127,7 @@ export default function DesignStudioPage() {
                 <button
                   key={index}
                   onClick={() => setStyle(id === style ? null : id)}
-                  className={`mr-2 mb-2 px-5 py-1.5 rounded-2xl text-sm border ${style === id ? "border-rust bg-rust text-white" : "border-latte/30"}`}
+                  className={`mr-2 mb-2 px-5 py-1.5 rounded-2xl text-sm border ${style === id ? "border-rust bg-rust text-sand" : "border-latte/30"}`}
                 >
                   {label}
                 </button>
@@ -138,7 +138,7 @@ export default function DesignStudioPage() {
           <button 
             onClick={generateDesign}
             disabled={isGenerating || !prompt.trim()}
-            className="mt-6 w-full py-4 rounded-3xl bg-espresso disabled:bg-gray-300 text-white text-lg font-medium flex items-center justify-center gap-2"
+            className="mt-6 w-full py-4 rounded-3xl bg-surface disabled:bg-gray-300 text-sand text-lg font-medium flex items-center justify-center gap-2"
           >
             {isGenerating ? "Creating your design..." : "✨ Generate with AI"}
           </button>
@@ -165,7 +165,7 @@ export default function DesignStudioPage() {
                 <div className="text-sm text-gray-500">Made to order • Ships in 5–8 days</div>
               </div>
               <div>
-                <button onClick={handleAddToCart} className="font-medium px-10 py-4 bg-rust text-white rounded-3xl">
+                <button onClick={handleAddToCart} className="font-medium px-10 py-4 bg-rust text-sand rounded-3xl">
                   Add to cart
                 </button>
               </div>

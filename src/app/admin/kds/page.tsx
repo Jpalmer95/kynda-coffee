@@ -73,7 +73,7 @@ export default function KDSPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#111] text-white p-4 md:p-8 font-mono">
+    <div className="min-h-screen bg-surface-800 text-sand p-4 md:p-8 font-mono">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

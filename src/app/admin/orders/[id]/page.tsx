@@ -131,8 +131,8 @@ export default function AdminOrderDetailPage() {
               disabled={updating || order.status === s}
               className={`rounded-lg border px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
                 order.status === s
-                  ? "border-espresso bg-espresso text-cream"
-                  : "border-latte bg-white text-mocha hover:border-espresso"
+                  ? "border-surface bg-surface text-sand"
+                  : "border-latte bg-white text-mocha hover:border-surface"
               }`}
             >
               {s}

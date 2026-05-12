@@ -159,8 +159,8 @@ export default function BlogPage() {
         </div>
 
         {/* Newsletter CTA */}
-        <div className="mt-12 sm:mt-16 rounded-2xl bg-espresso p-6 sm:p-10 text-center">
-          <h2 className="font-heading text-xl sm:text-2xl font-bold text-cream">
+        <div className="mt-12 sm:mt-16 rounded-2xl bg-surface p-6 sm:p-10 text-center">
+          <h2 className="font-heading text-xl sm:text-2xl font-bold text-sand">
             Never Miss a Post
           </h2>
           <p className="mt-2 text-sm text-latte/70 max-w-md mx-auto">

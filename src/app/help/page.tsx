@@ -169,8 +169,8 @@ export default function HelpPage() {
           </div>
 
           {/* Contact CTA */}
-          <div className="mt-12 rounded-2xl bg-espresso p-6 sm:p-10 text-center">
-            <h2 className="font-heading text-xl sm:text-2xl font-bold text-cream">
+          <div className="mt-12 rounded-2xl bg-surface p-6 sm:p-10 text-center">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-sand">
               Still have questions?
             </h2>
             <p className="mt-2 text-sm sm:text-base text-latte/80">
@@ -182,7 +182,7 @@ export default function HelpPage() {
               </Link>
               <a
                 href="mailto:kyndacoffee@gmail.com"
-                className="btn-secondary w-full sm:w-auto border-cream text-cream hover:bg-cream hover:text-espresso"
+                className="btn-secondary w-full sm:w-auto border-cream text-sand hover:bg-cream hover:text-espresso"
               >
                 Email Us
               </a>

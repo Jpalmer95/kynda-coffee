@@ -177,7 +177,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             onClick={() => setFulfillmentMode(mode)}
             className={`rounded-full px-5 py-2 text-sm font-medium transition ${
               fulfillmentMode === mode
-                ? "bg-espresso text-white"
+                ? "bg-surface text-sand"
                 : "bg-white text-espresso ring-1 ring-latte/30 hover:bg-latte/10"
             }`}
           >
@@ -243,7 +243,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                           {item.variations.map((v) => (
                             <label key={v.providerVariationId} className="cursor-pointer">
                               <input type="radio" name={`variation:${item.providerItemId}`} value={v.providerVariationId} defaultChecked={v === item.variations[0]} className="peer hidden" />
-                              <div className="rounded-xl border border-latte/30 bg-white px-3 py-1.5 text-sm peer-checked:border-espresso peer-checked:bg-espresso peer-checked:text-white">
+                              <div className="rounded-xl border border-latte/30 bg-white px-3 py-1.5 text-sm peer-checked:border-surface peer-checked:bg-surface peer-checked:text-sand">
                                 {v.name} &nbsp; {formatMoney(v.priceCents)}
                               </div>
                             </label>
@@ -287,7 +287,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       {/* Floating Cart Button */}
       <button
         onClick={() => setShowCart(true)}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-3xl bg-espresso px-6 py-4 font-semibold text-white shadow-xl md:bottom-8 md:right-8"
+        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-3xl bg-surface px-6 py-4 font-semibold text-sand shadow-xl md:bottom-8 md:right-8"
       >
         <ShoppingCart className="size-5" /> {itemCount} item{itemCount !== 1 ? "s" : ""} • {formatMoney(subtotalCents)}
       </button>

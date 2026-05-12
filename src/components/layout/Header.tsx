@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { ShoppingBag, Menu, X, Coffee, Search, User } from "lucide-react";
 import { useCartStore } from "@/hooks/useCart";
 import { useCartDrawer } from "@/hooks/useCartDrawer";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -102,7 +103,7 @@ export function Header() {
             >
               <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               {itemCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rust text-[11px] font-bold text-white">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rust text-[11px] font-bold cart-badge-text">
                   {itemCount > 9 ? "9+" : itemCount}
                 </span>
               )}
@@ -115,6 +116,11 @@ export function Header() {
             >
               <User className="h-5 w-5" aria-hidden="true" />
             </Link>
+
+            {/* Theme toggle */}
+            <div className="hidden lg:block">
+              <ThemeToggle />
+            </div>
 
             {/* Mobile menu button */}
             <button
@@ -183,11 +189,17 @@ export function Header() {
             <ShoppingBag className="h-5 w-5" aria-hidden="true" />
             Cart
             {itemCount > 0 && (
-              <span className="ml-auto rounded-full bg-rust px-2.5 py-0.5 text-xs font-bold text-white">
+              <span className="ml-auto rounded-full bg-rust px-2.5 py-0.5 text-xs font-bold cart-badge-text">
                 {itemCount}
               </span>
             )}
           </button>
+
+          {/* Theme switcher in mobile menu */}
+          <div className="mt-2 px-4">
+            <span className="text-xs font-medium text-mocha mb-1 block">Theme</span>
+            <ThemeToggle />
+          </div>
         </nav>
       </div>
 

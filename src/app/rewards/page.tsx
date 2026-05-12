@@ -180,9 +180,9 @@ export default function RewardsPage() {
 
         {/* CTA */}
         <div className="mt-12 sm:mt-16 text-center">
-          <div className="rounded-2xl bg-espresso p-6 sm:p-10">
+          <div className="rounded-2xl bg-surface p-6 sm:p-10">
             <Truck className="mx-auto h-8 w-8 text-rust" />
-            <h2 className="mt-4 font-heading text-xl sm:text-2xl font-bold text-cream">
+            <h2 className="mt-4 font-heading text-xl sm:text-2xl font-bold text-sand">
               Ready to Start Earning?
             </h2>
             <p className="mt-2 text-sm text-latte/70 max-w-md mx-auto">

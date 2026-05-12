@@ -22,11 +22,11 @@ export default function AboutPage() {
           </div>
 
           {/* Etymology Block */}
-          <div className="rounded-2xl bg-espresso p-6 sm:p-8 text-center mb-10">
+          <div className="rounded-2xl bg-surface p-6 sm:p-8 text-center mb-10">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/20 mb-4">
-              <Flame className="h-6 w-6 text-cream" aria-hidden="true" />
+              <Flame className="h-6 w-6 text-sand" aria-hidden="true" />
             </div>
-            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-cream tracking-wide">
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-sand tracking-wide">
               KYNDA <span className="text-latte/70 font-normal italic">/KEN-DUH/</span>
             </h2>
             <p className="mt-3 text-base sm:text-lg text-latte/80 max-w-xl mx-auto">
@@ -123,8 +123,8 @@ export default function AboutPage() {
           </div>
 
           {/* Visit Card */}
-          <div className="mt-12 rounded-2xl bg-espresso p-6 sm:p-8 text-center">
-            <h2 className="font-heading text-xl sm:text-2xl font-bold text-cream">
+          <div className="mt-12 rounded-2xl bg-surface p-6 sm:p-8 text-center">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-sand">
               Visit Us in Horseshoe Bay
             </h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-3 text-left sm:text-center">
@@ -138,7 +138,7 @@ export default function AboutPage() {
               <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
                 <Phone className="h-5 w-5 text-latte/70 flex-shrink-0" />
                 <p className="text-sm text-latte/80">
-                  <a href="tel:+15122196781" className="hover:text-cream transition-colors">
+                  <a href="tel:+15122196781" className="hover:text-sand transition-colors">
                     (512) 219-6781
                   </a>
                 </p>
@@ -160,7 +160,7 @@ export default function AboutPage() {
               >
                 Get Directions
               </a>
-              <Link href="/contact" className="btn-secondary bg-white/10 text-cream border-white/20 hover:bg-white/20">
+              <Link href="/contact" className="btn-secondary bg-white/10 text-sand border-white/20 hover:bg-white/20">
                 Contact Us
               </Link>
             </div>

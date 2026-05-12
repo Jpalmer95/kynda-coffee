@@ -64,7 +64,7 @@ export default function AdminProductsPage() {
             <button
               key={t}
               onClick={() => setSelectedType(t)}
-              className={`px-4 rounded-full text-sm font-medium border py-2 transition ${selectedType === t ? "bg-espresso text-white border-espresso" : "bg-white hover:bg-latte/10"}`}
+              className={`px-4 rounded-full text-sm font-medium border py-2 transition ${selectedType === t ? "bg-surface text-sand border-surface" : "bg-white hover:bg-latte/10"}`}
             >
               {t}
             </button>

@@ -100,7 +100,7 @@ export default function AdminInventoryPage() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                filter === f ? "bg-espresso text-white border-espresso" : "bg-white hover:bg-latte/10"
+                filter === f ? "bg-surface text-sand border-surface" : "bg-white hover:bg-latte/10"
               }`}
             >
               {f}

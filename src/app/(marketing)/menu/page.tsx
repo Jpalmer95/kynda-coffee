@@ -40,14 +40,14 @@ export default async function MenuPage() {
         </div>
 
         {/* Ordering Hub - Digital first */}
-        <div className="mb-16 rounded-3xl bg-espresso p-8 text-center text-cream">
+        <div className="mb-16 rounded-3xl bg-surface p-8 text-center text-sand">
           <h2 className="font-heading text-3xl font-bold">Ready to Order?</h2>
           <p className="mt-3 max-w-xl mx-auto text-latte/90">
             Order ahead for pickup or curbside. Tables, lobby, and parking QR codes give you fast access to the same system.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/qr-order" className="rounded-[24px] bg-white px-8 py-4 text-lg font-semibold text-espresso hover:bg-rust hover:text-white transition">
+            <a href="/qr-order" className="rounded-[24px] bg-white px-8 py-4 text-lg font-semibold text-espresso hover:bg-rust hover:text-sand transition">
               Order for Pickup
             </a>
             <a href="/qr-order?mode=curbside" className="rounded-[24px] border-2 border-white px-8 py-4 text-lg font-medium hover:bg-white hover:text-espresso transition">

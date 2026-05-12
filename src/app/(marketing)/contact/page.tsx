@@ -163,7 +163,7 @@ export default function ContactPage() {
                 onClick={() => setActiveTab("general")}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   activeTab === "general"
-                    ? "bg-espresso text-cream"
+                    ? "bg-surface text-sand"
                     : "text-mocha hover:bg-latte/20 hover:text-espresso"
                 }`}
               >
@@ -174,7 +174,7 @@ export default function ContactPage() {
                 onClick={() => setActiveTab("team")}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   activeTab === "team"
-                    ? "bg-espresso text-cream"
+                    ? "bg-surface text-sand"
                     : "text-mocha hover:bg-latte/20 hover:text-espresso"
                 }`}
               >

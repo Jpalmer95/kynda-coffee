@@ -84,7 +84,7 @@ export default function AdminB2BPage() {
                   <div className="text-sm text-mocha">{account.contact} • {account.email}</div>
                 </div>
                 <div className="text-right">
-                  <div className="inline px-3 py-1 rounded-full text-xs font-medium bg-espresso text-white">
+                  <div className="inline px-3 py-1 rounded-full text-xs font-medium bg-surface text-white">
                     {account.tier}
                   </div>
                   <div className="font-mono text-lg mt-1">${account.monthlySpend} <span className="text-xs text-mocha">/mo</span></div>
