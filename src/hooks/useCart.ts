@@ -10,6 +10,11 @@ interface CartStore extends Cart {
   clearCart: () => void;
   applyPromo: (code: string, discount_cents: number) => void;
   removePromo: () => void;
+  // Loyalty (Phase 2 scaffolding)
+  loyalty_points_used: number;
+  loyalty_value_cents: number;
+  setLoyaltyRedemption: (points: number, valueCents: number) => void;
+  clearLoyaltyRedemption: () => void;
 }
 
 function calcTotals(items: CartItem[]) {
@@ -29,6 +34,9 @@ export const useCartStore = create<CartStore>()(
       item_count: 0,
       discount_cents: 0,
       promo_code: undefined,
+      // Loyalty defaults
+      loyalty_points_used: 0,
+      loyalty_value_cents: 0,
 
       addItem: (product, quantity = 1, variant) => {
         haptic("light");
@@ -86,7 +94,15 @@ export const useCartStore = create<CartStore>()(
 
       clearCart: () => {
         haptic("medium");
-        set({ items: [], subtotal_cents: 0, item_count: 0, discount_cents: 0, promo_code: undefined });
+        set({
+          items: [],
+          subtotal_cents: 0,
+          item_count: 0,
+          discount_cents: 0,
+          promo_code: undefined,
+          loyalty_points_used: 0,
+          loyalty_value_cents: 0,
+        });
       },
 
       applyPromo: (code, discount_cents) => {
@@ -97,6 +113,20 @@ export const useCartStore = create<CartStore>()(
       removePromo: () => {
         haptic("medium");
         set({ promo_code: undefined, discount_cents: 0 });
+      },
+
+      setLoyaltyRedemption: (points, valueCents) => {
+        set({
+          loyalty_points_used: points,
+          loyalty_value_cents: valueCents,
+        });
+      },
+
+      clearLoyaltyRedemption: () => {
+        set({
+          loyalty_points_used: 0,
+          loyalty_value_cents: 0,
+        });
       },
     }),
     { name: "kynda-cart" }
