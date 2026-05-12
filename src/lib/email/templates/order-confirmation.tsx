@@ -1,4 +1,4 @@
-export function orderConfirmationTemplate(data: any) {
+export function orderConfirmationHtml(data: any) {
   return `
     <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #3C2F2F;">
       <h1 style="color: #8B5E3C;">Thank you for your order!</h1>

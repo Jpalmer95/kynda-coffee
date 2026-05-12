@@ -1,8 +1,8 @@
 import { resend } from "./client";
-import { abandonedCartTemplate } from "./templates/abandoned-cart";
+import { abandonedCartHtml } from "./templates/abandoned-cart";
 import { welcomeEmailHtml } from "./templates/welcome";
-import { orderConfirmationTemplate } from "./templates/order-confirmation";
-import { shippingNotificationTemplate } from "./templates/shipping";
+import { orderConfirmationHtml } from "./templates/order-confirmation";
+import { shippingNotificationHtml } from "./templates/shipping";
 
 export type EmailTemplate =
   | "abandoned-cart"
@@ -29,7 +29,7 @@ export async function sendEmail({ to, template, data = {}, subject }: SendEmailO
 
   switch (template) {
     case "abandoned-cart":
-      html = abandonedCartTemplate(data);
+      html = abandonedCartHtml(data);
       finalSubject = subject || "You left something in your cart ☕";
       break;
     case "welcome":
@@ -37,11 +37,11 @@ export async function sendEmail({ to, template, data = {}, subject }: SendEmailO
       finalSubject = subject || "Welcome to the Kynda family!";
       break;
     case "order-confirmation":
-      html = orderConfirmationTemplate(data);
+      html = orderConfirmationHtml(data);
       finalSubject = subject || `Order Confirmed — #${data.orderNumber}`;
       break;
     case "shipping-notification":
-      html = shippingNotificationTemplate(data);
+      html = shippingNotificationHtml(data);
       finalSubject = subject || `Your order is on its way! — #${data.orderNumber}`;
       break;
     case "review-request":

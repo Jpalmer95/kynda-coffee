@@ -1,4 +1,4 @@
-export function shippingNotificationTemplate(data: any) {
+export function shippingNotificationHtml(data: any) {
   return `
     <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto; color: #3C2F2F;">
       <h1 style="color: #8B5E3C;">Your order is on its way!</h1>
