@@ -74,8 +74,8 @@ const config: Config = {
         // ========= Light text for dark surfaces (always #F5F0E8) =========
         // Used as text-sand on bg-surface. This NEVER switches modes.
         sand: {
-          DEFAULT: "rgb(var(--text-cream) / <alpha-value>)",
-          50: "rgb(var(--text-cream-50) / <alpha-value>)",
+          DEFAULT: "rgb(var(--text-sand) / <alpha-value>)",
+          50: "rgb(var(--text-sand-50) / <alpha-value>)",
         },
 
         // ========= Rust (legacy alias to forest) =========
