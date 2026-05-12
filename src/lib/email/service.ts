@@ -1,6 +1,6 @@
 import { resend } from "./client";
 import { abandonedCartTemplate } from "./templates/abandoned-cart";
-import { welcomeTemplate } from "./templates/welcome";
+import { welcomeEmailHtml } from "./templates/welcome";
 import { orderConfirmationTemplate } from "./templates/order-confirmation";
 import { shippingNotificationTemplate } from "./templates/shipping";
 
@@ -33,7 +33,7 @@ export async function sendEmail({ to, template, data = {}, subject }: SendEmailO
       finalSubject = subject || "You left something in your cart ☕";
       break;
     case "welcome":
-      html = welcomeTemplate(data);
+      html = welcomeEmailHtml(data);
       finalSubject = subject || "Welcome to the Kynda family!";
       break;
     case "order-confirmation":
