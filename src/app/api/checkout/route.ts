@@ -27,6 +27,9 @@ const checkoutSchema = z.object({
   promo_code: z.string().optional(),
   gift_card_id: z.string().uuid().optional(),
   discount_cents: z.number().int().min(0).optional(),
+  // Loyalty redemption
+  loyalty_points_redeemed: z.number().int().min(0).optional(),
+  loyalty_points_value_cents: z.number().int().min(0).optional(),
 });
 
 export async function POST(req: NextRequest) {

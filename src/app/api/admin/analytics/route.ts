@@ -12,14 +12,28 @@ export async function GET(req: NextRequest) {
     // Revenue by day (last 30 days)
     const { data: revenue } = await supabaseAdmin()
       .from("orders")
-      .select("created_at, total_cents")
+      .select("created_at, total_cents, items")
       .gte("created_at", new Date(Date.now() - 30 * 864e5).toISOString())
       .eq("status", "confirmed");
 
     const revenueByDay: Record<string, number> = {};
+    let cafeRevenue = 0;
+    let merchRevenue = 0;
+
     for (const row of revenue ?? []) {
       const day = row.created_at.split("T")[0];
       revenueByDay[day] = (revenueByDay[day] ?? 0) + (row.total_cents ?? 0);
+
+      // Split café vs merch revenue
+      for (const item of row.items ?? []) {
+        const cat = item.category || "";
+        const isMerch = cat.includes("merch") || cat === "design_studio";
+        if (isMerch) {
+          merchRevenue += (item.total_cents ?? 0);
+        } else {
+          cafeRevenue += (item.total_cents ?? 0);
+        }
+      }
     }
 
     // Orders by status
@@ -32,7 +46,7 @@ export async function GET(req: NextRequest) {
       ordersByStatus[row.status] = (ordersByStatus[row.status] ?? 0) + 1;
     }
 
-    // Top products by units sold
+    // Top products
     const { data: allOrders } = await supabaseAdmin()
       .from("orders")
       .select("items")
@@ -42,17 +56,13 @@ export async function GET(req: NextRequest) {
     for (const order of allOrders ?? []) {
       for (const item of order.items ?? []) {
         const name = item.product_name ?? "Unknown";
-        if (!productSales[name]) {
-          productSales[name] = { name, units: 0, revenue: 0 };
-        }
+        if (!productSales[name]) productSales[name] = { name, units: 0, revenue: 0 };
         productSales[name].units += item.quantity ?? 1;
         productSales[name].revenue += item.total_cents ?? 0;
       }
     }
 
-    const topProducts = Object.values(productSales)
-      .sort((a, b) => b.units - a.units)
-      .slice(0, 10);
+    const topProducts = Object.values(productSales).sort((a, b) => b.units - a.units).slice(0, 10);
 
     // Category breakdown
     const { data: products } = await supabaseAdmin()
@@ -61,14 +71,12 @@ export async function GET(req: NextRequest) {
 
     const categoryCounts: Record<string, { count: number; value: number }> = {};
     for (const p of products ?? []) {
-      if (!categoryCounts[p.category]) {
-        categoryCounts[p.category] = { count: 0, value: 0 };
-      }
+      if (!categoryCounts[p.category]) categoryCounts[p.category] = { count: 0, value: 0 };
       categoryCounts[p.category].count += 1;
       categoryCounts[p.category].value += p.price_cents ?? 0;
     }
 
-    // Customer growth (last 30 days)
+    // New Customers
     const { data: newCustomers } = await supabaseAdmin()
       .from("profiles")
       .select("created_at")
@@ -86,6 +94,11 @@ export async function GET(req: NextRequest) {
       top_products: topProducts,
       category_breakdown: categoryCounts,
       customers_by_day: customersByDay,
+
+      // Finance insights
+      cafe_revenue_30d: cafeRevenue,
+      merch_revenue_30d: merchRevenue,
+      total_revenue_30d: cafeRevenue + merchRevenue,
     });
   } catch (err) {
     console.error("Analytics error:", err);

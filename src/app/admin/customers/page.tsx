@@ -1,185 +1,201 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Search, ArrowLeft, Users, Loader2, AlertCircle, Download } from "lucide-react";
-import { toCsv, downloadCsv } from "@/lib/export/csv";
+import { ArrowLeft, Users, Star, MessageSquare, TrendingUp } from "lucide-react";
 
-interface Customer {
+type Customer = {
   id: string;
   name: string;
   email: string;
-  joined: string;
-  orders: number;
-  totalSpent: number;
-}
+  phone?: string;
+  points: number;
+  tier: "Bronze" | "Silver" | "Gold";
+  lifetimeValue: number;
+  totalOrders: number;
+  favoriteItems: string[];
+  notes: string;
+  lastVisit: string;
+};
+
+const initialCustomers: Customer[] = [
+  {
+    id: "c1",
+    name: "Elena Rodriguez",
+    email: "elena.r@personal.com",
+    phone: "(830) 555-0142",
+    points: 1240,
+    tier: "Gold",
+    lifetimeValue: 487.5,
+    totalOrders: 38,
+    favoriteItems: ["Ethiopian Guji", "Kynda Mug"],
+    notes: "Prefers oat milk in lattes. Birthday June 14. Loves merch drops.",
+    lastVisit: "2 days ago"
+  },
+  {
+    id: "c2",
+    name: "Marcus Thompson",
+    email: "marcus.t@work.net",
+    points: 680,
+    tier: "Silver",
+    lifetimeValue: 214.25,
+    totalOrders: 19,
+    favoriteItems: ["Honduras Finca Yaque"],
+    notes: "",
+    lastVisit: "1 week ago"
+  },
+  {
+    id: "c3",
+    name: "Priya Patel",
+    email: "priya.p@gmail.com",
+    phone: "(512) 555-9881",
+    points: 315,
+    tier: "Bronze",
+    lifetimeValue: 89.0,
+    totalOrders: 7,
+    favoriteItems: ["Kynda Cap", "Americano Glass Mug"],
+    notes: "Allergic to almonds. Orders for office every Friday.",
+    lastVisit: "Yesterday"
+  }
+];
 
 export default function AdminCustomersPage() {
-  const router = useRouter();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [q, setQ] = useState("");
+  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeNote, setActiveNote] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState("");
 
-  useEffect(() => {
-    async function fetchCustomers() {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/admin/customers", { credentials: "include" });
-        if (!res.ok) {
-          if (res.status === 401) {
-            router.push("/auth/login?redirect=/admin/customers");
-            return;
-          }
-          throw new Error("Failed to load customers");
-        }
-        const data = await res.json();
-        setCustomers(data.customers || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchCustomers();
-  }, [router]);
+  const filteredCustomers = customers.filter(c =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const filtered = q.trim()
-    ? customers.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q.toLowerCase()) ||
-          c.email.toLowerCase().includes(q.toLowerCase())
+  function updateNotes(customerId: string) {
+    setCustomers(prev =>
+      prev.map(c =>
+        c.id === customerId ? { ...c, notes: noteText } : c
       )
-    : customers;
+    );
+    setActiveNote(null);
+    setNoteText("");
+  }
 
-  function formatCents(cents: number) {
-    return `$${(cents / 100).toFixed(2)}`;
+  function openNoteModal(customer: Customer) {
+    setActiveNote(customer.id);
+    setNoteText(customer.notes);
   }
 
   return (
-    <main className="min-h-screen bg-cream" role="main">
-      <div className="container-max px-4 py-6 sm:px-6 sm:py-8">
-        {/* Header */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin"
-              className="rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-rust"
-              aria-label="Back to dashboard"
-            >
-              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-            </Link>
-            <div>
-              <h1 className="font-heading text-2xl font-bold text-espresso">Customers</h1>
-              <p className="text-sm text-mocha">{customers.length} total customers</p>
-            </div>
-          </div>
-          <button
-            onClick={async () => {
-              const res = await fetch("/api/admin/export/customers");
-              const data = await res.json();
-              if (data.rows) {
-                const csv = toCsv(data.rows);
-                downloadCsv("kynda-customers.csv", csv);
-              }
-            }}
-            className="btn-secondary text-sm"
-          >
-            <Download className="mr-1.5 h-4 w-4" />
-            Export
-          </button>
+    <div className="container-max py-6 sm:py-10">
+      <div className="flex items-center gap-4 mb-8">
+        <Link href="/admin" className="rounded-lg p-2 hover:bg-latte/10">
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+        <div>
+          <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
+            <Users className="h-8 w-8 text-rust" /> Customers &amp; Loyalty
+          </h1>
+          <p className="text-sm text-mocha">
+            {filteredCustomers.length} customers • Track LTV, preferences & loyalty points
+          </p>
         </div>
-
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mocha" aria-hidden="true" />
-            <input
-              type="text"
-              placeholder="Search by name or email..."
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="input-field pl-9"
-              aria-label="Search customers"
-            />
-          </div>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div className="mb-6 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-            {error}
-          </div>
-        )}
-
-        {/* Table */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-rust" aria-hidden="true" />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-latte/20 bg-white p-10 text-center">
-            <Users className="mx-auto h-10 w-10 text-latte" aria-hidden="true" />
-            <p className="mt-3 font-medium text-espresso">No customers found</p>
-            <p className="mt-1 text-sm text-mocha">
-              {q ? "Try a different search term." : "Customers will appear here once they create accounts."}
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-2xl border border-latte/20 bg-white">
-            {/* Mobile cards */}
-            <div className="sm:hidden">
-              {filtered.map((customer) => (
-                <div key={customer.id} className="border-b border-latte/10 p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-espresso">{customer.name}</p>
-                    <span className="text-xs text-mocha">{customer.orders} orders</span>
-                  </div>
-                  <p className="mt-1 text-sm text-mocha">{customer.email}</p>
-                  <div className="mt-2 flex items-center justify-between text-sm">
-                    <span className="text-mocha">
-                      Joined {new Date(customer.joined).toLocaleDateString()}
-                    </span>
-                    <span className="font-medium text-espresso">{formatCents(customer.totalSpent)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop table */}
-            <table className="hidden w-full sm:table">
-              <thead>
-                <tr className="border-b border-latte/10 bg-cream/50 text-left text-xs font-medium uppercase tracking-wider text-mocha">
-                  <th className="px-6 py-3">Name</th>
-                  <th className="px-6 py-3">Email</th>
-                  <th className="px-6 py-3">Joined</th>
-                  <th className="px-6 py-3">Orders</th>
-                  <th className="px-6 py-3 text-right">Total Spent</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-latte/10">
-                {filtered.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-cream/30">
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-espresso">{customer.name}</p>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-mocha">{customer.email}</td>
-                    <td className="px-6 py-4 text-sm text-mocha">
-                      {new Date(customer.joined).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-mocha">{customer.orders}</td>
-                    <td className="px-6 py-4 text-right text-sm font-medium text-espresso">
-                      {formatCents(customer.totalSpent)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
-    </main>
+
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <input
+          type="text"
+          placeholder="Search customers..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="input-field flex-1"
+        />
+      </div>
+
+      <div className="space-y-4">
+        {filteredCustomers.map((customer) => (
+          <div key={customer.id} className="border border-latte/20 rounded-2xl bg-white p-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              {/* Basic Info */}
+              <div>
+                <div className="font-semibold text-xl text-espresso">{customer.name}</div>
+                <div className="text-sm text-mocha">{customer.email} {customer.phone && `• ${customer.phone}`}</div>
+                <div className="text-xs text-mocha/70 mt-1">Last visit: {customer.lastVisit}</div>
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-8 text-sm">
+                <div>
+                  <div className="font-mono text-2xl font-semibold text-espresso">${customer.lifetimeValue}</div>
+                  <div className="text-xs text-mocha tracking-wide">Lifetime Value</div>
+                </div>
+                <div>
+                  <div className="font-mono text-2xl font-semibold text-espresso">{customer.totalOrders}</div>
+                  <div className="text-xs text-mocha tracking-wide">Orders</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-mono text-2xl font-semibold text-rust">{customer.points}</div>
+                  <div className="text-xs text-mocha">Points</div>
+                </div>
+                <div className="px-4 py-1 rounded-full bg-espresso text-white text-xs font-medium self-center">
+                  {customer.tier}
+                </div>
+              </div>
+            </div>
+
+            {/* Favorites */}
+            <div className="mt-4 text-sm">
+              <span className="text-mocha">Favorites:</span>{" "}
+              <span className="text-espresso">{customer.favoriteItems.join(" • ")}</span>
+            </div>
+
+            {/* Notes */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="font-medium text-mocha flex items-center gap-1.5">
+                  <MessageSquare className="h-4 w-4" /> Staff Notes
+                </span>
+                <button 
+                  className="text-rust text-xs hover:underline"
+                  onClick={() => openNoteModal(customer)}
+                >
+                  Edit notes
+                </button>
+              </div>
+              <div className="text-sm bg-cream border border-latte/30 rounded-xl px-4 py-3 text-espresso min-h-[56px]">
+                {customer.notes || <span className="text-mocha/60 italic">No notes yet</span>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Note Editing Modal */}
+      {activeNote && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6">
+            <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" /> Edit Customer Notes
+            </h3>
+            <textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              className="w-full h-32 border border-latte/30 rounded-xl p-4 text-sm resize-y"
+              placeholder="Add preferences, allergies, birthday, special instructions..."
+            />
+            <div className="mt-4 flex justify-end gap-3">
+              <button onClick={() => setActiveNote(null)} className="px-4 py-2 text-sm">Cancel</button>
+              <button 
+                onClick={() => updateNotes(activeNote)}
+                className="btn-primary text-sm"
+              >
+                Save Notes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="text-center text-xs text-mocha/70 mt-10">Loyalty points &amp; tiers will sync with Square transactions automatically in the next phase.</div>
+    </div>
   );
 }

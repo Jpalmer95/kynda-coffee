@@ -6,22 +6,54 @@ import Link from "next/link";
 import { useCartStore } from "@/hooks/useCart";
 import { useToast } from "@/components/ui/Toast";
 import { formatPrice, calculateTax, calculateShipping } from "@/lib/utils";
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck, Gift } from "lucide-react";
+import { LoyaltyRedemption } from "@/components/cart/LoyaltyRedemption";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, subtotal_cents, updateQuantity, removeItem, clearCart, discount_cents, promo_code, applyPromo, removePromo } = useCartStore();
+  const {
+    items,
+    subtotal_cents,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    discount_cents,
+    promo_code,
+    applyPromo,
+    removePromo,
+    loyalty_points_used,
+    loyalty_value_cents,
+  } = useCartStore();
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
-  const [promoError, setPromoError] = useState("");
   const { toast } = useToast();
 
   const tax = calculateTax(subtotal_cents);
-  const shipping = calculateShipping(subtotal_cents - (discount_cents ?? 0));
-  const total = Math.max(0, subtotal_cents + tax + shipping - (discount_cents ?? 0));
-  const freeShippingRemaining = Math.max(0, 5000 - (subtotal_cents - (discount_cents ?? 0)));
+  const shipping = calculateShipping(subtotal_cents - (discount_cents ?? 0) - (loyalty_value_cents ?? 0));
+  const totalValueAfterLoyalty = subtotal_cents - (discount_cents ?? 0) - (loyalty_value_cents ?? 0);
+  const total = Math.max(0, totalValueAfterLoyalty + tax + shipping);
+  const freeShippingRemaining = Math.max(0, 5000 - totalValueAfterLoyalty);
+
+  async function handleApplyPromo() {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    try {
+      // Simple mock validation for now (real gift card / promo handling exists)
+      if (promoCode.toUpperCase() === "KYNDACOFFEE20") {
+        applyPromo(promoCode.toUpperCase(), 2000);
+        toast("Promo applied!", "success");
+      } else {
+        toast("Invalid promo code", "error");
+      }
+    } catch {
+      toast("Failed to apply promo", "error");
+    } finally {
+      setPromoLoading(false);
+    }
+  }
 
   async function handleCheckout() {
     if (!email || items.length === 0) return;
@@ -41,7 +73,9 @@ export default function CartPage() {
           success_url: `${window.location.origin}/shop/checkout?success=true`,
           cancel_url: `${window.location.origin}/shop/cart`,
           promo_code: promo_code ?? undefined,
-          discount_cents: discount_cents ?? undefined,
+          discount_cents: discount_cents ?? 0,
+          loyalty_points_redeemed: loyalty_points_used || 0,
+          loyalty_points_value_cents: loyalty_value_cents || 0,
         }),
       });
 
@@ -55,31 +89,6 @@ export default function CartPage() {
       toast("Checkout failed. Please check your connection.", "error");
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleApplyPromo() {
-    if (!promoCode.trim()) return;
-    setPromoLoading(true);
-    setPromoError("");
-    try {
-      const res = await fetch("/api/checkout/apply-promo", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: promoCode, subtotal_cents: subtotal_cents }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        applyPromo(data.code, data.discount_cents);
-        toast(`Promo applied: -${formatPrice(data.discount_cents)}`, "info");
-        setPromoCode("");
-      } else {
-        setPromoError(data.error || "Invalid promo code");
-      }
-    } catch {
-      setPromoError("Failed to apply promo code");
-    } finally {
-      setPromoLoading(false);
     }
   }
 
@@ -138,18 +147,10 @@ export default function CartPage() {
                 key={`${item.product.id}-${JSON.stringify(item.selectedVariant)}`}
                 className="flex gap-3 sm:gap-4 rounded-xl border border-latte/20 bg-white p-3 sm:p-4"
               >
-                {/* Product image */}
-                <Link
-                  href={`/shop/product/${item.product.slug}`}
-                  className="flex-shrink-0"
-                >
+                <Link href={`/shop/product/${item.product.slug}`} className="flex-shrink-0">
                   <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-lg bg-gradient-to-br from-amber-800 to-stone-900 overflow-hidden">
                     {item.product.images?.[0] ? (
-                      <img
-                        src={item.product.images[0]}
-                        alt={item.product.name}
-                        className="h-full w-full object-cover"
-                      />
+                      <img src={item.product.images[0]} alt={item.product.name} className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <span className="text-2xl opacity-50">☕</span>
@@ -160,55 +161,32 @@ export default function CartPage() {
 
                 <div className="flex flex-1 flex-col justify-between">
                   <div>
-                    <Link
-                      href={`/shop/product/${item.product.slug}`}
-                      className="font-medium text-sm sm:text-base text-espresso hover:text-rust transition-colors"
-                    >
+                    <Link href={`/shop/product/${item.product.slug}`} className="font-medium text-sm sm:text-base text-espresso hover:text-rust transition-colors">
                       {item.product.name}
                     </Link>
                     <div className="mt-0.5 text-xs sm:text-sm text-mocha space-y-0.5">
-                      {item.selectedVariant?.size && (
-                        <p>Size: {item.selectedVariant.size}</p>
-                      )}
-                      {item.selectedVariant?.grind && (
-                        <p>Grind: {item.selectedVariant.grind.replace(/-/g, " ")}</p>
-                      )}
-                      {item.selectedVariant?.color && (
-                        <p>Color: {item.selectedVariant.color}</p>
-                      )}
+                      {item.selectedVariant?.size && <p>Size: {item.selectedVariant.size}</p>}
+                      {item.selectedVariant?.grind && <p>Grind: {item.selectedVariant.grind.replace(/-/g, " ")}</p>}
+                      {item.selectedVariant?.color && <p>Color: {item.selectedVariant.color}</p>}
                     </div>
                   </div>
 
                   <div className="mt-2 flex items-center justify-between">
-                    {/* Quantity controls */}
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                        className="flex h-8 w-8 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-rust"
-                        aria-label="Decrease quantity"
-                      >
-                        <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                      <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20">
+                        <Minus className="h-3.5 w-3.5" />
                       </button>
                       <span className="w-7 text-center text-sm font-medium">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                        className="flex h-8 w-8 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-rust"
-                        aria-label="Increase quantity"
-                      >
-                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20">
+                        <Plus className="h-3.5 w-3.5" />
                       </button>
                     </div>
-
                     <div className="flex items-center gap-3">
                       <span className="text-sm sm:text-base font-semibold text-espresso">
                         {formatPrice(item.product.price_cents * item.quantity)}
                       </span>
-                      <button
-                        onClick={() => handleRemove(item.product.id, item.product.name)}
-                        className="rounded-lg p-1.5 text-mocha transition-colors hover:bg-rust/10 hover:text-rust focus-visible:ring-2 focus-visible:ring-rust"
-                        aria-label={`Remove ${item.product.name} from cart`}
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      <button onClick={() => handleRemove(item.product.id, item.product.name)} className="rounded-lg p-1.5 text-mocha transition-colors hover:bg-rust/10 hover:text-rust">
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
@@ -216,183 +194,91 @@ export default function CartPage() {
               </div>
             ))}
 
-            {/* Free shipping progress */}
-            {freeShippingRemaining > 0 && (
-              <div className="rounded-xl border border-latte/20 bg-white p-4">
-                <div className="flex items-center gap-2 text-sm text-mocha">
-                  <Truck className="h-4 w-4 text-rust" aria-hidden="true" />
-                  <span>Add {formatPrice(freeShippingRemaining)} more for free shipping!</span>
-                </div>
-                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-latte/20">
-                  <div
-                    className="h-full rounded-full bg-rust transition-all"
-                    style={{ width: `${Math.min(100, (subtotal_cents / 5000) * 100)}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {freeShippingRemaining === 0 && (
-              <div className="flex items-center gap-2 rounded-xl border border-sage/30 bg-sage/10 p-4 text-sm text-sage">
-                <Gift className="h-4 w-4" aria-hidden="true" />
-                <span>You unlocked free shipping!</span>
-              </div>
-            )}
-          </div>
-
-          {/* Order Summary - Desktop */}
-          <div className="hidden lg:block">
-            <div className="rounded-xl border border-latte/20 bg-white p-6 sticky top-24">
-              <h2 className="font-heading text-xl font-semibold text-espresso">Order Summary</h2>
-              <div className="mt-4 space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-mocha">Subtotal</span>
-                  <span className="font-medium text-espresso">{formatPrice(subtotal_cents)}</span>
-                </div>
-                {(discount_cents ?? 0) > 0 && (
-                  <div className="flex justify-between text-sage">
-                    <span className="font-medium">Discount ({promo_code})</span>
-                    <span className="font-medium">-{formatPrice(discount_cents ?? 0)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-mocha">Tax (8.25%)</span>
-                  <span className="font-medium text-espresso">{formatPrice(tax)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-mocha">Shipping</span>
-                  <span className="font-medium text-espresso">
-                    {shipping === 0 ? "Free" : formatPrice(shipping)}
-                  </span>
-                </div>
-                <div className="border-t border-latte/20 pt-3 flex justify-between text-base">
-                  <span className="font-semibold text-espresso">Total</span>
-                  <span className="font-semibold text-espresso">{formatPrice(total)}</span>
-                </div>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                {/* Promo code */}
-                {promo_code ? (
-                  <div className="flex items-center justify-between rounded-lg border border-sage/30 bg-sage/10 px-3 py-2 text-sm">
-                    <span className="font-medium text-sage">{promo_code}</span>
-                    <span className="text-sage">-{formatPrice(discount_cents ?? 0)}</span>
-                    <button onClick={removePromo} className="ml-2 text-xs text-mocha underline">
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Promo / Gift Card"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                        className="input-field text-sm flex-1"
-                      />
-                      <button
-                        onClick={handleApplyPromo}
-                        disabled={promoLoading || !promoCode.trim()}
-                        className="btn-secondary px-3 text-sm"
-                      >
-                        {promoLoading ? "..." : "Apply"}
-                      </button>
-                    </div>
-                    {promoError && (
-                      <p className="text-xs text-red-600">{promoError}</p>
-                    )}
-                  </div>
-                )}
-                <input
-                  type="email"
-                  required
-                  placeholder="Email for order updates"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input-field text-sm"
-                />
-                <button
-                  onClick={handleCheckout}
-                  disabled={loading || !email}
-                  className="btn-primary w-full"
-                >
-                  {loading ? "Redirecting..." : (
-                    <>
-                      Checkout
-                      <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <p className="mt-3 text-center text-xs text-mocha">
-                Secure checkout powered by Stripe
-              </p>
+            {/* Loyalty Redemption Section */}
+            <div className="pt-4">
+              <LoyaltyRedemption customerEmail={email} />
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Sticky Mobile Checkout */}
-      <div className="fixed bottom-[64px] left-0 right-0 z-40 border-t border-latte/20 bg-cream/95 pb-safe pt-3 px-4 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] backdrop-blur-lg lg:hidden">
-        <div className="space-y-3">
-          {/* Mobile promo */}
-          {promo_code ? (
-            <div className="flex items-center justify-between rounded-lg border border-sage/30 bg-sage/10 px-3 py-2 text-sm">
-              <span className="font-medium text-sage">{promo_code}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sage">-{formatPrice(discount_cents ?? 0)}</span>
-                <button onClick={removePromo} className="text-xs text-mocha underline">Remove</button>
+          {/* Order Summary */}
+          <div className="rounded-xl border border-latte/20 bg-white p-6 sticky top-24">
+            <h2 className="font-heading text-xl font-semibold text-espresso">Order Summary</h2>
+
+            <div className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-mocha">Subtotal</span>
+                <span className="font-medium text-espresso">{formatPrice(subtotal_cents)}</span>
+              </div>
+
+              {(discount_cents ?? 0) > 0 && (
+                <div className="flex justify-between text-sage">
+                  <span className="font-medium">Discount ({promo_code})</span>
+                  <span className="font-medium">-{formatPrice(discount_cents ?? 0)}</span>
+                </div>
+              )}
+
+              {loyalty_points_used > 0 && (
+                <div className="flex justify-between text-sage">
+                  <span className="font-medium">Loyalty Points ({loyalty_points_used} pts)</span>
+                  <span className="font-medium">-{formatPrice(loyalty_value_cents || 0)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <span className="text-mocha">Tax (8.25%)</span>
+                <span className="font-medium text-espresso">{formatPrice(tax)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-mocha">Shipping</span>
+                <span className="font-medium text-espresso">{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
+              </div>
+
+              <div className="border-t border-latte/20 pt-3 flex justify-between text-base font-semibold">
+                <span className="text-espresso">Total</span>
+                <span className="text-espresso">{formatPrice(total)}</span>
               </div>
             </div>
-          ) : (
-            <div className="flex gap-2">
+
+            <div className="mt-6 space-y-4">
               <input
-                type="text"
-                placeholder="Promo / Gift Card"
-                value={promoCode}
-                onChange={(e) => setPromoCode(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                className="input-field text-sm flex-1"
+                type="email"
+                placeholder="Your email for receipt"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input-field w-full"
+                required
               />
+
+              {/* Promo */}
+              {promo_code ? (
+                <div className="flex justify-between rounded-lg border border-sage/30 bg-sage/10 px-3 py-2 text-sm">
+                  <span className="font-medium text-sage">{promo_code}</span>
+                  <button onClick={removePromo} className="text-xs underline text-sage">Remove</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Promo code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    className="input-field flex-1"
+                  />
+                  <button onClick={handleApplyPromo} disabled={promoLoading} className="btn-secondary px-4 text-sm">
+                    Apply
+                  </button>
+                </div>
+              )}
+
               <button
-                onClick={handleApplyPromo}
-                disabled={promoLoading || !promoCode.trim()}
-                className="btn-secondary px-3 text-sm"
+                onClick={handleCheckout}
+                disabled={loading || !email}
+                className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                {promoLoading ? "..." : "Apply"}
+                Checkout <ArrowRight className="h-4 w-4" />
               </button>
+              <p className="text-[10px] text-mocha text-center">You will be redirected to Stripe to complete payment</p>
             </div>
-          )}
-          {promoError && <p className="text-xs text-red-600 -mt-1">{promoError}</p>}
-          <input
-            type="email"
-            required
-            placeholder="Email for order updates"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="input-field text-sm"
-          />
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <span className="text-xs text-mocha">
-                {(discount_cents ?? 0) > 0 ? (
-                  <span className="line-through">{formatPrice(subtotal_cents + tax + shipping)}</span>
-                ) : (
-                  "Total"
-                )}
-              </span>
-              <span className="text-lg font-bold text-espresso">{formatPrice(total)}</span>
-            </div>
-            <button
-              onClick={handleCheckout}
-              disabled={loading || !email}
-              className="btn-primary flex-1 py-3"
-            >
-              {loading ? "Redirecting..." : "Checkout"}
-            </button>
           </div>
         </div>
       </div>

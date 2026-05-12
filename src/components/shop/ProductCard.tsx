@@ -3,48 +3,11 @@
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
+import { ProductImage } from "./ProductImage";
 
 interface ProductCardProps {
   product: Product;
   onQuickView?: (product: Product) => void;
-}
-
-// Generate a consistent placeholder gradient based on product category
-function getCategoryGradient(category: string): string {
-  const gradients: Record<string, string> = {
-    "coffee-beans": "from-amber-800 to-stone-900",
-    "merch-apparel": "from-stone-700 to-stone-900",
-    "merch-mugs": "from-amber-700 to-orange-900",
-    "merch-glassware": "from-sky-700 to-slate-900",
-    "merch-accessories": "from-emerald-800 to-stone-900",
-    "subscription": "from-rust to-espresso",
-    "gift-card": "from-latte to-mocha",
-    "catering": "from-sage to-mocha",
-  };
-  return gradients[category] ?? "from-stone-600 to-stone-800";
-}
-
-// Default product images by category
-function getDefaultImage(category: string): string | null {
-  const images: Record<string, string> = {
-    "coffee-beans": "/images/coffee-beans.jpg",
-    "merch-mugs": "/images/ceramic-mug.jpg",
-  };
-  return images[category] ?? null;
-}
-
-function getCategoryIcon(category: string): string {
-  const icons: Record<string, string> = {
-    "coffee-beans": "☕",
-    "merch-apparel": "👕",
-    "merch-mugs": "☕",
-    "merch-glassware": "🥃",
-    "merch-accessories": "👜",
-    "subscription": "📦",
-    "gift-card": "🎁",
-    "catering": "🍽️",
-  };
-  return icons[category] ?? "✨";
 }
 
 function getCategoryLabel(category: string): string {
@@ -62,11 +25,6 @@ function getCategoryLabel(category: string): string {
 }
 
 export function ProductCard({ product, onQuickView }: ProductCardProps) {
-  const gradient = getCategoryGradient(product.category);
-  const icon = getCategoryIcon(product.category);
-  const defaultImage = getDefaultImage(product.category);
-  const hasImage = product.images && product.images.length > 0;
-  const displayImage = hasImage ? product.images[0] : defaultImage;
   const categoryLabel = getCategoryLabel(product.category);
 
   return (
@@ -77,21 +35,8 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
         className="block"
         aria-label={`${product.name}, ${categoryLabel}, ${formatPrice(product.price_cents)}`}
       >
-        <div className={`relative aspect-square overflow-hidden bg-gradient-to-br ${gradient}`}>
-          {displayImage ? (
-            <img
-              src={displayImage}
-              alt={product.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <span className="text-5xl sm:text-6xl opacity-60 transition-transform duration-300 group-hover:scale-110">
-                {icon}
-              </span>
-            </div>
-          )}
+        <div className="relative aspect-square overflow-hidden">
+          <ProductImage product={product} className="aspect-square" />
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-espresso/0 transition-colors duration-300 group-hover:bg-espresso/10" aria-hidden="true" />
           {/* Featured badge */}

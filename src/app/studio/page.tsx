@@ -7,12 +7,17 @@ import { DesignCanvas, DesignLayer } from '@/components/design-studio/DesignCanv
 import { useCartStore } from '@/hooks/useCart';
 import { formatPrice } from '@/lib/utils';
 
-const PRODUCT_PRICES: Record<string, number> = {
-  mug: 2400,
-  tshirt: 3200,
-  glass: 2200,
-  tote: 1800,
+const PRODUCT_MARKUP: Record<string, { baseCents: number; multiplier: number }> = {
+  mug:    { baseCents: 850, multiplier: 2.8 },
+  tshirt: { baseCents: 1280, multiplier: 2.5 },
+  glass:  { baseCents: 780, multiplier: 2.8 },
+  tote:   { baseCents: 650, multiplier: 2.8 },
 };
+
+function getRetailPrice(p: string): number {
+  const r = PRODUCT_MARKUP[p];
+  return r ? Math.round(r.baseCents * r.multiplier) : 2400;
+}
 
 export default function DesignStudioPage() {
   const [prompt, setPrompt] = useState("");
@@ -81,13 +86,7 @@ export default function DesignStudioPage() {
       updated_at: new Date().toISOString(),
     } as Product;
 
-    addItem(product, 1, {
-      design: {
-        prompt: generatedDesign.prompt,
-        product: selectedProduct,
-        layers: currentLayers,
-      },
-    });
+    addItem(product, 1);
 
     window.location.href = '/cart';
   };
@@ -161,7 +160,7 @@ export default function DesignStudioPage() {
             <div className="mt-8 flex items-center justify-between px-2">
               <div>
                 <div className="font-mono text-4xl tabular-nums tracking-tighter">
-                  {formatPrice(PRODUCT_PRICES[selectedProduct])}
+                  {formatPrice(getRetailPrice(selectedProduct))}
                 </div>
                 <div className="text-sm text-gray-500">Made to order • Ships in 5–8 days</div>
               </div>

@@ -2,13 +2,17 @@
 
 <!-- Describe the change briefly -->
 
+## Changes
+
+- 
+
 ## Testing
 
 - [ ] Manual test on local dev
-- [ ] Build passes (`npm run build`)
-- [ ] Type check passes
-- [ ] No new console errors
+- [ ] `npm run build` succeeds
+- [ ] Type check + lint pass
+- [ ] Health check responds: `GET /api/health`
 
 ## Deployment
 
-This PR will trigger an automatic preview deployment via Coolify once merged to `main`.
+This PR will trigger an automatic deployment via Coolify + the configured webhook after merge.

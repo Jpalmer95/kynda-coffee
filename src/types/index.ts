@@ -182,6 +182,42 @@ export interface Address {
   country: string;
 }
 
+// ---- Referrals / Affiliate Sales (Phase 2) ----
+export interface ReferralCode {
+  id: string;
+  customer_id: string;
+  code: string;
+  is_active: boolean;
+  created_at: string;
+  expires_at?: string;
+}
+
+export interface Referral {
+  id: string;
+  referrer_id?: string;
+  referee_email: string;
+  referral_code: string;
+  status: "pending" | "completed" | "rewarded" | "expired";
+  first_order_id?: string;
+  order_value_cents: number;
+  reward_issued: boolean;
+  reward_amount_cents: number;
+  created_at: string;
+  completed_at?: string;
+}
+
+export interface AffiliatePayout {
+  id: string;
+  customer_id: string;
+  referral_id?: string;
+  amount_cents: number;
+  method: "store_credit" | "stripe_payout" | "manual";
+  status: "pending" | "paid" | "failed";
+  paid_at?: string;
+  notes?: string;
+  created_at: string;
+}
+
 // ---- AI Design Studio ----
 
 export type DesignStatus =

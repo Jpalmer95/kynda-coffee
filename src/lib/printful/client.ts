@@ -1,115 +1,54 @@
-// Printful API client for print-on-demand fulfillment
-// Docs: https://developers.printful.com/
+// Printful API client (server-only)
+// Requires PRINTFUL_API_KEY in Coolify env
+
+import {
+  PrintfulCreateOrderPayload,
+  PrintfulOrderResponse,
+  PrintfulShippingEstimate,
+} from "./types";
 
 const PRINTFUL_API = "https://api.printful.com";
+const API_KEY = process.env.PRINTFUL_API_KEY!;
 
-interface PrintfulProduct {
-  id: number;
-  name: string;
-  variants: PrintfulVariant[];
-}
-
-interface PrintfulVariant {
-  id: number;
-  name: string;
-  price: string;
-  availability_status: string;
-}
-
-interface PrintfulOrder {
-  external_id: string;
-  recipient: {
-    name: string;
-    address1: string;
-    city: string;
-    state_code: string;
-    zip: string;
-    country_code: string;
-  };
-  items: {
-    variant_id: number;
-    quantity: number;
-    files: { url: string }[];
-  }[];
-}
-
-async function printfulFetch(path: string, options?: RequestInit) {
-  const res = await fetch(`${PRINTFUL_API}${path}`, {
+async function pfFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const res = await fetch(`${PRINTFUL_API}${endpoint}`, {
     ...options,
     headers: {
-      Authorization: `Bearer ${process.env.PRINTFUL_API_KEY}`,
       "Content-Type": "application/json",
-      ...options?.headers,
+      Authorization: `Bearer ${API_KEY}`,
+      ...(options.headers || {}),
     },
   });
 
   if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`Printful API error: ${res.status} — ${error}`);
+    const error = await res.json().catch(() => ({}));
+    throw new Error(`Printful error ${res.status}: ${error.error || res.statusText}`);
   }
-
-  const json = await res.json();
-  return json.result;
+  return res.json();
 }
 
-/** List available store products */
-export async function listPrintfulProducts() {
-  return printfulFetch("/store/products");
+export async function getVariantPrices(storeId?: number) {
+  const qs = storeId ? `?store_id=${storeId}` : "";
+  return pfFetch<{ result: any[] }>(`/store/variants${qs}`);
 }
 
-/** Get product details with variants */
-export async function getPrintfulProduct(id: number): Promise<PrintfulProduct> {
-  return printfulFetch(`/store/products/${id}`);
-}
-
-/** Create a product with a custom design */
-export async function createPrintfulProduct(data: {
-  name: string;
-  variant_id: number;
-  design_url: string;
-}) {
-  return printfulFetch("/store/products", {
+export async function createOrder(payload: PrintfulCreateOrderPayload) {
+  return pfFetch<{ result: PrintfulOrderResponse }>("/orders", {
     method: "POST",
-    body: JSON.stringify({
-      sync_product: { name: data.name },
-      sync_variants: [
-        {
-          variant_id: data.variant_id,
-          retail_price: "29.99", // Will be overridden by our pricing
-          files: [{ url: data.design_url }],
-        },
-      ],
-    }),
+    body: JSON.stringify(payload),
   });
 }
 
-/** Place an order for fulfillment */
-export async function createPrintfulOrder(order: PrintfulOrder) {
-  return printfulFetch("/orders", {
+export async function estimateShipping(
+  recipient: PrintfulCreateOrderPayload["recipient"],
+  items: PrintfulCreateOrderPayload["items"]
+) {
+  return pfFetch<{ result: PrintfulShippingEstimate[] }>("/shipping/rates", {
     method: "POST",
-    body: JSON.stringify({
-      ...order,
-      confirm: true, // Auto-confirm for production
-    }),
+    body: JSON.stringify({ recipient, items }),
   });
 }
 
-/** Get order status */
-export async function getPrintfulOrderStatus(orderId: number) {
-  return printfulFetch(`/orders/${orderId}`);
+export async function confirmOrder(orderId: number) {
+  return pfFetch(`/orders/${orderId}/confirm`, { method: "POST" });
 }
-
-/** Get available product catalog (blank items for printing) */
-export async function getPrintfulCatalog(categoryId?: number) {
-  const params = categoryId ? `?category_id=${categoryId}` : "";
-  return printfulFetch(`/products${params}`);
-}
-
-// Common Kynda product mappings
-export const KYNDA_PRINTFUL_PRODUCTS = {
-  "t-shirt": { category: "Men's clothing", product_id: 71 }, // Bella+Canvas 3001
-  "hoodie": { category: "Men's clothing", product_id: 146 }, // Gildan 18500
-  "mug": { category: "Drinkware", product_id: 19 }, // 11oz Mug
-  "tote-bag": { category: "Bags", product_id: 93 }, // Tote Bag
-  "hat": { category: "Headwear", product_id: 1 }, // Dad hat
-} as const;

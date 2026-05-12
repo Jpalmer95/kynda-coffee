@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
+import { ProductImage } from "./ProductImage";
 
 interface QuickViewModalProps {
   product: Product | null;
@@ -64,18 +65,8 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
 
         <div className="grid sm:grid-cols-2">
           {/* Image */}
-          <div className="aspect-square bg-gradient-to-br from-amber-800 to-stone-900">
-            {product.images?.[0] ? (
-              <img
-                src={product.images[0]}
-                alt={product.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-6xl">
-                {product.category === "coffee-beans" ? "☕" : "✨"}
-              </div>
-            )}
+          <div className="relative aspect-square overflow-hidden">
+            <ProductImage product={product} className="aspect-square" />
           </div>
 
           {/* Details */}
