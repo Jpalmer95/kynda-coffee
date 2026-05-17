@@ -18,8 +18,8 @@ Follow these rules in every session.
 
 ## Architecture
 - POS-agnostic: Square for café, Printful for merch
-- All pages follow charcoal/grey + rust design language
 - Use existing Supabase, Square, and Printful integrations
+- **Design System:** Follow `DESIGN.md` as the single source of truth for all visual, typographic, color, and component decisions (Modern Artisan / Organic-Tech palette)
 
 ## Tool Usage
 - Prefer autonomous progress on concrete tasks

@@ -26,6 +26,9 @@
 - Promo Codes + Gift Cards systems
 - Products management page
 
+- **Design System:** All pages must follow the Modern Artisan palette, typography, and component rules defined in `DESIGN.md`.
+- Preserve and evolve the `DESIGN.md` schema as living source of truth
+---
 ---
 
 ## In Progress — Next Focus
