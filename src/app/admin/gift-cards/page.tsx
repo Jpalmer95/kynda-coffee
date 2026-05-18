@@ -84,7 +84,7 @@ export default function AdminGiftCardsPage() {
           </Link>
           <div>
             <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-              <Gift className="h-8 w-8 text-rust" /> Gift Cards
+              <Gift className="h-8 w-8 text-forest" /> Gift Cards
             </h1>
             <p className="text-sm text-mocha">Issue, track and manage digital gift cards</p>
           </div>
@@ -155,7 +155,7 @@ export default function AdminGiftCardsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm p-6">
             <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
-              <Gift className="h-5 w-5 text-rust" /> Issue New Gift Card
+              <Gift className="h-5 w-5 text-forest" /> Issue New Gift Card
             </h3>
 
             <div className="space-y-4">

@@ -24,15 +24,69 @@ interface SyncResult {
   success: boolean;
 }
 
+interface SyncResults {
+  catalog: SyncResult;
+  inventory: SyncResult;
+  orders: SyncResult;
+}
+
+// Helper: safely extract errors array from a sync result
+function getErrors(result: SyncResult | SyncResults | undefined): string[] {
+  if (!result) return [];
+  // "all" sync returns { catalog, inventory, orders } — merge all errors
+  if ("catalog" in result) {
+    return [
+      ...(result.catalog?.errors ?? []),
+      ...(result.inventory?.errors ?? []),
+      ...(result.orders?.errors ?? []),
+    ];
+  }
+  return (result as SyncResult)?.errors ?? [];
+}
+
+// Helper: safely get synced count
+function getSynced(result: SyncResult | SyncResults | undefined): number {
+  if (!result) return 0;
+  if ("catalog" in result) {
+    return (
+      (result.catalog?.synced ?? 0) +
+      (result.inventory?.synced ?? 0) +
+      (result.orders?.synced ?? 0)
+    );
+  }
+  return (result as SyncResult)?.synced ?? 0;
+}
+
+// Helper: safely check overall success
+function getSuccess(result: SyncResult | SyncResults | undefined): boolean {
+  if (!result) return false;
+  if ("catalog" in result) {
+    return (
+      (result.catalog?.success ?? false) &&
+      (result.inventory?.success ?? false) &&
+      (result.orders?.success ?? false)
+    );
+  }
+  return (result as SyncResult)?.success ?? false;
+}
+
 export default function AdminSquarePage() {
   const [syncing, setSyncing] = useState<string | null>(null);
-  const [results, setResults] = useState<Record<string, SyncResult>>({});
+  const [results, setResults] = useState<Record<string, SyncResult | SyncResults>>({});
   const [status, setStatus] = useState<SyncStatus | null>(null);
 
   async function checkStatus() {
-    const res = await fetch("/api/square/sync");
-    const data = await res.json();
-    setStatus(data);
+    try {
+      const res = await fetch("/api/square/sync");
+      if (!res.ok) {
+        console.warn("Square sync status check failed:", res.status);
+        return;
+      }
+      const data = await res.json();
+      setStatus(data);
+    } catch (err) {
+      console.warn("Failed to fetch Square sync status:", err);
+    }
   }
 
   async function runSync(type: string) {
@@ -110,8 +164,8 @@ export default function AdminSquarePage() {
             </>
           ) : (
             <>
-              <AlertCircle className="h-5 w-5 text-rust" />
-              <span className="text-sm text-rust">Not connected</span>
+              <AlertCircle className="h-5 w-5 text-forest" />
+              <span className="text-sm text-forest">Not connected</span>
             </>
           )}
         </div>
@@ -163,18 +217,18 @@ export default function AdminSquarePage() {
             {results[option.id] && (
               <div
                 className={`mt-3 rounded-lg p-3 text-sm ${
-                  results[option.id].success
+                  getSuccess(results[option.id])
                     ? "bg-sage/10 text-sage"
-                    : "bg-rust/10 text-rust"
+                    : "bg-bronze/10 text-forest"
                 }`}
               >
                 <p className="font-medium">
-                  {results[option.id].success ? "✓" : "✗"} Synced{" "}
-                  {results[option.id].synced} items
+                  {getSuccess(results[option.id]) ? "✓" : "✗"} Synced{" "}
+                  {getSynced(results[option.id])} items
                 </p>
-                {results[option.id].errors.length > 0 && (
+                {getErrors(results[option.id]).length > 0 && (
                   <p className="mt-1 text-xs">
-                    {results[option.id].errors.length} error(s)
+                    {getErrors(results[option.id]).length} error(s)
                   </p>
                 )}
               </div>

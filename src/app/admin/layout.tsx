@@ -114,7 +114,7 @@ export default function AdminLayout({
                   aria-current={isActive ? "page" : undefined}
                 >
                   <link.icon
-                    className={cn("h-5 w-5", isActive && "text-rust")}
+                    className={cn("h-5 w-5", isActive && "text-forest")}
                     strokeWidth={isActive ? 2.5 : 1.5}
                   />
                   <span className="text-[10px] font-medium leading-none">

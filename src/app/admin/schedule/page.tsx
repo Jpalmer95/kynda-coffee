@@ -32,7 +32,7 @@ export default function AdminSchedulePage() {
         </Link>
         <div>
           <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-            <Calendar className="h-8 w-8 text-rust" /> Staff Schedule
+            <Calendar className="h-8 w-8 text-forest" /> Staff Schedule
           </h1>
           <p className="text-sm text-mocha">Week of May 12 – 18</p>
         </div>

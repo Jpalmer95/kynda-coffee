@@ -74,7 +74,7 @@ export default function AdminInventoryPage() {
         </Link>
         <div>
           <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-            <Package className="h-8 w-8 text-rust" /> Inventory Management
+            <Package className="h-8 w-8 text-forest" /> Inventory Management
           </h1>
           <p className="text-sm text-mocha">
             Café (Square) + Merch (Printful) • {lowStockCount} item{lowStockCount !== 1 ? "s" : ""} below threshold

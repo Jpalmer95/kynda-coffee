@@ -310,7 +310,7 @@ export default function NewProductPage() {
                   type="checkbox"
                   checked={trackInventory}
                   onChange={(e) => setTrackInventory(e.target.checked)}
-                  className="h-5 w-5 accent-rust"
+                  className="h-5 w-5 accent-forest"
                 />
               </label>
               <label className="flex items-center justify-between">
@@ -319,7 +319,7 @@ export default function NewProductPage() {
                   type="checkbox"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="h-5 w-5 accent-rust"
+                  className="h-5 w-5 accent-forest"
                 />
               </label>
               <label className="flex items-center justify-between">
@@ -328,7 +328,7 @@ export default function NewProductPage() {
                   type="checkbox"
                   checked={isFeatured}
                   onChange={(e) => setIsFeatured(e.target.checked)}
-                  className="h-5 w-5 accent-rust"
+                  className="h-5 w-5 accent-forest"
                 />
               </label>
             </div>

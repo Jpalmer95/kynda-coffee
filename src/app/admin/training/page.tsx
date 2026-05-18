@@ -109,7 +109,7 @@ export default async function AdminTrainingPage() {
           </div>
           <Link
             href="/admin"
-            className="text-sm font-medium text-rust hover:underline"
+            className="text-sm font-medium text-forest hover:underline"
           >
             ← Admin Home
           </Link>

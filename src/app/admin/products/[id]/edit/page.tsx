@@ -238,15 +238,15 @@ export default function EditProductPage() {
             <div className="space-y-3 rounded-xl bg-cream p-4">
               <label className="flex items-center justify-between">
                 <span className="text-sm font-medium text-espresso">Track Inventory</span>
-                <input type="checkbox" checked={trackInventory} onChange={(e) => setTrackInventory(e.target.checked)} className="h-5 w-5 accent-rust" />
+                <input type="checkbox" checked={trackInventory} onChange={(e) => setTrackInventory(e.target.checked)} className="h-5 w-5 accent-forest" />
               </label>
               <label className="flex items-center justify-between">
                 <span className="text-sm font-medium text-espresso">Active</span>
-                <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-5 w-5 accent-rust" />
+                <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-5 w-5 accent-forest" />
               </label>
               <label className="flex items-center justify-between">
                 <span className="text-sm font-medium text-espresso">Featured</span>
-                <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="h-5 w-5 accent-rust" />
+                <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} className="h-5 w-5 accent-forest" />
               </label>
             </div>
 

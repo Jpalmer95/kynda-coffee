@@ -193,7 +193,7 @@ export default function AdminPage() {
               className="group flex items-start gap-4 rounded-[24px] border border-latte/10 bg-white p-4 sm:p-6 transition-all hover:shadow-hover hover:-translate-y-0.5"
             >
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-cream">
-                <section.icon className="h-5 w-5 text-mocha transition-colors group-hover:text-rust" aria-hidden="true" />
+                <section.icon className="h-5 w-5 text-mocha transition-colors group-hover:text-forest" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="font-heading text-base sm:text-lg font-semibold text-espresso">

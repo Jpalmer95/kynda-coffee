@@ -12,7 +12,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   return (
     <section className="section-padding">
       <div className="container-max max-w-lg text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-rust" aria-hidden="true" />
+        <AlertCircle className="mx-auto h-12 w-12 text-forest" aria-hidden="true" />
         <h1 className="mt-4 font-heading text-2xl font-bold text-espresso">Something went wrong</h1>
         <p className="mt-2 text-sm text-mocha">
           {error.message || "An unexpected error occurred. Please try again."}

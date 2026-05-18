@@ -40,7 +40,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rust" />
+        <Loader2 className="h-8 w-8 animate-spin text-forest" />
       </div>
     );
   }
@@ -82,7 +82,7 @@ export default function AnalyticsPage() {
         </Link>
         <div>
           <h1 className="font-heading text-2xl sm:text-3xl font-bold text-espresso flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-rust" />
+            <BarChart3 className="h-6 w-6 text-forest" />
             Analytics
           </h1>
           <p className="text-sm text-mocha">Last 30 days performance</p>
@@ -93,7 +93,7 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Revenue", value: `$${(totalRevenue / 100).toFixed(2)}`, icon: DollarSign, color: "text-sage" },
-          { label: "Orders", value: totalOrders.toString(), icon: TrendingUp, color: "text-rust" },
+          { label: "Orders", value: totalOrders.toString(), icon: TrendingUp, color: "text-forest" },
           { label: "Units Sold", value: totalUnits.toString(), icon: Package, color: "text-amber-600" },
           { label: "New Customers", value: totalCustomers.toString(), icon: Users, color: "text-sky-600" },
         ].map((kpi) => (
