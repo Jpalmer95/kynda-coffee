@@ -13,7 +13,7 @@
 - Printful merch integration + design-to-printful workflow
 - **Loyalty Point Redemption** — fully working at checkout (100 pts = $5, real-time balance)
 - **Real Email Automation** — centralized service + professional templates + admin triggers for abandoned cart, win-back, review requests, order & shipping notifications
-- Clean modern charcoal/grey + rust design language (mobile-first)
+- Clean modern Modern Artisan (bronze + forest) design language (mobile-first)
 
 ### Operations & Admin Tools
 - Inventory Management with low-stock alerts
@@ -61,5 +61,5 @@
 - Always update this roadmap after major completions
 - Build real, usable features
 - `npm run build`, conventional commit, push after significant work
-- Preserve charcoal/grey + rust design language
+- Preserve Modern Artisan (bronze + forest) design language
 - POS-agnostic (Square for café, Printful for merch)

@@ -144,7 +144,7 @@ Leverage the battle-tested platform built for Kynda:
 
 - Every feature must pass `npm run build` before push
 - Conventional commits only
-- Maintain charcoal/grey + rust design language
+- Maintain Modern Artisan (bronze + forest) design language
 - POS-agnostic (Square for café, Printful/Stripe for merch & subscriptions)
 - All new admin surfaces follow the established dashboard pattern
 - Autonomous git push from local workstation after successful build
