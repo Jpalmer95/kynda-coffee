@@ -8,19 +8,25 @@ import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { formatPrice } from "@/lib/utils";
 import { ProductImage } from "@/components/shop/ProductImage";
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
+import { useMenuCartStore } from "@/hooks/useMenuCart";
 
 export function CartDrawer() {
   const { open, setOpen } = useCartDrawer();
-  const { items, subtotal_cents, item_count, updateQuantity, removeItem } = useCartStore();
+  const { items: shopItems, subtotal_cents: shopSubtotal, item_count: shopCount, updateQuantity: updateShopQty, removeItem: removeShopItem } = useCartStore();
+  const { items: menuItems, subtotal_cents: menuSubtotal, item_count: menuCount, updateQuantity: updateMenuQty, removeItem: removeMenuItem } = useMenuCartStore();
   const drawerRef = useRef<HTMLDivElement>(null);
   const trapRef = useFocusTrap(open);
   const touchStartX = useRef(0);
   const [swipeOffset, setSwipeOffset] = useState(0);
 
+  const item_count = shopCount + menuCount;
+  const totalSubtotal = shopSubtotal + menuSubtotal;
+
   // Force closed on mount — ensures it never opens by default on page load
   useEffect(() => {
     setOpen(false);
   }, [setOpen]);
+
   // Close on escape
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -49,7 +55,6 @@ export function CartDrawer() {
     if (!open) return;
     const currentX = e.touches[0].clientX;
     const diff = currentX - touchStartX.current;
-    // Only allow swiping right (to close drawer from right edge)
     if (diff > 0) {
       setSwipeOffset(diff);
     }
@@ -62,10 +67,6 @@ export function CartDrawer() {
     setSwipeOffset(0);
   }, [swipeOffset, setOpen]);
 
-  // Only apply an inline transform while the drawer is open for swipe gestures.
-  // When closed, Tailwind's translate-x-full class must control the transform.
-  // Otherwise an inline translateX(0) overrides the closed class and leaves the
-  // drawer permanently visible.
   const transformStyle = open ? `translateX(${swipeOffset}px)` : `translateX(calc(100% + 16px))`;
 
   return (
@@ -124,11 +125,11 @@ export function CartDrawer() {
 
           {/* Items */}
           <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
-            {items.length === 0 ? (
+            {shopItems.length === 0 && menuItems.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center">
                 <ShoppingBag className="h-12 w-12 text-latte" />
                 <p className="mt-4 font-medium text-espresso">Your cart is empty</p>
-                <p className="mt-1 text-sm text-mocha">Browse our shop and add something you love.</p>
+                <p className="mt-1 text-sm text-mocha">Browse our shop or menu and add something you love.</p>
                 <button
                   onClick={() => setOpen(false)}
                   className="btn-primary mt-6"
@@ -137,93 +138,179 @@ export function CartDrawer() {
                 </button>
               </div>
             ) : (
-              <div className="space-y-4">
-                {items.map((item) => (
-                  <div
-                    key={`${item.product.id}-${JSON.stringify(item.selectedVariant)}`}
-                    className="flex gap-3 rounded-xl border border-latte/20 bg-card p-3"
-                  >
-                    <Link
-                      href={`/shop/product/${item.product.slug}`}
-                      onClick={() => setOpen(false)}
-                      className="flex-shrink-0"
-                    >
-                      <ProductImage product={item.product} className="h-16 w-16 rounded-lg" sizes="64px" />
-                    </Link>
+              <div className="space-y-6">
+                {/* Shop Items */}
+                {shopItems.length > 0 && (
+                  <div>
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-mocha">Shop</h3>
+                    <div className="space-y-4">
+                      {shopItems.map((item) => (
+                        <div
+                          key={`${item.product.id}-${JSON.stringify(item.selectedVariant)}`}
+                          className="flex gap-3 rounded-xl border border-latte/20 bg-card p-3"
+                        >
+                          <Link
+                            href={`/shop/product/${item.product.slug}`}
+                            onClick={() => setOpen(false)}
+                            className="flex-shrink-0"
+                          >
+                            <ProductImage product={item.product} className="h-16 w-16 rounded-lg" sizes="64px" />
+                          </Link>
 
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/shop/product/${item.product.slug}`}
-                        onClick={() => setOpen(false)}
-                        className="block truncate text-sm font-medium text-espresso hover:text-forest"
-                      >
-                        {item.product.name}
-                      </Link>
-                      <div className="mt-0.5 text-xs text-mocha">
-                        {item.selectedVariant?.size && <span>Size: {item.selectedVariant.size} · </span>}
-                        {item.selectedVariant?.grind && <span>{item.selectedVariant.grind.replace(/-/g, " ")} · </span>}
-                        {item.selectedVariant?.color && <span>{item.selectedVariant.color}</span>}
-                      </div>
+                          <div className="min-w-0 flex-1">
+                            <Link
+                              href={`/shop/product/${item.product.slug}`}
+                              onClick={() => setOpen(false)}
+                              className="block truncate text-sm font-medium text-espresso hover:text-forest"
+                            >
+                              {item.product.name}
+                            </Link>
+                            <div className="mt-0.5 text-xs text-mocha">
+                              {item.selectedVariant?.size && <span>Size: {item.selectedVariant.size} · </span>}
+                              {item.selectedVariant?.grind && <span>{item.selectedVariant.grind.replace(/-/g, " ")} · </span>}
+                              {item.selectedVariant?.color && <span>{item.selectedVariant.color}</span>}
+                            </div>
 
-                      <div className="mt-2 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                            className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                          </button>
+                            <div className="mt-2 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {item.quantity === 1 ? (
+                                  <button
+                                    onClick={() => removeShopItem(item.product.id)}
+                                    className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-mocha hover:text-red-600 hover:bg-red-50"
+                                    aria-label="Remove item"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => updateShopQty(item.product.id, item.quantity - 1)}
+                                    className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
+                                    aria-label="Decrease quantity"
+                                  >
+                                    <Minus className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                                <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
+                                <button
+                                  onClick={() => updateShopQty(item.product.id, item.quantity + 1)}
+                                  className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                              <span className="text-sm font-semibold text-espresso">
+                                {formatPrice(item.product.price_cents * item.quantity)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-espresso">
-                            {formatPrice(item.product.price_cents * item.quantity)}
-                          </span>
-                          <button
-                            onClick={() => removeItem(item.product.id)}
-                            className="flex h-9 w-9 items-center justify-center rounded-full text-mocha hover:bg-bronze/10 hover:text-forest"
-                            aria-label={`Remove ${item.product.name} from cart`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* Menu Items */}
+                {menuItems.length > 0 && (
+                  <div>
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-mocha">Menu</h3>
+                    <div className="space-y-4">
+                      {menuItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex gap-3 rounded-xl border border-latte/20 bg-card p-3"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-espresso">
+                              {item.itemName}
+                              {item.variationName && item.variationName !== "Regular" && (
+                                <span className="text-mocha"> — {item.variationName}</span>
+                              )}
+                            </div>
+                            {item.modifierNames.length > 0 && (
+                              <div className="mt-0.5 text-xs text-mocha">{item.modifierNames.join(", ")}</div>
+                            )}
+
+                            <div className="mt-2 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {item.quantity === 1 ? (
+                                  <button
+                                    onClick={() => removeMenuItem(item.id)}
+                                    className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-mocha hover:text-red-600 hover:bg-red-50"
+                                    aria-label="Remove item"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => updateMenuQty(item.id, item.quantity - 1)}
+                                    className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
+                                    aria-label="Decrease quantity"
+                                  >
+                                    <Minus className="h-3.5 w-3.5" />
+                                  </button>
+                                )}
+                                <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
+                                <button
+                                  onClick={() => updateMenuQty(item.id, item.quantity + 1)}
+                                  className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                              <span className="text-sm font-semibold text-espresso">
+                                {formatPrice(item.unitPriceCents * item.quantity)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           {/* Footer */}
-          {items.length > 0 && (
+          {(shopItems.length > 0 || menuItems.length > 0) && (
             <div className="border-t border-latte/20 bg-card px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-mocha">Subtotal</span>
-                <span className="text-lg font-bold text-espresso">{formatPrice(subtotal_cents)}</span>
+                <span className="text-lg font-bold text-espresso">{formatPrice(totalSubtotal)}</span>
               </div>
               <p className="mt-1 text-xs text-mocha">Shipping & taxes calculated at checkout</p>
-              <Link
-                href="/shop/cart"
-                onClick={() => setOpen(false)}
-                className="btn-primary mt-4 flex w-full items-center justify-center"
-              >
-                Go to Cart
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+
+              {shopItems.length > 0 && (
+                <Link
+                  href="/shop/cart"
+                  onClick={() => setOpen(false)}
+                  className="btn-primary mt-3 flex w-full items-center justify-center"
+                >
+                  Shop Checkout
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              )}
+
+              {menuItems.length > 0 && (
+                <Link
+                  href="/order"
+                  onClick={() => setOpen(false)}
+                  className={`flex w-full items-center justify-center py-3 text-base font-medium rounded-xl transition-colors ${
+                    shopItems.length > 0
+                      ? "btn-secondary mt-2"
+                      : "btn-accent mt-4"
+                  }`}
+                >
+                  Place Menu Order
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              )}
             </div>
           )}
         </div>
       </div>
-
     </>
   );
 }

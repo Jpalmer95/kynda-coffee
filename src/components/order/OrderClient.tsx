@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Loader2, Minus, Plus, ShoppingCart, Trash2, Users } from "lucide-react";
+import { Loader2, Minus, Plus, ShoppingCart, Trash2, Users, ChevronDown, ChevronUp } from "lucide-react";
 import type {
   PosCatalogCategoryGroup,
   PosCatalogItem,
@@ -19,7 +19,6 @@ interface CartLine {
   quantity: number;
   modifierIds: string[];
   modifierNames: string[];
-  notes: string;
   unitPriceCents: number;
 }
 
@@ -44,8 +43,8 @@ function modifierById(item: PosCatalogItem, id: string): PosCatalogModifier | un
   return item.modifierLists.flatMap((l) => l.modifiers).find((m) => m.providerModifierId === id);
 }
 
-function lineKey(itemId: string, varId: string, mods: string[], notes: string): string {
-  return [itemId, varId || "", [...mods].sort().join(","), notes.trim()].join("|");
+function lineKey(itemId: string, varId: string, mods: string[]): string {
+  return [itemId, varId || "", [...mods].sort().join(",")].join("|");
 }
 
 export function OrderClient({ categories, initialMode, initialLabel }: Props) {
@@ -60,6 +59,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
   const [fulfillmentMode, setFulfillmentMode] = useState<QrFulfillmentMode>(initialFulfillment);
   const [fulfillmentLabel, setFulfillmentLabel] = useState(initialLabel || "");
+  const [carDescription, setCarDescription] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
   const [paymentPreference, setPaymentPreference] = useState<QrPaymentPreference>("pay_at_counter");
   const [splitBill, setSplitBill] = useState(false);
@@ -68,11 +68,21 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   const [success, setSuccess] = useState<any>(null);
   const [showCart, setShowCart] = useState(false);
 
+  // Track expanded modifier lists per item
+  const [expandedModifiers, setExpandedModifiers] = useState<Record<string, boolean>>({});
+
   const itemCount = useMemo(() => cart.reduce((s, l) => s + l.quantity, 0), [cart]);
   const subtotalCents = useMemo(
     () => cart.reduce((s, l) => s + l.quantity * l.unitPriceCents, 0),
     [cart]
   );
+
+  function toggleModifierList(itemId: string, listId: string) {
+    setExpandedModifiers((prev) => ({
+      ...prev,
+      [`${itemId}:${listId}`]: !prev[`${itemId}:${listId}`],
+    }));
+  }
 
   function addItem(item: PosCatalogItem, form: HTMLFormElement) {
     const formData = new FormData(form);
@@ -82,10 +92,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
     const modifierIds = selectedModifierIds(item, formData);
     const modifiers = modifierIds.map((id) => modifierById(item, id)).filter(Boolean) as PosCatalogModifier[];
-    const notes = String(formData.get(`notes:${item.providerItemId}`) || "").trim();
     const quantity = Math.max(1, Math.min(20, Number(formData.get(`quantity:${item.providerItemId}`) || 1)));
     const unitPrice = variation.priceCents + modifiers.reduce((sum, m) => sum + m.priceCents, 0);
-    const id = lineKey(item.providerItemId, variation.providerVariationId, modifierIds, notes);
+    const id = lineKey(item.providerItemId, variation.providerVariationId, modifierIds);
 
     setCart((current) => {
       const existing = current.find((line) => line.id === id);
@@ -105,7 +114,6 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
           quantity,
           modifierIds,
           modifierNames: modifiers.map((m) => m.name),
-          notes,
           unitPriceCents: unitPrice,
         },
       ];
@@ -129,6 +137,10 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       setError("Please add your name and phone number so we can find you.");
       return;
     }
+    if (fulfillmentMode === "pickup" && !carDescription.trim()) {
+      setError("Please describe your vehicle so we can bring your order out.");
+      return;
+    }
 
     setSubmitting(true);
     setError("");
@@ -139,10 +151,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         providerVariationId: line.providerVariationId,
         quantity: line.quantity,
         modifierIds: line.modifierIds,
-        notes: line.notes,
       })),
       customer: { name: customerName.trim(), phone: customerPhone.trim(), email: customerEmail.trim() || undefined },
-      fulfillment: { mode: fulfillmentMode, label: fulfillmentLabel.trim() || undefined },
+      fulfillment: { mode: fulfillmentMode, label: fulfillmentLabel.trim() || undefined, carDescription: carDescription.trim() || undefined },
       orderNotes: orderNotes.trim() || undefined,
       paymentPreference,
       splitBill,
@@ -186,17 +197,38 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         ))}
       </div>
 
+      {/* Fulfillment label for table/parking */}
       {fulfillmentMode !== "lobby" && fulfillmentMode !== "pickup" && (
         <div className="mb-10 max-w-sm">
           <label className="block text-sm font-medium text-mocha mb-1">
-            {fulfillmentMode === "table" ? "Table number or name" : fulfillmentMode === "parking" ? "Parking spot #" : "Car description / spot"}
+            {fulfillmentMode === "table" ? "Table number or name" : "Parking spot #"}
           </label>
           <input
             type="text"
             value={fulfillmentLabel}
             onChange={(e) => setFulfillmentLabel(e.target.value)}
-            placeholder={fulfillmentMode === "table" ? "Table 7" : fulfillmentMode === "parking" ? "Spot A14" : "Blue Honda"}
+            placeholder={fulfillmentMode === "table" ? "Table 7" : "Spot A14"}
             className="w-full rounded-xl border border-latte/30 px-4 py-3 text-lg"
+          />
+        </div>
+      )}
+
+      {/* Car description for curbside pickup */}
+      {fulfillmentMode === "pickup" && (
+        <div className="mb-10 max-w-md">
+          <label className="block text-sm font-medium text-mocha mb-1">
+            Vehicle description <span className="text-red-500">*</span>
+          </label>
+          <p className="text-xs text-mocha/70 mb-2">
+            So we can find you quickly when we bring your order out.
+          </p>
+          <input
+            type="text"
+            value={carDescription}
+            onChange={(e) => setCarDescription(e.target.value)}
+            placeholder="e.g. Blue Honda Civic, TX plate ABC-123"
+            className="w-full rounded-xl border border-latte/30 px-4 py-3 text-lg"
+            required
           />
         </div>
       )}
@@ -255,25 +287,51 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                     {/* Modifiers */}
                     {item.modifierLists.length > 0 && (
                       <div className="space-y-3">
-                        {item.modifierLists.map((list) => (
-                          <div key={list.providerModifierListId}>
-                            <div className="mb-1.5 text-xs tracking-widest text-mocha">{list.name}</div>
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                              {list.modifiers.map((mod) => (
-                                <label key={mod.providerModifierId} className="flex items-center gap-1.5">
-                                  <input type={list.selectionType === "single" ? "radio" : "checkbox"} name={`modifier:${item.providerItemId}:${list.providerModifierListId}`} value={mod.providerModifierId} />
-                                  {mod.name} {mod.priceCents > 0 && <span className="text-mocha">+{formatMoney(mod.priceCents)}</span>}
-                                </label>
-                              ))}
+                        {item.modifierLists.map((list) => {
+                          const isExpanded = expandedModifiers[`${item.providerItemId}:${list.providerModifierListId}`];
+                          const visibleModifiers = isExpanded ? list.modifiers : list.modifiers.slice(0, 10);
+                          const hasMore = list.modifiers.length > 10;
+
+                          return (
+                            <div key={list.providerModifierListId}>
+                              <div className="mb-1.5 text-xs tracking-widest text-mocha">{list.name}</div>
+                              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                                {visibleModifiers.map((mod) => {
+                                  const inputType = list.selectionType === "single" ? "radio" : "checkbox";
+                                  const inputName = `modifier:${item.providerItemId}:${list.providerModifierListId}`;
+                                  return (
+                                    <label key={mod.providerModifierId} className="flex items-center gap-1.5">
+                                      <input type={inputType} name={inputName} value={mod.providerModifierId} />
+                                      {mod.name} {mod.priceCents > 0 && <span className="text-mocha">+{formatMoney(mod.priceCents)}</span>}
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                              {hasMore && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleModifierList(item.providerItemId, list.providerModifierListId)}
+                                  className="mt-1 flex items-center gap-1 text-xs font-medium text-forest hover:text-espresso"
+                                >
+                                  {isExpanded ? (
+                                    <>
+                                      Show less <ChevronUp className="size-3" />
+                                    </>
+                                  ) : (
+                                    <>
+                                      View {list.modifiers.length - 10} more <ChevronDown className="size-3" />
+                                    </>
+                                  )}
+                                </button>
+                              )}
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
 
                     <div className="flex items-center gap-3 pt-2">
                       <input type="number" name={`quantity:${item.providerItemId}`} defaultValue={1} min="1" max="20" className="w-16 rounded-xl border px-3 py-2 font-mono" />
-                      <textarea name={`notes:${item.providerItemId}`} placeholder="Any notes? (e.g., oat milk, no lid)" className="flex-1 rounded-2xl border px-4 py-2 text-sm resize-y" />
                       <button type="submit" className="btn-accent shrink-0">Add to order</button>
                     </div>
                   </form>
@@ -317,7 +375,6 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       <div className="flex-1">
                         <div className="font-medium">{line.itemName} {line.variationName && `— ${line.variationName}`}</div>
                         {line.modifierNames.length > 0 && <div className="text-xs text-mocha mt-0.5">{line.modifierNames.join(", ")}</div>}
-                        {line.notes && <div className="text-xs italic text-mocha/70 mt-0.5">Note: {line.notes}</div>}
                       </div>
                       <div className="text-right font-mono w-20 tabular-nums">{formatMoney(line.unitPriceCents)}</div>
                       <div className="flex items-center gap-2 pl-3 border-l">

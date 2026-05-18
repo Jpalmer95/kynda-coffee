@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
       const channelLabel = source === "menu" ? "menu" : "shop";
       const catalog = await getPosCatalog({ channel: channelLabel, includeModifiers: false, limit });
       const posProducts = catalog.items
+        .filter((item) => item.itemType !== "menu")
         .map(mapPosCatalogItemToProduct)
         .filter((product) => !category || product.category === category)
         .filter((product) => featured !== "true" || product.is_featured);

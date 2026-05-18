@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ShoppingBag, Menu, X, Coffee, Search, User } from "lucide-react";
 import { useCartStore } from "@/hooks/useCart";
+import { useMenuCartStore } from "@/hooks/useMenuCart";
 import { useCartDrawer } from "@/hooks/useCartDrawer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,9 @@ const NAV_LINKS = [
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const itemCount = useCartStore((s) => s.item_count);
+  const shopItemCount = useCartStore((s) => s.item_count);
+  const menuItemCount = useMenuCartStore((s) => s.item_count);
+  const itemCount = shopItemCount + menuItemCount;
 
   // Close mobile menu on resize to desktop
   useEffect(() => {

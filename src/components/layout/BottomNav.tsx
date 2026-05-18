@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Home, ShoppingBag, Coffee, Sparkles, User, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/hooks/useCart";
+import { useMenuCartStore } from "@/hooks/useMenuCart";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: Home },
@@ -16,7 +17,9 @@ const NAV_ITEMS = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const itemCount = useCartStore((s) => s.item_count);
+  const shopItemCount = useCartStore((s) => s.item_count);
+  const menuItemCount = useMenuCartStore((s) => s.item_count);
+  const itemCount = shopItemCount + menuItemCount;
 
   // Hide on admin routes and checkout
   if (pathname.startsWith("/admin") || pathname.startsWith("/shop/checkout")) {
