@@ -116,7 +116,7 @@ export default function AccountRewardsPage() {
           )}
 
           <p className="mt-3 text-xs text-mocha">
-            100 points = $5.00 off · You&apos;ve spent ${((balance?.total_spent_cents ?? 0) / 100).toFixed(2)} across {balance?.total_orders ?? 0} orders
+            Earn 1 point per $1 spent · 100 points = $5.00 off · You&apos;ve spent ${((balance?.total_spent_cents ?? 0) / 100).toFixed(2)} across {balance?.total_orders ?? 0} orders
           </p>
         </div>
 

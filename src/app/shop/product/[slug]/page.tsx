@@ -14,6 +14,8 @@ import { RecentlyViewedStrip } from "@/components/shop/RecentlyViewed";
 import { ProductSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
 import { ProductReviews } from "@/components/shop/ProductReviews";
 import { ImageLightbox } from "@/components/shop/ImageLightbox";
+import { SubscriptionPanel } from "@/components/shop/SubscriptionPanel";
+import { createClient } from "@/lib/supabase/client";
 
 function getDefaultImage(category: string): string | null {
   const images: Record<string, string> = {
@@ -36,11 +38,19 @@ export default function ProductDetailPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
   const addItem = useCartStore((s) => s.addItem);
   const { toast } = useToast();
   const { toggle, isFavorite } = useFavoritesStore();
   const { add: addRecentlyViewed } = useRecentlyViewed();
   const favorite = product ? isFavorite(product.id) : false;
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setUserEmail(data.user.email);
+    });
+  }, []);
 
   useEffect(() => {
     fetch(`/api/products`)
@@ -418,6 +428,8 @@ export default function ProductDetailPage() {
               </label>
               <div className="flex items-center gap-3">
                 <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-card text-espresso"
                   aria-label="Decrease quantity"
                 >
                   <Minus className="h-4 w-4" aria-hidden="true" />
@@ -487,6 +499,17 @@ export default function ProductDetailPage() {
                 <span className="text-[11px] sm:text-xs text-mocha">30-day returns</span>
               </div>
             </div>
+
+            {/* Subscription Panel for coffee beans and subscriptions */}
+            {(isCoffee || isSubscription) && (
+              <SubscriptionPanel
+                productId={product.id}
+                productName={product.name}
+                priceCents={product.price_cents}
+                selectedGrind={selectedGrind}
+                email={userEmail}
+              />
+            )}
           </div>
         </div>
 

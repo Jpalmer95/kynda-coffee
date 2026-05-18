@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-// Loyalty earning rate: 10 points per dollar spent
-const POINTS_PER_DOLLAR = 10;
+// Loyalty earning rate: 1 point per dollar spent
+const POINTS_PER_DOLLAR = 1;
 
 export async function POST(req: NextRequest) {
   if (!endpointSecret) {
@@ -33,12 +33,35 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    await handleCheckoutCompleted(session);
+    if (session.mode === "subscription") {
+      await handleSubscriptionCheckoutCompleted(session);
+    } else {
+      await handleCheckoutCompleted(session);
+    }
   }
 
   if (event.type === "checkout.session.async_payment_succeeded") {
     const session = event.data.object as Stripe.Checkout.Session;
-    await handleCheckoutCompleted(session);
+    if (session.mode === "subscription") {
+      await handleSubscriptionCheckoutCompleted(session);
+    } else {
+      await handleCheckoutCompleted(session);
+    }
+  }
+
+  if (event.type === "invoice.payment_succeeded") {
+    const invoice = event.data.object as Stripe.Invoice;
+    await handleInvoicePaymentSucceeded(invoice);
+  }
+
+  if (event.type === "customer.subscription.updated") {
+    const subscription = event.data.object as Stripe.Subscription;
+    await handleSubscriptionUpdated(subscription);
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object as Stripe.Subscription;
+    await handleSubscriptionDeleted(subscription);
   }
 
   return NextResponse.json({ received: true });
@@ -140,6 +163,104 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   console.log(`Loyalty updated for ${email}: ${currentPoints} -> ${newPoints} (tier: ${tier})`);
+}
+
+async function handleSubscriptionCheckoutCompleted(session: Stripe.Checkout.Session) {
+  const email = session.customer_email;
+  const metadata = session.metadata ?? {};
+  const subscriptionId = session.subscription as string;
+
+  if (!email || !subscriptionId) {
+    console.error("Missing email or subscription id", session.id);
+    return;
+  }
+
+  // Find or create customer
+  let { data: customer } = await supabaseAdmin()
+    .from("customers")
+    .select("id")
+    .eq("email", email)
+    .single();
+
+  if (!customer) {
+    const { data: newCustomer } = await supabaseAdmin()
+      .from("customers")
+      .insert({ email })
+      .select("id")
+      .single();
+    customer = newCustomer;
+  }
+
+  if (!customer) {
+    console.error("Could not find/create customer for subscription", email);
+    return;
+  }
+
+  // Insert subscription record
+  const productId = metadata.kynda_product_id;
+  const frequency = metadata.frequency || "monthly";
+  const grind = metadata.grind || null;
+
+  await supabaseAdmin()
+    .from("subscriptions")
+    .insert({
+      customer_id: customer.id,
+      product_id: productId,
+      stripe_subscription_id: subscriptionId,
+      status: "active",
+      grind,
+      frequency,
+      next_delivery_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+
+  console.log(`Subscription created for ${email}: ${subscriptionId}`);
+}
+
+async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
+  const subscriptionId = invoice.subscription as string;
+  if (!subscriptionId) return;
+
+  // Update next delivery date based on invoice period end
+  const periodEnd = invoice.lines?.data[0]?.period?.end;
+  if (periodEnd) {
+    await supabaseAdmin()
+      .from("subscriptions")
+      .update({
+        next_delivery_at: new Date(periodEnd * 1000).toISOString(),
+        status: "active",
+      })
+      .eq("stripe_subscription_id", subscriptionId);
+  }
+}
+
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+  const statusMap: Record<string, string> = {
+    active: "active",
+    paused: "paused",
+    canceled: "cancelled",
+    unpaid: "past_due",
+    trialing: "trialing",
+  };
+
+  const mappedStatus = statusMap[subscription.status] || subscription.status;
+
+  await supabaseAdmin()
+    .from("subscriptions")
+    .update({
+      status: mappedStatus,
+      cancelled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+    })
+    .eq("stripe_subscription_id", subscription.id);
+}
+
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+  await supabaseAdmin()
+    .from("subscriptions")
+    .update({
+      status: "cancelled",
+      cancelled_at: new Date().toISOString(),
+    })
+    .eq("stripe_subscription_id", subscription.id);
 }
 
 function computeTier(points: number, totalSpentCents: number): string {

@@ -180,7 +180,7 @@ export async function sendRetentionEmail({
   <h1 style="font-size:22px;margin:0 0 8px;">${config.heading}</h1>
   <p style="margin-top:16px;line-height:1.55;">${config.body}</p>
   <div style="margin-top:24px;text-align:center;">
-    <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://kynda.167.99.125.127.sslip.io"}/shop" style="display:inline-block;padding:12px 20px;background:#286849;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">${config.cta}</a>
+    <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://kyndacoffee.com"}/shop" style="display:inline-block;padding:12px 20px;background:#286849;color:#fff;text-decoration:none;border-radius:10px;font-weight:600;">${config.cta}</a>
   </div>
 </div></div></body></html>`,
     });
