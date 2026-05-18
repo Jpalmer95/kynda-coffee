@@ -1,147 +1,152 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import { stripe } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { getStripe } from "@/lib/stripe/client";
+import Stripe from "stripe";
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+export const dynamic = "force-dynamic";
+
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+// Loyalty earning rate: 10 points per dollar spent
+const POINTS_PER_DOLLAR = 10;
 
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  const signature = req.headers.get("stripe-signature");
-
-  if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET is not configured");
+  if (!endpointSecret) {
+    console.error("STRIPE_WEBHOOK_SECRET not set");
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
-  if (!signature) {
-    return NextResponse.json({ error: "No signature" }, { status: 400 });
+  const payload = await req.text();
+  const sig = req.headers.get("stripe-signature");
+
+  if (!sig) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
 
   let event: Stripe.Event;
-
   try {
-    const stripe = getStripe();
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    event = stripe().webhooks.constructEvent(payload, sig, endpointSecret);
   } catch (err: any) {
-    console.error("Stripe webhook signature error:", err.message);
+    console.error("Webhook signature verification failed:", err.message);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  try {
-    // Idempotency: prevent duplicate processing of the same event
-    const { data: existingWebhook } = await supabaseAdmin()
-      .from("webhook_events")
-      .select("id")
-      .eq("stripe_event_id", event.id)
-      .maybeSingle();
-
-    if (existingWebhook) {
-      return NextResponse.json({ received: true, idempotent: true });
-    }
-
-    // Record the event to lock it
-    await supabaseAdmin()
-      .from("webhook_events")
-      .insert({
-        stripe_event_id: event.id,
-        event_type: event.type,
-        processed_at: new Date().toISOString(),
-      })
-      .single();
-
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const customerEmail = session.customer_details?.email;
-
-      // Fetch the order we stored earlier
-      const { data: existingOrder } = await supabaseAdmin()
-        .from("orders")
-        .select("*")
-        .eq("stripe_session_id", session.id)
-        .maybeSingle();
-
-      if (existingOrder) {
-        // Mark order as paid
-        await supabaseAdmin()
-          .from("orders")
-          .update({
-            status: "confirmed",
-            payment_status: "paid",
-            paid_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingOrder.id);
-
-        // If this was a Design Studio / Printful order, confirm it
-        if (existingOrder.items && existingOrder.items.some((i: any) => i.source === "design_studio" || i.printful_variant_id)) {
-          if (existingOrder.printful_order_id) {
-            try {
-              const { confirmOrder } = await import("@/lib/printful/client");
-              await confirmOrder(Number(existingOrder.printful_order_id));
-
-              await supabaseAdmin()
-                .from("orders")
-                .update({
-                  status: "processing",
-                  updated_at: new Date().toISOString(),
-                })
-                .eq("id", existingOrder.id);
-            } catch (printfulErr) {
-              console.error("Printful confirm failed:", printfulErr);
-              // Don't fail the webhook — Printful can be retried manually
-            }
-          }
-        }
-
-        // Send order confirmation email
-        if (customerEmail) {
-          try {
-            const { sendEmail } = await import("@/lib/email/service");
-            await sendEmail({
-              to: customerEmail,
-              template: "order-confirmation",
-              data: {
-                orderNumber: existingOrder.order_number,
-                email: customerEmail,
-                total: existingOrder.total_cents,
-                items: existingOrder.items,
-              },
-            });
-          } catch (emailErr) {
-            console.error("Order confirmation email failed:", emailErr);
-            // Don't fail the webhook — email can be resent manually
-          }
-        }
-      }
-    }
-
-    if (event.type === "invoice.payment_succeeded" || event.type === "invoice.payment_failed") {
-      const invoice = event.data.object as Stripe.Invoice;
-      const subscriptionId = invoice.subscription as string | null;
-
-      if (subscriptionId) {
-        const { data: subscription } = await supabaseAdmin()
-          .from("subscriptions")
-          .select("*")
-          .eq("stripe_subscription_id", subscriptionId)
-          .maybeSingle();
-
-        if (subscription && event.type === "invoice.payment_failed") {
-          await supabaseAdmin()
-            .from("subscriptions")
-            .update({
-              status: "past_due",
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", subscription.id);
-        }
-      }
-    }
-
-    return NextResponse.json({ received: true });
-  } catch (err) {
-    console.error("Stripe webhook processing error:", err);
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await handleCheckoutCompleted(session);
   }
+
+  if (event.type === "checkout.session.async_payment_succeeded") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await handleCheckoutCompleted(session);
+  }
+
+  return NextResponse.json({ received: true });
+}
+
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  const email = session.customer_email;
+  if (!email) {
+    console.error("No customer email in session", session.id);
+    return;
+  }
+
+  const metadata = session.metadata ?? {};
+  const subtotalCents = parseInt(metadata.subtotal_cents ?? "0", 10);
+  const loyaltyPointsRedeemed = parseInt(metadata.loyalty_points_redeemed ?? "0", 10);
+  const loyaltyValueCents = parseInt(metadata.loyalty_value_cents ?? "0", 10);
+
+  // Calculate amount paid (after discounts, loyalty, etc.)
+  const amountTotalCents = session.amount_total ?? 0;
+
+  // Find or create customer
+  let { data: customer } = await supabaseAdmin()
+    .from("customers")
+    .select("id, loyalty_points, loyalty_tier, total_spent_cents, total_orders")
+    .eq("email", email)
+    .single();
+
+  if (!customer) {
+    const { data: newCustomer } = await supabaseAdmin()
+      .from("customers")
+      .insert({
+        email,
+        loyalty_points: 0,
+        loyalty_tier: "bronze",
+      })
+      .select("id, loyalty_points, loyalty_tier, total_spent_cents, total_orders")
+      .single();
+    customer = newCustomer;
+  }
+
+  if (!customer) {
+    console.error("Could not find or create customer for loyalty", email);
+    return;
+  }
+
+  const currentPoints = customer.loyalty_points ?? 0;
+  let newPoints = currentPoints;
+  const transactions: Array<{ points: number; type: string; description: string }> = [];
+
+  // Deduct redeemed points
+  if (loyaltyPointsRedeemed > 0) {
+    newPoints -= loyaltyPointsRedeemed;
+    transactions.push({
+      points: -loyaltyPointsRedeemed,
+      type: "redeemed",
+      description: `Redeemed ${loyaltyPointsRedeemed} points at checkout`,
+    });
+  }
+
+  // Award earned points based on amount actually paid (net of discounts)
+  // We use amount_total because that's what the customer actually paid
+  const earnedPoints = Math.floor((amountTotalCents / 100) * POINTS_PER_DOLLAR);
+  if (earnedPoints > 0) {
+    newPoints += earnedPoints;
+    transactions.push({
+      points: earnedPoints,
+      type: "earned",
+      description: `Earned ${earnedPoints} points from order #${session.id.slice(-8)}`,
+    });
+  }
+
+  // Update customer
+  const newTotalSpent = (customer.total_spent_cents ?? 0) + amountTotalCents;
+  const newTotalOrders = (customer.total_orders ?? 0) + 1;
+
+  // Determine tier
+  const tier = computeTier(newPoints, newTotalSpent);
+
+  await supabaseAdmin()
+    .from("customers")
+    .update({
+      loyalty_points: newPoints,
+      loyalty_tier: tier,
+      total_spent_cents: newTotalSpent,
+      total_orders: newTotalOrders,
+      last_order_at: new Date().toISOString(),
+    })
+    .eq("id", customer.id);
+
+  // Record transactions
+  for (const tx of transactions) {
+    await supabaseAdmin().from("loyalty_transactions").insert({
+      customer_id: customer.id,
+      customer_email: email,
+      points: Math.abs(tx.points),
+      type: tx.type,
+      description: tx.description,
+    });
+  }
+
+  console.log(`Loyalty updated for ${email}: ${currentPoints} -> ${newPoints} (tier: ${tier})`);
+}
+
+function computeTier(points: number, totalSpentCents: number): string {
+  // Tier based on total lifetime spend
+  const totalSpentDollars = totalSpentCents / 100;
+  if (totalSpentDollars >= 500) return "kynda-vip";
+  if (totalSpentDollars >= 200) return "gold";
+  if (totalSpentDollars >= 75) return "silver";
+  return "bronze";
 }

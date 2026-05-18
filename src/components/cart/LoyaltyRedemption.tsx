@@ -6,9 +6,10 @@ import { formatPrice } from "@/lib/utils";
 
 interface LoyaltyRedemptionProps {
   customerEmail: string;
+  subtotalCents: number;
 }
 
-export function LoyaltyRedemption({ customerEmail }: LoyaltyRedemptionProps) {
+export function LoyaltyRedemption({ customerEmail, subtotalCents }: LoyaltyRedemptionProps) {
   const [points, setPoints] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -26,9 +27,10 @@ export function LoyaltyRedemption({ customerEmail }: LoyaltyRedemptionProps) {
       const res = await fetch("/api/loyalty/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: customerEmail, 
-          points_to_redeem: parseInt(points) || 0 
+        body: JSON.stringify({
+          email: customerEmail,
+          points_to_redeem: parseInt(points) || 0,
+          subtotal_cents: subtotalCents,
         }),
       });
       const data = await res.json();

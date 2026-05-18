@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     const discount_cents = parsed.discount_cents ?? 0;
     const adjustedSubtotal = Math.max(0, subtotal - discount_cents);
 
-    // Prepare line items — add discount as a separate negative line item if applicable
+    // Prepare line items — add discount and loyalty as negative line items
     const finalLineItems = [...lineItems];
     if (discount_cents > 0) {
       finalLineItems.push({
@@ -100,12 +100,33 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const loyaltyPointsRedeemed = parsed.loyalty_points_redeemed ?? 0;
+    const loyaltyValueCents = parsed.loyalty_points_value_cents ?? 0;
+    if (loyaltyValueCents > 0) {
+      finalLineItems.push({
+        price_data: {
+          currency: STORE_CONFIG.currency,
+          product_data: {
+            name: "Loyalty Points Redemption",
+            description: `${loyaltyPointsRedeemed} points redeemed`,
+            images: [],
+          },
+          unit_amount: -loyaltyValueCents,
+        },
+        quantity: 1,
+      });
+    }
+
     const metadata: Record<string, string> = {
       source: "kynda-website",
       subtotal_cents: String(subtotal),
     };
     if (parsed.promo_code) metadata.promo_code = parsed.promo_code;
     if (parsed.gift_card_id) metadata.gift_card_id = parsed.gift_card_id;
+    if (loyaltyPointsRedeemed > 0) {
+      metadata.loyalty_points_redeemed = String(loyaltyPointsRedeemed);
+      metadata.loyalty_value_cents = String(loyaltyValueCents);
+    }
 
     // Create Stripe Checkout Session
     const stripeClient = stripe();

@@ -190,7 +190,7 @@ export default function CartPage() {
 
             {/* Loyalty Redemption Section */}
             <div className="pt-4">
-              <LoyaltyRedemption customerEmail={email} />
+              <LoyaltyRedemption customerEmail={email} subtotalCents={subtotal_cents} />
             </div>
           </div>
 
