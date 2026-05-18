@@ -149,34 +149,34 @@ export default function AddressesPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-espresso">Full Name <span className="text-red-500">*</span></label>
-                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="input-field" />
+                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="input-field" autoComplete="name" />
               </div>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-espresso">Address Line 1 <span className="text-red-500">*</span></label>
-              <input type="text" required value={line1} onChange={(e) => setLine1(e.target.value)} className="input-field" />
+              <input type="text" required value={line1} onChange={(e) => setLine1(e.target.value)} className="input-field" autoComplete="address-line1" />
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-espresso">Address Line 2</label>
-              <input type="text" value={line2} onChange={(e) => setLine2(e.target.value)} className="input-field" />
+              <input type="text" value={line2} onChange={(e) => setLine2(e.target.value)} className="input-field" autoComplete="address-line2" />
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
                 <label className="mb-1 block text-sm font-medium text-espresso">City <span className="text-red-500">*</span></label>
-                <input type="text" required value={city} onChange={(e) => setCity(e.target.value)} className="input-field" />
+                <input type="text" required value={city} onChange={(e) => setCity(e.target.value)} className="input-field" autoComplete="address-level2" />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-espresso">State <span className="text-red-500">*</span></label>
-                <input type="text" required value={state} onChange={(e) => setState(e.target.value)} className="input-field" />
+                <input type="text" required value={state} onChange={(e) => setState(e.target.value)} className="input-field" autoComplete="address-level1" />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-espresso">ZIP <span className="text-red-500">*</span></label>
-                <input type="text" required value={zip} onChange={(e) => setZip(e.target.value)} className="input-field" />
+                <input type="text" required value={zip} onChange={(e) => setZip(e.target.value)} className="input-field" autoComplete="postal-code" />
               </div>
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium text-espresso">Country</label>
-              <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} className="input-field" />
+              <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} className="input-field" autoComplete="country" />
             </div>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} className="h-4 w-4 accent-forest" />

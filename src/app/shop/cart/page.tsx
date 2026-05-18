@@ -236,12 +236,25 @@ export default function CartPage() {
             <div className="mt-6 space-y-4">
               <input
                 type="email"
+                name="email"
                 placeholder="Your email for receipt"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="input-field w-full"
+                autoComplete="email"
                 required
               />
+
+              {/* Payment method hints */}
+              <div className="rounded-lg border border-latte/20 bg-latte/5 p-3">
+                <p className="text-xs text-mocha text-center">
+                  On the next screen you can pay with{" "}
+                  <span className="font-medium text-espresso">Apple Pay</span>,{" "}
+                  <span className="font-medium text-espresso">Google Pay</span>,{" "}
+                  <span className="font-medium text-espresso">Link</span>, or card.
+                  Mobile users can also scan their card with the camera.
+                </p>
+              </div>
 
               {/* Promo */}
               {promo_code ? (

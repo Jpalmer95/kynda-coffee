@@ -115,6 +115,7 @@ export async function POST(req: NextRequest) {
       line_items: finalLineItems,
       success_url: `${parsed.success_url}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: parsed.cancel_url,
+      automatic_payment_methods: { enabled: true },
       shipping_address_collection: {
         allowed_countries: ["US"],
       },
@@ -138,7 +139,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       metadata,
-    });
+    } as any);
 
     return NextResponse.json({ url: session.url, session_id: session.id });
   } catch (err) {

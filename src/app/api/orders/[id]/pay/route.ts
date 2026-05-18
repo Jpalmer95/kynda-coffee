@@ -49,8 +49,9 @@ export async function POST(
       line_items: buildStripeLineItemsForOrder(payableOrder),
       success_url: stripeSuccessUrl(origin, payableOrder),
       cancel_url: stripeCancelUrl(origin, payableOrder),
+      automatic_payment_methods: { enabled: true },
       metadata: buildStripeOrderMetadata(payableOrder),
-    });
+    } as any);
 
     const metadata = {
       ...((order.payment_metadata as Record<string, unknown> | null) ?? {}),
