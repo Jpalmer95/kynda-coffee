@@ -28,7 +28,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
   const categoryLabel = getCategoryLabel(product.category);
 
   return (
-    <div className="group relative block overflow-hidden rounded-[24px] border border-latte/10 bg-white transition-all duration-300 hover:shadow-hover hover:-translate-y-1">
+    <div className="group relative block overflow-hidden rounded-lg border border-latte/10 bg-white transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 transition-transform">
       {/* Product Image */}
       <Link
         href={`/shop/product/${product.slug}`}
@@ -41,7 +41,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           <div className="absolute inset-0 bg-espresso/0 transition-colors duration-300 group-hover:bg-espresso/10" aria-hidden="true" />
           {/* Featured badge */}
           {product.is_featured && (
-            <div className="absolute left-2 top-2 sm:left-3 sm:top-3 rounded-full bg-rust px-2.5 py-1 text-[11px] sm:text-xs font-medium text-white">
+            <div className="absolute left-2 top-2 sm:left-3 sm:top-3 rounded-full bg-bronze px-2.5 py-1 text-[11px] sm:text-xs font-medium text-white">
               Featured
             </div>
           )}
