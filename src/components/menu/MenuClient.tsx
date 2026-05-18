@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ShoppingCart, SlidersHorizontal, X, Coffee } from "lucide-react";
+import { ShoppingCart, SlidersHorizontal, X, Coffee, Minus, Plus } from "lucide-react";
 import type { PosCatalogCategoryGroup, PosCatalogItem } from "@/lib/pos/catalog";
 import { formatMoney } from "@/lib/pos/catalog";
 import { MenuItemDialog } from "./MenuItemDialog";
@@ -30,13 +30,13 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
   return (
     <div className="mt-10">
       {/* Category Filter Tabs - Desktop */}
-      <div className="mb-6 hidden flex-wrap items-center justify-center gap-2 sm:flex">
+      <div className="mb-6 hidden flex-wrap items-center justify-center gap-3 sm:flex">
         <button
           onClick={() => setActiveCategory("all")}
-          className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+          className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
             activeCategory === "all"
-              ? "bg-surface text-sand"
-              : "bg-latte/20 text-mocha hover:bg-latte/40 hover:text-espresso"
+              ? "bg-surface text-sand shadow-sm"
+              : "bg-latte/10 text-mocha hover:bg-latte/20 hover:text-espresso"
           }`}
         >
           All
@@ -45,10 +45,10 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
           <button
             key={name}
             onClick={() => setActiveCategory(name)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+            className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
               activeCategory === name
-                ? "bg-surface text-sand"
-                : "bg-latte/20 text-mocha hover:bg-latte/40 hover:text-espresso"
+                ? "bg-surface text-sand shadow-sm"
+                : "bg-latte/10 text-mocha hover:bg-latte/20 hover:text-espresso"
             }`}
           >
             {name}
@@ -126,7 +126,7 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                 <button
                   key={item.providerItemId}
                   onClick={() => setSelectedItem(item)}
-                  className="group relative block overflow-hidden rounded-2xl border border-latte/20 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-forest"
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-latte/70 bg-card text-left shadow-sm transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-forest dark:border-forest/20 dark:shadow-[inset_0_0_0_0.5px_rgba(74,222,128,0.2)] dark:hover:shadow-[inset_0_0_0_1px_rgba(74,222,128,0.4)]"
                 >
                   {/* Image */}
                   {item.imageUrls.length > 0 ? (
@@ -138,54 +138,44 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
+                      {/* Price Badge Overlay */}
+                      <div className="absolute right-3 top-3 rounded-full bg-surface/90 px-3 py-1 font-mono text-sm font-bold text-sand shadow-sm backdrop-blur-sm">
+                        {item.priceLabel}
+                      </div>
                     </div>
                   ) : (
-                    <div className="flex aspect-[4/3] items-center justify-center bg-latte/10">
+                    <div className="relative flex aspect-[4/3] items-center justify-center bg-latte/10">
                       <Coffee className="h-12 w-12 text-latte" />
+                      <div className="absolute right-3 top-3 rounded-full bg-surface/90 px-3 py-1 font-mono text-sm font-bold text-sand shadow-sm backdrop-blur-sm">
+                        {item.priceLabel}
+                      </div>
                     </div>
                   )}
 
-                  <div className="p-4 sm:p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-heading text-lg font-semibold text-espresso transition-colors group-hover:text-forest line-clamp-1">
-                          {item.name}
-                        </h3>
-                        {item.description && (
-                          <p className="mt-1 line-clamp-2 text-sm text-mocha">
-                            {item.description}
-                          </p>
-                        )}
+                  <div className="flex flex-col flex-1 p-4 sm:p-5 h-full">
+                    <div className="flex-1">
+                      <h3 className="font-heading text-lg font-bold text-espresso transition-colors group-hover:text-forest line-clamp-1">
+                        {item.name}
+                      </h3>
+                      {item.description && (
+                        <p className="mt-2 line-clamp-2 text-sm text-mocha">
+                          {item.description}
+                        </p>
+                      )}
                       </div>
-                      <div className="shrink-0 text-right">
-                        <span className="font-mono text-lg font-bold text-espresso">
-                          {item.priceLabel}
-                        </span>
-                        {item.variations.length > 1 && (
-                          <p className="text-[11px] text-mocha">from {formatMoney(item.priceCents)}</p>
-                        )}
+                      
+                      <div className="mt-4 pt-4 border-t border-latte/30">
+                        <div className="flex items-center justify-between">
+                           {item.variations.length > 1 ? (
+                            <span className="text-[11px] font-medium uppercase tracking-wider text-mocha">Customizable</span>
+                           ) : <span className="text-[11px] font-medium uppercase tracking-wider text-transparent select-none">Fixed</span>}
+                           
+                           <span className="rounded-full border border-forest/20 px-3 py-1 text-sm font-bold text-forest transition-colors group-hover:bg-forest/5 dark:text-forest-400 dark:border-forest-400/30 dark:group-hover:bg-forest-400/10">
+                             + ADD
+                           </span>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Modifiers hint */}
-                    {item.modifierLists.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {item.modifierLists.slice(0, 2).map((list) => (
-                          <span
-                            key={list.providerModifierListId}
-                            className="rounded-full bg-latte/20 px-2 py-0.5 text-[11px] text-mocha"
-                          >
-                            {list.name}
-                          </span>
-                        ))}
-                        {item.modifierLists.length > 2 && (
-                          <span className="rounded-full bg-latte/20 px-2 py-0.5 text-[11px] text-mocha">
-                            +{item.modifierLists.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
                 </button>
               ))}
             </div>
@@ -220,20 +210,20 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
       {/* Cart Drawer */}
       {showCart && (
         <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/60"
+          className="fixed inset-0 z-50 flex justify-end bg-surface-800/40 backdrop-blur-sm"
           onClick={() => setShowCart(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex h-full w-full max-w-md flex-col overflow-auto bg-card shadow-2xl"
+            className="flex h-full w-full max-w-md flex-col overflow-auto bg-card shadow-2xl animate-fade-in"
           >
-            <div className="flex items-center justify-between border-b border-latte/20 px-5 py-4">
-              <h2 className="font-heading text-xl font-semibold text-espresso">
-                Your Cart ({item_count})
+            <div className="flex items-center justify-between border-b border-latte/20 px-5 py-6">
+              <h2 className="font-heading text-2xl font-bold text-espresso">
+                Current Order
               </h2>
               <button
                 onClick={() => setShowCart(false)}
-                className="rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20"
+                className="rounded-full p-2 text-mocha hover:bg-latte/20 hover:text-espresso"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -250,50 +240,49 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                   {items.map((line) => (
                     <div
                       key={line.id}
-                      className="flex gap-3 rounded-xl border border-latte/20 bg-cream p-3"
+                      className="flex gap-4 rounded-xl border border-latte/10 bg-cream p-4 shadow-sm"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-espresso">
+                        <div className="font-heading text-lg font-bold text-espresso">
                           {line.itemName}
                           {line.variationName && line.variationName !== "Regular" && (
-                            <span className="text-mocha"> — {line.variationName}</span>
+                            <span className="text-mocha font-body text-sm font-medium"> — {line.variationName}</span>
                           )}
                         </div>
                         {line.modifierNames.length > 0 && (
-                          <div className="mt-0.5 text-xs text-mocha">
+                          <div className="mt-1 text-sm text-mocha line-clamp-2">
                             {line.modifierNames.join(", ")}
                           </div>
                         )}
-                        <div className="mt-2 flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(line.id, line.quantity - 1)}
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
-                          >
-                            <span className="text-sm">−</span>
-                          </button>
-                          <span className="w-6 text-center text-sm font-medium">
-                            {line.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQuantity(line.id, line.quantity + 1)}
-                            className="flex h-8 w-8 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
-                          >
-                            <span className="text-sm">+</span>
-                          </button>
+                        <div className="mt-4 flex items-center gap-4">
+                          <div className="flex items-center rounded-lg border border-latte/40 bg-card p-0.5">
+                            <button
+                              onClick={() => updateQuantity(line.id, line.quantity - 1)}
+                              className="flex h-8 w-8 items-center justify-center rounded-md text-espresso hover:bg-latte/20"
+                            >
+                              <Minus className="h-4 w-4" />
+                            </button>
+                            <span className="w-8 text-center text-sm font-bold text-espresso">
+                              {line.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQuantity(line.id, line.quantity + 1)}
+                              className="flex h-8 w-8 items-center justify-center rounded-md text-espresso hover:bg-latte/20"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          </div>
                           <button
                             onClick={() => removeItem(line.id)}
-                            className="ml-auto flex h-8 w-8 items-center justify-center rounded-full text-mocha hover:text-red-600"
+                            className="text-sm font-bold text-mocha transition-colors hover:text-red-600 underline decoration-latte/40 underline-offset-4"
                           >
-                            <X className="h-4 w-4" />
+                            Remove
                           </button>
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
-                        <div className="font-mono text-sm font-semibold text-espresso">
+                        <div className="font-mono text-base font-bold text-espresso">
                           {formatMoney(line.unitPriceCents * line.quantity)}
-                        </div>
-                        <div className="text-xs text-mocha">
-                          {formatMoney(line.unitPriceCents)} ea
                         </div>
                       </div>
                     </div>
@@ -303,22 +292,19 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
             </div>
 
             {items.length > 0 && (
-              <div className="border-t border-latte/20 bg-card px-5 py-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-mocha">Subtotal</span>
-                  <span className="text-lg font-bold text-espresso">
+              <div className="border-t border-latte/20 bg-surface px-5 py-6 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)]">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-base text-sand/80">Subtotal</span>
+                  <span className="text-xl font-bold text-sand">
                     {formatMoney(subtotal_cents)}
                   </span>
                 </div>
                 <a
                   href="/order"
-                  className="btn-accent mt-4 flex w-full items-center justify-center py-3 text-base"
+                  className="btn-accent mt-2 flex w-full items-center justify-center py-4 text-base tracking-wide"
                 >
-                  Go to Order Page
+                  PROCEED TO CHECKOUT &rarr;
                 </a>
-                <p className="mt-2 text-center text-[11px] text-mocha">
-                  You&apos;ll enter your name and payment details on the order page.
-                </p>
               </div>
             )}
           </div>

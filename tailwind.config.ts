@@ -52,7 +52,7 @@ const config: Config = {
           700: "rgb(var(--text-mocha-700) / <alpha-value>)",
         },
 
-        // ========= Forest Green (switches light<->dark) =========
+        // ========= Forest Green (DESIGN.md Brand-Forest / Brand-Luminous) =========
         forest: {
           DEFAULT: "rgb(var(--accent-forest) / <alpha-value>)",
           300: "rgb(var(--accent-forest-300) / <alpha-value>)",

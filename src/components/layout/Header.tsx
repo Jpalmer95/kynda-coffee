@@ -56,10 +56,10 @@ export function Header() {
     <>
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 border-b border-transparent transition-all duration-200",
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
           scrolled || mobileOpen
-            ? "border-latte/30 bg-cream/95 shadow-sm backdrop-blur-md"
-            : "bg-cream/80 backdrop-blur-sm"
+            ? "glass-nav glass-nav-border shadow-sm"
+            : "bg-transparent"
         )}
         role="banner"
       >

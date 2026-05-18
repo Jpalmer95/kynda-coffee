@@ -46,30 +46,33 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-surface">
       {/* Admin Header */}
-      <header className="sticky top-0 z-40 border-b border-latte/20 bg-card/95 backdrop-blur-sm">
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 rounded-lg text-sm text-mocha hover:text-espresso transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back to Site</span>
-            </Link>
-            <div className="h-4 w-px bg-latte/40" />
-            <span className="font-heading text-lg font-bold text-espresso">
-              Admin
+      <header className="sticky top-0 z-40 border-b border-latte/20 bg-surface text-sand shadow-sm">
+        <div className="flex items-center justify-between px-4 py-4 sm:px-6">
+          <div className="flex items-center gap-4">
+            <span className="font-heading text-xl font-bold tracking-tight">
+              Kynda Admin
+            </span>
+            <div className="h-5 w-px bg-latte/40 dark:bg-latte/20" />
+            <span className="text-sm font-medium tracking-wider text-sand-50 uppercase">
+              Management Portal
             </span>
           </div>
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 rounded-lg text-sm text-sand hover:text-white transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back to Live Site</span>
+          </Link>
         </div>
       </header>
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-64 sticky top-[57px] h-[calc(100vh-57px)] border-r border-latte/20 bg-card overflow-y-auto">
-          <nav className="p-4 space-y-1" aria-label="Admin navigation">
+        <aside className="hidden lg:block w-64 sticky top-[69px] h-[calc(100vh-69px)] border-r border-latte/20 bg-surface text-sand overflow-y-auto">
+          <nav className="p-4 space-y-1.5" aria-label="Admin navigation">
             {ADMIN_LINKS.map((link) => {
               const isActive =
                 pathname === link.href || pathname.startsWith(`${link.href}/`);
@@ -78,10 +81,10 @@ export default function AdminLayout({
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors border",
                     isActive
-                      ? "bg-forest text-sand hover:bg-forest/90"
-                      : "text-mocha hover:bg-latte/20 hover:text-espresso"
+                      ? "bg-forest/10 border-forest text-forest dark:text-forest-400 shadow-[inset_0_0_8px_rgba(74,222,128,0.15)]"
+                      : "border-transparent text-sand-50 hover:bg-white/5 hover:text-white"
                   )}
                   aria-current={isActive ? "page" : undefined}
                 >
@@ -95,7 +98,7 @@ export default function AdminLayout({
 
         {/* Mobile Top Nav */}
         <nav
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-latte/20 bg-card pb-safe"
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-latte/20 bg-surface pb-safe"
           style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
           aria-label="Admin mobile navigation"
         >
@@ -109,12 +112,12 @@ export default function AdminLayout({
                   href={link.href}
                   className={cn(
                     "flex flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1.5 min-w-[3.5rem] transition-colors",
-                    isActive ? "text-espresso" : "text-mocha/60"
+                    isActive ? "text-forest dark:text-forest-400" : "text-sand-50"
                   )}
                   aria-current={isActive ? "page" : undefined}
                 >
                   <link.icon
-                    className={cn("h-5 w-5", isActive && "text-forest")}
+                    className={cn("h-5 w-5", isActive && "text-forest dark:text-forest-400")}
                     strokeWidth={isActive ? 2.5 : 1.5}
                   />
                   <span className="text-[10px] font-medium leading-none">

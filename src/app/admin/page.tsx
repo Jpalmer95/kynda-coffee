@@ -145,12 +145,12 @@ export default function AdminPage() {
     <section className="section-padding">
       <div className="container-max">
         <div className="mb-6 sm:mb-8 flex items-center gap-3">
-          <LayoutDashboard className="h-7 w-7 sm:h-8 sm:w-8 text-espresso" aria-hidden="true" />
+          <LayoutDashboard className="h-7 w-7 sm:h-8 sm:w-8 text-sand" aria-hidden="true" />
           <div>
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-espresso">
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-sand">
               Dashboard
             </h1>
-            <p className="text-sm text-mocha">Kynda Coffee admin panel</p>
+            <p className="text-sm text-sand-50">Overview & Quick Access</p>
           </div>
         </div>
 
@@ -162,14 +162,14 @@ export default function AdminPage() {
               <CardWrapper
                 key={stat.label}
                 href={stat.href || ""}
-                className={`rounded-[24px] border border-latte/10 bg-card p-4 sm:p-5 ${stat.href ? "transition-all hover:shadow-hover hover:-translate-y-0.5 cursor-pointer" : ""}`}
+                className={`rounded-[24px] border border-latte/10 bg-surface-800 p-4 sm:p-5 ${stat.href ? "transition-all hover:-translate-y-1 hover:shadow-hover hover:border-forest/20 cursor-pointer" : ""}`}
               >
                 <div className="flex items-center justify-between">
-                  <stat.icon className="h-4 w-4 text-mocha" aria-hidden="true" />
-                  {!stat.loading && <ArrowUpRight className="h-3.5 w-3.5 text-sage" aria-hidden="true" />}
+                  <stat.icon className="h-4 w-4 text-mocha-400" aria-hidden="true" />
+                  {!stat.loading && <ArrowUpRight className="h-3.5 w-3.5 text-forest dark:text-forest-400" aria-hidden="true" />}
                 </div>
-                <p className="mt-2 text-xs sm:text-sm text-mocha">{stat.label}</p>
-                <p className={`mt-1 font-heading text-xl sm:text-2xl font-bold ${stat.color}`}>
+                <p className="mt-4 text-xs sm:text-sm font-medium tracking-wide text-sand-50/70 uppercase">{stat.label}</p>
+                <p className={`mt-1 font-heading text-xl sm:text-2xl font-bold text-sand`}>
                   {stat.loading ? (
                     <span className="inline-block h-6 w-16 animate-pulse rounded bg-latte/20" />
                   ) : (
@@ -182,24 +182,24 @@ export default function AdminPage() {
         </div>
 
         {/* Quick Links */}
-        <h2 className="mb-4 font-heading text-lg font-semibold text-espresso">
-          Manage
+        <h2 className="mb-4 mt-12 font-heading text-lg font-bold text-sand tracking-wide uppercase">
+          Quick Access
         </h2>
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sections.map((section) => (
             <Link
               key={section.href}
               href={section.href}
-              className="group flex items-start gap-4 rounded-[24px] border border-latte/10 bg-card p-4 sm:p-6 transition-all hover:shadow-hover hover:-translate-y-0.5"
+              className="group flex flex-col items-start rounded-[24px] border border-latte/10 bg-surface-800 p-6 transition-all hover:border-forest/30 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
             >
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-cream">
-                <section.icon className="h-5 w-5 text-mocha transition-colors group-hover:text-forest" aria-hidden="true" />
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-surface/50 border border-latte/5 transition-colors group-hover:bg-forest/10 group-hover:border-forest/20">
+                <section.icon className="h-5 w-5 text-sand-50 transition-colors group-hover:text-forest dark:group-hover:text-forest-400" aria-hidden="true" />
               </div>
-              <div>
-                <h2 className="font-heading text-base sm:text-lg font-semibold text-espresso">
+              <div className="mt-5">
+                <h2 className="font-heading text-lg font-bold text-sand group-hover:text-white transition-colors">
                   {section.label}
                 </h2>
-                <p className="mt-0.5 text-sm text-mocha">{section.desc}</p>
+                <p className="mt-1 text-sm text-sand-50/70">{section.desc}</p>
               </div>
             </Link>
           ))}
