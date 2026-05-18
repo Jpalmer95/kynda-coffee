@@ -9,7 +9,7 @@ export const metadata = {
 };
 
 const TAG_STYLES: Record<string, string> = {
-  menu: "bg-rust/10 text-rust",
+  menu: "bg-bronze/10 text-forest",
   retail: "bg-sage/10 text-sage",
   merch: "bg-blue-50 text-blue-600",
   qr: "bg-amber-50 text-amber-700",
@@ -25,7 +25,7 @@ export default async function MenuPage() {
     <section className="section-padding">
       <div className="container-max">
         <div className="mb-12 text-center">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-rust">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-forest">
             Synced from our live Kynda POS
           </p>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold text-espresso">
@@ -47,7 +47,7 @@ export default async function MenuPage() {
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/qr-order" className="rounded-[24px] bg-white px-8 py-4 text-lg font-semibold text-espresso hover:bg-rust hover:text-sand transition">
+            <a href="/qr-order" className="rounded-[24px] bg-white px-8 py-4 text-lg font-semibold text-espresso hover:bg-bronze hover:text-sand transition">
               Order for Pickup
             </a>
             <a href="/qr-order?mode=curbside" className="rounded-[24px] border-2 border-white px-8 py-4 text-lg font-medium hover:bg-white hover:text-espresso transition">

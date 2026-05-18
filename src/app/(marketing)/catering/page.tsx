@@ -54,17 +54,17 @@ export default function CateringPage() {
         {/* Why Kynda Catering */}
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-latte/20 bg-white p-4 text-center">
-            <Coffee className="mx-auto h-6 w-6 text-rust" aria-hidden="true" />
+            <Coffee className="mx-auto h-6 w-6 text-forest" aria-hidden="true" />
             <h3 className="mt-2 font-medium text-espresso text-sm">Organic Coffee</h3>
             <p className="mt-1 text-xs text-mocha">Specialty beans, locally roasted</p>
           </div>
           <div className="rounded-xl border border-latte/20 bg-white p-4 text-center">
-            <Truck className="mx-auto h-6 w-6 text-rust" aria-hidden="true" />
+            <Truck className="mx-auto h-6 w-6 text-forest" aria-hidden="true" />
             <h3 className="mt-2 font-medium text-espresso text-sm">We Deliver</h3>
             <p className="mt-1 text-xs text-mocha">Horseshoe Bay and surrounding areas</p>
           </div>
           <div className="rounded-xl border border-latte/20 bg-white p-4 text-center">
-            <Star className="mx-auto h-6 w-6 text-rust" aria-hidden="true" />
+            <Star className="mx-auto h-6 w-6 text-forest" aria-hidden="true" />
             <h3 className="mt-2 font-medium text-espresso text-sm">Custom Orders</h3>
             <p className="mt-1 text-xs text-mocha">Tailored to your event and dietary needs</p>
           </div>

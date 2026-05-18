@@ -80,7 +80,7 @@ export default function AdminLayout({
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-surface text-sand"
+                      ? "bg-forest text-sand hover:bg-forest/90"
                       : "text-mocha hover:bg-latte/20 hover:text-espresso"
                   )}
                   aria-current={isActive ? "page" : undefined}
@@ -114,7 +114,7 @@ export default function AdminLayout({
                   aria-current={isActive ? "page" : undefined}
                 >
                   <link.icon
-                    className={cn("h-5 w-5", isActive && "text-rust")}
+                    className={cn("h-5 w-5", isActive && "text-forest")}
                     strokeWidth={isActive ? 2.5 : 1.5}
                   />
                   <span className="text-[10px] font-medium leading-none">

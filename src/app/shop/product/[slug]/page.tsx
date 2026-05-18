@@ -184,7 +184,7 @@ export default function ProductDetailPage() {
         {/* Breadcrumb */}
         <Link
           href="/shop"
-          className="mb-6 sm:mb-8 inline-flex items-center gap-1 rounded-lg text-sm text-mocha transition-colors hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust"
+          className="mb-6 sm:mb-8 inline-flex items-center gap-1 rounded-lg text-sm text-mocha transition-colors hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to Shop
@@ -268,12 +268,12 @@ export default function ProductDetailPage() {
                     toast(favorite ? "Removed from favorites" : "Added to favorites", "info");
                   }}
                   className={`flex-shrink-0 rounded-full p-2 transition-colors ${
-                    favorite ? "bg-rust/10 text-rust" : "bg-latte/20 text-mocha hover:bg-latte/40"
+                    favorite ? "bg-bronze/10 text-bronze" : "bg-latte/20 text-mocha hover:bg-latte/40"
                   }`}
                   aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
                   aria-pressed={favorite}
                 >
-                  <Heart className={`h-5 w-5 sm:h-6 sm:w-6 ${favorite ? "fill-rust" : ""}`} />
+                  <Heart className={`h-5 w-5 sm:h-6 sm:w-6 ${favorite ? "fill-bronze" : ""}`} />
                 </button>
               </div>
             </div>
@@ -418,8 +418,6 @@ export default function ProductDetailPage() {
               </label>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-rust"
                   aria-label="Decrease quantity"
                 >
                   <Minus className="h-4 w-4" aria-hidden="true" />
@@ -428,9 +426,7 @@ export default function ProductDetailPage() {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-rust"
-                  aria-label="Increase quantity"
+                  onClick={() => setQuantity(quantity + 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-white text-espresso"
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -471,7 +467,7 @@ export default function ProductDetailPage() {
                 Out of stock
               </p>
             ) : isLowStock ? (
-              <p className="mt-3 text-center text-sm text-rust">
+              <p className="mt-3 text-center text-sm text-bronze">
                 Only {product.inventory_count} left in stock
               </p>
             ) : null}
@@ -521,7 +517,7 @@ export default function ProductDetailPage() {
                       </div>
                     )}
                   </div>
-                  <h3 className="mt-3 truncate text-sm font-medium text-espresso group-hover:text-rust transition-colors">
+                  <h3 className="mt-3 truncate text-sm font-medium text-espresso group-hover:text-bronze transition-colors">
                     {p.name}
                   </h3>
                   <p className="mt-1 text-sm font-semibold text-espresso">

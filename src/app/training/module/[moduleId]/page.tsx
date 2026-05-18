@@ -199,9 +199,9 @@ export default async function TrainingModulePage({ params }: Props) {
                 <div className="mb-4 flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     {lesson.lesson_type === "video" ? (
-                      <Play className="h-5 w-5 text-rust" />
+                      <Play className="h-5 w-5 text-forest" />
                     ) : (
-                      <BookOpen className="h-5 w-5 text-rust" />
+                      <BookOpen className="h-5 w-5 text-forest" />
                     )}
                     <div>
                       <h2 className="text-lg font-semibold text-espresso">
@@ -262,7 +262,7 @@ export default async function TrainingModulePage({ params }: Props) {
           {quizzes && quizzes.length > 0 && (
             <div className="space-y-4">
               <h2 className="flex items-center gap-2 font-heading text-xl font-semibold text-espresso">
-                <HelpCircle className="h-5 w-5 text-rust" />
+                <HelpCircle className="h-5 w-5 text-forest" />
                 Knowledge Check
               </h2>
               {quizzes.map((quiz) => {
@@ -305,7 +305,7 @@ export default async function TrainingModulePage({ params }: Props) {
                                   defaultChecked={
                                     attempt?.selected_index === optIdx
                                   }
-                                  className="accent-rust"
+                                  className="accent-forest"
                                 />
                                 <span className="text-espresso">{option}</span>
                               </div>

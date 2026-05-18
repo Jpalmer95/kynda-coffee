@@ -59,7 +59,7 @@ const METRICS: Metric[] = [
     value: "43",
     change: 8,
     icon: ShoppingCart,
-    color: "text-rust",
+    color: "text-forest",
   },
   {
     label: "Avg Order Value",
@@ -134,7 +134,7 @@ const QUICK_LINKS = [
     label: "Marketing Studio",
     desc: "AI agent, content library, campaigns",
     icon: Megaphone,
-    color: "bg-rust/10 text-rust",
+    color: "bg-bronze/10 text-forest",
   },
   {
     href: "/training",
@@ -178,11 +178,11 @@ function MetricCard({ metric }: { metric: Metric }) {
         {isUp ? (
           <TrendingUp className="h-3 w-3 text-sage" />
         ) : (
-          <TrendingDown className="h-3 w-3 text-rust" />
+          <TrendingDown className="h-3 w-3 text-forest" />
         )}
         <span
           className={`text-xs font-medium ${
-            isUp ? "text-sage" : "text-rust"
+            isUp ? "text-sage" : "text-forest"
           }`}
         >
           {isUp ? "+" : ""}
@@ -196,7 +196,7 @@ function MetricCard({ metric }: { metric: Metric }) {
 
 function NudgeCard({ nudge }: { nudge: Nudge }) {
   const typeConfig = {
-    kaizen: { icon: Zap, color: "text-rust", bg: "bg-rust/10", label: "Kaizen" },
+    kaizen: { icon: Zap, color: "text-forest", bg: "bg-bronze/10", label: "Kaizen" },
     marketing: {
       icon: Megaphone,
       color: "text-sage",
@@ -217,8 +217,8 @@ function NudgeCard({ nudge }: { nudge: Nudge }) {
     },
     encouragement: {
       icon: Heart,
-      color: "text-rust",
-      bg: "bg-rust/10",
+      color: "text-forest",
+      bg: "bg-bronze/10",
       label: "Keep Going",
     },
   };
@@ -229,7 +229,7 @@ function NudgeCard({ nudge }: { nudge: Nudge }) {
     <div
       className={`rounded-xl border p-5 transition-all hover:shadow-md ${
         nudge.priority === "high"
-          ? "border-rust/30 bg-rust/5"
+          ? "border-bronze/30 bg-bronze/5"
           : "border-latte/20 bg-white"
       }`}
     >
@@ -252,7 +252,7 @@ function NudgeCard({ nudge }: { nudge: Nudge }) {
           {nudge.action_label && nudge.action_url && (
             <Link
               href={nudge.action_url}
-              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-rust transition-colors hover:text-espresso"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-forest transition-colors hover:text-espresso"
             >
               {nudge.action_label}
               <ChevronRight className="h-3 w-3" />
@@ -310,7 +310,7 @@ export default function DashboardPage() {
           {/* Left: AI Nudges / Mentor */}
           <div>
             <div className="mb-4 flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-rust" />
+              <Lightbulb className="h-5 w-5 text-forest" />
               <h2 className="font-heading text-xl font-semibold text-espresso">
                 AI Business Mentor
               </h2>
@@ -344,7 +344,7 @@ export default function DashboardPage() {
                       <link.icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-espresso group-hover:text-rust transition-colors">
+                      <p className="text-sm font-medium text-espresso group-hover:text-forest transition-colors">
                         {link.label}
                       </p>
                       <p className="text-xs text-mocha">{link.desc}</p>
@@ -356,14 +356,14 @@ export default function DashboardPage() {
             </div>
 
             {/* Daily Motivation */}
-            <div className="rounded-xl border border-rust/20 bg-gradient-to-br from-rust/5 to-cream p-6">
+            <div className="rounded-xl border border-bronze/20 bg-gradient-to-br from-rust/5 to-cream p-6">
               <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-rust" />
+                <Star className="h-5 w-5 text-forest" />
                 <h2 className="font-heading text-lg font-semibold text-espresso">
                   Daily Boost
                 </h2>
               </div>
-              <blockquote className="mt-4 border-l-2 border-rust/30 pl-4">
+              <blockquote className="mt-4 border-l-2 border-bronze/30 pl-4">
                 <p className="font-heading text-lg italic text-espresso">
                   &ldquo;Every expert was once a beginner. Every pro was once an
                   amateur. Every icon was once unknown.&rdquo;
@@ -390,7 +390,7 @@ export default function DashboardPage() {
                   <span className="text-mocha">Post on Instagram (3x)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-rust" />
+                  <div className="h-2 w-2 rounded-full bg-bronze" />
                   <span className="text-mocha">Send welcome email to new subscribers</span>
                 </div>
                 <div className="flex items-center gap-2">

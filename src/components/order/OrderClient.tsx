@@ -207,7 +207,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
           type="checkbox"
           checked={splitBill}
           onChange={(e) => setSplitBill(e.target.checked)}
-          className="accent-rust size-4"
+          className="accent-forest size-4"
         />
         <span className="flex items-center gap-2">
           <Users className="size-4" /> This is a group order — we can split the bill later
@@ -302,7 +302,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <div className="font-heading text-3xl tracking-tight">Your Order</div>
-                {splitBill && <div className="text-sm text-rust font-medium mt-0.5">Group order (you&apos;ll split later)</div>}
+                {splitBill && <div className="text-sm text-forest font-medium mt-0.5">Group order (you&apos;ll split later)</div>}
               </div>
               <button onClick={() => setShowCart(false)} className="text-xl text-mocha">×</button>
             </div>
@@ -325,7 +325,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                         <div className="w-7 text-center font-mono tabular-nums tracking-widest">{line.quantity}</div>
                         <button onClick={() => updateQuantity(line.id, line.quantity + 1)}><Plus size={15} /></button>
                       </div>
-                      <button onClick={() => removeLine(line.id)} className="text-rust/70 hover:text-rust ml-1"><Trash2 size={15} /></button>
+                      <button onClick={() => removeLine(line.id)} className="text-forest/70 hover:text-forest ml-1"><Trash2 size={15} /></button>
                     </div>
                   ))}
                 </div>

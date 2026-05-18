@@ -128,7 +128,7 @@ export function ProductReviews({ productId }: { productId: string }) {
                     key={star}
                     className={`h-4 w-4 ${
                       star <= Math.round(stats.average_rating)
-                        ? "fill-rust text-rust"
+                        ? "fill-rust text-forest"
                         : "text-latte"
                     }`}
                   />
@@ -161,10 +161,10 @@ export function ProductReviews({ productId }: { productId: string }) {
               return (
                 <div key={star} className="flex items-center gap-3 text-sm">
                   <span className="w-3 text-mocha">{star}</span>
-                  <Star className="h-3.5 w-3.5 text-rust" />
+                  <Star className="h-3.5 w-3.5 text-forest" />
                   <div className="flex-1 h-2 overflow-hidden rounded-full bg-latte/20">
                     <div
-                      className="h-full rounded-full bg-rust transition-all"
+                      className="h-full rounded-full bg-bronze transition-all"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -203,7 +203,7 @@ export function ProductReviews({ productId }: { productId: string }) {
                   <Star
                     className={`h-7 w-7 ${
                       star <= rating
-                        ? "fill-rust text-rust"
+                        ? "fill-rust text-forest"
                         : "text-latte"
                     }`}
                   />
@@ -318,7 +318,7 @@ export function ProductReviews({ productId }: { productId: string }) {
                           key={star}
                           className={`h-3.5 w-3.5 ${
                             star <= review.rating
-                              ? "fill-rust text-rust"
+                              ? "fill-rust text-forest"
                               : "text-latte"
                           }`}
                         />

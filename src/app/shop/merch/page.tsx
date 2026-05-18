@@ -55,7 +55,7 @@ export default function MerchPage() {
               <h2 className="font-heading text-4xl font-bold text-espresso">Trending Merch</h2>
               <p className="text-mocha mt-1">Real photos. Real quality. Ready to ship via Printful.</p>
             </div>
-            <Link href="/studio" className="hidden sm:flex items-center gap-1 text-sm font-medium text-rust hover:underline">
+            <Link href="/studio" className="hidden sm:flex items-center gap-1 text-sm font-medium text-forest hover:underline">
               Create Custom <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

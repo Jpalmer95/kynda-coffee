@@ -286,7 +286,7 @@ export default function PromoCodesPage() {
             {loading ? (
               <tr>
                 <td colSpan={7} className="py-12 text-center">
-                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-rust" />
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-forest" />
                 </td>
               </tr>
             ) : filtered.length === 0 ? (

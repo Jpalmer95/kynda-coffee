@@ -23,7 +23,7 @@ export default function AboutPage() {
 
           {/* Etymology Block */}
           <div className="rounded-2xl bg-surface p-6 sm:p-8 text-center mb-10">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/20 mb-4">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/20 mb-4">
               <Flame className="h-6 w-6 text-sand" aria-hidden="true" />
             </div>
             <h2 className="font-heading text-2xl sm:text-3xl font-bold text-sand tracking-wide">
@@ -92,7 +92,7 @@ export default function AboutPage() {
 
           {/* Hashtag */}
           <div className="mt-8 text-center">
-            <span className="inline-block rounded-full bg-rust/10 px-4 py-2 text-sm font-semibold tracking-widest text-rust uppercase">
+            <span className="inline-block rounded-full bg-bronze/10 px-4 py-2 text-sm font-semibold tracking-widest text-bronze uppercase">
               #FUELYOURFIRE
             </span>
           </div>
@@ -100,22 +100,22 @@ export default function AboutPage() {
           {/* Values */}
           <div className="mt-12 grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl border border-latte/20 bg-white p-5 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/10">
-                <Coffee className="h-6 w-6 text-rust" aria-hidden="true" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
+                <Coffee className="h-6 w-6 text-bronze" aria-hidden="true" />
               </div>
               <h3 className="mt-3 font-heading text-base font-semibold text-espresso">Organic & Specialty</h3>
               <p className="mt-1 text-sm text-mocha">Top 5% of beans, roasted locally</p>
             </div>
             <div className="rounded-xl border border-latte/20 bg-white p-5 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/10">
-                <Heart className="h-6 w-6 text-rust" aria-hidden="true" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
+                <Heart className="h-6 w-6 text-bronze" aria-hidden="true" />
               </div>
               <h3 className="mt-3 font-heading text-base font-semibold text-espresso">Community First</h3>
               <p className="mt-1 text-sm text-mocha">Locally owned, community built</p>
             </div>
             <div className="rounded-xl border border-latte/20 bg-white p-5 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/10">
-                <Award className="h-6 w-6 text-rust" aria-hidden="true" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
+                <Award className="h-6 w-6 text-bronze" aria-hidden="true" />
               </div>
               <h3 className="mt-3 font-heading text-base font-semibold text-espresso">Zero Outside Funding</h3>
               <p className="mt-1 text-sm text-mocha">Bootstrapped with hard work</p>

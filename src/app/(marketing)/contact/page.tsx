@@ -101,7 +101,7 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-cream">
-                <MapPin className="h-5 w-5 text-rust" aria-hidden="true" />
+                <MapPin className="h-5 w-5 text-bronze" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="font-medium text-espresso">Visit Us</h2>
@@ -114,7 +114,7 @@ export default function ContactPage() {
 
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-cream">
-                <Phone className="h-5 w-5 text-rust" aria-hidden="true" />
+                <Phone className="h-5 w-5 text-bronze" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="font-medium text-espresso">Phone</h2>
@@ -128,7 +128,7 @@ export default function ContactPage() {
 
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-cream">
-                <Mail className="h-5 w-5 text-rust" aria-hidden="true" />
+                <Mail className="h-5 w-5 text-bronze" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="font-medium text-espresso">Email</h2>
@@ -142,7 +142,7 @@ export default function ContactPage() {
 
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-cream">
-                <Clock className="h-5 w-5 text-rust" aria-hidden="true" />
+                <Clock className="h-5 w-5 text-bronze" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="font-medium text-espresso">Hours</h2>

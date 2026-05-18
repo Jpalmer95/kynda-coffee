@@ -25,7 +25,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-latte/30 bg-cream/95 pb-safe backdrop-blur-lg lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-latte/30 bg-cream/95 pb-safe backdrop-blur-[12px] lg:hidden"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
       aria-label="Mobile navigation"
     >
@@ -37,7 +37,7 @@ export function BottomNav() {
             "flex h-12 w-12 items-center justify-center rounded-full shadow-lg border-2 transition-all",
             pathname === "/search"
               ? "bg-surface text-sand border-surface"
-              : "bg-white text-espresso border-latte/30 hover:border-rust hover:text-rust"
+              : "bg-white text-espresso border-latte/30 hover:border-bronze hover:text-forest"
           )}
           aria-label="Search"
         >
@@ -61,9 +61,9 @@ export function BottomNav() {
               aria-current={isActive ? "page" : undefined}
             >
               <div className="relative">
-                <item.icon className={cn("h-6 w-6", isActive && "text-rust")} strokeWidth={isActive ? 2.5 : 1.5} />
+                <item.icon className={cn("h-6 w-6", isActive && "text-forest")} strokeWidth={isActive ? 2.5 : 1.5} />
                 {isCart && itemCount > 0 && (
-                  <span className="absolute -right-2.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rust text-[10px] font-bold text-white ring-2 ring-sand">
+                  <span className="absolute -right-2.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-bronze text-[10px] font-bold text-white ring-2 ring-sand">
                     {itemCount > 9 ? "9+" : itemCount}
                   </span>
                 )}

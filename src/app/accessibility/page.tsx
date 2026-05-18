@@ -33,7 +33,7 @@ export default function AccessibilityPage() {
 
           <section>
             <h2 className="font-heading text-xl font-semibold text-espresso">Feedback</h2>
-            <p className="mt-2">If you experience any accessibility barriers, please contact us at <a href="mailto:kyndacoffee@gmail.com" className="text-rust hover:underline">kyndacoffee@gmail.com</a> or call (512) 219-6781. We welcome your feedback and will do our best to address any issues.</p>
+            <p className="mt-2">If you experience any accessibility barriers, please contact us at <a href="mailto:kyndacoffee@gmail.com" className="text-forest hover:underline">kyndacoffee@gmail.com</a> or call (512) 219-6781. We welcome your feedback and will do our best to address any issues.</p>
           </section>
         </div>
       </div>

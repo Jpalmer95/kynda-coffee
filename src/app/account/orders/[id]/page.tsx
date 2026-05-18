@@ -70,7 +70,7 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="container-max py-12 flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rust" />
+        <Loader2 className="h-8 w-8 animate-spin text-forest" />
       </div>
     );
   }
@@ -116,13 +116,13 @@ export default function OrderDetailPage() {
           {steps.map((step, i) => (
             <div key={step.label} className="flex flex-1 items-center">
               <div className="flex flex-col items-center">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${step.active ? "bg-rust text-white" : "bg-latte/20 text-mocha"}`}>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${step.active ? "bg-bronze text-white" : "bg-latte/20 text-mocha"}`}>
                   <step.icon className="h-5 w-5" />
                 </div>
                 <span className={`mt-1.5 text-[10px] sm:text-xs font-medium ${step.active ? "text-espresso" : "text-mocha"}`}>{step.label}</span>
               </div>
               {i < steps.length - 1 && (
-                <div className={`mx-1 h-px flex-1 ${step.active ? "bg-rust" : "bg-latte/20"}`} />
+                <div className={`mx-1 h-px flex-1 ${step.active ? "bg-bronze" : "bg-latte/20"}`} />
               )}
             </div>
           ))}

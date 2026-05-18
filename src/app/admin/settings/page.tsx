@@ -89,7 +89,7 @@ export default function AdminSettingsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rust" />
+        <Loader2 className="h-8 w-8 animate-spin text-forest" />
       </div>
     );
   }
@@ -98,7 +98,7 @@ export default function AdminSettingsPage() {
     <div className="max-w-3xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Settings className="h-5 w-5 text-rust" />
+          <Settings className="h-5 w-5 text-forest" />
           <h1 className="font-heading text-xl font-bold text-espresso">Store Settings</h1>
         </div>
         {dirty && (
@@ -112,7 +112,7 @@ export default function AdminSettingsPage() {
         {/* Business Info */}
         <section className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Store className="h-4 w-4 text-rust" />
+            <Store className="h-4 w-4 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Business Info</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -158,7 +158,7 @@ export default function AdminSettingsPage() {
         {/* Shipping & Tax */}
         <section className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Truck className="h-4 w-4 text-rust" />
+            <Truck className="h-4 w-4 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Shipping & Tax</h2>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -208,7 +208,7 @@ export default function AdminSettingsPage() {
         {/* Features */}
         <section className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Bell className="h-4 w-4 text-rust" />
+            <Bell className="h-4 w-4 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Features</h2>
           </div>
           <div className="space-y-3">
@@ -225,7 +225,7 @@ export default function AdminSettingsPage() {
                   type="checkbox"
                   checked={settings[feature.key] as boolean}
                   onChange={(e) => update(feature.key, e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-latte text-rust focus:ring-rust"
+                  className="mt-0.5 h-4 w-4 rounded border-latte text-forest focus:ring-forest"
                 />
                 <div>
                   <p className="text-sm font-medium text-espresso">{feature.label}</p>
@@ -239,7 +239,7 @@ export default function AdminSettingsPage() {
         {/* Payment Integration Status */}
         <section className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <CreditCard className="h-4 w-4 text-rust" />
+            <CreditCard className="h-4 w-4 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Integrations</h2>
           </div>
           <div className="space-y-3">

@@ -93,7 +93,7 @@ export default function AdminCustomersPage() {
         </Link>
         <div>
           <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-            <Users className="h-8 w-8 text-rust" /> Customers &amp; Loyalty
+            <Users className="h-8 w-8 text-forest" /> Customers &amp; Loyalty
           </h1>
           <p className="text-sm text-mocha">
             {filteredCustomers.length} customers • Track LTV, preferences & loyalty points
@@ -133,7 +133,7 @@ export default function AdminCustomersPage() {
                   <div className="text-xs text-mocha tracking-wide">Orders</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-mono text-2xl font-semibold text-rust">{customer.points}</div>
+                  <div className="font-mono text-2xl font-semibold text-forest">{customer.points}</div>
                   <div className="text-xs text-mocha">Points</div>
                 </div>
                 <div className="px-4 py-1 rounded-full bg-surface text-white text-xs font-medium self-center">
@@ -155,7 +155,7 @@ export default function AdminCustomersPage() {
                   <MessageSquare className="h-4 w-4" /> Staff Notes
                 </span>
                 <button 
-                  className="text-rust text-xs hover:underline"
+                  className="text-forest text-xs hover:underline"
                   onClick={() => openNoteModal(customer)}
                 >
                   Edit notes

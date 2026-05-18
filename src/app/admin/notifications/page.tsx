@@ -40,7 +40,7 @@ export default function AdminNotificationsPage() {
 
   const getIcon = (type: Notification["type"]) => {
     switch (type) {
-      case "order": return <Package className="h-5 w-5 text-rust" />;
+      case "order": return <Package className="h-5 w-5 text-forest" />;
       case "inventory": return <AlertTriangle className="h-5 w-5 text-amber-600" />;
       case "printful": return <Truck className="h-5 w-5 text-emerald-600" />;
       case "schedule": return <Users className="h-5 w-5 text-blue-600" />;
@@ -57,7 +57,7 @@ export default function AdminNotificationsPage() {
         </Link>
         <div className="flex-1">
           <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-            <Bell className="h-8 w-8 text-rust" /> Team Notifications
+            <Bell className="h-8 w-8 text-forest" /> Team Notifications
           </h1>
           <p className="text-sm text-mocha">Internal alerts & operations inbox • {unreadCount} unread</p>
         </div>
@@ -78,7 +78,7 @@ export default function AdminNotificationsPage() {
             key={notif.id}
             onClick={() => markAsRead(notif.id)}
             className={`group flex gap-4 rounded-2xl border p-5 cursor-pointer transition-all hover:shadow-sm ${
-              notif.read ? "bg-white border-latte/20" : "bg-cream border-rust/30"
+              notif.read ? "bg-white border-latte/20" : "bg-cream border-bronze/30"
             }`}
           >
             <div className="mt-0.5">{getIcon(notif.type)}</div>
@@ -87,7 +87,7 @@ export default function AdminNotificationsPage() {
               <div className="flex items-center gap-2">
                 <div className="font-semibold text-espresso">{notif.title}</div>
                 {notif.urgent && !notif.read && (
-                  <span className="rounded-full bg-rust px-2 py-px text-xs text-white font-medium">URGENT</span>
+                  <span className="rounded-full bg-bronze px-2 py-px text-xs text-white font-medium">URGENT</span>
                 )}
               </div>
               <p className="text-sm text-mocha mt-0.5">{notif.message}</p>
@@ -95,7 +95,7 @@ export default function AdminNotificationsPage() {
             </div>
 
             {!notif.read && (
-              <div className="text-rust opacity-0 group-hover:opacity-100 transition text-xs font-medium self-center">
+              <div className="text-forest opacity-0 group-hover:opacity-100 transition text-xs font-medium self-center">
                 Mark read
               </div>
             )}

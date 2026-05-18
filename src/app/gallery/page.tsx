@@ -32,7 +32,7 @@ export default function GalleryPage() {
     <section className="section-padding">
       <div className="container-max">
         <div className="text-center mb-8 sm:mb-12">
-          <Sparkles className="mx-auto h-10 w-10 text-rust" aria-hidden="true" />
+          <Sparkles className="mx-auto h-10 w-10 text-forest" aria-hidden="true" />
           <h1 className="mt-4 font-heading text-3xl sm:text-4xl font-bold text-espresso">
             Community Gallery
           </h1>
@@ -50,7 +50,7 @@ export default function GalleryPage() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-rust" />
+            <Loader2 className="h-8 w-8 animate-spin text-forest" />
           </div>
         ) : designs.length === 0 ? (
           <div className="text-center py-20 rounded-2xl border border-latte/20 bg-white">

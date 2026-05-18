@@ -72,7 +72,7 @@ export default function NotificationsPage() {
     return (
       <section className="section-padding">
         <div className="container-max max-w-2xl flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-rust" />
+          <Loader2 className="h-8 w-8 animate-spin text-forest" />
         </div>
       </section>
     );
@@ -110,7 +110,7 @@ export default function NotificationsPage() {
                 type="checkbox"
                 checked={settings[item.key]}
                 onChange={() => toggle(item.key)}
-                className="h-5 w-5 accent-rust cursor-pointer"
+                className="h-5 w-5 accent-forest cursor-pointer"
               />
             </label>
           ))}

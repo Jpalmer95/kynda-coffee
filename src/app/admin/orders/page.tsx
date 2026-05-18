@@ -168,7 +168,7 @@ export default function AdminOrdersPage() {
                 {/* Mobile layout */}
                 <div className="flex flex-col gap-2 sm:hidden">
                   <div className="flex items-center justify-between">
-                    <Link href={`/admin/orders/${order.id}`} className="font-medium text-espresso hover:text-rust">
+                    <Link href={`/admin/orders/${order.id}`} className="font-medium text-espresso hover:text-forest">
                       {order.order_number}
                     </Link>
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status]}`}>
@@ -185,7 +185,7 @@ export default function AdminOrdersPage() {
                   </p>
                   <Link
                     href={`/admin/orders/${order.id}`}
-                    className="mt-1 text-sm font-medium text-rust hover:underline"
+                    className="mt-1 text-sm font-medium text-forest hover:underline"
                   >
                     View Details →
                   </Link>
@@ -193,7 +193,7 @@ export default function AdminOrdersPage() {
 
                 {/* Desktop layout */}
                 <div className="hidden sm:grid sm:grid-cols-[1fr_1.5fr_1fr_1fr_1fr_auto] gap-4 items-center">
-                  <Link href={`/admin/orders/${order.id}`} className="font-medium text-espresso hover:text-rust">
+                  <Link href={`/admin/orders/${order.id}`} className="font-medium text-espresso hover:text-forest">
                     {order.order_number}
                   </Link>
                   <span className="text-sm text-mocha truncate">{order.email}</span>

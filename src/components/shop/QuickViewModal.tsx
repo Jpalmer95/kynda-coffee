@@ -57,7 +57,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
       <div ref={trapRef} className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 z-10 rounded-full bg-white/90 p-2 text-mocha shadow-sm hover:text-espresso focus:outline-none focus:ring-2 focus:ring-rust focus:ring-offset-2"
+          className="absolute right-3 top-3 z-10 rounded-full bg-white/90 p-2 text-mocha shadow-sm hover:text-espresso focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2"
           aria-label="Close quick view"
         >
           <X className="h-5 w-5" />
@@ -71,7 +71,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
 
           {/* Details */}
           <div className="flex flex-col p-5 sm:p-6">
-            <p className="text-xs font-medium uppercase tracking-wider text-rust">
+            <p className="text-xs font-medium uppercase tracking-wider text-forest">
               {product.category.replace(/-/g, " ")}
             </p>
             <h2 className="mt-1 font-heading text-xl font-bold text-espresso">
@@ -104,7 +104,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
                   className="btn-secondary flex-1"
                 >
                   <Heart
-                    className={`mr-1.5 h-4 w-4 ${favorite ? "fill-rust text-rust" : ""}`}
+                    className={`mr-1.5 h-4 w-4 ${favorite ? "fill-rust text-forest" : ""}`}
                   />
                   {favorite ? "Saved" : "Save"}
                 </button>

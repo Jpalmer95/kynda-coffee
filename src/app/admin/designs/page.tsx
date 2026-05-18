@@ -135,7 +135,7 @@ export default function AdminDesignsPage() {
                     </button>
                     <span className="text-xs text-mocha">{design.likes} likes</span>
                     <button
-                      className="ml-auto rounded-lg p-1.5 text-mocha transition-colors hover:bg-rust/10 hover:text-rust"
+                      className="ml-auto rounded-lg p-1.5 text-mocha transition-colors hover:bg-bronze/10 hover:text-forest"
                       aria-label="Delete design"
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />

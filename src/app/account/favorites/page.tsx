@@ -44,7 +44,7 @@ export default function FavoritesPage() {
 
         {loading ? (
           <div className="mt-8 flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-rust" />
+            <Loader2 className="h-8 w-8 animate-spin text-forest" />
           </div>
         ) : products.length === 0 ? (
           <div className="mt-6 rounded-2xl border border-latte/20 bg-white py-16 text-center">
@@ -78,7 +78,7 @@ export default function FavoritesPage() {
                 </Link>
                 <div className="min-w-0 flex-1">
                   <Link href={`/shop/product/${product.slug}`} className="block">
-                    <h2 className="font-medium text-espresso group-hover:text-rust transition-colors truncate">
+                    <h2 className="font-medium text-espresso group-hover:text-forest transition-colors truncate">
                       {product.name}
                     </h2>
                   </Link>
@@ -91,7 +91,7 @@ export default function FavoritesPage() {
                 </div>
                 <button
                   onClick={() => toggle(product.id)}
-                  className="flex-shrink-0 self-start rounded-lg p-2 text-mocha transition-colors hover:bg-rust/10 hover:text-rust"
+                  className="flex-shrink-0 self-start rounded-lg p-2 text-mocha transition-colors hover:bg-bronze/10 hover:text-forest"
                   aria-label="Remove from favorites"
                 >
                   <Trash2 className="h-4 w-4" />

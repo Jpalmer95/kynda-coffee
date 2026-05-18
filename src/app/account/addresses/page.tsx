@@ -112,7 +112,7 @@ export default function AddressesPage() {
     return (
       <section className="section-padding">
         <div className="container-max max-w-2xl flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-rust" />
+          <Loader2 className="h-8 w-8 animate-spin text-forest" />
         </div>
       </section>
     );
@@ -179,7 +179,7 @@ export default function AddressesPage() {
               <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} className="input-field" />
             </div>
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} className="h-4 w-4 accent-rust" />
+              <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} className="h-4 w-4 accent-forest" />
               <span className="text-sm text-espresso">Set as default</span>
             </label>
             <div className="flex gap-3">
@@ -199,12 +199,12 @@ export default function AddressesPage() {
             </div>
           ) : (
             addresses.map((addr) => (
-              <div key={addr.id} className={`rounded-xl border p-4 ${addr.is_default ? "border-rust/30 bg-cream" : "border-latte/20 bg-white"}`}>
+              <div key={addr.id} className={`rounded-xl border p-4 ${addr.is_default ? "border-bronze/30 bg-cream" : "border-latte/20 bg-white"}`}>
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-espresso">{addr.label}</span>
-                      {addr.is_default && <span className="rounded-full bg-rust/10 px-2 py-0.5 text-xs font-medium text-rust">Default</span>}
+                      {addr.is_default && <span className="rounded-full bg-bronze/10 px-2 py-0.5 text-xs font-medium text-forest">Default</span>}
                     </div>
                     <p className="mt-1 text-sm text-espresso">{addr.name}</p>
                     <p className="text-sm text-mocha">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}</p>

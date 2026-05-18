@@ -117,11 +117,11 @@ export default async function SubscriptionsPage() {
 
                 {sub.status === "active" && (
                   <div className="mt-4 flex items-center gap-3 border-t border-latte/10 pt-4">
-                    <button className="text-sm font-medium text-rust hover:underline">
+                    <button className="text-sm font-medium text-forest hover:underline">
                       Pause Subscription
                     </button>
                     <span className="text-latte">|</span>
-                    <button className="text-sm font-medium text-mocha hover:text-rust transition-colors">
+                    <button className="text-sm font-medium text-mocha hover:text-forest transition-colors">
                       Update Preferences
                     </button>
                   </div>
@@ -139,8 +139,8 @@ export default async function SubscriptionsPage() {
             </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-rust/10">
-                  <Sparkles className="h-5 w-5 text-rust" aria-hidden="true" />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-bronze/10">
+                  <Sparkles className="h-5 w-5 text-forest" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-espresso">15% Off Every Order</p>
@@ -150,8 +150,8 @@ export default async function SubscriptionsPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-rust/10">
-                  <Truck className="h-5 w-5 text-rust" aria-hidden="true" />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-bronze/10">
+                  <Truck className="h-5 w-5 text-forest" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-espresso">Free Shipping</p>
@@ -161,8 +161,8 @@ export default async function SubscriptionsPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-rust/10">
-                  <Calendar className="h-5 w-5 text-rust" aria-hidden="true" />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-bronze/10">
+                  <Calendar className="h-5 w-5 text-forest" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-espresso">Flexible Schedule</p>
@@ -172,8 +172,8 @@ export default async function SubscriptionsPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-rust/10">
-                  <Coffee className="h-5 w-5 text-rust" aria-hidden="true" />
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-bronze/10">
+                  <Coffee className="h-5 w-5 text-forest" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-espresso">First Access</p>

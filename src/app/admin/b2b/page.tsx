@@ -61,7 +61,7 @@ export default function AdminB2BPage() {
         </Link>
         <div>
           <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-            <Building2 className="h-8 w-8 text-rust" /> B2B &amp; Wholesale
+            <Building2 className="h-8 w-8 text-forest" /> B2B &amp; Wholesale
           </h1>
           <p className="text-sm text-mocha">
             Corporate accounts • Bulk coffee subscriptions • Custom quotes
@@ -76,7 +76,7 @@ export default function AdminB2BPage() {
             <div
               key={account.id}
               onClick={() => setSelectedAccount(account)}
-              className="border border-latte/20 bg-white rounded-2xl p-6 cursor-pointer hover:border-rust/30 transition-all"
+              className="border border-latte/20 bg-white rounded-2xl p-6 cursor-pointer hover:border-bronze/30 transition-all"
             >
               <div className="flex justify-between">
                 <div>
@@ -118,7 +118,7 @@ export default function AdminB2BPage() {
                     <span className="font-mono">${selectedAccount.monthlySpend}</span>
                   </div>
                   <div className="h-2 bg-latte/30 rounded-full overflow-hidden">
-                    <div className="h-full bg-rust w-[75%]" />
+                    <div className="h-full bg-bronze w-[75%]" />
                   </div>
                 </div>
 
