@@ -63,7 +63,7 @@ export function BottomNav() {
               <div className="relative">
                 <item.icon className={cn("h-6 w-6", isActive && "text-forest")} strokeWidth={isActive ? 2.5 : 1.5} />
                 {isCart && itemCount > 0 && (
-                  <span className="absolute -right-2.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-rust text-[10px] font-bold text-white ring-2 ring-sand">
+                  <span className="absolute -right-2.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-bronze text-[10px] font-bold text-white ring-2 ring-sand">
                     {itemCount > 9 ? "9+" : itemCount}
                   </span>
                 )}

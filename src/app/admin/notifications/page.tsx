@@ -87,7 +87,7 @@ export default function AdminNotificationsPage() {
               <div className="flex items-center gap-2">
                 <div className="font-semibold text-espresso">{notif.title}</div>
                 {notif.urgent && !notif.read && (
-                  <span className="rounded-full bg-rust px-2 py-px text-xs text-white font-medium">URGENT</span>
+                  <span className="rounded-full bg-bronze px-2 py-px text-xs text-white font-medium">URGENT</span>
                 )}
               </div>
               <p className="text-sm text-mocha mt-0.5">{notif.message}</p>

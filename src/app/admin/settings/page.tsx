@@ -225,7 +225,7 @@ export default function AdminSettingsPage() {
                   type="checkbox"
                   checked={settings[feature.key] as boolean}
                   onChange={(e) => update(feature.key, e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-latte text-forest focus:ring-rust"
+                  className="mt-0.5 h-4 w-4 rounded border-latte text-forest focus:ring-forest"
                 />
                 <div>
                   <p className="text-sm font-medium text-espresso">{feature.label}</p>

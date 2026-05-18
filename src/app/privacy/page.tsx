@@ -35,7 +35,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-heading text-xl font-semibold text-espresso">Contact Us</h2>
-            <p className="mt-2">If you have questions about this policy, email us at <a href="mailto:kyndacoffee@gmail.com" className="text-rust hover:underline">kyndacoffee@gmail.com</a>.</p>
+            <p className="mt-2">If you have questions about this policy, email us at <a href="mailto:kyndacoffee@gmail.com" className="text-forest hover:underline">kyndacoffee@gmail.com</a>.</p>
           </section>
         </div>
       </div>

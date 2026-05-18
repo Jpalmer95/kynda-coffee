@@ -118,7 +118,7 @@ export default function AdminB2BPage() {
                     <span className="font-mono">${selectedAccount.monthlySpend}</span>
                   </div>
                   <div className="h-2 bg-latte/30 rounded-full overflow-hidden">
-                    <div className="h-full bg-rust w-[75%]" />
+                    <div className="h-full bg-bronze w-[75%]" />
                   </div>
                 </div>
 

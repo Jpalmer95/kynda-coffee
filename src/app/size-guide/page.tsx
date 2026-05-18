@@ -11,7 +11,7 @@ export default function SizeGuidePage() {
     <section className="section-padding">
       <div className="container-max max-w-3xl">
         <div className="text-center">
-          <Ruler className="mx-auto h-10 w-10 text-rust" aria-hidden="true" />
+          <Ruler className="mx-auto h-10 w-10 text-forest" aria-hidden="true" />
           <h1 className="mt-4 font-heading text-3xl sm:text-4xl font-bold text-espresso">
             Size Guide
           </h1>
@@ -23,7 +23,7 @@ export default function SizeGuidePage() {
         {/* Apparel */}
         <div className="mt-10 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
-            <Shirt className="h-5 w-5 text-rust" />
+            <Shirt className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
               Apparel (T-Shirts & Hoodies)
             </h2>
@@ -66,7 +66,7 @@ export default function SizeGuidePage() {
         {/* Mugs */}
         <div className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
-            <Coffee className="h-5 w-5 text-rust" />
+            <Coffee className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
               Mugs & Glassware
             </h2>
@@ -90,7 +90,7 @@ export default function SizeGuidePage() {
         {/* Totes */}
         <div className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
-            <Package className="h-5 w-5 text-rust" />
+            <Package className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
               Tote Bags
             </h2>
@@ -123,7 +123,7 @@ export default function SizeGuidePage() {
         <div className="mt-8 text-center">
           <p className="text-sm text-mocha">
             Questions about sizing?{" "}
-            <Link href="/contact" className="text-rust hover:underline">
+            <Link href="/contact" className="text-forest hover:underline">
               Contact us
             </Link>{" "}
             and we&apos;ll help you find the right fit.

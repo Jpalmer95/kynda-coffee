@@ -85,7 +85,7 @@ export function PullToRefresh({ onRefresh, children }: PullToRefreshProps) {
             <Loader2 className="h-5 w-5 animate-spin text-forest" />
           ) : (
             <div
-              className="h-5 w-5 rounded-full border-2 border-bronze/30 border-t-rust transition-transform"
+              className="h-5 w-5 rounded-full border-2 border-bronze/30 border-t-forest transition-transform"
               style={{ transform: `rotate(${progress * 360}deg)` }}
             />
           )}

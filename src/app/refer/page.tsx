@@ -40,8 +40,8 @@ export default function ReferPage() {
     <div className="section-padding">
       <div className="container-max max-w-2xl">
         <div className="text-center mb-10">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-rust/10">
-            <Users className="h-8 w-8 text-rust" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-bronze/10">
+            <Users className="h-8 w-8 text-forest" />
           </div>
           <h1 className="font-heading text-4xl font-bold text-espresso">Share the Love</h1>
           <p className="mt-3 text-lg text-mocha">
@@ -60,7 +60,7 @@ export default function ReferPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@coffee.com"
-                  className="w-full rounded-2xl border border-latte/50 px-5 py-4 text-lg focus:border-rust focus:outline-none"
+                  className="w-full rounded-2xl border border-latte/50 px-5 py-4 text-lg focus:border-bronze focus:outline-none"
                 />
               </div>
 
@@ -78,7 +78,7 @@ export default function ReferPage() {
 
             <div className="mt-8 border-t pt-6 text-sm text-mocha">
               <div className="flex items-center gap-2 mb-2">
-                <Gift className="h-4 w-4 text-rust" /> How it works
+                <Gift className="h-4 w-4 text-forest" /> How it works
               </div>
               <ul className="ml-6 list-disc space-y-1">
                 <li>New customers get <strong>10% off</strong> their first order</li>

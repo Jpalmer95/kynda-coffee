@@ -16,17 +16,18 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const type = body.type ?? "all";
 
-    let result;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
 
     switch (type) {
       case "catalog":
-        result = { catalog: await syncCatalog() };
+        result = await syncCatalog();
         break;
       case "inventory":
-        result = { inventory: await syncInventory() };
+        result = await syncInventory();
         break;
       case "orders":
-        result = { orders: await syncRecentOrders(body.hoursBack ?? 24) };
+        result = await syncRecentOrders(body.hoursBack ?? 24);
         break;
       case "all":
       default:

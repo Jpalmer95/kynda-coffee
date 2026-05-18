@@ -11,7 +11,7 @@ export default function ShippingPage() {
     <section className="section-padding">
       <div className="container-max max-w-3xl">
         <div className="text-center">
-          <Truck className="mx-auto h-10 w-10 text-rust" aria-hidden="true" />
+          <Truck className="mx-auto h-10 w-10 text-forest" aria-hidden="true" />
           <h1 className="mt-4 font-heading text-3xl sm:text-4xl font-bold text-espresso">
             Shipping & Returns
           </h1>
@@ -23,7 +23,7 @@ export default function ShippingPage() {
         {/* Shipping Options */}
         <div className="mt-10 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
-            <Package className="h-5 w-5 text-rust" />
+            <Package className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
               Shipping Options
             </h2>
@@ -57,7 +57,7 @@ export default function ShippingPage() {
                 className="flex items-start gap-4 rounded-xl border border-latte/20 bg-cream p-4"
               >
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white">
-                  <option.icon className="h-5 w-5 text-rust" />
+                  <option.icon className="h-5 w-5 text-forest" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
@@ -75,7 +75,7 @@ export default function ShippingPage() {
         {/* Delivery Timeline */}
         <div className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
-            <Clock className="h-5 w-5 text-rust" />
+            <Clock className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
               Delivery Timeline
             </h2>
@@ -90,7 +90,7 @@ export default function ShippingPage() {
             ].map((step, i) => (
               <div key={step.step} className="flex gap-4">
                 <div className="flex flex-col items-center">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rust/10 text-xs font-bold text-rust">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-bronze/10 text-xs font-bold text-forest">
                     {i + 1}
                   </div>
                   {i < 4 && <div className="mt-1 h-full w-px bg-latte/20" />}
@@ -108,7 +108,7 @@ export default function ShippingPage() {
         {/* Returns Policy */}
         <div className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
-            <RotateCcw className="h-5 w-5 text-rust" />
+            <RotateCcw className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
               Returns & Satisfaction Guarantee
             </h2>

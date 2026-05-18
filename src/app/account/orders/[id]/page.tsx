@@ -116,7 +116,7 @@ export default function OrderDetailPage() {
           {steps.map((step, i) => (
             <div key={step.label} className="flex flex-1 items-center">
               <div className="flex flex-col items-center">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${step.active ? "bg-rust text-white" : "bg-latte/20 text-mocha"}`}>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${step.active ? "bg-bronze text-white" : "bg-latte/20 text-mocha"}`}>
                   <step.icon className="h-5 w-5" />
                 </div>
                 <span className={`mt-1.5 text-[10px] sm:text-xs font-medium ${step.active ? "text-espresso" : "text-mocha"}`}>{step.label}</span>

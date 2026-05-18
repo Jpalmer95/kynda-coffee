@@ -64,7 +64,7 @@ export function Header() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-rust"
+            className="flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-forest"
             aria-label="Kynda Coffee Home"
           >
             <Coffee className="h-7 w-7 text-forest sm:h-8 sm:w-8" aria-hidden="true" />
@@ -79,7 +79,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="relative rounded-md px-1 py-2 text-sm font-medium text-mocha transition-colors hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust"
+                className="relative rounded-md px-1 py-2 text-sm font-medium text-mocha transition-colors hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
               >
                 {link.label}
               </Link>
@@ -90,7 +90,7 @@ export function Header() {
           <div className="flex items-center gap-1 sm:gap-2">
             <Link
               href="/search"
-              className="hidden rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust sm:flex"
+              className="hidden rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest sm:flex"
               aria-label="Search products"
             >
               <Search className="h-5 w-5" aria-hidden="true" />
@@ -98,12 +98,12 @@ export function Header() {
 
             <button
               onClick={() => useCartDrawer.getState().toggle()}
-              className="relative rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust"
+              className="relative rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
               aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
             >
               <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               {itemCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-rust text-[11px] font-bold cart-badge-text">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-bronze text-[11px] font-bold cart-badge-text">
                   {itemCount > 9 ? "9+" : itemCount}
                 </span>
               )}
@@ -111,7 +111,7 @@ export function Header() {
 
             <Link
               href="/account"
-              className="hidden rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust lg:flex"
+              className="hidden rounded-lg p-2 text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest lg:flex"
               aria-label="My account"
             >
               <User className="h-5 w-5" aria-hidden="true" />
@@ -126,7 +126,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="rounded-xl p-2 text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-rust lg:hidden"
+              className="rounded-xl p-2 text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-forest lg:hidden"
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -157,7 +157,7 @@ export function Header() {
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust"
+              className="rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
             >
               {link.label}
             </Link>
@@ -166,7 +166,7 @@ export function Header() {
           <Link
             href="/search"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust"
+            className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
           >
             <Search className="h-5 w-5" aria-hidden="true" />
             Search
@@ -174,7 +174,7 @@ export function Header() {
           <Link
             href="/account"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust"
+            className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
           >
             <User className="h-5 w-5" aria-hidden="true" />
             My Account
@@ -184,12 +184,12 @@ export function Header() {
               setMobileOpen(false);
               useCartDrawer.getState().setOpen(true);
             }}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
           >
             <ShoppingBag className="h-5 w-5" aria-hidden="true" />
             Cart
             {itemCount > 0 && (
-              <span className="ml-auto rounded-full bg-rust px-2.5 py-0.5 text-xs font-bold cart-badge-text">
+              <span className="ml-auto rounded-full bg-bronze px-2.5 py-0.5 text-xs font-bold cart-badge-text">
                 {itemCount}
               </span>
             )}

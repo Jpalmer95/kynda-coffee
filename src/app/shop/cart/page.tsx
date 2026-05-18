@@ -134,7 +134,7 @@ export default function CartPage() {
               clearCart();
               toast("Cart cleared", "info");
             }}
-            className="text-sm text-mocha transition-colors hover:text-rust focus-visible:ring-2 focus-visible:ring-rust rounded px-2 py-1"
+            className="text-sm text-mocha transition-colors hover:text-forest focus-visible:ring-2 focus-visible:ring-forest rounded px-2 py-1"
           >
             Clear all
           </button>
@@ -162,7 +162,7 @@ export default function CartPage() {
 
                 <div className="flex flex-1 flex-col justify-between">
                   <div>
-                    <Link href={`/shop/product/${item.product.slug}`} className="font-medium text-sm sm:text-base text-espresso hover:text-rust transition-colors">
+                    <Link href={`/shop/product/${item.product.slug}`} className="font-medium text-sm sm:text-base text-espresso hover:text-forest transition-colors">
                       {item.product.name}
                     </Link>
                     <div className="mt-0.5 text-xs sm:text-sm text-mocha space-y-0.5">
@@ -186,7 +186,7 @@ export default function CartPage() {
                       <span className="text-sm sm:text-base font-semibold text-espresso">
                         {formatPrice(item.product.price_cents * item.quantity)}
                       </span>
-                      <button onClick={() => handleRemove(item.product.id, item.product.name)} className="rounded-lg p-1.5 text-mocha transition-colors hover:bg-rust/10 hover:text-rust">
+                      <button onClick={() => handleRemove(item.product.id, item.product.name)} className="rounded-lg p-1.5 text-mocha transition-colors hover:bg-bronze/10 hover:text-forest">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>

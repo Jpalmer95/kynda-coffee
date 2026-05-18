@@ -79,7 +79,7 @@ export default async function TrainingDashboard() {
         <div className="container-max">
         {/* Header */}
         <div className="mb-8 flex items-center gap-3">
-          <GraduationCap className="h-8 w-8 text-rust" />
+          <GraduationCap className="h-8 w-8 text-forest" />
           <div>
             <h1 className="font-heading text-3xl font-bold text-espresso">
               Team Training
@@ -91,7 +91,7 @@ export default async function TrainingDashboard() {
           {profile?.role === "admin" && (
             <Link
               href="/admin/training"
-              className="ml-auto text-sm font-medium text-rust hover:underline"
+              className="ml-auto text-sm font-medium text-forest hover:underline"
             >
               Admin View →
             </Link>
@@ -108,7 +108,7 @@ export default async function TrainingDashboard() {
               <p className="mt-1 text-sm text-mocha">{course.description}</p>
             </div>
             <div className="text-right">
-              <div className="font-heading text-3xl font-bold text-rust">
+              <div className="font-heading text-3xl font-bold text-forest">
                 {progressPercent}%
               </div>
               <div className="text-sm text-mocha">
@@ -118,7 +118,7 @@ export default async function TrainingDashboard() {
           </div>
           <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-latte/30">
             <div
-              className="h-3 rounded-full bg-rust transition-all duration-500"
+              className="h-3 rounded-full bg-bronze transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -192,7 +192,7 @@ export default async function TrainingDashboard() {
                     </div>
                   )}
                 </div>
-                <ArrowRight className="h-5 w-5 flex-shrink-0 text-latte transition-colors group-hover:text-rust" />
+                <ArrowRight className="h-5 w-5 flex-shrink-0 text-latte transition-colors group-hover:text-forest" />
               </Link>
             );
           })}
@@ -201,7 +201,7 @@ export default async function TrainingDashboard() {
         {/* Resources */}
         <div className="mt-12 rounded-xl border border-latte/20 bg-white p-6">
           <h3 className="flex items-center gap-2 font-heading text-lg font-semibold text-espresso">
-            <BookOpen className="h-5 w-5 text-rust" />
+            <BookOpen className="h-5 w-5 text-forest" />
             Quick Reference Guides
           </h3>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">

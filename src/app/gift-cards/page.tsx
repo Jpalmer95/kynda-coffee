@@ -86,7 +86,7 @@ export default function GiftCardsPage() {
                   onClick={() => setAmount(amt)}
                   className={`rounded-xl border-2 px-4 py-3 text-center text-sm font-semibold transition-all ${
                     amount === amt
-                      ? "border-rust bg-rust/5 text-forest"
+                      ? "border-bronze bg-bronze/5 text-forest"
                       : "border-latte/20 text-espresso hover:border-latte/40"
                   }`}
                 >

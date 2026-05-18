@@ -35,7 +35,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="font-heading text-xl font-semibold text-espresso">5. Contact</h2>
-            <p className="mt-2">Questions? Reach us at <a href="mailto:kyndacoffee@gmail.com" className="text-rust hover:underline">kyndacoffee@gmail.com</a> or 4315 FM 2147, Horseshoe Bay, TX 78657.</p>
+            <p className="mt-2">Questions? Reach us at <a href="mailto:kyndacoffee@gmail.com" className="text-forest hover:underline">kyndacoffee@gmail.com</a> or 4315 FM 2147, Horseshoe Bay, TX 78657.</p>
           </section>
         </div>
       </div>

@@ -63,7 +63,7 @@ export default function CategoryPage() {
       <div className="container-max">
         <Link
           href="/shop"
-          className="mb-6 inline-flex items-center gap-1 rounded-lg text-sm text-mocha transition-colors hover:text-espresso focus-visible:ring-2 focus-visible:ring-rust"
+          className="mb-6 inline-flex items-center gap-1 rounded-lg text-sm text-mocha transition-colors hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to Shop

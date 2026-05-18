@@ -128,7 +128,7 @@ function SearchContent() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-medium text-espresso truncate group-hover:text-rust transition-colors">
+                  <h2 className="font-medium text-espresso truncate group-hover:text-forest transition-colors">
                     {product.name}
                   </h2>
                   <p className="mt-0.5 text-sm text-mocha line-clamp-1">
@@ -138,7 +138,7 @@ function SearchContent() {
                     {formatPrice(product.price_cents)}
                   </p>
                 </div>
-                <ArrowRight className="h-5 w-5 flex-shrink-0 text-latte group-hover:text-rust transition-colors" />
+                <ArrowRight className="h-5 w-5 flex-shrink-0 text-latte group-hover:text-forest transition-colors" />
               </Link>
             ))}
           </div>

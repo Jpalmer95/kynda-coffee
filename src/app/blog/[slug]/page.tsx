@@ -94,7 +94,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
         {/* Header */}
         <header className="mt-6">
-          <span className="inline-flex rounded-full bg-rust/10 px-3 py-1 text-xs font-medium text-rust">
+          <span className="inline-flex rounded-full bg-bronze/10 px-3 py-1 text-xs font-medium text-forest">
             {post.category}
           </span>
           <h1 className="mt-3 font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-espresso">

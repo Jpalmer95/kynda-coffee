@@ -69,7 +69,7 @@ export default function BlogPage() {
       <div className="container-max max-w-4xl">
         {/* Hero */}
         <div className="text-center">
-          <Coffee className="mx-auto h-10 w-10 text-rust" />
+          <Coffee className="mx-auto h-10 w-10 text-forest" />
           <h1 className="mt-4 font-heading text-3xl sm:text-4xl font-bold text-espresso">
             The Kynda Journal
           </h1>
@@ -93,10 +93,10 @@ export default function BlogPage() {
                 />
               </div>
               <div className="flex flex-col justify-center p-6 sm:p-8">
-                <span className="inline-flex w-fit rounded-full bg-rust/10 px-3 py-1 text-xs font-medium text-rust">
+                <span className="inline-flex w-fit rounded-full bg-bronze/10 px-3 py-1 text-xs font-medium text-forest">
                   {POSTS[0].category}
                 </span>
-                <h2 className="mt-3 font-heading text-xl sm:text-2xl font-bold text-espresso group-hover:text-rust transition-colors">
+                <h2 className="mt-3 font-heading text-xl sm:text-2xl font-bold text-espresso group-hover:text-forest transition-colors">
                   {POSTS[0].title}
                 </h2>
                 <p className="mt-2 text-sm text-mocha line-clamp-3">
@@ -137,7 +137,7 @@ export default function BlogPage() {
                 <span className="inline-flex w-fit rounded-full bg-latte/20 px-2.5 py-0.5 text-xs font-medium text-mocha">
                   {post.category}
                 </span>
-                <h3 className="mt-2 font-heading text-base font-semibold text-espresso group-hover:text-rust transition-colors line-clamp-2">
+                <h3 className="mt-2 font-heading text-base font-semibold text-espresso group-hover:text-forest transition-colors line-clamp-2">
                   {post.title}
                 </h3>
                 <p className="mt-1 text-sm text-mocha line-clamp-2 flex-1">

@@ -246,7 +246,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                                         value={modifier.providerModifierId}
                                         className="peer sr-only"
                                       />
-                                      <div className="inline-flex items-center gap-1 rounded-full border border-latte/20 bg-white px-3 py-1.5 text-xs font-medium text-mocha transition-all peer-checked:border-bronze peer-checked:bg-rust/5 peer-checked:text-forest hover:border-latte/40 active:scale-95">
+                                      <div className="inline-flex items-center gap-1 rounded-full border border-latte/20 bg-white px-3 py-1.5 text-xs font-medium text-mocha transition-all peer-checked:border-bronze peer-checked:bg-bronze/5 peer-checked:text-forest hover:border-latte/40 active:scale-95">
                                         {modifier.name}
                                         {modifier.priceCents > 0 && (
                                           <span className="opacity-70">+{modifier.priceLabel}</span>

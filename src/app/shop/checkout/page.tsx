@@ -61,7 +61,7 @@ function CheckoutContent() {
     return (
       <section className="section-padding">
         <div className="container-max max-w-lg text-center">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-rust" />
+          <Loader2 className="mx-auto h-10 w-10 animate-spin text-forest" />
           <h1 className="mt-4 font-heading text-xl font-semibold text-espresso">
             Confirming your order...
           </h1>
@@ -86,7 +86,7 @@ function CheckoutContent() {
         {session && (
           <div className="mt-6 rounded-xl border border-latte/20 bg-white p-5 text-left">
             <div className="flex items-center gap-3 mb-3">
-              <Package className="h-5 w-5 text-rust" />
+              <Package className="h-5 w-5 text-forest" />
               <span className="font-medium text-espresso">Order Summary</span>
             </div>
             <div className="space-y-1.5 text-sm">
@@ -123,7 +123,7 @@ export default function CheckoutSuccessPage() {
     <Suspense fallback={
       <section className="section-padding">
         <div className="container-max max-w-lg text-center">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-rust" />
+          <Loader2 className="mx-auto h-10 w-10 animate-spin text-forest" />
           <p className="mt-4 text-mocha">Loading...</p>
         </div>
       </section>

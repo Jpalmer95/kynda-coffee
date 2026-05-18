@@ -164,7 +164,7 @@ export function ProductReviews({ productId }: { productId: string }) {
                   <Star className="h-3.5 w-3.5 text-forest" />
                   <div className="flex-1 h-2 overflow-hidden rounded-full bg-latte/20">
                     <div
-                      className="h-full rounded-full bg-rust transition-all"
+                      className="h-full rounded-full bg-bronze transition-all"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

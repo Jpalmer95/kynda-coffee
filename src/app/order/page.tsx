@@ -27,10 +27,10 @@ export default async function OrderPage({
     <section className="section-padding">
       <div className="container-max">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-rust/10 text-rust">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-bronze/10 text-forest">
             <Coffee className="h-7 w-7" aria-hidden="true" />
           </div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-rust">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-forest">
             Fast • Fresh • Yours
           </p>
           <h1 className="font-heading text-4xl font-bold text-espresso sm:text-6xl">
@@ -53,7 +53,7 @@ export default async function OrderPage({
             { icon: Users, title: "Parking Spot", desc: "Quick handoff from the lot" },
           ].map((mode) => (
             <div key={mode.title} className="rounded-2xl border border-latte/20 bg-white p-5 shadow-sm">
-              <mode.icon className="h-6 w-6 text-rust" aria-hidden="true" />
+              <mode.icon className="h-6 w-6 text-forest" aria-hidden="true" />
               <h3 className="mt-3 font-heading text-xl font-semibold text-espresso">{mode.title}</h3>
               <p className="mt-1 text-sm text-mocha">{mode.desc}</p>
             </div>
