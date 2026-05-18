@@ -6,6 +6,7 @@ import { useCartStore } from "@/hooks/useCart";
 import { useCartDrawer } from "@/hooks/useCartDrawer";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { formatPrice } from "@/lib/utils";
+import { ProductImage } from "@/components/shop/ProductImage";
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 
 export function CartDrawer() {
@@ -147,17 +148,7 @@ export function CartDrawer() {
                       onClick={() => setOpen(false)}
                       className="flex-shrink-0"
                     >
-                      <div className="h-16 w-16 rounded-lg bg-gradient-to-br from-amber-800 to-stone-900 overflow-hidden">
-                        {item.product.images?.[0] ? (
-                          <img
-                            src={item.product.images[0]}
-                            alt={item.product.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-lg">☕</div>
-                        )}
-                      </div>
+                      <ProductImage product={item.product} className="h-16 w-16 rounded-lg" sizes="64px" />
                     </Link>
 
                     <div className="min-w-0 flex-1">

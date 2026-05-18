@@ -8,6 +8,7 @@ import type { CartItem } from "@/types";
 import { useToast } from "@/components/ui/Toast";
 import { formatPrice, calculateTax, calculateShipping } from "@/lib/utils";
 import { LoyaltyRedemption } from "@/components/cart/LoyaltyRedemption";
+import { ProductImage } from "@/components/shop/ProductImage";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 
 export default function CartPage() {
@@ -146,18 +147,10 @@ export default function CartPage() {
             {items.map((item) => (
               <div
                 key={`${item.product.id}-${JSON.stringify(item.selectedVariant)}`}
-                className="flex gap-3 sm:gap-4 rounded-xl border border-latte/20 bg-white p-3 sm:p-4"
+                className="flex gap-3 rounded-xl border border-latte/20 bg-card p-3 sm:gap-4 sm:p-4"
               >
                 <Link href={`/shop/product/${item.product.slug}`} className="flex-shrink-0">
-                  <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-lg bg-gradient-to-br from-amber-800 to-stone-900 overflow-hidden">
-                    {item.product.images?.[0] ? (
-                      <img src={item.product.images[0]} alt={item.product.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <span className="text-2xl opacity-50">☕</span>
-                      </div>
-                    )}
-                  </div>
+                  <ProductImage product={item.product} className="h-20 w-20 rounded-lg sm:h-24 sm:w-24" sizes="96px" />
                 </Link>
 
                 <div className="flex flex-1 flex-col justify-between">
@@ -202,7 +195,7 @@ export default function CartPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="rounded-xl border border-latte/20 bg-white p-6 sticky top-24">
+          <div className="sticky top-24 rounded-xl border border-latte/20 bg-card p-6">
             <h2 className="font-heading text-xl font-semibold text-espresso">Order Summary</h2>
 
             <div className="mt-4 space-y-3 text-sm">

@@ -61,7 +61,7 @@ export function ProductImage({
       <div
         className={`product-image-fallback absolute inset-0 flex h-full w-full items-center justify-center ${imageSrc ? "hidden" : ""}`}
       >
-        <span className="text-5xl opacity-60 transition-transform duration-300 group-hover:scale-110 sm:text-6xl">
+        <span className="text-5xl opacity-80 drop-shadow-sm transition-transform duration-300 group-hover:scale-110 sm:text-6xl">
           {icon}
         </span>
       </div>
@@ -72,16 +72,16 @@ export function ProductImage({
 // Consistent category mappings (kept private to this module)
 function getCategoryGradient(category: string): string {
   const gradients: Record<string, string> = {
-    "coffee-beans": "from-amber-800 to-stone-900",
-    "merch-apparel": "from-stone-700 to-stone-900",
-    "merch-mugs": "from-amber-700 to-orange-900",
-    "merch-glassware": "from-sky-700 to-slate-900",
-    "merch-accessories": "from-emerald-800 to-stone-900",
-    subscription: "from-rust to-espresso",
-    "gift-card": "from-latte to-mocha",
-    catering: "from-sage to-mocha",
+    "coffee-beans": "from-surface to-forest-700",
+    "merch-apparel": "from-surface to-latte-700",
+    "merch-mugs": "from-surface to-bronze-700",
+    "merch-glassware": "from-surface to-forest-600",
+    "merch-accessories": "from-surface to-sage-600",
+    subscription: "from-surface to-forest",
+    "gift-card": "from-surface to-bronze",
+    catering: "from-surface to-sage",
   };
-  return gradients[category] ?? "from-stone-600 to-stone-800";
+  return gradients[category] ?? "from-surface to-latte-700";
 }
 
 function getCategoryIcon(category: string): string {

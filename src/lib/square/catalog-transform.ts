@@ -153,6 +153,25 @@ export function classifySquareItem(name: string, category: string): NormalizedSq
 export function cafeOrRetailForItemType(itemType: NormalizedSquareItem["itemType"]): "cafe" | "retail" {
   return itemType === "menu" || itemType === "modifier" || itemType === "service" ? "cafe" : "retail";
 }
+function collectSquareImageIds(obj: SquareObjectLike): string[] {
+  const objAny = obj as any;
+  const itemDataAny = (obj.itemData ?? {}) as any;
+  const ids = [
+    ...(Array.isArray(itemDataAny.imageIds) ? itemDataAny.imageIds : []),
+    ...(Array.isArray(itemDataAny.image_ids) ? itemDataAny.image_ids : []),
+    ...(Array.isArray(objAny.imageIds) ? objAny.imageIds : []),
+    ...(Array.isArray(objAny.image_ids) ? objAny.image_ids : []),
+    itemDataAny.imageId,
+    itemDataAny.image_id,
+    objAny.imageId,
+    objAny.image_id,
+  ];
+
+  return Array.from(
+    new Set(ids.filter((id): id is string => typeof id === "string" && id.trim().length > 0))
+  );
+}
+
 export function normalizeSquareItems(
   objects: SquareObjectLike[],
   categories: CategoryLookup = buildCategoryLookup(objects),
@@ -168,8 +187,7 @@ export function normalizeSquareItems(
     const category = getCategoryForItem(obj, categories);
     const itemType = classifySquareItem(itemName, category.name);
     const cafeOrRetail = cafeOrRetailForItemType(itemType);
-    const objAny = obj as any;
-    const imageIds = objAny.imageIds ? objAny.imageIds : ((objAny.imageId ? [objAny.imageId] : itemData.imageIds) || []);
+    const imageIds = collectSquareImageIds(obj);
     const imageUrl = imageIds.map((id: string) => images[id]).find(Boolean);
     const modifierListIds = (itemData.modifierListInfo || [])
       .filter((info) => info.enabled !== false && info.modifierListId)

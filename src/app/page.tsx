@@ -286,7 +286,7 @@ export default function HomePage() {
               </div>
               {/* Visual mockup */}
               <div className="hidden lg:block">
-                <div className="relative h-full min-h-[400px] bg-gradient-to-br from-rust/20 to-latte/10">
+                <div className="relative h-full min-h-[400px] bg-gradient-to-br from-bronze/20 to-latte/10">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="grid grid-cols-2 gap-4 p-8">
                       {["🎨", "☕", "👕", "🥃"].map((emoji, i) => (

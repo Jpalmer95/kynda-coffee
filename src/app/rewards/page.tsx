@@ -32,7 +32,7 @@ const TIERS = [
     name: "Kynda VIP",
     stars: 1000,
     perks: ["All Gold perks", "15% off everything", "Priority customer support", "Invitation to exclusive tastings", "Free monthly coffee bag"],
-    color: "from-rust to-red-800",
+    color: "from-bronze to-surface",
     icon: Coffee,
   },
 ];
@@ -52,7 +52,7 @@ export default function RewardsPage() {
       <div className="container-max max-w-4xl">
         {/* Hero */}
         <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-rust to-amber-700">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-bronze to-forest">
             <Star className="h-8 w-8 text-white" fill="white" />
           </div>
           <h1 className="mt-4 font-heading text-3xl sm:text-4xl font-bold text-espresso">

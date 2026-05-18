@@ -1,201 +1,175 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Users, Star, MessageSquare, TrendingUp } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, Search, Star, TrendingUp, Users } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 
 type Customer = {
   id: string;
   name: string;
   email: string;
-  phone?: string;
-  points: number;
-  tier: "Bronze" | "Silver" | "Gold";
-  lifetimeValue: number;
-  totalOrders: number;
-  favoriteItems: string[];
-  notes: string;
-  lastVisit: string;
+  joined: string;
+  orders: number;
+  totalSpent: number;
+  loyaltyPoints?: number;
+  loyaltyTier?: string;
 };
 
-const initialCustomers: Customer[] = [
-  {
-    id: "c1",
-    name: "Elena Rodriguez",
-    email: "elena.r@personal.com",
-    phone: "(830) 555-0142",
-    points: 1240,
-    tier: "Gold",
-    lifetimeValue: 487.5,
-    totalOrders: 38,
-    favoriteItems: ["Ethiopian Guji", "Kynda Mug"],
-    notes: "Prefers oat milk in lattes. Birthday June 14. Loves merch drops.",
-    lastVisit: "2 days ago"
-  },
-  {
-    id: "c2",
-    name: "Marcus Thompson",
-    email: "marcus.t@work.net",
-    points: 680,
-    tier: "Silver",
-    lifetimeValue: 214.25,
-    totalOrders: 19,
-    favoriteItems: ["Honduras Finca Yaque"],
-    notes: "",
-    lastVisit: "1 week ago"
-  },
-  {
-    id: "c3",
-    name: "Priya Patel",
-    email: "priya.p@gmail.com",
-    phone: "(512) 555-9881",
-    points: 315,
-    tier: "Bronze",
-    lifetimeValue: 89.0,
-    totalOrders: 7,
-    favoriteItems: ["Kynda Cap", "Americano Glass Mug"],
-    notes: "Allergic to almonds. Orders for office every Friday.",
-    lastVisit: "Yesterday"
-  }
-];
+function tierFor(customer: Customer) {
+  if (customer.loyaltyTier) return customer.loyaltyTier.replace(/-/g, " ");
+  if ((customer.loyaltyPoints ?? 0) >= 1000 || customer.totalSpent >= 50000) return "gold";
+  if ((customer.loyaltyPoints ?? 0) >= 500 || customer.totalSpent >= 20000) return "silver";
+  return "bronze";
+}
+
+function lastSeenLabel(joined: string) {
+  const date = new Date(joined);
+  if (Number.isNaN(date.getTime())) return "Unknown";
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
 export default function AdminCustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeNote, setActiveNote] = useState<string | null>(null);
-  const [noteText, setNoteText] = useState("");
 
-  const filteredCustomers = customers.filter(c =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  async function loadCustomers(query = searchTerm) {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (query.trim()) params.set("q", query.trim());
+      const res = await fetch(`/api/admin/customers?${params}`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load customers");
+      setCustomers(data.customers ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load customers");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  function updateNotes(customerId: string) {
-    setCustomers(prev =>
-      prev.map(c =>
-        c.id === customerId ? { ...c, notes: noteText } : c
-      )
+  useEffect(() => {
+    const timeout = setTimeout(() => loadCustomers(searchTerm), 250);
+    return () => clearTimeout(timeout);
+  }, [searchTerm]);
+
+  const totals = useMemo(() => {
+    return customers.reduce(
+      (acc, customer) => ({
+        orders: acc.orders + customer.orders,
+        spent: acc.spent + customer.totalSpent,
+        points: acc.points + (customer.loyaltyPoints ?? 0),
+      }),
+      { orders: 0, spent: 0, points: 0 }
     );
-    setActiveNote(null);
-    setNoteText("");
-  }
-
-  function openNoteModal(customer: Customer) {
-    setActiveNote(customer.id);
-    setNoteText(customer.notes);
-  }
+  }, [customers]);
 
   return (
     <div className="container-max py-6 sm:py-10">
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/admin" className="rounded-lg p-2 hover:bg-latte/10">
-          <ArrowLeft className="h-5 w-5" />
+      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/admin" className="rounded-lg p-2 text-mocha transition-colors hover:bg-latte/10" aria-label="Back to admin">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <h1 className="flex items-center gap-3 font-heading text-3xl font-bold text-espresso">
+              <Users className="h-8 w-8 text-forest" /> Customers &amp; Loyalty
+            </h1>
+            <p className="text-sm text-mocha">
+              {customers.length} customers • {totals.orders} orders • {formatPrice(totals.spent)} lifetime value
+            </p>
+          </div>
+        </div>
+        <Link href="/admin/export/customers" className="btn-secondary text-sm">
+          Export customer CSV
         </Link>
-        <div>
-          <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-            <Users className="h-8 w-8 text-forest" /> Customers &amp; Loyalty
-          </h1>
-          <p className="text-sm text-mocha">
-            {filteredCustomers.length} customers • Track LTV, preferences & loyalty points
-          </p>
+      </div>
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-latte/20 bg-card p-4">
+          <div className="flex items-center gap-2 text-sm text-mocha"><Users className="h-4 w-4" /> Customers</div>
+          <div className="mt-2 text-2xl font-semibold text-espresso">{customers.length}</div>
+        </div>
+        <div className="rounded-2xl border border-latte/20 bg-card p-4">
+          <div className="flex items-center gap-2 text-sm text-mocha"><TrendingUp className="h-4 w-4" /> Lifetime Value</div>
+          <div className="mt-2 text-2xl font-semibold text-espresso">{formatPrice(totals.spent)}</div>
+        </div>
+        <div className="rounded-2xl border border-latte/20 bg-card p-4">
+          <div className="flex items-center gap-2 text-sm text-mocha"><Star className="h-4 w-4" /> Loyalty Points</div>
+          <div className="mt-2 text-2xl font-semibold text-espresso">{totals.points.toLocaleString()}</div>
         </div>
       </div>
 
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <input
-          type="text"
-          placeholder="Search customers..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="input-field flex-1"
-        />
+      <div className="mb-6 rounded-2xl border border-latte/20 bg-card p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mocha" />
+          <input
+            type="text"
+            placeholder="Search customers by name or email..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            className="input-field pl-9"
+          />
+        </div>
       </div>
 
-      <div className="space-y-4">
-        {filteredCustomers.map((customer) => (
-          <div key={customer.id} className="border border-latte/20 rounded-2xl bg-white p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              {/* Basic Info */}
-              <div>
-                <div className="font-semibold text-xl text-espresso">{customer.name}</div>
-                <div className="text-sm text-mocha">{customer.email} {customer.phone && `• ${customer.phone}`}</div>
-                <div className="text-xs text-mocha/70 mt-1">Last visit: {customer.lastVisit}</div>
-              </div>
+      {error && <div className="mb-6 rounded-2xl border border-bronze/30 bg-bronze/10 p-4 text-sm text-espresso">{error}</div>}
 
-              {/* Stats */}
-              <div className="flex items-center gap-8 text-sm">
-                <div>
-                  <div className="font-mono text-2xl font-semibold text-espresso">${customer.lifetimeValue}</div>
-                  <div className="text-xs text-mocha tracking-wide">Lifetime Value</div>
-                </div>
-                <div>
-                  <div className="font-mono text-2xl font-semibold text-espresso">{customer.totalOrders}</div>
-                  <div className="text-xs text-mocha tracking-wide">Orders</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-mono text-2xl font-semibold text-forest">{customer.points}</div>
-                  <div className="text-xs text-mocha">Points</div>
-                </div>
-                <div className="px-4 py-1 rounded-full bg-surface text-white text-xs font-medium self-center">
-                  {customer.tier}
-                </div>
-              </div>
-            </div>
+      {loading ? (
+        <div className="flex items-center justify-center rounded-2xl border border-latte/20 bg-card py-16 text-mocha">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading customers...
+        </div>
+      ) : customers.length === 0 ? (
+        <div className="rounded-2xl border border-latte/20 bg-card py-16 text-center text-mocha">
+          <Users className="mx-auto h-12 w-12 text-latte" />
+          <p className="mt-3 text-lg font-medium text-espresso">No customers found</p>
+          <p className="text-sm">Profiles and online order history will appear here as customers order.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {customers.map((customer) => {
+            const tier = tierFor(customer);
+            return (
+              <article key={customer.id} className="rounded-2xl border border-latte/20 bg-card p-6">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <div className="font-heading text-xl font-semibold text-espresso">{customer.name || "Unnamed customer"}</div>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-mocha">
+                      <Mail className="h-4 w-4" /> {customer.email}
+                      <span>• Joined {lastSeenLabel(customer.joined)}</span>
+                    </div>
+                  </div>
 
-            {/* Favorites */}
-            <div className="mt-4 text-sm">
-              <span className="text-mocha">Favorites:</span>{" "}
-              <span className="text-espresso">{customer.favoriteItems.join(" • ")}</span>
-            </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4 lg:min-w-[520px]">
+                    <div>
+                      <div className="font-mono text-2xl font-semibold text-espresso">{formatPrice(customer.totalSpent)}</div>
+                      <div className="text-xs text-mocha">Lifetime Value</div>
+                    </div>
+                    <div>
+                      <div className="font-mono text-2xl font-semibold text-espresso">{customer.orders}</div>
+                      <div className="text-xs text-mocha">Orders</div>
+                    </div>
+                    <div>
+                      <div className="font-mono text-2xl font-semibold text-forest">{(customer.loyaltyPoints ?? 0).toLocaleString()}</div>
+                      <div className="text-xs text-mocha">Points</div>
+                    </div>
+                    <div className="self-center">
+                      <span className="inline-flex rounded-full bg-surface px-4 py-1 text-xs font-medium capitalize text-sand">
+                        {tier}
+                      </span>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Notes */}
-            <div className="mt-4">
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="font-medium text-mocha flex items-center gap-1.5">
-                  <MessageSquare className="h-4 w-4" /> Staff Notes
-                </span>
-                <button 
-                  className="text-forest text-xs hover:underline"
-                  onClick={() => openNoteModal(customer)}
-                >
-                  Edit notes
-                </button>
-              </div>
-              <div className="text-sm bg-cream border border-latte/30 rounded-xl px-4 py-3 text-espresso min-h-[56px]">
-                {customer.notes || <span className="text-mocha/60 italic">No notes yet</span>}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Note Editing Modal */}
-      {activeNote && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6">
-            <h3 className="font-semibold mb-4 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" /> Edit Customer Notes
-            </h3>
-            <textarea
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              className="w-full h-32 border border-latte/30 rounded-xl p-4 text-sm resize-y"
-              placeholder="Add preferences, allergies, birthday, special instructions..."
-            />
-            <div className="mt-4 flex justify-end gap-3">
-              <button onClick={() => setActiveNote(null)} className="px-4 py-2 text-sm">Cancel</button>
-              <button 
-                onClick={() => updateNotes(activeNote)}
-                className="btn-primary text-sm"
-              >
-                Save Notes
-              </button>
-            </div>
-          </div>
+              </article>
+            );
+          })}
         </div>
       )}
-
-      <div className="text-center text-xs text-mocha/70 mt-10">Loyalty points &amp; tiers will sync with Square transactions automatically in the next phase.</div>
     </div>
   );
 }

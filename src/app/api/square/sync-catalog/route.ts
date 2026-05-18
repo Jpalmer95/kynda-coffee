@@ -250,10 +250,21 @@ export async function POST(req: NextRequest) {
           provider_item_id: item.squareItemId,
           provider_variation_id: item.squareVariationId,
           name: item.variationName,
+          sku: item.variationRaw?.itemVariationData?.sku ?? null,
+          ordinal: toNumber(item.variationRaw?.itemVariationData?.ordinal, 0),
           price_cents: item.priceCents,
           currency: item.currency,
+          pricing_type: item.variationRaw?.itemVariationData?.pricingType ?? null,
           track_inventory: item.trackInventory,
-          raw: rawForJsonb(item.variationRaw),
+          sellable: item.variationRaw?.itemVariationData?.sellable !== false,
+          stockable: item.variationRaw?.itemVariationData?.stockable !== false,
+          raw: rawForJsonb({
+            ...(item.variationRaw ?? {}),
+            kyndaInventory: {
+              quantity_available: inventoryCounts[item.squareVariationId] ?? null,
+              synced_at: new Date().toISOString(),
+            },
+          }),
           synced_at: new Date().toISOString(),
         } as any, { onConflict: "provider,provider_variation_id" });
 

@@ -31,7 +31,7 @@ function ProductGrid({ category, onQuickView }: { category: ProductCategory | "a
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div
             key={i}
-            className="animate-pulse rounded-2xl border border-latte/20 bg-white"
+            className="animate-pulse rounded-2xl border border-latte/20 bg-card"
           >
             <div className="aspect-square rounded-t-2xl bg-latte/20" />
             <div className="p-4 sm:p-5 space-y-3">
@@ -104,7 +104,7 @@ export default function ShopPage() {
         <div className="mb-6 sm:hidden">
           <button
             onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-            className="flex w-full items-center justify-between rounded-xl border border-latte/20 bg-white px-4 py-3 text-sm font-medium text-espresso"
+            className="flex w-full items-center justify-between rounded-xl border border-latte/20 bg-card px-4 py-3 text-sm font-medium text-espresso"
             aria-expanded={mobileFilterOpen}
             aria-controls="mobile-filters"
           >
@@ -119,7 +119,7 @@ export default function ShopPage() {
 
           {/* Mobile Filter Panel */}
           {mobileFilterOpen && (
-            <div id="mobile-filters" className="mt-2 rounded-xl border border-latte/20 bg-white p-3 animate-fade-in-scale">
+            <div id="mobile-filters" className="mt-2 rounded-xl border border-latte/20 bg-card p-3 animate-fade-in-scale">
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((cat) => (
                   <button
@@ -162,7 +162,7 @@ export default function ShopPage() {
         <Suspense fallback={
           <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="animate-pulse rounded-2xl border border-latte/20 bg-white">
+              <div key={i} className="animate-pulse rounded-2xl border border-latte/20 bg-card">
                 <div className="aspect-square rounded-t-2xl bg-latte/20" />
                 <div className="p-4 space-y-3">
                   <div className="h-3 w-16 rounded bg-latte/20" />

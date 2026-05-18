@@ -356,7 +356,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Daily Motivation */}
-            <div className="rounded-xl border border-bronze/20 bg-gradient-to-br from-rust/5 to-cream p-6">
+            <div className="rounded-xl border border-bronze/20 bg-gradient-to-br from-bronze/5 to-cream p-6">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-forest" />
                 <h2 className="font-heading text-lg font-semibold text-espresso">

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     // Fetch profiles + order aggregates
     const { data: profiles, error } = await supabaseAdmin()
       .from("profiles")
-      .select("id, full_name, email, created_at, updated_at")
+      .select("id, full_name, email, loyalty_points, loyalty_tier, created_at, updated_at")
       .order("created_at", { ascending: false })
       .limit(500);
 
@@ -52,6 +52,8 @@ export async function GET(req: NextRequest) {
         joined: p.created_at,
         orders: stats.count,
         totalSpent: stats.spent,
+        loyaltyPoints: (p as any).loyalty_points ?? 0,
+        loyaltyTier: (p as any).loyalty_tier ?? "bronze",
       };
     });
 

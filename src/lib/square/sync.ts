@@ -39,12 +39,19 @@ export async function syncCatalog(): Promise<SyncResult> {
           : 0;
 
         const isSellable = variation?.itemVariationData?.sellable;
-        const imageIds = item.itemData?.imageIds || [];
-        const imageUrls = imageIds.map(id => images[id]).filter(Boolean);
-        
-        if ((item as any).imageId && images[(item as any).imageId] && !imageUrls.includes(images[(item as any).imageId])) {
-          imageUrls.unshift(images[(item as any).imageId]);
-        }
+        const itemAny = item as any;
+        const itemDataAny = (item.itemData ?? {}) as any;
+        const imageIds = Array.from(new Set([
+          ...(Array.isArray(itemDataAny.imageIds) ? itemDataAny.imageIds : []),
+          ...(Array.isArray(itemDataAny.image_ids) ? itemDataAny.image_ids : []),
+          ...(Array.isArray(itemAny.imageIds) ? itemAny.imageIds : []),
+          ...(Array.isArray(itemAny.image_ids) ? itemAny.image_ids : []),
+          itemDataAny.imageId,
+          itemDataAny.image_id,
+          itemAny.imageId,
+          itemAny.image_id,
+        ].filter((id): id is string => typeof id === "string" && id.trim().length > 0)));
+        const imageUrls = imageIds.map((id) => images[id]).filter(Boolean);
         
         const product = {
           slug: item.itemData?.name

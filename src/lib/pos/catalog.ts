@@ -24,6 +24,14 @@ export interface PosCatalogVariationRow {
   track_inventory: boolean;
   sellable: boolean;
   stockable: boolean;
+  raw?: {
+    kyndaInventory?: {
+      quantity_available?: number | null;
+      synced_at?: string | null;
+    };
+    [key: string]: unknown;
+  } | null;
+  synced_at?: string | null;
 }
 
 export interface PosCatalogModifierRow {
@@ -108,6 +116,8 @@ export interface PosCatalogVariation {
   trackInventory: boolean;
   sellable: boolean;
   stockable: boolean;
+  raw?: PosCatalogVariationRow["raw"];
+  syncedAt?: string | null;
 }
 
 export interface PosCatalogModifier {
@@ -267,6 +277,8 @@ export function mapPosCatalogRows(
           trackInventory: variation.track_inventory,
           sellable: variation.sellable,
           stockable: variation.stockable,
+          raw: variation.raw,
+          syncedAt: variation.synced_at,
         }));
 
       const firstVariation = variations[0];
@@ -477,7 +489,7 @@ export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise
     const { data, error } = await supabaseAdmin()
       .from("pos_item_variations")
       .select(
-        "id, provider, provider_item_id, provider_variation_id, name, sku, ordinal, price_cents, currency, pricing_type, track_inventory, sellable, stockable"
+        "id, provider, provider_item_id, provider_variation_id, name, sku, ordinal, price_cents, currency, pricing_type, track_inventory, sellable, stockable, raw, synced_at"
       )
       .in("provider_item_id", providerItemIds)
       .order("ordinal", { ascending: true })

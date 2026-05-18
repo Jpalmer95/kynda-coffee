@@ -9,12 +9,12 @@ export const metadata = {
 };
 
 const TAG_STYLES: Record<string, string> = {
-  menu: "bg-bronze/10 text-forest",
+  menu: "bg-bronze/10 text-espresso",
   retail: "bg-sage/10 text-sage",
-  merch: "bg-blue-50 text-blue-600",
-  qr: "bg-amber-50 text-amber-700",
-  pickup: "bg-green-50 text-green-700",
-  shipping: "bg-purple-50 text-purple-700",
+  merch: "bg-forest/10 text-forest",
+  qr: "bg-bronze/10 text-espresso",
+  pickup: "bg-sage/10 text-sage",
+  shipping: "bg-forest/10 text-forest",
 };
 
 export default async function MenuPage() {
@@ -42,15 +42,15 @@ export default async function MenuPage() {
         {/* Ordering Hub - Digital first */}
         <div className="mb-16 rounded-3xl bg-surface p-8 text-center text-sand">
           <h2 className="font-heading text-3xl font-bold">Ready to Order?</h2>
-          <p className="mt-3 max-w-xl mx-auto text-latte/90">
+          <p className="mt-3 max-w-xl mx-auto text-sand/90">
             Order ahead for pickup or curbside. Tables, lobby, and parking QR codes give you fast access to the same system.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/qr-order" className="rounded-[24px] bg-white px-8 py-4 text-lg font-semibold text-espresso hover:bg-bronze hover:text-sand transition">
+            <a href="/order" className="rounded-[24px] bg-sand px-8 py-4 text-lg font-semibold text-surface hover:bg-bronze hover:text-white transition">
               Order for Pickup
             </a>
-            <a href="/qr-order?mode=curbside" className="rounded-[24px] border-2 border-white px-8 py-4 text-lg font-medium hover:bg-white hover:text-espresso transition">
+            <a href="/order?mode=curbside" className="rounded-[24px] border-2 border-sand px-8 py-4 text-lg font-medium text-sand hover:bg-sand hover:text-surface transition">
               Curbside / Car Pickup
             </a>
           </div>
@@ -62,7 +62,7 @@ export default async function MenuPage() {
         </div>
 
         {categories.length === 0 ? (
-          <div className="rounded-2xl border border-latte/20 bg-white p-8 text-center">
+          <div className="rounded-2xl border border-latte/20 bg-card p-8 text-center">
             <h2 className="font-heading text-2xl font-bold text-espresso">Menu sync in progress</h2>
             <p className="mt-2 text-mocha">
               Our live menu is being refreshed. Please call us for today&apos;s menu while we finish syncing.
@@ -84,7 +84,7 @@ export default async function MenuPage() {
                   {section.items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex gap-4 rounded-[24px] border border-latte/10 bg-white p-4 transition-all hover:shadow-hover"
+                      className="flex gap-4 rounded-[24px] border border-latte/20 bg-card p-4 transition-all hover:shadow-hover"
                     >
                       <div className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-xl bg-latte/10 ring-1 ring-latte/10">
                         {item.imageUrls?.[0] ? (
@@ -145,18 +145,18 @@ export default async function MenuPage() {
         )}
 
         {/* Order CTA */}
-        <div className="mt-12 rounded-2xl bg-espresso-200 p-6 sm:p-8 text-center">
-          <h2 className="font-heading text-xl sm:text-2xl font-bold text-espresso">
+        <div className="mt-12 rounded-2xl bg-surface p-6 text-center text-sand sm:p-8">
+          <h2 className="font-heading text-xl font-bold sm:text-2xl">
             Ready to Order?
           </h2>
-          <p className="mt-2 text-sm sm:text-base text-mocha">
-            Order ahead for pickup or scan the QR code in-store. A fully native Kynda checkout is now being wired into this live catalog.
+          <p className="mt-2 text-sm text-sand/85 sm:text-base">
+            Order ahead for pickup or scan the QR code in-store. The order flow uses this same live Square-backed catalog.
           </p>
-          <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-            <Link href="/qr-order" className="btn-accent">
-              Start QR / Pickup Order
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link href="/order" className="btn-accent">
+              Start Pickup Order
             </Link>
-            <a href="tel:+151****6781" className="btn-secondary">
+            <a href="tel:+151****6781" className="btn-secondary border-sand text-sand hover:bg-sand hover:text-surface">
               Call (512) 219-6781
             </a>
           </div>
