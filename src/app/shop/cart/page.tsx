@@ -174,11 +174,11 @@ export default function CartPage() {
 
                   <div className="mt-2 flex items-center justify-between">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20">
+                      <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20">
                         <Minus className="h-3.5 w-3.5" />
                       </button>
                       <span className="w-7 text-center text-sm font-medium">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="flex h-8 w-8 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20">
+                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20">
                         <Plus className="h-3.5 w-3.5" />
                       </button>
                     </div>
