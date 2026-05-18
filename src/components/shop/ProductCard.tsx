@@ -28,7 +28,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
   const categoryLabel = getCategoryLabel(product.category);
 
   return (
-    <div className="group relative block overflow-hidden rounded-lg border border-latte/10 bg-white transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 transition-transform">
+    <div className="group relative block overflow-hidden rounded-lg border border-latte/10 bg-white transition-all duration-300 dark:border-white/10 dark:ring-1 dark:ring-lime-400/30 hover:scale-[1.02] hover:-translate-y-0.5 transition-transform">
       {/* Product Image */}
       <Link
         href={`/shop/product/${product.slug}`}
