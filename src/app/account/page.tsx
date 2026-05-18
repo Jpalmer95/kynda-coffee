@@ -96,7 +96,7 @@ export default function AccountPage() {
     return (
       <section className="section-padding">
         <div className="container-max flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-rust" />
+          <Loader2 className="h-8 w-8 animate-spin text-forest" />
         </div>
       </section>
     );
@@ -132,7 +132,7 @@ export default function AccountPage() {
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-mocha transition-colors hover:bg-latte/20 hover:text-rust"
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-mocha transition-colors hover:bg-latte/20 hover:text-forest"
                 >
                   <LogOut className="h-4 w-4" />
                   <span className="hidden sm:inline">Sign Out</span>
@@ -149,7 +149,7 @@ export default function AccountPage() {
                   className="group flex items-center gap-4 rounded-xl border border-latte/20 bg-white p-4 transition-all hover:shadow-md hover:border-latte/40"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-cream">
-                    <item.icon className="h-5 w-5 text-mocha group-hover:text-rust transition-colors" aria-hidden="true" />
+                    <item.icon className="h-5 w-5 text-mocha group-hover:text-forest transition-colors" aria-hidden="true" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="font-medium text-sm text-espresso">{item.title}</h2>

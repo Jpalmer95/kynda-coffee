@@ -70,7 +70,7 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="container-max py-12 flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rust" />
+        <Loader2 className="h-8 w-8 animate-spin text-forest" />
       </div>
     );
   }

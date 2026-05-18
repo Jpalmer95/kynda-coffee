@@ -82,7 +82,7 @@ export default function ProfileEditPage() {
   if (loading) {
     return (
       <div className="container-max py-12 flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-rust" />
+        <Loader2 className="h-8 w-8 animate-spin text-forest" />
       </div>
     );
   }
@@ -94,7 +94,7 @@ export default function ProfileEditPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <form onSubmit={handleSaveProfile} className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 mb-2">
-            <UserCircle className="h-5 w-5 text-rust" />
+            <UserCircle className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Personal Info</h2>
           </div>
 
@@ -143,7 +143,7 @@ export default function ProfileEditPage() {
 
         <form onSubmit={handleChangePassword} className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 mb-2">
-            <Lock className="h-5 w-5 text-rust" />
+            <Lock className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Change Password</h2>
           </div>
 

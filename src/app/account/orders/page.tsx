@@ -35,7 +35,7 @@ export default async function OrdersPage() {
         </h1>
         <p className="mt-1 text-sm text-mocha">
           Track and review your past purchases.{" "}
-          <Link href="/track-order" className="text-rust hover:underline">
+          <Link href="/track-order" className="text-forest hover:underline">
             Track a guest order
           </Link>
         </p>
@@ -120,7 +120,7 @@ export default async function OrdersPage() {
                   <div className="mt-4 flex items-center gap-3 border-t border-latte/10 pt-4">
                     <Link
                       href={`/account/orders/${order.id}`}
-                      className="text-sm font-medium text-rust hover:underline"
+                      className="text-sm font-medium text-forest hover:underline"
                     >
                       View Details
                     </Link>
@@ -129,7 +129,7 @@ export default async function OrdersPage() {
                         href={`https://track.printful.com/${order.tracking_number}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm font-medium text-rust hover:underline"
+                        className="text-sm font-medium text-forest hover:underline"
                       >
                         Track Shipment
                       </a>
