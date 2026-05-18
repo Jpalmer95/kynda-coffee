@@ -98,7 +98,7 @@ export function ImageLightbox({ images, currentIndex, isOpen, onClose, onNavigat
               key={i}
               onClick={() => onNavigate(i)}
               className={`h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all sm:h-14 sm:w-14 ${
-                i === currentIndex ? "border-rust" : "border-transparent opacity-60 hover:opacity-100"
+                i === currentIndex ? "border-bronze" : "border-transparent opacity-60 hover:opacity-100"
               }`}
               aria-label={`Go to image ${i + 1}`}
             >

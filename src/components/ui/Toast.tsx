@@ -27,16 +27,16 @@ export function useToast() {
 
 const ICONS: Record<ToastType, React.ReactNode> = {
   success: <CheckCircle className="h-5 w-5 text-sage" aria-hidden="true" />,
-  error: <AlertCircle className="h-5 w-5 text-rust" aria-hidden="true" />,
+  error: <AlertCircle className="h-5 w-5 text-forest" aria-hidden="true" />,
   info: <Info className="h-5 w-5 text-mocha" aria-hidden="true" />,
-  cart: <ShoppingBag className="h-5 w-5 text-rust" aria-hidden="true" />,
+  cart: <ShoppingBag className="h-5 w-5 text-forest" aria-hidden="true" />,
 };
 
 const STYLES: Record<ToastType, string> = {
   success: "border-sage/30 bg-white",
-  error: "border-rust/30 bg-white",
+  error: "border-bronze/30 bg-white",
   info: "border-latte/40 bg-white",
-  cart: "border-rust/30 bg-white",
+  cart: "border-bronze/30 bg-white",
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {

@@ -82,7 +82,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           {categoryLabel}
         </p>
 
-        <h3 className="mt-1 font-heading text-base sm:text-lg font-semibold text-espresso transition-colors duration-200 group-hover:text-rust line-clamp-1">
+        <h3 className="mt-1 font-heading text-base sm:text-lg font-semibold text-espresso transition-colors duration-200 group-hover:text-forest line-clamp-1">
           {product.name}
         </h3>
 

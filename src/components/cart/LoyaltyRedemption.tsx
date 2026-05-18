@@ -62,7 +62,7 @@ export function LoyaltyRedemption({ customerEmail }: LoyaltyRedemptionProps) {
     <div className="rounded-xl border border-latte/20 bg-white p-4">
       <div className="flex items-center gap-2 mb-3">
         <span className="font-medium text-espresso">Loyalty Points</span>
-        <span className="text-xs px-2 py-0.5 bg-rust/10 text-rust rounded">100 pts = $5</span>
+        <span className="text-xs px-2 py-0.5 bg-bronze/10 text-forest rounded">100 pts = $5</span>
       </div>
 
       {loyalty_points_used > 0 ? (

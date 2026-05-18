@@ -246,7 +246,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                                         value={modifier.providerModifierId}
                                         className="peer sr-only"
                                       />
-                                      <div className="inline-flex items-center gap-1 rounded-full border border-latte/20 bg-white px-3 py-1.5 text-xs font-medium text-mocha transition-all peer-checked:border-rust peer-checked:bg-rust/5 peer-checked:text-rust hover:border-latte/40 active:scale-95">
+                                      <div className="inline-flex items-center gap-1 rounded-full border border-latte/20 bg-white px-3 py-1.5 text-xs font-medium text-mocha transition-all peer-checked:border-bronze peer-checked:bg-rust/5 peer-checked:text-forest hover:border-latte/40 active:scale-95">
                                         {modifier.name}
                                         {modifier.priceCents > 0 && (
                                           <span className="opacity-70">+{modifier.priceLabel}</span>
@@ -297,7 +297,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
 
       <aside className="h-fit rounded-3xl border border-latte/20 bg-white p-5 shadow-sm xl:sticky xl:top-24">
         <div className="flex items-center gap-2">
-          <ShoppingBag className="h-5 w-5 text-rust" />
+          <ShoppingBag className="h-5 w-5 text-forest" />
           <h2 className="font-heading text-2xl font-bold text-espresso">Your QR Order</h2>
         </div>
         <p className="mt-1 text-sm text-mocha">{itemCount} item{itemCount === 1 ? "" : "s"} · {formatMoney(subtotalCents)}</p>
@@ -359,7 +359,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                     </p>
                     {line.notes && <p className="mt-1 text-xs text-mocha">Note: {line.notes}</p>}
                   </div>
-                  <button type="button" onClick={() => updateQuantity(line.id, 0)} className="text-mocha hover:text-rust" aria-label={`Remove ${line.itemName}`}>
+                  <button type="button" onClick={() => updateQuantity(line.id, 0)} className="text-mocha hover:text-forest" aria-label={`Remove ${line.itemName}`}>
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -382,7 +382,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
         </div>
         <p className="mt-1 text-xs text-mocha">Taxes/payment reconciliation will be finalized at the counter in this first QR phase.</p>
 
-        {error && <p className="mt-4 rounded-xl bg-rust/10 p-3 text-sm text-rust">{error}</p>}
+        {error && <p className="mt-4 rounded-xl bg-bronze/10 p-3 text-sm text-forest">{error}</p>}
         {success && (
           <div className="mt-4 rounded-xl bg-sage/15 p-3 text-sm text-espresso">
             <p className="font-semibold">Order submitted: {success.order_number}</p>

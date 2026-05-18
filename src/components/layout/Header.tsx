@@ -67,7 +67,7 @@ export function Header() {
             className="flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-rust"
             aria-label="Kynda Coffee Home"
           >
-            <Coffee className="h-7 w-7 text-rust sm:h-8 sm:w-8" aria-hidden="true" />
+            <Coffee className="h-7 w-7 text-forest sm:h-8 sm:w-8" aria-hidden="true" />
             <span className="font-heading text-xl font-bold text-espresso sm:text-2xl">
               Kynda
             </span>

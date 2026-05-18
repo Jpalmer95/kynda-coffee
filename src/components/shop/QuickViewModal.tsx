@@ -71,7 +71,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
 
           {/* Details */}
           <div className="flex flex-col p-5 sm:p-6">
-            <p className="text-xs font-medium uppercase tracking-wider text-rust">
+            <p className="text-xs font-medium uppercase tracking-wider text-forest">
               {product.category.replace(/-/g, " ")}
             </p>
             <h2 className="mt-1 font-heading text-xl font-bold text-espresso">
@@ -104,7 +104,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
                   className="btn-secondary flex-1"
                 >
                   <Heart
-                    className={`mr-1.5 h-4 w-4 ${favorite ? "fill-rust text-rust" : ""}`}
+                    className={`mr-1.5 h-4 w-4 ${favorite ? "fill-rust text-forest" : ""}`}
                   />
                   {favorite ? "Saved" : "Save"}
                 </button>
