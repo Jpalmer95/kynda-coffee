@@ -230,7 +230,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                       {item.modifierLists.length > 0 && (
                         <div className="mt-4 space-y-3">
                           {item.modifierLists.map((list) => {
-                            const type = list.maxSelectedModifiers === 1 ? "radio" : "checkbox";
+                            const type = (list.selectionType === "single" || list.maxSelectedModifiers === 1) ? "radio" : "checkbox";
                             return (
                               <fieldset key={list.id} className="rounded-xl bg-card px-3 py-2 text-sm">
                                 <legend className="font-medium text-espresso">

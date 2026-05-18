@@ -55,7 +55,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   const initialFulfillment: QrFulfillmentMode = 
     initialMode === "table" ? "table" :
     initialMode === "parking" ? "parking" :
-    initialMode === "pickup" || initialMode === "pickup" ? "pickup" : "lobby";
+    initialMode === "pickup" ? "pickup" : "lobby";
 
   const [fulfillmentMode, setFulfillmentMode] = useState<QrFulfillmentMode>(initialFulfillment);
   const [fulfillmentLabel, setFulfillmentLabel] = useState(initialLabel || "");
@@ -131,6 +131,20 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
     setCart((current) => current.filter((line) => line.id !== id));
   }
 
+  async function payOnline(orderId: string) {
+    setError("");
+    setSubmitting(true);
+    try {
+      const response = await fetch(`/api/orders/${orderId}/pay`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to start online payment.");
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start online payment.");
+      setSubmitting(false);
+    }
+  }
+
   async function submitOrder() {
     if (cart.length === 0) return;
     if (!customerName.trim() || !customerPhone.trim()) {
@@ -145,6 +159,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
     setSubmitting(true);
     setError("");
 
+    // For curbside pickup, car description goes in the label field
+    const label = fulfillmentMode === "pickup" ? carDescription.trim() : fulfillmentLabel.trim() || undefined;
+
     const payload = {
       items: cart.map((line) => ({
         providerItemId: line.providerItemId,
@@ -153,8 +170,8 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         modifierIds: line.modifierIds,
       })),
       customer: { name: customerName.trim(), phone: customerPhone.trim(), email: customerEmail.trim() || undefined },
-      fulfillment: { mode: fulfillmentMode, label: fulfillmentLabel.trim() || undefined, carDescription: carDescription.trim() || undefined },
-      orderNotes: orderNotes.trim() || undefined,
+      fulfillment: { mode: fulfillmentMode, label },
+      notes: orderNotes.trim() || undefined,
       paymentPreference,
       splitBill,
     };
@@ -166,9 +183,16 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         body: JSON.stringify(payload),
       });
       const json = await res.json();
-      if (!res.ok || !json.success) {
+      if (!res.ok) {
         throw new Error(json.error || "Could not submit order");
       }
+
+      // If paying online, redirect to Stripe Checkout immediately
+      if (paymentPreference === "stripe" && json.order?.id) {
+        await payOnline(json.order.id);
+        return;
+      }
+
       setSuccess(json);
       setCart([]);
     } catch (e: any) {
@@ -291,13 +315,14 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                           const isExpanded = expandedModifiers[`${item.providerItemId}:${list.providerModifierListId}`];
                           const visibleModifiers = isExpanded ? list.modifiers : list.modifiers.slice(0, 10);
                           const hasMore = list.modifiers.length > 10;
+                          // Use radio when only 1 modifier can be selected, or when explicitly single-selection
+                          const inputType = (list.selectionType === "single" || list.maxSelectedModifiers === 1) ? "radio" : "checkbox";
 
                           return (
                             <div key={list.providerModifierListId}>
                               <div className="mb-1.5 text-xs tracking-widest text-mocha">{list.name}</div>
                               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                                 {visibleModifiers.map((mod) => {
-                                  const inputType = list.selectionType === "single" ? "radio" : "checkbox";
                                   const inputName = `modifier:${item.providerItemId}:${list.providerModifierListId}`;
                                   return (
                                     <label key={mod.providerModifierId} className="flex items-center gap-1.5">
@@ -403,9 +428,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                 {/* Payment method */}
                 <div className="mt-8">
                   <div className="font-medium text-sm mb-2 tracking-widest text-mocha">HOW WOULD YOU LIKE TO PAY?</div>
-                  <select value={paymentPreference} onChange={(e) => setPaymentPreference(e.target.value as any)} className="input w-full">
+                  <select value={paymentPreference} onChange={(e) => setPaymentPreference(e.target.value as QrPaymentPreference)} className="input w-full">
                     <option value="pay_at_counter">Pay at the counter when I arrive</option>
-                    <option value="pay_online">Pay with card now (Stripe)</option>
+                    <option value="stripe">Pay with card now (Stripe)</option>
                   </select>
                 </div>
 
@@ -416,10 +441,14 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                   disabled={submitting || cart.length === 0}
                   className="mt-6 w-full btn-accent flex items-center justify-center gap-2 disabled:opacity-70 py-4 text-lg"
                 >
-                  {submitting ? <Loader2 className="animate-spin" /> : "Submit my order"}
+                  {submitting ? <Loader2 className="animate-spin" /> : paymentPreference === "stripe" ? "Pay & place order" : "Submit my order"}
                 </button>
 
-                <div className="mt-2 text-center text-[11px] text-mocha">You&apos;ll see a confirmation number on screen after you submit.</div>
+                <div className="mt-2 text-center text-[11px] text-mocha">
+                  {paymentPreference === "stripe"
+                    ? "You\u0027ll be redirected to our secure Stripe checkout."
+                    : "You\u0027ll see a confirmation number on screen after you submit."}
+                </div>
               </>
             )}
           </div>
@@ -433,9 +462,15 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center">✓</div>
             <div className="font-heading text-4xl tracking-[-1px]">Order received!</div>
             <div className="mx-auto mt-2 max-w-xs text-sm text-mocha">
-              We got order #{success.order_number}. We&apos;ll start making it right away.
+              We got order #{success.order?.order_number ?? success.order_number}. We&apos;ll start making it right away.
             </div>
-            <button onClick={() => { setSuccess(null); setShowCart(false); }} className="mt-8 btn-accent px-10">Awesome — thanks!</button>
+            {paymentPreference === "stripe" ? (
+              <button onClick={() => { if (success.order?.id) payOnline(success.order.id); }} className="mt-8 btn-accent px-10">
+                Pay securely with Stripe
+              </button>
+            ) : (
+              <button onClick={() => { setSuccess(null); setShowCart(false); }} className="mt-8 btn-accent px-10">Awesome — thanks!</button>
+            )}
           </div>
         </div>
       )}
