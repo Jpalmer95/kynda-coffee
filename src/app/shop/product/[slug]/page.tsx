@@ -418,7 +418,7 @@ export default function ProductDetailPage() {
               </label>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-white text-espresso"
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-forest"
                   aria-label="Decrease quantity"
                 >
@@ -428,7 +428,7 @@ export default function ProductDetailPage() {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(quantity + 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-white text-espresso"
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-latte bg-white text-espresso transition-colors hover:bg-latte/20 focus-visible:ring-2 focus-visible:ring-forest"
                   aria-label="Increase quantity"
                 >
