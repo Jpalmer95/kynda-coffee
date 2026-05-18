@@ -176,7 +176,7 @@ export default async function AdminTrainingPage() {
                               className={`h-2 rounded-full ${
                                 emp.is_course_complete
                                   ? "bg-green-500"
-                                  : "bg-rust"
+                                  : "bg-bronze"
                               }`}
                               style={{ width: `${pct}%` }}
                             />

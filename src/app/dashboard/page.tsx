@@ -390,7 +390,7 @@ export default function DashboardPage() {
                   <span className="text-mocha">Post on Instagram (3x)</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-rust" />
+                  <div className="h-2 w-2 rounded-full bg-bronze" />
                   <span className="text-mocha">Send welcome email to new subscribers</span>
                 </div>
                 <div className="flex items-center gap-2">

@@ -122,7 +122,7 @@ export default function OrderDetailPage() {
                 <span className={`mt-1.5 text-[10px] sm:text-xs font-medium ${step.active ? "text-espresso" : "text-mocha"}`}>{step.label}</span>
               </div>
               {i < steps.length - 1 && (
-                <div className={`mx-1 h-px flex-1 ${step.active ? "bg-rust" : "bg-latte/20"}`} />
+                <div className={`mx-1 h-px flex-1 ${step.active ? "bg-bronze" : "bg-latte/20"}`} />
               )}
             </div>
           ))}
