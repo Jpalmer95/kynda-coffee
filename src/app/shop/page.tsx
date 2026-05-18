@@ -182,7 +182,7 @@ export default function ShopPage() {
         {/* AI Design Studio CTA */}
         <div className="mt-16 sm:mt-20 overflow-hidden rounded-2xl sm:rounded-3xl bg-surface p-6 sm:p-12 text-center">
           <div className="mx-auto max-w-2xl">
-            <Sparkles className="mx-auto h-8 w-8 sm:h-10 sm:w-10 text-rust" aria-hidden="true" />
+            <Sparkles className="mx-auto h-8 w-8 sm:h-10 sm:w-10 text-forest" aria-hidden="true" />
             <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-sand">
               Want Something Unique?
             </h2>
