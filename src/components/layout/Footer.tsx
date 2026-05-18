@@ -45,8 +45,8 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12">
           {/* Brand */}
           <div className="lg:col-span-4">
-            <Link href="/" className="inline-flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-rust" aria-label="Kynda Coffee Home">
-              <Coffee className="h-8 w-8 text-rust" aria-hidden="true" />
+            <Link href="/" className="inline-flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-forest" aria-label="Kynda Coffee Home">
+              <Coffee className="h-8 w-8 text-forest" aria-hidden="true" />
               <span className="font-heading text-2xl font-bold">Kynda</span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-latte/70">
@@ -58,7 +58,7 @@ export function Footer() {
                 href="https://instagram.com/kyndacoffee"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-2 text-latte/70 transition-colors hover:bg-cream/20 hover:text-sand focus-visible:ring-2 focus-visible:ring-rust"
+                className="rounded-lg p-2 text-latte/70 transition-colors hover:bg-cream/20 hover:text-sand focus-visible:ring-2 focus-visible:ring-forest"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" aria-hidden="true" />
@@ -67,7 +67,7 @@ export function Footer() {
                 href="https://facebook.com/kyndacoffee"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg p-2 text-latte/70 transition-colors hover:bg-cream/20 hover:text-sand focus-visible:ring-2 focus-visible:ring-rust"
+                className="rounded-lg p-2 text-latte/70 transition-colors hover:bg-cream/20 hover:text-sand focus-visible:ring-2 focus-visible:ring-forest"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" aria-hidden="true" />
@@ -79,14 +79,14 @@ export function Footer() {
           <div className="lg:col-span-2">
             <h2 className="mb-4 font-heading text-base font-semibold tracking-wide">Explore</h2>
             <ul className="space-y-2.5 text-sm text-latte/70">
-              <li><Link href="/menu" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Menu</Link></li>
-              <li><Link href="/shop" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Shop</Link></li>
-              <li><Link href="/studio" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Design Studio</Link></li>
-              <li><Link href="/gallery" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Community Gallery</Link></li>
-              <li><Link href="/gift-cards" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Gift Cards</Link></li>
-              <li><Link href="/about" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Our Story</Link></li>
-              <li><Link href="/track-order" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Track Order</Link></li>
-              <li><Link href="/contact" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Contact</Link></li>
+              <li><Link href="/menu" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Menu</Link></li>
+              <li><Link href="/shop" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Shop</Link></li>
+              <li><Link href="/studio" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Design Studio</Link></li>
+              <li><Link href="/gallery" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Community Gallery</Link></li>
+              <li><Link href="/gift-cards" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Gift Cards</Link></li>
+              <li><Link href="/about" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Our Story</Link></li>
+              <li><Link href="/track-order" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Track Order</Link></li>
+              <li><Link href="/contact" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Contact</Link></li>
             </ul>
           </div>
 
@@ -100,11 +100,11 @@ export function Footer() {
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="h-4 w-4 flex-shrink-0 text-latte/50" aria-hidden="true" />
-                <a href="tel:+15122196781" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">(512) 219-6781</a>
+                <a href="tel:+15122196781" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">(512) 219-6781</a>
               </p>
               <p className="flex items-center gap-2">
                 <Mail className="h-4 w-4 flex-shrink-0 text-latte/50" aria-hidden="true" />
-                <a href="mailto:kyndacoffee@gmail.com" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">kyndacoffee@gmail.com</a>
+                <a href="mailto:kyndacoffee@gmail.com" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">kyndacoffee@gmail.com</a>
               </p>
             </address>
           </div>
@@ -128,7 +128,7 @@ export function Footer() {
                   placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 rounded-lg bg-cream/10 px-3 py-2.5 text-sm text-sand placeholder:text-latte/50 focus:bg-cream/20 focus:outline-none focus:ring-2 focus:ring-rust"
+                  className="flex-1 rounded-lg bg-cream/10 px-3 py-2.5 text-sm text-sand placeholder:text-latte/50 focus:bg-cream/20 focus:outline-none focus:ring-2 focus:ring-forest"
                   aria-label="Email address for newsletter"
                 />
                 <button
@@ -152,12 +152,12 @@ export function Footer() {
           <p>&copy; {new Date().getFullYear()} Kynda Coffee. All rights reserved.</p>
           <p className="mt-1">4315 FM 2147, Horseshoe Bay, TX 78657</p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/help" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Help</Link>
-            <Link href="/shipping" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Shipping</Link>
-            <Link href="/size-guide" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Size Guide</Link>
-            <Link href="/privacy" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Privacy</Link>
-            <Link href="/terms" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Terms</Link>
-            <Link href="/accessibility" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-rust">Accessibility</Link>
+            <Link href="/help" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Help</Link>
+            <Link href="/shipping" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Shipping</Link>
+            <Link href="/size-guide" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Size Guide</Link>
+            <Link href="/privacy" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Privacy</Link>
+            <Link href="/terms" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Terms</Link>
+            <Link href="/accessibility" className="rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Accessibility</Link>
           </div>
         </div>
       </div>
