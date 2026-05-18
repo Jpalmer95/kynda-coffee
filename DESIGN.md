@@ -2,7 +2,25 @@
 
 A premium, high-fidelity design system for a next-generation specialty coffee brand. This schema bridges the tactile world of organic coffee with a cutting-edge, mobile-optimized digital experience.
 
+## Implementation Note (Pragmatic Token Mapping)
+
+To maximize long-term clarity and avoid confusion for future agents and contributors, the project uses **pragmatic, stable Tailwind color names** rather than the full semantic phrases from the design spec.
+
+**Actual tokens used in code (Tailwind + CSS variables):**
+- `Surface-Canvas` → `cream` / `--bg-cream`
+- `Surface-Sand` → `cream-100` / `--bg-cream-100`
+- `Brand-Forest` → `forest` (primary green)
+- `Accent-Bronze` → `bronze` (new – specialty highlights & ribbons)
+- `Brand-Luminous` → `forest-400` (active states / CTAs in dark mode)
+- `Surface-Midnight` → `surface` / `--bg-surface`
+- `Surface-Deep` → `surface-800`
+
+All other DESIGN.md names are mapped to these stable tokens. This mapping is the single source of truth for implementation.
+
+---
+
 ## 1. Visual Strategy & Color Theory
+
 The "Modern Artisan" palette is grounded in an "Organic-Tech" philosophy—using earth-toned neutrals to provide warmth, paired with high-precision greens for digital clarity.
 
 ### Light Mode: "Forest & Sand"

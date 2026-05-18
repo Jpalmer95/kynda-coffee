@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "@/styles/globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -16,12 +16,14 @@ const body = Inter({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
-const heading = Inter({
+const heading = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
+  weight: ["600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -44,13 +46,6 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Kynda Coffee",
-    startupImage: [
-      { url: "/icons/apple-splash-2048-2732.jpg", media: "(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" },
-      { url: "/icons/apple-splash-1668-2388.jpg", media: "(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" },
-      { url: "/icons/apple-splash-1536-2048.jpg", media: "(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" },
-      { url: "/icons/apple-splash-1170-2532.jpg", media: "(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" },
-      { url: "/icons/apple-splash-750-1334.jpg", media: "(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" },
-    ],
   },
   openGraph: {
     title: "Kynda Coffee — Organic Specialty Coffee",
@@ -58,9 +53,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Kynda Coffee",
-    images: [
-      { url: "/images/og-cover.jpg", width: 1200, height: 630, alt: "Kynda Coffee - Organic Specialty Coffee" },
-    ],
+    images: [{ url: "/images/og-cover.jpg", width: 1200, height: 630, alt: "Kynda Coffee - Organic Specialty Coffee" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -71,29 +64,13 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
   },
   icons: {
     icon: [
       { url: "/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/icons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
     ],
-    apple: [
-      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
-    other: [
-      { rel: "mask-icon", url: "/icons/safari-pinned-tab.svg", color: "#286849" },
-    ],
-  },
-  other: {
-    "msapplication-TileColor": "#286849",
-    "msapplication-config": "/icons/browserconfig.xml",
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
@@ -106,11 +83,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${heading.variable} ${body.variable}`} suppressHydrationWarning>
       <head>
@@ -118,21 +91,20 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="format-detection" content="telephone=no" />
-        {/* Theme initialiser: set the correct class before JS to avoid FOUC */}
+        <meta name="format-detection" content="telephone-no" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              (function(){
+              (function() {
                 try {
-                  var t = localStorage.getItem('kynda-theme') || 'system';
+                  const t = localStorage.getItem('kynda-theme') || 'system';
                   if (t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                     document.documentElement.classList.add('dark');
-                    document.documentElement.setAttribute('data-theme','dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
                   } else {
                     document.documentElement.removeAttribute('data-theme');
                   }
-                } catch(e){}
+                } catch (_) {}
               })();
             `,
           }}

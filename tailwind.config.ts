@@ -71,6 +71,19 @@ const config: Config = {
           600: "rgb(var(--accent-sage-600) / <alpha-value>)",
         },
 
+        // ========= Accent Bronze (DESIGN.md Accent-Bronze) =========
+        bronze: {
+          DEFAULT: "#A67C52",
+          50: "#F5EDE4",
+          100: "#E8D9C8",
+          200: "#D4B999",
+          300: "#C0996A",
+          400: "#A67C52",
+          500: "#8B6643",
+          600: "#6F5035",
+          700: "#523A27",
+        },
+
         // ========= Light text for dark surfaces (always #F5F0E8) =========
         // Used as text-sand on bg-surface. This NEVER switches modes.
         sand: {
@@ -78,18 +91,10 @@ const config: Config = {
           50: "rgb(var(--text-sand-50) / <alpha-value>)",
         },
 
-        // ========= Rust (legacy alias to forest) =========
-        rust: {
-          DEFAULT: "rgb(var(--accent-forest) / <alpha-value>)",
-          300: "rgb(var(--accent-forest-300) / <alpha-value>)",
-          400: "rgb(var(--accent-forest-400) / <alpha-value>)",
-          500: "rgb(var(--accent-forest-500) / <alpha-value>)",
-          600: "rgb(var(--accent-forest-600) / <alpha-value>)",
-          700: "rgb(var(--accent-forest-700) / <alpha-value>)",
-        },
+        // NOTE: "rust" legacy alias removed — replaced by bronze per DESIGN.md
       },
       fontFamily: {
-        heading: ["Inter", "system-ui", "sans-serif"],
+        heading: ["Playfair Display", "Georgia", "serif"],
         body: ["Inter", "system-ui", "sans-serif"],
       },
       borderRadius: { "4xl": "2rem" },

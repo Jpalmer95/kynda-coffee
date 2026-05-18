@@ -70,7 +70,7 @@ function NewsletterSection() {
   return (
     <section className="section-padding bg-surface">
       <div className="container-max max-w-2xl mx-auto text-center">
-        <Mail className="mx-auto h-8 w-8 text-rust" aria-hidden="true" />
+        <Mail className="mx-auto h-8 w-8 text-forest" aria-hidden="true" />
         <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-sand">
           Stay in the Loop
         </h2>
@@ -91,7 +91,7 @@ function NewsletterSection() {
               placeholder="you@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-field flex-1 bg-white/10 border-white/20 text-sand placeholder:text-latte/50 focus:border-rust"
+              className="input-field flex-1 bg-white/10 border-white/20 text-sand placeholder:text-latte/50 focus:border-forest"
             />
             <button
               type="submit"
@@ -151,8 +151,8 @@ export default function HomePage() {
               Every Cup
               <br />
               <span className="relative inline-block">
-                <span className="relative z-10 text-rust">Tells a Story</span>
-                <span className="absolute -bottom-1 left-0 h-2 sm:h-3 w-full bg-rust/20" />
+                <span className="relative z-10 text-forest">Tells a Story</span>
+                <span className="absolute -bottom-1 left-0 h-2 sm:h-3 w-full bg-bronze/20" />
               </span>
             </h1>
             <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-latte/80">
@@ -201,7 +201,7 @@ export default function HomePage() {
                 title: "AI Design Studio",
                 description:
                   "Create one-of-a-kind Kynda merch. Browse trends, generate with AI, and customize your own designs.",
-                accent: "from-rust/10 to-transparent",
+                accent: "from-bronze/10 to-transparent",
               },
             ].map((item) => (
               <div
@@ -211,7 +211,7 @@ export default function HomePage() {
                 <div className={`absolute inset-0 bg-gradient-to-b ${item.accent} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
                 <div className="relative">
                   <div className="mx-auto flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-cream">
-                    <item.icon className="h-7 w-7 sm:h-8 sm:w-8 text-rust" aria-hidden="true" />
+                    <item.icon className="h-7 w-7 sm:h-8 sm:w-8 text-forest" aria-hidden="true" />
                   </div>
                   <h3 className="mt-4 sm:mt-5 font-heading text-lg sm:text-xl font-semibold text-espresso">
                     {item.title}
@@ -230,7 +230,7 @@ export default function HomePage() {
       <section className="section-padding bg-white">
         <div className="container-max">
           <div className="mb-8 sm:mb-12 text-center">
-            <p className="text-sm font-medium uppercase tracking-widest text-rust">
+            <p className="text-sm font-medium uppercase tracking-widest text-forest">
               Fresh Picks
             </p>
             <h2 className="mt-2 font-heading text-2xl sm:text-3xl font-bold text-espresso lg:text-4xl">
@@ -261,7 +261,7 @@ export default function HomePage() {
           <div className="overflow-hidden rounded-2xl sm:rounded-3xl bg-surface">
             <div className="grid items-center lg:grid-cols-2">
               <div className="p-6 sm:p-12 lg:p-16">
-                <p className="text-xs sm:text-sm font-medium uppercase tracking-widest text-rust">
+                <p className="text-xs sm:text-sm font-medium uppercase tracking-widest text-forest">
                   New Feature
                 </p>
                 <h2 className="mt-3 font-heading text-2xl sm:text-3xl font-bold leading-tight text-sand lg:text-4xl">
@@ -310,7 +310,7 @@ export default function HomePage() {
       <section className="section-padding bg-white">
         <div className="container-max text-center">
           <div className="mx-auto max-w-2xl">
-            <Truck className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-rust" aria-hidden="true" />
+            <Truck className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-forest" aria-hidden="true" />
             <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-espresso lg:text-4xl">
               Skip the Line
             </h2>
@@ -341,7 +341,7 @@ export default function HomePage() {
       {/* Social Proof / Community */}
       <section className="section-padding">
         <div className="container-max text-center">
-          <p className="text-sm font-medium uppercase tracking-widest text-rust">
+          <p className="text-sm font-medium uppercase tracking-widest text-forest">
             From the Texas Hill Country
           </p>
           <h2 className="mt-2 font-heading text-2xl sm:text-3xl font-bold text-espresso lg:text-4xl">
@@ -372,14 +372,14 @@ export default function HomePage() {
           <div className="mt-10 sm:mt-12 flex flex-col items-center gap-3">
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
-                <Star key={star} className="h-5 w-5 fill-rust text-rust" aria-hidden="true" />
+                <Star key={star} className="h-5 w-5 fill-bronze text-forest" aria-hidden="true" />
               ))}
             </div>
             <p className="text-sm text-mocha">
               <span className="font-semibold text-espresso">4.9</span> out of 5 from 200+ local reviews
             </p>
             <div className="flex items-center gap-1 text-sm text-mocha">
-              <MapPin className="h-4 w-4 text-rust" aria-hidden="true" />
+              <MapPin className="h-4 w-4 text-forest" aria-hidden="true" />
               <span>4315 FM 2147, Horseshoe Bay, TX</span>
             </div>
           </div>
