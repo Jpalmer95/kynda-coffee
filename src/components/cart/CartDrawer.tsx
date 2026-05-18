@@ -77,7 +77,7 @@ export function CartDrawer() {
       >
         <ShoppingBag className="h-5 w-5" />
         {item_count > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-rust text-[10px] font-bold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-bronze text-[10px] font-bold text-white">
             {item_count > 9 ? "9+" : item_count}
           </span>
         )}
@@ -198,7 +198,7 @@ export function CartDrawer() {
                           </span>
                           <button
                             onClick={() => removeItem(item.product.id)}
-                            className="flex h-9 w-9 items-center justify-center rounded-full text-mocha hover:bg-rust/10 hover:text-rust"
+                            className="flex h-9 w-9 items-center justify-center rounded-full text-mocha hover:bg-bronze/10 hover:text-rust"
                             aria-label={`Remove ${item.product.name} from cart`}
                           >
                             <Trash2 className="h-4 w-4" />
