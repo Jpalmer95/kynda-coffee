@@ -198,7 +198,7 @@ export function DesignCanvas({ onSave, onPriceChange, initialDesignUrl }: Design
             className={`px-5 py-2 rounded-full text-sm border transition ${
               selectedProduct === product.id
                 ? "bg-surface text-sand border-surface"
-                : "bg-white text-espresso border-latte/30 hover:bg-latte/5"
+                : "bg-card text-espresso border-latte/30 hover:bg-latte/5"
             }`}
           >
             {product.name}
@@ -285,7 +285,7 @@ export function DesignCanvas({ onSave, onPriceChange, initialDesignUrl }: Design
 
         <label className="cursor-pointer">
           <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-          <div className="flex items-center gap-2 px-4 py-2 border hover:bg-white/70 rounded-[20px] text-sm">
+          <div className="flex items-center gap-2 px-4 py-2 border hover:bg-card/70 rounded-[20px] text-sm">
             <Upload size={15} /> Upload PNG / Sticker
           </div>
         </label>

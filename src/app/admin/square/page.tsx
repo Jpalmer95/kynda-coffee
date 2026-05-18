@@ -150,7 +150,7 @@ export default function AdminSquarePage() {
       </div>
 
       {/* Connection Status */}
-      <div className="rounded-xl border border-latte/20 bg-white p-6">
+      <div className="rounded-xl border border-latte/20 bg-card p-6">
         <h2 className="font-heading text-lg font-semibold text-espresso">
           Connection Status
         </h2>
@@ -181,7 +181,7 @@ export default function AdminSquarePage() {
         {syncOptions.map((option) => (
           <div
             key={option.id}
-            className="rounded-xl border border-latte/20 bg-white p-6"
+            className="rounded-xl border border-latte/20 bg-card p-6"
           >
             <div className="flex items-start justify-between">
               <div>

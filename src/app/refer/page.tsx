@@ -50,7 +50,7 @@ export default function ReferPage() {
         </div>
 
         {!success ? (
-          <div className="rounded-3xl border border-latte/30 bg-white p-8 shadow-xl">
+          <div className="rounded-3xl border border-latte/30 bg-card p-8 shadow-xl">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-espresso mb-2">Your email address</label>
@@ -88,7 +88,7 @@ export default function ReferPage() {
             </div>
           </div>
         ) : (
-          <div className="rounded-3xl border border-sage/40 bg-white p-10 text-center">
+          <div className="rounded-3xl border border-sage/40 bg-card p-10 text-center">
             <CheckCircle className="mx-auto h-14 w-14 text-sage" />
             <h2 className="mt-4 font-heading text-2xl text-espresso">You&apos;re all set!</h2>
             

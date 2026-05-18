@@ -48,14 +48,14 @@ export function ImageLightbox({ images, currentIndex, isOpen, onClose, onNavigat
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+        className="absolute right-4 top-4 z-10 rounded-full bg-card/10 p-2 text-white hover:bg-card/20"
         aria-label="Close image viewer"
       >
         <X className="h-6 w-6" />
       </button>
 
       {/* Image counter */}
-      <div className="absolute left-4 top-4 z-10 rounded-full bg-white/10 px-3 py-1 text-sm text-white">
+      <div className="absolute left-4 top-4 z-10 rounded-full bg-card/10 px-3 py-1 text-sm text-white">
         {currentIndex + 1} / {images.length}
       </div>
 
@@ -74,7 +74,7 @@ export function ImageLightbox({ images, currentIndex, isOpen, onClose, onNavigat
           <button
             onClick={() => onNavigate(Math.max(0, currentIndex - 1))}
             disabled={currentIndex === 0}
-            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 disabled:opacity-30 sm:left-4"
+            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-card/10 p-2 text-white hover:bg-card/20 disabled:opacity-30 sm:left-4"
             aria-label="Previous image"
           >
             <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8" />
@@ -82,7 +82,7 @@ export function ImageLightbox({ images, currentIndex, isOpen, onClose, onNavigat
           <button
             onClick={() => onNavigate(Math.min(images.length - 1, currentIndex + 1))}
             disabled={currentIndex === images.length - 1}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 disabled:opacity-30 sm:right-4"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-card/10 p-2 text-white hover:bg-card/20 disabled:opacity-30 sm:right-4"
             aria-label="Next image"
           >
             <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8" />

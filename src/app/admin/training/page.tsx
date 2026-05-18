@@ -18,54 +18,94 @@ export default async function AdminTrainingPage() {
 
   if (!user) redirect("/account");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profile?.role !== "admin") redirect("/training");
-
-  const { data: employees } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("role", "employee")
-    .order("created_at", { ascending: false });
-
-  // Get auth user emails via a workaround - fetch from auth metadata
-  // We'll use the user IDs we have and get names from profiles
-  const { data: courses } = await supabase
-    .from("courses")
-    .select("*")
-    .eq("is_active", true)
-    .limit(1);
-
-  const course = courses?.[0];
+  let employees: any[] | null = null;
+  let courses: any[] | null = null;
+  let moduleProgress: any[] | null = null;
+  let completions: any[] | null = null;
   let totalModules = 0;
+  let tablesExist = false;
 
-  if (course) {
-    const { count } = await supabase
-      .from("modules")
-      .select("*", { count: "exact", head: true })
-      .eq("course_id", course.id);
-    totalModules = count || 0;
+  try {
+    // Check if tables exist by doing a safe query
+    const { data: profile, error: profileErr } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (profileErr && profileErr.message?.includes("does not exist")) {
+      // Tables are missing - tablesExist stays false
+    } else if (profileErr) {
+      redirect("/account");
+    } else if ((profile as any)?.role !== "admin") {
+      redirect("/account");
+    }
+
+    const { data: empData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "employee")
+      .order("created_at", { ascending: false });
+    employees = empData;
+
+    const { data: courseData } = await supabase
+      .from("courses")
+      .select("*")
+      .eq("is_active", true)
+      .limit(1);
+    courses = courseData;
+
+    if (courses?.[0]) {
+      const { count } = await supabase
+        .from("modules")
+        .select("*", { count: "exact", head: true })
+        .eq("course_id", courses[0].id);
+      totalModules = count || 0;
+    }
+
+    const { data: progData } = await supabase
+      .from("module_progress")
+      .select("user_id, is_complete, completed_at, updated_at");
+    moduleProgress = progData;
+
+    const { data: compData } = await supabase
+      .from("course_completions")
+      .select("user_id, completed_at");
+    completions = compData;
+
+    tablesExist = true;
+  } catch (e) {
+    tablesExist = false;
   }
 
-  const { data: allProgress } = await supabase
-    .from("module_progress")
-    .select("user_id, is_complete, completed_at, updated_at");
-
-  const { data: allCompletions } = await supabase
-    .from("course_completions")
-    .select("user_id, completed_at");
+  if (!tablesExist) {
+    return (
+      <section className="section-padding">
+        <div className="container-max text-center">
+          <GraduationCap className="mx-auto h-16 w-16 text-mocha/40" />
+          <h1 className="mt-4 font-heading text-2xl font-bold text-espresso">
+            Training Coming Soon
+          </h1>
+          <p className="mt-2 text-mocha">
+            The training modules database is being set up.
+          </p>
+          <Link
+            href="/admin"
+            className="mt-6 inline-block text-forest hover:underline"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   const completionMap = new Map(
-    allCompletions?.map((c) => [c.user_id, c.completed_at]) || []
+    completions?.map((c) => [c.user_id, c.completed_at]) || []
   );
 
   const employeeProgress = employees?.map((emp) => {
     const userProgress =
-      allProgress?.filter((p) => p.user_id === emp.id) || [];
+      moduleProgress?.filter((p) => p.user_id === emp.id) || [];
     const completedModules = userProgress.filter((p) => p.is_complete).length;
     const lastActivity = userProgress.reduce<string | null>((latest, p) => {
       if (!latest || p.updated_at > latest) return p.updated_at;
@@ -94,7 +134,6 @@ export default async function AdminTrainingPage() {
   return (
     <section className="section-padding">
       <div className="container-max">
-        {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <GraduationCap className="h-8 w-8 text-espresso" />
@@ -115,7 +154,6 @@ export default async function AdminTrainingPage() {
           </Link>
         </div>
 
-        {/* Stats */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard icon={Users} label="Total Employees" value={employeeProgress?.length || 0} />
           <StatCard icon={Award} label="Completed" value={completedCount} highlight />
@@ -123,8 +161,7 @@ export default async function AdminTrainingPage() {
           <StatCard icon={CheckCircle2} label="Total Modules" value={totalModules} />
         </div>
 
-        {/* Employee Table */}
-        <div className="overflow-hidden rounded-xl border border-latte/20 bg-white">
+        <div className="overflow-hidden rounded-xl border border-latte/20 bg-card">
           <div className="border-b border-latte/20 p-6">
             <h2 className="font-heading text-xl font-semibold text-espresso">
               Employee Progress
@@ -229,9 +266,8 @@ export default async function AdminTrainingPage() {
           </div>
         </div>
 
-        {/* Completion Log */}
         {completedCount > 0 && (
-          <div className="mt-8 rounded-xl border border-latte/20 bg-white p-6">
+          <div className="mt-8 rounded-xl border border-latte/20 bg-card p-6">
             <h2 className="mb-4 font-heading text-lg font-semibold text-espresso">
               Completion Log
             </h2>
@@ -281,7 +317,7 @@ function StatCard({
       className={`rounded-xl border p-5 ${
         highlight
           ? "border-green-200 bg-green-50/50"
-          : "border-latte/20 bg-white"
+          : "border-latte/20 bg-card"
       }`}
     >
       <Icon className={`h-5 w-5 ${highlight ? "text-green-600" : "text-mocha"}`} />

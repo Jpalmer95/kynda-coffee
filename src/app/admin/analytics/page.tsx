@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
           { label: "Units Sold", value: totalUnits.toString(), icon: Package, color: "text-amber-600" },
           { label: "New Customers", value: totalCustomers.toString(), icon: Users, color: "text-sky-600" },
         ].map((kpi) => (
-          <div key={kpi.label} className="rounded-xl border border-latte/20 bg-white p-5">
+          <div key={kpi.label} className="rounded-xl border border-latte/20 bg-card p-5">
             <div className="flex items-center justify-between">
               <p className="text-sm text-mocha">{kpi.label}</p>
               <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
@@ -109,19 +109,19 @@ export default function AnalyticsPage() {
 
       {/* Charts */}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+        <div className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
           <h2 className="font-heading text-lg font-semibold text-espresso mb-4">Revenue (Last 14 Days)</h2>
           <BarChart data={revenueEntries} currency />
         </div>
 
-        <div className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+        <div className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
           <h2 className="font-heading text-lg font-semibold text-espresso mb-4">New Customers (Last 14 Days)</h2>
           <BarChart data={customerEntries} color="#286849" />
         </div>
       </div>
 
       {/* Top Products */}
-      <div className="mt-6 rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+      <div className="mt-6 rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
         <h2 className="font-heading text-lg font-semibold text-espresso mb-4">Top Products</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Category Breakdown */}
-      <div className="mt-6 rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+      <div className="mt-6 rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
         <h2 className="font-heading text-lg font-semibold text-espresso mb-4">Category Breakdown</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(data.category_breakdown).map(([cat, info]) => (

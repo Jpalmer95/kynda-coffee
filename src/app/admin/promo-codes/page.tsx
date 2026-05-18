@@ -147,7 +147,7 @@ export default function PromoCodesPage() {
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="mt-6 rounded-2xl border border-latte/20 bg-white p-5 sm:p-6"
+          className="mt-6 rounded-2xl border border-latte/20 bg-card p-5 sm:p-6"
         >
           <h2 className="font-heading text-lg font-semibold text-espresso">
             Create Promo Code
@@ -269,7 +269,7 @@ export default function PromoCodesPage() {
       </div>
 
       {/* Table */}
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-latte/20 bg-white">
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-latte/20 bg-card">
         <table className="w-full text-left text-sm">
           <thead className="bg-cream/50">
             <tr>

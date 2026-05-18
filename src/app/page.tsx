@@ -14,7 +14,7 @@ function FeaturedProducts() {
     return (
       <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="animate-pulse rounded-2xl border border-latte/20 bg-white">
+          <div key={i} className="animate-pulse rounded-2xl border border-latte/20 bg-card">
             <div className="aspect-square rounded-t-2xl bg-latte/10" />
             <div className="p-4 sm:p-5 space-y-3">
               <div className="h-3 w-16 rounded bg-latte/10" />
@@ -91,7 +91,7 @@ function NewsletterSection() {
               placeholder="you@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-field flex-1 bg-white/10 border-white/20 text-sand placeholder:text-latte/50 focus:border-forest"
+              className="input-field flex-1 bg-card/10 border-white/20 text-sand placeholder:text-latte/50 focus:border-forest"
             />
             <button
               type="submit"
@@ -164,7 +164,7 @@ export default function HomePage() {
                 Shop Coffee Beans
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
-              <Link href="/menu" className="w-full sm:w-auto rounded-[24px] border-2 border-white bg-white px-8 py-4 text-base font-medium text-espresso shadow-sm transition-all hover:bg-cream hover:border-cream">
+              <Link href="/menu" className="w-full sm:w-auto rounded-[24px] border-2 border-white bg-card px-8 py-4 text-base font-medium text-espresso shadow-sm transition-all hover:bg-cream hover:border-cream">
                 View Our Menu
               </Link>
             </div>
@@ -206,7 +206,7 @@ export default function HomePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="group relative overflow-hidden rounded-[24px] border border-latte/10 bg-white p-6 sm:p-8 text-center transition-all duration-300 hover:shadow-hover hover:-translate-y-1"
+                className="group relative overflow-hidden rounded-[24px] border border-latte/10 bg-card p-6 sm:p-8 text-center transition-all duration-300 hover:shadow-hover hover:-translate-y-1"
               >
                 <div className={`absolute inset-0 bg-gradient-to-b ${item.accent} opacity-0 transition-opacity duration-300 group-hover:opacity-100`} />
                 <div className="relative">
@@ -227,7 +227,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Products — Live from DB */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-card">
         <div className="container-max">
           <div className="mb-8 sm:mb-12 text-center">
             <p className="text-sm font-medium uppercase tracking-widest text-forest">
@@ -292,7 +292,7 @@ export default function HomePage() {
                       {["🎨", "☕", "👕", "🥃"].map((emoji, i) => (
                         <div
                           key={i}
-                          className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl bg-white/10 text-4xl backdrop-blur-sm transition-transform duration-300 hover:scale-110"
+                          className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl bg-card/10 text-4xl backdrop-blur-sm transition-transform duration-300 hover:scale-110"
                         >
                           {emoji}
                         </div>
@@ -307,7 +307,7 @@ export default function HomePage() {
       </section>
 
       {/* Order Online CTA */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-card">
         <div className="container-max text-center">
           <div className="mx-auto max-w-2xl">
             <Truck className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-forest" aria-hidden="true" />

@@ -47,7 +47,7 @@ export default function AdminSchedulePage() {
       {/* Week Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-7 gap-4">
         {DAYS.map((day) => (
-          <div key={day} className="border border-latte/20 rounded-2xl bg-white p-4">
+          <div key={day} className="border border-latte/20 rounded-2xl bg-card p-4">
             <div className="font-medium text-sm text-espresso mb-3 flex items-center justify-between">
               {day}
               <button
@@ -80,7 +80,7 @@ export default function AdminSchedulePage() {
       {/* Add Shift Modal */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm">
             <h3 className="font-semibold mb-4">Add Shift • {selectedDay}</h3>
             <select
               className="select-field mb-3"

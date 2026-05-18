@@ -69,7 +69,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           }}
           className="absolute inset-x-0 top-1/2 hidden -translate-y-1/2 items-center justify-center sm:flex sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
         >
-          <span className="rounded-full bg-white/95 px-4 py-2 text-sm font-medium text-espresso shadow-lg hover:bg-white">
+          <span className="rounded-full bg-card/95 px-4 py-2 text-sm font-medium text-espresso shadow-lg hover:bg-card">
             Quick View
           </span>
         </button>

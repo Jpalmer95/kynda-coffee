@@ -10,7 +10,7 @@ export default function SearchLoading() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="flex gap-4 rounded-xl border border-latte/20 bg-white p-4"
+              className="flex gap-4 rounded-xl border border-latte/20 bg-card p-4"
             >
               <div className="h-20 w-20 flex-shrink-0 animate-pulse rounded-lg bg-latte/20" />
               <div className="flex-1">

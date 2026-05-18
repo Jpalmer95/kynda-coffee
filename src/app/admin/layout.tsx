@@ -48,7 +48,7 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-cream">
       {/* Admin Header */}
-      <header className="sticky top-0 z-40 border-b border-latte/20 bg-white/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 border-b border-latte/20 bg-card/95 backdrop-blur-sm">
         <div className="flex items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <Link
@@ -68,7 +68,7 @@ export default function AdminLayout({
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-64 sticky top-[57px] h-[calc(100vh-57px)] border-r border-latte/20 bg-white overflow-y-auto">
+        <aside className="hidden lg:block w-64 sticky top-[57px] h-[calc(100vh-57px)] border-r border-latte/20 bg-card overflow-y-auto">
           <nav className="p-4 space-y-1" aria-label="Admin navigation">
             {ADMIN_LINKS.map((link) => {
               const isActive =
@@ -95,7 +95,7 @@ export default function AdminLayout({
 
         {/* Mobile Top Nav */}
         <nav
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-latte/20 bg-white pb-safe"
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-latte/20 bg-card pb-safe"
           style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
           aria-label="Admin mobile navigation"
         >

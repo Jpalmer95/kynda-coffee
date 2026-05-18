@@ -103,7 +103,7 @@ export function ProductReviews({ productId }: { productId: string }) {
         <div className="h-6 w-32 animate-pulse rounded bg-latte/20" />
         <div className="mt-4 space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="animate-pulse rounded-xl border border-latte/20 bg-white p-4">
+            <div key={i} className="animate-pulse rounded-xl border border-latte/20 bg-card p-4">
               <div className="h-4 w-24 rounded bg-latte/20" />
               <div className="mt-2 h-3 w-full rounded bg-latte/20" />
             </div>
@@ -154,7 +154,7 @@ export function ProductReviews({ productId }: { productId: string }) {
 
       {/* Rating distribution */}
       {stats && stats.total_count > 0 && (
-        <div className="mt-6 rounded-xl border border-latte/20 bg-white p-4 sm:p-5">
+        <div className="mt-6 rounded-xl border border-latte/20 bg-card p-4 sm:p-5">
           <div className="space-y-1.5">
             {stats.distribution.map(({ star, count }) => {
               const pct = stats.total_count > 0 ? (count / stats.total_count) * 100 : 0;
@@ -180,7 +180,7 @@ export function ProductReviews({ productId }: { productId: string }) {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="mt-6 rounded-xl border border-latte/20 bg-white p-4 sm:p-5 space-y-4"
+          className="mt-6 rounded-xl border border-latte/20 bg-card p-4 sm:p-5 space-y-4"
         >
           <h3 className="font-heading text-lg font-semibold text-espresso">
             Write a Review
@@ -296,7 +296,7 @@ export function ProductReviews({ productId }: { productId: string }) {
       {/* Reviews list */}
       <div className="mt-6 space-y-4">
         {reviews.length === 0 ? (
-          <div className="rounded-xl border border-latte/20 bg-white py-12 text-center">
+          <div className="rounded-xl border border-latte/20 bg-card py-12 text-center">
             <MessageSquare className="mx-auto h-10 w-10 text-latte" />
             <p className="mt-3 text-mocha">No reviews yet</p>
             <p className="mt-1 text-sm text-mocha/70">
@@ -307,7 +307,7 @@ export function ProductReviews({ productId }: { productId: string }) {
           reviews.map((review) => (
             <div
               key={review.id}
-              className="rounded-xl border border-latte/20 bg-white p-4 sm:p-5"
+              className="rounded-xl border border-latte/20 bg-card p-4 sm:p-5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>

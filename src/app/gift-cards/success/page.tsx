@@ -31,7 +31,7 @@ export default function GiftCardSuccessPage() {
         </p>
 
         {code && (
-          <div className="mt-6 rounded-xl border-2 border-dashed border-latte/30 bg-white p-5">
+          <div className="mt-6 rounded-xl border-2 border-dashed border-latte/30 bg-card p-5">
             <p className="text-sm text-mocha mb-2">Gift Card Code</p>
             <div className="flex items-center justify-center gap-3">
               <code className="rounded-lg bg-cream px-4 py-2 text-lg font-mono font-bold text-espresso tracking-wider">

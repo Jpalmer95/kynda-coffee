@@ -181,7 +181,7 @@ export default function AdminCatalogPage() {
           </button>
         </div>
 
-        <div className="mb-6 rounded-2xl border border-latte/20 bg-white p-4">
+        <div className="mb-6 rounded-2xl border border-latte/20 bg-card p-4">
           <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mocha" aria-hidden="true" />
@@ -208,11 +208,11 @@ export default function AdminCatalogPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center rounded-2xl border border-latte/20 bg-white py-20 text-mocha">
+          <div className="flex items-center justify-center rounded-2xl border border-latte/20 bg-card py-20 text-mocha">
             <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading POS catalog...
           </div>
         ) : filteredItems.length === 0 ? (
-          <div className="rounded-2xl border border-latte/20 bg-white py-20 text-center text-mocha">
+          <div className="rounded-2xl border border-latte/20 bg-card py-20 text-center text-mocha">
             No catalog items found.
           </div>
         ) : (
@@ -224,7 +224,7 @@ export default function AdminCatalogPage() {
               const hidden = override.is_hidden;
 
               return (
-                <article key={key} className="rounded-2xl border border-latte/20 bg-white p-4 shadow-sm">
+                <article key={key} className="rounded-2xl border border-latte/20 bg-card p-4 shadow-sm">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">

@@ -110,7 +110,7 @@ export default function AdminSettingsPage() {
 
       <div className="mt-6 space-y-6">
         {/* Business Info */}
-        <section className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+        <section className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <Store className="h-4 w-4 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Business Info</h2>
@@ -156,7 +156,7 @@ export default function AdminSettingsPage() {
         </section>
 
         {/* Shipping & Tax */}
-        <section className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+        <section className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <Truck className="h-4 w-4 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Shipping & Tax</h2>
@@ -206,7 +206,7 @@ export default function AdminSettingsPage() {
         </section>
 
         {/* Features */}
-        <section className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+        <section className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <Bell className="h-4 w-4 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Features</h2>
@@ -237,7 +237,7 @@ export default function AdminSettingsPage() {
         </section>
 
         {/* Payment Integration Status */}
-        <section className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+        <section className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
           <div className="flex items-center gap-2 mb-4">
             <CreditCard className="h-4 w-4 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Integrations</h2>

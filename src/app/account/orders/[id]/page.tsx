@@ -111,7 +111,7 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Progress */}
-      <div className="rounded-xl border border-latte/20 bg-white p-5 mb-6">
+      <div className="rounded-xl border border-latte/20 bg-card p-5 mb-6">
         <div className="flex items-center justify-between">
           {steps.map((step, i) => (
             <div key={step.label} className="flex flex-1 items-center">
@@ -132,7 +132,7 @@ export default function OrderDetailPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
           {order.items.map((item, i) => (
-            <div key={i} className="flex items-center gap-4 rounded-xl border border-latte/20 bg-white p-4">
+            <div key={i} className="flex items-center gap-4 rounded-xl border border-latte/20 bg-card p-4">
               <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-800 to-stone-900 text-xl">
                 ☕
               </div>
@@ -146,7 +146,7 @@ export default function OrderDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-xl border border-latte/20 bg-white p-5">
+          <div className="rounded-xl border border-latte/20 bg-card p-5">
             <h2 className="font-heading text-lg font-semibold text-espresso mb-3">Order Summary</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-mocha"><span>Subtotal</span><span>{formatPrice(order.subtotal_cents)}</span></div>
@@ -159,7 +159,7 @@ export default function OrderDetailPage() {
           </div>
 
           {order.shipping_address && (
-            <div className="rounded-xl border border-latte/20 bg-white p-5">
+            <div className="rounded-xl border border-latte/20 bg-card p-5">
               <h2 className="font-heading text-lg font-semibold text-espresso mb-2">Shipping Address</h2>
               <p className="text-sm text-mocha">{order.shipping_address.line1}</p>
               {order.shipping_address.line2 && <p className="text-sm text-mocha">{order.shipping_address.line2}</p>}

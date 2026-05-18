@@ -132,7 +132,7 @@ export default function AdminOrderDetailPage() {
               className={`rounded-lg border px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
                 order.status === s
                   ? "border-surface bg-surface text-sand"
-                  : "border-latte bg-white text-mocha hover:border-surface"
+                  : "border-latte bg-card text-mocha hover:border-surface"
               }`}
             >
               {s}
@@ -141,7 +141,7 @@ export default function AdminOrderDetailPage() {
         </div>
 
         {/* Customer Info */}
-        <div className="mt-6 rounded-xl border border-latte/20 bg-white p-4 sm:p-6">
+        <div className="mt-6 rounded-xl border border-latte/20 bg-card p-4 sm:p-6">
           <h2 className="font-heading text-lg font-semibold text-espresso">Customer</h2>
           <div className="mt-3 grid gap-2 text-sm">
             <p className="text-mocha"><span className="font-medium text-espresso">Email:</span> {order.email}</p>
@@ -160,7 +160,7 @@ export default function AdminOrderDetailPage() {
         </div>
 
         {/* Items */}
-        <div className="mt-4 rounded-xl border border-latte/20 bg-white p-4 sm:p-6">
+        <div className="mt-4 rounded-xl border border-latte/20 bg-card p-4 sm:p-6">
           <h2 className="font-heading text-lg font-semibold text-espresso">Items</h2>
           <div className="mt-3 divide-y divide-latte/10">
             {order.items.map((item, i) => (
@@ -183,7 +183,7 @@ export default function AdminOrderDetailPage() {
         </div>
 
         {/* Totals */}
-        <div className="mt-4 rounded-xl border border-latte/20 bg-white p-4 sm:p-6">
+        <div className="mt-4 rounded-xl border border-latte/20 bg-card p-4 sm:p-6">
           <h2 className="font-heading text-lg font-semibold text-espresso">Summary</h2>
           <div className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between text-mocha">

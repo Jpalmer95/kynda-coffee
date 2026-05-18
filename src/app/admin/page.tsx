@@ -162,7 +162,7 @@ export default function AdminPage() {
               <CardWrapper
                 key={stat.label}
                 href={stat.href || ""}
-                className={`rounded-[24px] border border-latte/10 bg-white p-4 sm:p-5 ${stat.href ? "transition-all hover:shadow-hover hover:-translate-y-0.5 cursor-pointer" : ""}`}
+                className={`rounded-[24px] border border-latte/10 bg-card p-4 sm:p-5 ${stat.href ? "transition-all hover:shadow-hover hover:-translate-y-0.5 cursor-pointer" : ""}`}
               >
                 <div className="flex items-center justify-between">
                   <stat.icon className="h-4 w-4 text-mocha" aria-hidden="true" />
@@ -190,7 +190,7 @@ export default function AdminPage() {
             <Link
               key={section.href}
               href={section.href}
-              className="group flex items-start gap-4 rounded-[24px] border border-latte/10 bg-white p-4 sm:p-6 transition-all hover:shadow-hover hover:-translate-y-0.5"
+              className="group flex items-start gap-4 rounded-[24px] border border-latte/10 bg-card p-4 sm:p-6 transition-all hover:shadow-hover hover:-translate-y-0.5"
             >
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-cream">
                 <section.icon className="h-5 w-5 text-mocha transition-colors group-hover:text-forest" aria-hidden="true" />

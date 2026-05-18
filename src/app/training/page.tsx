@@ -99,7 +99,7 @@ export default async function TrainingDashboard() {
         </div>
 
         {/* Progress Card */}
-        <div className="mb-8 rounded-xl border border-latte/20 bg-white p-6">
+        <div className="mb-8 rounded-xl border border-latte/20 bg-card p-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-heading text-xl font-semibold text-espresso">
@@ -156,7 +156,7 @@ export default async function TrainingDashboard() {
                 className={`group flex items-center gap-4 rounded-xl border p-5 transition-all hover:shadow-md ${
                   isModuleComplete
                     ? "border-green-200 bg-green-50/50"
-                    : "border-latte/20 bg-white hover:-translate-y-0.5"
+                    : "border-latte/20 bg-card hover:-translate-y-0.5"
                 }`}
               >
                 <div
@@ -199,7 +199,7 @@ export default async function TrainingDashboard() {
         </div>
 
         {/* Resources */}
-        <div className="mt-12 rounded-xl border border-latte/20 bg-white p-6">
+        <div className="mt-12 rounded-xl border border-latte/20 bg-card p-6">
           <h3 className="flex items-center gap-2 font-heading text-lg font-semibold text-espresso">
             <BookOpen className="h-5 w-5 text-forest" />
             Quick Reference Guides
@@ -209,7 +209,7 @@ export default async function TrainingDashboard() {
               href="https://www.sca.coffee"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-latte/10 p-4 transition-colors hover:bg-latte/5"
+              className="rounded-lg border border-latte/10 bg-card p-4 transition-colors hover:bg-latte/5"
             >
               <p className="font-medium text-espresso">SCA Resources</p>
               <p className="text-sm text-mocha">Specialty Coffee Association</p>
@@ -218,7 +218,7 @@ export default async function TrainingDashboard() {
               href="https://www.baristahustle.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-latte/10 p-4 transition-colors hover:bg-latte/5"
+              className="rounded-lg border border-latte/10 bg-card p-4 transition-colors hover:bg-latte/5"
             >
               <p className="font-medium text-espresso">Barista Hustle</p>
               <p className="text-sm text-mocha">Online coffee education</p>

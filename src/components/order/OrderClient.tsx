@@ -178,7 +178,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             className={`rounded-full px-5 py-2 text-sm font-medium transition ${
               fulfillmentMode === mode
                 ? "bg-surface text-sand"
-                : "bg-white text-espresso ring-1 ring-latte/30 hover:bg-latte/10"
+                : "bg-card text-espresso ring-1 ring-latte/30 hover:bg-latte/10"
             }`}
           >
             {mode === "table" ? "At a Table" : mode === "parking" ? "Parking Spot" : mode === "pickup" ? "Curbside Pickup" : "In the Lobby"}
@@ -223,7 +223,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {category.items.map((item) => (
-                <div key={item.providerItemId} className="rounded-3xl border border-latte/20 bg-white p-6 shadow-sm">
+                <div key={item.providerItemId} className="rounded-3xl border border-latte/20 bg-card p-6 shadow-sm">
                   <div className="flex justify-between mb-4">
                     <div>
                       <h3 className="font-semibold text-xl tracking-tight text-espresso">{item.name}</h3>
@@ -243,7 +243,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                           {item.variations.map((v) => (
                             <label key={v.providerVariationId} className="cursor-pointer">
                               <input type="radio" name={`variation:${item.providerItemId}`} value={v.providerVariationId} defaultChecked={v === item.variations[0]} className="peer hidden" />
-                              <div className="rounded-xl border border-latte/30 bg-white px-3 py-1.5 text-sm peer-checked:border-surface peer-checked:bg-surface peer-checked:text-sand">
+                              <div className="rounded-xl border border-latte/30 bg-card px-3 py-1.5 text-sm peer-checked:border-surface peer-checked:bg-surface peer-checked:text-sand">
                                 {v.name} &nbsp; {formatMoney(v.priceCents)}
                               </div>
                             </label>
@@ -297,7 +297,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         <div className="fixed inset-0 z-[60] flex justify-end bg-black/60" onClick={() => setShowCart(false)}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md h-full overflow-auto bg-white p-8 shadow-2xl"
+            className="w-full max-w-md h-full overflow-auto bg-card p-8 shadow-2xl"
           >
             <div className="flex justify-between items-center mb-6">
               <div>
@@ -372,7 +372,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       {/* Success State */}
       {success && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-6">
-          <div className="max-w-md text-center bg-white rounded-3xl p-9">
+          <div className="max-w-md text-center bg-card rounded-3xl p-9">
             <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center">✓</div>
             <div className="font-heading text-4xl tracking-[-1px]">Order received!</div>
             <div className="mx-auto mt-2 max-w-xs text-sm text-mocha">

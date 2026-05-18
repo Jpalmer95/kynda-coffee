@@ -26,7 +26,7 @@ export function RecentlyViewedStrip() {
               href={`/shop/product/${product.slug}`}
               className="group flex-shrink-0 w-36 sm:w-44 snap-start"
             >
-              <div className="aspect-square overflow-hidden rounded-xl border border-latte/20 bg-white">
+              <div className="aspect-square overflow-hidden rounded-xl border border-latte/20 bg-card">
                 {product.images?.[0] ? (
                   <img
                     src={product.images[0]}

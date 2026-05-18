@@ -33,7 +33,7 @@ export default async function SubscriptionsPage() {
 
         {/* Subscription Cards */}
         {(!subscriptions || subscriptions.length === 0) ? (
-          <div className="mt-8 rounded-2xl border border-latte/20 bg-white py-16 text-center">
+          <div className="mt-8 rounded-2xl border border-latte/20 bg-card py-16 text-center">
             <Coffee className="mx-auto h-12 w-12 text-latte" aria-hidden="true" />
             <p className="mt-4 text-lg font-medium text-espresso">
               No active subscriptions
@@ -53,7 +53,7 @@ export default async function SubscriptionsPage() {
                 className={`rounded-xl border p-4 sm:p-5 transition-shadow hover:shadow-md ${
                   sub.status === "active"
                     ? "border-sage/30 bg-green-50/30"
-                    : "border-latte/20 bg-white"
+                    : "border-latte/20 bg-card"
                 }`}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

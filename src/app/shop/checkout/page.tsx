@@ -84,7 +84,7 @@ function CheckoutContent() {
         </p>
 
         {session && (
-          <div className="mt-6 rounded-xl border border-latte/20 bg-white p-5 text-left">
+          <div className="mt-6 rounded-xl border border-latte/20 bg-card p-5 text-left">
             <div className="flex items-center gap-3 mb-3">
               <Package className="h-5 w-5 text-forest" />
               <span className="font-medium text-espresso">Order Summary</span>

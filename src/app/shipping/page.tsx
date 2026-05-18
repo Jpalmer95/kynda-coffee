@@ -21,7 +21,7 @@ export default function ShippingPage() {
         </div>
 
         {/* Shipping Options */}
-        <div className="mt-10 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
+        <div className="mt-10 rounded-2xl border border-latte/20 bg-card p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
             <Package className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
@@ -56,7 +56,7 @@ export default function ShippingPage() {
                 key={option.name}
                 className="flex items-start gap-4 rounded-xl border border-latte/20 bg-cream p-4"
               >
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-card">
                   <option.icon className="h-5 w-5 text-forest" />
                 </div>
                 <div className="flex-1">
@@ -73,7 +73,7 @@ export default function ShippingPage() {
         </div>
 
         {/* Delivery Timeline */}
-        <div className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
+        <div className="mt-6 rounded-2xl border border-latte/20 bg-card p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
             <Clock className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
@@ -106,7 +106,7 @@ export default function ShippingPage() {
         </div>
 
         {/* Returns Policy */}
-        <div className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
+        <div className="mt-6 rounded-2xl border border-latte/20 bg-card p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
             <RotateCcw className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">

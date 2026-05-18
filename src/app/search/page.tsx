@@ -112,7 +112,7 @@ function SearchContent() {
               <Link
                 key={product.id}
                 href={`/shop/product/${product.slug}`}
-                className="group flex items-center gap-4 rounded-xl border border-latte/20 bg-white p-4 transition-all hover:shadow-md hover:border-latte/40"
+                className="group flex items-center gap-4 rounded-xl border border-latte/20 bg-card p-4 transition-all hover:shadow-md hover:border-latte/40"
               >
                 <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-amber-800 to-stone-900">
                   {product.images?.[0] ? (

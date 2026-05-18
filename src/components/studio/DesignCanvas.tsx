@@ -113,7 +113,7 @@ export function DesignCanvas({ productMockup, initialDesign, onLayersChange, onS
   const handleSelect = (id: string) => setSelectedId(id);
 
   return (
-    <div className="relative bg-white rounded-3xl p-4 shadow-xl border border-gray-200">
+    <div className="relative bg-card rounded-3xl p-4 shadow-xl border border-gray-200">
       <div className="flex gap-2 mb-4 items-center justify-between">
         <div className="font-medium flex items-center gap-2 text-sm text-gray-600">
           <Move className="size-4" /> Drag, scale, rotate freeform
@@ -199,7 +199,7 @@ export function DesignCanvas({ productMockup, initialDesign, onLayersChange, onS
       <div className="mt-5 flex flex-wrap gap-3">
         <button 
           onClick={() => { /* trigger file upload */ }}
-          className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm hover:bg-white transition"
+          className="flex items-center gap-2 rounded-full border px-4 py-2 text-sm hover:bg-card transition"
         >
           <Upload className="size-4" /> Upload Sticker / Image
         </button>

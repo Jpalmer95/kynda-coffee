@@ -136,7 +136,7 @@ export default function AddressesPage() {
         )}
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl border border-latte/20 bg-white p-5 sm:p-6">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-2xl border border-latte/20 bg-card p-5 sm:p-6">
             <h2 className="font-heading text-lg font-semibold text-espresso">New Address</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -193,13 +193,13 @@ export default function AddressesPage() {
 
         <div className="mt-6 space-y-3">
           {addresses.length === 0 && !showForm ? (
-            <div className="rounded-2xl border border-latte/20 bg-white py-16 text-center">
+            <div className="rounded-2xl border border-latte/20 bg-card py-16 text-center">
               <MapPin className="mx-auto h-10 w-10 text-latte" aria-hidden="true" />
               <p className="mt-3 text-mocha">No addresses saved yet</p>
             </div>
           ) : (
             addresses.map((addr) => (
-              <div key={addr.id} className={`rounded-xl border p-4 ${addr.is_default ? "border-bronze/30 bg-cream" : "border-latte/20 bg-white"}`}>
+              <div key={addr.id} className={`rounded-xl border p-4 ${addr.is_default ? "border-bronze/30 bg-cream" : "border-latte/20 bg-card"}`}>
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">

@@ -37,7 +37,7 @@ export function BottomNav() {
             "flex h-12 w-12 items-center justify-center rounded-full shadow-lg border-2 transition-all",
             pathname === "/search"
               ? "bg-surface text-sand border-surface"
-              : "bg-white text-espresso border-latte/30 hover:border-bronze hover:text-forest"
+              : "bg-card text-espresso border-latte/30 hover:border-bronze hover:text-forest"
           )}
           aria-label="Search"
         >

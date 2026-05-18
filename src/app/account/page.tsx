@@ -113,7 +113,7 @@ export default function AccountPage() {
         {user ? (
           <>
             {/* Profile Card */}
-            <div className="mt-6 rounded-xl border border-latte/20 bg-white p-5 sm:p-6">
+            <div className="mt-6 rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-cream">
                   <User className="h-7 w-7 text-mocha" aria-hidden="true" />
@@ -146,7 +146,7 @@ export default function AccountPage() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="group flex items-center gap-4 rounded-xl border border-latte/20 bg-white p-4 transition-all hover:shadow-md hover:border-latte/40"
+                  className="group flex items-center gap-4 rounded-xl border border-latte/20 bg-card p-4 transition-all hover:shadow-md hover:border-latte/40"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-cream">
                     <item.icon className="h-5 w-5 text-mocha group-hover:text-forest transition-colors" aria-hidden="true" />
@@ -163,7 +163,7 @@ export default function AccountPage() {
         ) : (
           <>
             {/* Auth Forms */}
-            <div className="mt-6 rounded-xl border border-latte/20 bg-white p-6 sm:p-8">
+            <div className="mt-6 rounded-xl border border-latte/20 bg-card p-6 sm:p-8">
               <div className="text-center">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cream">
                   <User className="h-8 w-8 text-mocha" aria-hidden="true" />
@@ -228,11 +228,11 @@ export default function AccountPage() {
 
             {/* Guest Options */}
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Link href="/shop" className="flex items-center gap-3 rounded-xl border border-latte/20 bg-white p-4 transition-all hover:shadow-md">
+              <Link href="/shop" className="flex items-center gap-3 rounded-xl border border-latte/20 bg-card p-4 transition-all hover:shadow-md">
                 <ShoppingBag className="h-5 w-5 text-mocha" aria-hidden="true" />
                 <span className="text-sm font-medium text-espresso">Continue Shopping</span>
               </Link>
-              <Link href="/training" className="flex items-center gap-3 rounded-xl border border-latte/20 bg-white p-4 transition-all hover:shadow-md">
+              <Link href="/training" className="flex items-center gap-3 rounded-xl border border-latte/20 bg-card p-4 transition-all hover:shadow-md">
                 <GraduationCap className="h-5 w-5 text-mocha" aria-hidden="true" />
                 <span className="text-sm font-medium text-espresso">Team Training</span>
               </Link>

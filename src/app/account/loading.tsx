@@ -9,7 +9,7 @@ export default function AccountLoading() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center justify-between rounded-xl border border-latte/20 bg-white p-4"
+              className="flex items-center justify-between rounded-xl border border-latte/20 bg-card p-4"
             >
               <div className="flex items-center gap-3">
                 <div className="h-5 w-5 animate-pulse rounded bg-latte/20" />

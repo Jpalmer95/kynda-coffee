@@ -73,7 +73,7 @@ export default function GiftCardsPage() {
         </div>
 
         {/* Purchase form */}
-        <form onSubmit={handlePurchase} className="mt-10 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8 space-y-5">
+        <form onSubmit={handlePurchase} className="mt-10 rounded-2xl border border-latte/20 bg-card p-6 sm:p-8 space-y-5">
           <h2 className="font-heading text-xl font-semibold text-espresso">Purchase a Gift Card</h2>
 
           <div>
@@ -130,7 +130,7 @@ export default function GiftCardsPage() {
         </form>
 
         {/* Check balance */}
-        <form onSubmit={handleCheckBalance} className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8 space-y-4">
+        <form onSubmit={handleCheckBalance} className="mt-6 rounded-2xl border border-latte/20 bg-card p-6 sm:p-8 space-y-4">
           <h2 className="font-heading text-xl font-semibold text-espresso">Check Balance</h2>
           <div className="flex gap-3">
             <input

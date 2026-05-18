@@ -126,7 +126,7 @@ export default function HelpPage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex flex-col items-center gap-2 rounded-xl border border-latte/20 bg-white p-4 transition-all hover:shadow-md hover:border-latte/40"
+                className="flex flex-col items-center gap-2 rounded-xl border border-latte/20 bg-card p-4 transition-all hover:shadow-md hover:border-latte/40"
               >
                 <link.icon className="h-5 w-5 text-mocha" />
                 <span className="text-sm font-medium text-espresso">{link.label}</span>
@@ -148,7 +148,7 @@ export default function HelpPage() {
                   {section.questions.map((item, idx) => (
                     <details
                       key={idx}
-                      className="group rounded-xl border border-latte/20 bg-white open:shadow-sm transition-all"
+                      className="group rounded-xl border border-latte/20 bg-card open:shadow-sm transition-all"
                     >
                       <summary className="flex cursor-pointer items-center justify-between p-4 text-sm font-medium text-espresso list-none">
                         {item.q}

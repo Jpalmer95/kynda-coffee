@@ -133,7 +133,7 @@ export default function AdminOrdersPage() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="animate-pulse rounded-xl border border-latte/20 bg-white p-4">
+              <div key={i} className="animate-pulse rounded-xl border border-latte/20 bg-card p-4">
                 <div className="flex items-center justify-between">
                   <div className="h-4 w-24 rounded bg-latte/20" />
                   <div className="h-4 w-16 rounded bg-latte/20" />
@@ -143,7 +143,7 @@ export default function AdminOrdersPage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-latte/20 bg-white py-16 text-center">
+          <div className="rounded-xl border border-latte/20 bg-card py-16 text-center">
             <Package className="mx-auto h-12 w-12 text-latte" aria-hidden="true" />
             <p className="mt-4 text-lg text-mocha">No orders found</p>
             <p className="text-sm text-mocha/60">Try adjusting your filters</p>
@@ -163,7 +163,7 @@ export default function AdminOrdersPage() {
             {filtered.map((order) => (
               <div
                 key={order.id}
-                className="rounded-xl border border-latte/20 bg-white p-4 transition-shadow hover:shadow-md"
+                className="rounded-xl border border-latte/20 bg-card p-4 transition-shadow hover:shadow-md"
               >
                 {/* Mobile layout */}
                 <div className="flex flex-col gap-2 sm:hidden">

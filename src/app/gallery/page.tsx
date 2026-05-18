@@ -53,7 +53,7 @@ export default function GalleryPage() {
             <Loader2 className="h-8 w-8 animate-spin text-forest" />
           </div>
         ) : designs.length === 0 ? (
-          <div className="text-center py-20 rounded-2xl border border-latte/20 bg-white">
+          <div className="text-center py-20 rounded-2xl border border-latte/20 bg-card">
             <Sparkles className="mx-auto h-12 w-12 text-latte" />
             <p className="mt-4 text-mocha">No public designs yet</p>
             <p className="text-sm text-mocha/70">Be the first to share your creation!</p>
@@ -63,7 +63,7 @@ export default function GalleryPage() {
             {designs.map((design) => (
               <div
                 key={design.id}
-                className="group rounded-[24px] border border-latte/10 bg-white overflow-hidden transition-all hover:shadow-hover hover:-translate-y-1"
+                className="group rounded-[24px] border border-latte/10 bg-card overflow-hidden transition-all hover:shadow-hover hover:-translate-y-1"
               >
                 <div className="aspect-square bg-gradient-to-br from-amber-800 to-stone-900 relative">
                   {design.image_url ? (

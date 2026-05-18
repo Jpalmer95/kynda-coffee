@@ -76,7 +76,7 @@ export default function AdminB2BPage() {
             <div
               key={account.id}
               onClick={() => setSelectedAccount(account)}
-              className="border border-latte/20 bg-white rounded-2xl p-6 cursor-pointer hover:border-bronze/30 transition-all"
+              className="border border-latte/20 bg-card rounded-2xl p-6 cursor-pointer hover:border-bronze/30 transition-all"
             >
               <div className="flex justify-between">
                 <div>
@@ -99,7 +99,7 @@ export default function AdminB2BPage() {
         </div>
 
         {/* Detail Sidebar */}
-        <div className="border border-latte/20 bg-white rounded-2xl p-6 h-fit">
+        <div className="border border-latte/20 bg-card rounded-2xl p-6 h-fit">
           {selectedAccount ? (
             <>
               <h3 className="font-semibold text-lg mb-1">{selectedAccount.company}</h3>

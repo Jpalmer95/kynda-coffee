@@ -135,7 +135,7 @@ export default function NewProductPage() {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="space-y-6 rounded-2xl border border-latte/20 bg-white p-5 sm:p-8"
+            className="space-y-6 rounded-2xl border border-latte/20 bg-card p-5 sm:p-8"
           >
             {error && (
               <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">

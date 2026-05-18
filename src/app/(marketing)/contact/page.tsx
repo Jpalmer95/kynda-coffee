@@ -156,7 +156,7 @@ export default function ContactPage() {
           </div>
 
           {/* Form Area */}
-          <div className="rounded-2xl border border-latte/20 bg-white p-5 sm:p-6">
+          <div className="rounded-2xl border border-latte/20 bg-card p-5 sm:p-6">
             <div className="mb-6 flex gap-2 border-b border-latte/20 pb-4">
               <button
                 type="button"
@@ -399,15 +399,15 @@ export default function ContactPage() {
 
         {/* Quick Links */}
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <Link href="/catering" className="rounded-xl border border-latte/20 bg-white p-4 text-center transition-all hover:shadow-md hover:border-latte/40">
+          <Link href="/catering" className="rounded-xl border border-latte/20 bg-card p-4 text-center transition-all hover:shadow-md hover:border-latte/40">
             <h3 className="font-medium text-espresso">Catering</h3>
             <p className="mt-1 text-xs text-mocha">Bring Kynda to your event</p>
           </Link>
-          <Link href="/menu" className="rounded-xl border border-latte/20 bg-white p-4 text-center transition-all hover:shadow-md hover:border-latte/40">
+          <Link href="/menu" className="rounded-xl border border-latte/20 bg-card p-4 text-center transition-all hover:shadow-md hover:border-latte/40">
             <h3 className="font-medium text-espresso">View Menu</h3>
             <p className="mt-1 text-xs text-mocha">Coffee, food, and more</p>
           </Link>
-          <Link href="/shop" className="rounded-xl border border-latte/20 bg-white p-4 text-center transition-all hover:shadow-md hover:border-latte/40">
+          <Link href="/shop" className="rounded-xl border border-latte/20 bg-card p-4 text-center transition-all hover:shadow-md hover:border-latte/40">
             <h3 className="font-medium text-espresso">Shop Online</h3>
             <p className="mt-1 text-xs text-mocha">Beans, merch, and gifts</p>
           </Link>

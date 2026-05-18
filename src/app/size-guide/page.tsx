@@ -21,7 +21,7 @@ export default function SizeGuidePage() {
         </div>
 
         {/* Apparel */}
-        <div className="mt-10 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
+        <div className="mt-10 rounded-2xl border border-latte/20 bg-card p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
             <Shirt className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
@@ -64,7 +64,7 @@ export default function SizeGuidePage() {
         </div>
 
         {/* Mugs */}
-        <div className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
+        <div className="mt-6 rounded-2xl border border-latte/20 bg-card p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
             <Coffee className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">
@@ -88,7 +88,7 @@ export default function SizeGuidePage() {
         </div>
 
         {/* Totes */}
-        <div className="mt-6 rounded-2xl border border-latte/20 bg-white p-6 sm:p-8">
+        <div className="mt-6 rounded-2xl border border-latte/20 bg-card p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-5">
             <Package className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-xl font-semibold text-espresso">

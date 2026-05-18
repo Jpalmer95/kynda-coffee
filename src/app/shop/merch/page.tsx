@@ -25,7 +25,7 @@ export default function MerchPage() {
       {/* Hero */}
       <div className="bg-gradient-to-b from-surface to-surface-800 text-sand py-16 sm:py-24">
         <div className="container-max text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-sm mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full bg-card/10 px-4 py-1 text-sm mb-4">
             <Sparkles className="h-4 w-4" /> Kynda Originals
           </div>
           <h1 className="font-heading text-5xl sm:text-7xl font-bold tracking-tight">Kynda Merch</h1>
@@ -63,7 +63,7 @@ export default function MerchPage() {
           {loading ? (
             <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {[1,2,3,4,5,6].map(i => (
-                <div key={i} className="animate-pulse rounded-2xl bg-white border border-latte/20 p-4">
+                <div key={i} className="animate-pulse rounded-2xl bg-card border border-latte/20 p-4">
                   <div className="aspect-square bg-latte/20 rounded-xl" />
                 </div>
               ))}

@@ -41,7 +41,7 @@ export default async function OrdersPage() {
         </p>
 
         {(!orders || orders.length === 0) ? (
-          <div className="mt-8 rounded-2xl border border-latte/20 bg-white py-16 text-center">
+          <div className="mt-8 rounded-2xl border border-latte/20 bg-card py-16 text-center">
             <ShoppingBag className="mx-auto h-12 w-12 text-latte" aria-hidden="true" />
             <p className="mt-4 text-lg font-medium text-espresso">No orders yet</p>
             <p className="mt-1 text-sm text-mocha">
@@ -66,7 +66,7 @@ export default async function OrdersPage() {
               return (
                 <div
                   key={order.id}
-                  className="rounded-xl border border-latte/20 bg-white p-4 sm:p-5 transition-shadow hover:shadow-md"
+                  className="rounded-xl border border-latte/20 bg-card p-4 sm:p-5 transition-shadow hover:shadow-md"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>

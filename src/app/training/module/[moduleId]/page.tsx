@@ -193,7 +193,7 @@ export default async function TrainingModulePage({ params }: Props) {
                 className={`rounded-xl border p-6 ${
                   isComplete
                     ? "border-green-200 bg-green-50/30"
-                    : "border-latte/20 bg-white"
+                    : "border-latte/20 bg-card"
                 }`}
               >
                 <div className="mb-4 flex items-start justify-between">
@@ -272,7 +272,7 @@ export default async function TrainingModulePage({ params }: Props) {
                 return (
                   <div
                     key={quiz.id}
-                    className="rounded-xl border border-latte/20 bg-white p-6"
+                    className="rounded-xl border border-latte/20 bg-card p-6"
                   >
                     <p className="font-semibold text-espresso mb-4">
                       {quiz.question}

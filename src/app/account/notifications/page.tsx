@@ -98,7 +98,7 @@ export default function NotificationsPage() {
 
         <div className="mt-6 space-y-3">
           {items.map((item) => (
-            <label key={item.key} className="flex items-center justify-between rounded-xl border border-latte/20 bg-white p-4 cursor-pointer transition-colors hover:border-latte/40">
+            <label key={item.key} className="flex items-center justify-between rounded-xl border border-latte/20 bg-card p-4 cursor-pointer transition-colors hover:border-latte/40">
               <div className="flex items-center gap-3">
                 <item.icon className="h-5 w-5 text-mocha" aria-hidden="true" />
                 <div>
@@ -117,7 +117,7 @@ export default function NotificationsPage() {
 
           {/* Browser Push Subscription */}
           {pushSupported && (
-            <div className="flex items-center justify-between rounded-xl border border-latte/20 bg-white p-4">
+            <div className="flex items-center justify-between rounded-xl border border-latte/20 bg-card p-4">
               <div className="flex items-center gap-3">
                 <Smartphone className="h-5 w-5 text-mocha" aria-hidden="true" />
                 <div>

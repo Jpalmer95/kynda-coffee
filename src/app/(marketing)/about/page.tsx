@@ -99,21 +99,21 @@ export default function AboutPage() {
 
           {/* Values */}
           <div className="mt-12 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-latte/20 bg-white p-5 text-center">
+            <div className="rounded-xl border border-latte/20 bg-card p-5 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
                 <Coffee className="h-6 w-6 text-bronze" aria-hidden="true" />
               </div>
               <h3 className="mt-3 font-heading text-base font-semibold text-espresso">Organic & Specialty</h3>
               <p className="mt-1 text-sm text-mocha">Top 5% of beans, roasted locally</p>
             </div>
-            <div className="rounded-xl border border-latte/20 bg-white p-5 text-center">
+            <div className="rounded-xl border border-latte/20 bg-card p-5 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
                 <Heart className="h-6 w-6 text-bronze" aria-hidden="true" />
               </div>
               <h3 className="mt-3 font-heading text-base font-semibold text-espresso">Community First</h3>
               <p className="mt-1 text-sm text-mocha">Locally owned, community built</p>
             </div>
-            <div className="rounded-xl border border-latte/20 bg-white p-5 text-center">
+            <div className="rounded-xl border border-latte/20 bg-card p-5 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
                 <Award className="h-6 w-6 text-bronze" aria-hidden="true" />
               </div>
@@ -129,14 +129,14 @@ export default function AboutPage() {
             </h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-3 text-left sm:text-center">
               <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
-                <MapPin className="h-5 w-5 text-latte/70 flex-shrink-0" />
-                <address className="not-italic text-sm text-latte/80">
+                <MapPin className="h-5 w-5 text-sand/70 flex-shrink-0" />
+                <address className="not-italic text-sm text-sand/80">
                   <p>4315 FM 2147</p>
                   <p>Horseshoe Bay, TX 78657</p>
                 </address>
               </div>
               <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
-                <Phone className="h-5 w-5 text-latte/70 flex-shrink-0" />
+                <Phone className="h-5 w-5 text-sand/70 flex-shrink-0" />
                 <p className="text-sm text-latte/80">
                   <a href="tel:+15122196781" className="hover:text-sand transition-colors">
                     (512) 219-6781
@@ -144,8 +144,8 @@ export default function AboutPage() {
                 </p>
               </div>
               <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
-                <Clock className="h-5 w-5 text-latte/70 flex-shrink-0" />
-                <div className="text-sm text-latte/80">
+                <Clock className="h-5 w-5 text-sand/70 flex-shrink-0" />
+                <div className="text-sm text-sand/80">
                   <p>Mon – Fri: 6:30 AM – 5:00 PM</p>
                   <p>Sat – Sun: 7:00 AM – 5:00 PM</p>
                 </div>
@@ -160,7 +160,7 @@ export default function AboutPage() {
               >
                 Get Directions
               </a>
-              <Link href="/contact" className="btn-secondary bg-white/10 text-sand border-white/20 hover:bg-white/20">
+              <Link href="/contact" className="btn-secondary bg-card/10 text-sand border-white/20 hover:bg-card/20">
                 Contact Us
               </Link>
             </div>

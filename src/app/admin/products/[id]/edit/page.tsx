@@ -166,7 +166,7 @@ export default function EditProductPage() {
             <p className="mt-1 text-sm text-mocha">Redirecting...</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-latte/20 bg-white p-5 sm:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-latte/20 bg-card p-5 sm:p-8">
             {error && (
               <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
                 {error}

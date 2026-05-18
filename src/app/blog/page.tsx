@@ -82,7 +82,7 @@ export default function BlogPage() {
         <div className="mt-10 sm:mt-12">
           <Link
             href={`/blog/${POSTS[0].slug}`}
-            className="group block overflow-hidden rounded-2xl border border-latte/20 bg-white transition-all hover:shadow-lg"
+            className="group block overflow-hidden rounded-2xl border border-latte/20 bg-card transition-all hover:shadow-lg"
           >
             <div className="grid sm:grid-cols-2">
               <div className="aspect-video sm:aspect-auto bg-gradient-to-br from-amber-800 to-stone-900">
@@ -123,7 +123,7 @@ export default function BlogPage() {
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-latte/20 bg-white transition-all hover:shadow-lg"
+              className="group flex flex-col overflow-hidden rounded-2xl border border-latte/20 bg-card transition-all hover:shadow-lg"
             >
               <div className="aspect-video bg-gradient-to-br from-amber-800 to-stone-900 overflow-hidden">
                 <img

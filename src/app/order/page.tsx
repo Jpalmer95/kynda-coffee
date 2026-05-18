@@ -52,7 +52,7 @@ export default async function OrderPage({
             { icon: ShoppingBag, title: "Curbside", desc: "We'll bring it out to your car" },
             { icon: Users, title: "Parking Spot", desc: "Quick handoff from the lot" },
           ].map((mode) => (
-            <div key={mode.title} className="rounded-2xl border border-latte/20 bg-white p-5 shadow-sm">
+            <div key={mode.title} className="rounded-2xl border border-latte/20 bg-card p-5 shadow-sm">
               <mode.icon className="h-6 w-6 text-forest" aria-hidden="true" />
               <h3 className="mt-3 font-heading text-xl font-semibold text-espresso">{mode.title}</h3>
               <p className="mt-1 text-sm text-mocha">{mode.desc}</p>

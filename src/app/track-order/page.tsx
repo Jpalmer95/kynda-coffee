@@ -152,7 +152,7 @@ export default function TrackOrderPage() {
         {order && (
           <div className="mt-10 space-y-6">
             {/* Status Timeline */}
-            <div className="rounded-2xl border border-latte/20 bg-white p-5 sm:p-6">
+            <div className="rounded-2xl border border-latte/20 bg-card p-5 sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h2 className="font-heading text-lg font-bold text-espresso">
@@ -195,7 +195,7 @@ export default function TrackOrderPage() {
                           className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
                             isCompleted
                               ? "border-sage bg-sage text-white"
-                              : "border-latte/30 bg-white text-mocha"
+                              : "border-latte/30 bg-card text-mocha"
                           } ${isCurrent ? "ring-2 ring-sage/30" : ""}`}
                           aria-current={isCurrent ? "step" : undefined}
                         >
@@ -235,7 +235,7 @@ export default function TrackOrderPage() {
             </div>
 
             {/* Items */}
-            <div className="rounded-2xl border border-latte/20 bg-white p-5 sm:p-6">
+            <div className="rounded-2xl border border-latte/20 bg-card p-5 sm:p-6">
               <h3 className="mb-3 font-heading text-base font-semibold text-espresso">Items</h3>
               <ul className="space-y-3">
                 {order.items?.map((item, i) => (
@@ -270,7 +270,7 @@ export default function TrackOrderPage() {
 
             {/* Shipping Address */}
             {order.shipping_address && (
-              <div className="rounded-2xl border border-latte/20 bg-white p-5 sm:p-6">
+              <div className="rounded-2xl border border-latte/20 bg-card p-5 sm:p-6">
                 <h3 className="mb-2 font-heading text-base font-semibold text-espresso">Shipping Address</h3>
                 <address className="not-italic text-sm text-mocha">
                   <p>{order.shipping_address.line1}</p>

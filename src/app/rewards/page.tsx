@@ -77,7 +77,7 @@ export default function RewardsPage() {
             How It Works
           </h2>
           <div className="mt-6 grid gap-6 sm:grid-cols-3">
-            <div className="rounded-2xl border border-latte/20 bg-white p-6 text-center">
+            <div className="rounded-2xl border border-latte/20 bg-card p-6 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
                 <Coffee className="h-6 w-6 text-forest" />
               </div>
@@ -86,7 +86,7 @@ export default function RewardsPage() {
                 Earn 1 star for every dollar you spend on coffee, merch, and subscriptions.
               </p>
             </div>
-            <div className="rounded-2xl border border-latte/20 bg-white p-6 text-center">
+            <div className="rounded-2xl border border-latte/20 bg-card p-6 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
                 <Star className="h-6 w-6 text-forest" />
               </div>
@@ -95,7 +95,7 @@ export default function RewardsPage() {
                 Reach new tiers as you collect stars. Each tier unlocks bigger perks.
               </p>
             </div>
-            <div className="rounded-2xl border border-latte/20 bg-white p-6 text-center">
+            <div className="rounded-2xl border border-latte/20 bg-card p-6 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
                 <Gift className="h-6 w-6 text-forest" />
               </div>
@@ -116,7 +116,7 @@ export default function RewardsPage() {
             {TIERS.map((tier) => (
               <div
                 key={tier.name}
-                className="rounded-2xl border border-latte/20 bg-white p-5 sm:p-6"
+                className="rounded-2xl border border-latte/20 bg-card p-5 sm:p-6"
               >
                 <div className="flex items-start gap-4">
                   <div
@@ -153,7 +153,7 @@ export default function RewardsPage() {
           <h2 className="font-heading text-xl sm:text-2xl font-bold text-espresso text-center">
             Redeem Your Stars
           </h2>
-          <div className="mt-6 overflow-x-auto rounded-2xl border border-latte/20 bg-white">
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-latte/20 bg-card">
             <table className="w-full text-left text-sm">
               <thead className="bg-cream/50">
                 <tr>

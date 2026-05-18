@@ -88,7 +88,7 @@ export default function AdminDesignsPage() {
 
         {/* Designs Grid */}
         {filtered.length === 0 ? (
-          <div className="rounded-xl border border-latte/20 bg-white py-16 text-center">
+          <div className="rounded-xl border border-latte/20 bg-card py-16 text-center">
             <Palette className="mx-auto h-12 w-12 text-latte" aria-hidden="true" />
             <p className="mt-4 text-lg text-mocha">No designs found</p>
             <Link href="/studio" className="btn-primary mt-4 inline-flex">
@@ -101,7 +101,7 @@ export default function AdminDesignsPage() {
             {filtered.map((design) => (
               <div
                 key={design.id}
-                className="rounded-xl border border-latte/20 bg-white overflow-hidden transition-shadow hover:shadow-md"
+                className="rounded-xl border border-latte/20 bg-card overflow-hidden transition-shadow hover:shadow-md"
               >
                 <div className="aspect-square bg-gradient-to-br from-stone-200 to-stone-300">
                   <img

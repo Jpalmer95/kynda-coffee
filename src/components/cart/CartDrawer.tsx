@@ -141,7 +141,7 @@ export function CartDrawer() {
                 {items.map((item) => (
                   <div
                     key={`${item.product.id}-${JSON.stringify(item.selectedVariant)}`}
-                    className="flex gap-3 rounded-xl border border-latte/20 bg-white p-3"
+                    className="flex gap-3 rounded-xl border border-latte/20 bg-card p-3"
                   >
                     <Link
                       href={`/shop/product/${item.product.slug}`}
@@ -169,7 +169,7 @@ export function CartDrawer() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                            className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-white text-espresso hover:bg-latte/20"
+                            className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
                             aria-label="Decrease quantity"
                           >
                             <Minus className="h-3.5 w-3.5" />
@@ -177,7 +177,7 @@ export function CartDrawer() {
                           <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                            className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-white text-espresso hover:bg-latte/20"
+                            className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso hover:bg-latte/20"
                             aria-label="Increase quantity"
                           >
                             <Plus className="h-3.5 w-3.5" />
@@ -205,7 +205,7 @@ export function CartDrawer() {
 
           {/* Footer */}
           {items.length > 0 && (
-            <div className="border-t border-latte/20 bg-white px-4 py-4 sm:px-6">
+            <div className="border-t border-latte/20 bg-card px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-mocha">Subtotal</span>
                 <span className="text-lg font-bold text-espresso">{formatPrice(subtotal_cents)}</span>

@@ -79,7 +79,7 @@ export default function MarketingPage() {
       <p className="text-sm text-mocha">Send automated emails and push notifications.</p>
 
       {/* Email Automation Section */}
-      <div className="mt-8 max-w-2xl rounded-xl border border-latte/20 bg-white p-6">
+      <div className="mt-8 max-w-2xl rounded-xl border border-latte/20 bg-card p-6">
         <h2 className="font-heading text-xl font-semibold text-espresso mb-4 flex items-center gap-2">
           <Send className="h-5 w-5" /> Email Automation
         </h2>
@@ -119,7 +119,7 @@ export default function MarketingPage() {
 
       {/* Push Notifications Section (existing) */}
       <div className="mt-8 max-w-xl space-y-4">
-        <div className="rounded-xl border border-latte/20 bg-white p-6">
+        <div className="rounded-xl border border-latte/20 bg-card p-6">
           <h2 className="font-heading text-xl font-semibold text-espresso mb-4">Push Notifications</h2>
           
           <div>

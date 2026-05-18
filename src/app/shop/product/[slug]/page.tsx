@@ -343,7 +343,7 @@ export default function ProductDetailPage() {
                       className={`rounded-full px-3.5 py-2 text-xs sm:text-sm font-medium transition-all ${
                         selectedGrind === grind
                           ? "bg-surface text-sand"
-                          : "border border-latte bg-white text-mocha hover:border-surface"
+                          : "border border-latte bg-card text-mocha hover:border-surface"
                       }`}
                       aria-pressed={selectedGrind === grind}
                     >
@@ -368,7 +368,7 @@ export default function ProductDetailPage() {
                       className={`rounded-lg border px-4 py-2 text-xs sm:text-sm font-medium transition-all ${
                         selectedSize === size
                           ? "border-surface bg-surface text-sand"
-                          : "border-latte bg-white text-mocha hover:border-surface"
+                          : "border-latte bg-card text-mocha hover:border-surface"
                       }`}
                       aria-pressed={selectedSize === size}
                     >
@@ -426,7 +426,7 @@ export default function ProductDetailPage() {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-white text-espresso"
+                  onClick={() => setQuantity(quantity + 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-card text-espresso"
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -501,7 +501,7 @@ export default function ProductDetailPage() {
                 <Link
                   key={p.id}
                   href={`/shop/product/${p.slug}`}
-                  className="group rounded-[24px] border border-latte/10 bg-white p-3 sm:p-4 transition-all hover:shadow-hover hover:-translate-y-0.5"
+                  className="group rounded-[24px] border border-latte/10 bg-card p-3 sm:p-4 transition-all hover:shadow-hover hover:-translate-y-0.5"
                 >
                   <div className="aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-amber-800 to-stone-900">
                     {p.images?.[0] ? (

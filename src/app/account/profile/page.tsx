@@ -92,7 +92,7 @@ export default function ProfileEditPage() {
       <h1 className="font-heading text-2xl font-bold text-espresso mb-6">Edit Profile</h1>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <form onSubmit={handleSaveProfile} className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6 space-y-4">
+        <form onSubmit={handleSaveProfile} className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 mb-2">
             <UserCircle className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Personal Info</h2>
@@ -141,7 +141,7 @@ export default function ProfileEditPage() {
           </button>
         </form>
 
-        <form onSubmit={handleChangePassword} className="rounded-xl border border-latte/20 bg-white p-5 sm:p-6 space-y-4">
+        <form onSubmit={handleChangePassword} className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 mb-2">
             <Lock className="h-5 w-5 text-forest" />
             <h2 className="font-heading text-lg font-semibold text-espresso">Change Password</h2>

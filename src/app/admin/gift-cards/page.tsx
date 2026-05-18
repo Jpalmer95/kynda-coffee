@@ -108,7 +108,7 @@ export default function AdminGiftCardsPage() {
       </div>
 
       {/* Cards Table */}
-      <div className="border border-latte/20 rounded-2xl overflow-hidden bg-white">
+      <div className="border border-latte/20 rounded-2xl overflow-hidden bg-card">
         <table className="w-full text-sm">
           <thead className="bg-cream border-b border-latte/20">
             <tr className="text-left text-mocha">
@@ -153,7 +153,7 @@ export default function AdminGiftCardsPage() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6">
+          <div className="bg-card rounded-2xl w-full max-w-sm p-6">
             <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
               <Gift className="h-5 w-5 text-forest" /> Issue New Gift Card
             </h3>

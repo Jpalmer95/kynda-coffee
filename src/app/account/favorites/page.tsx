@@ -47,7 +47,7 @@ export default function FavoritesPage() {
             <Loader2 className="h-8 w-8 animate-spin text-forest" />
           </div>
         ) : products.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-latte/20 bg-white py-16 text-center">
+          <div className="mt-6 rounded-2xl border border-latte/20 bg-card py-16 text-center">
             <Heart className="mx-auto h-10 w-10 text-latte" aria-hidden="true" />
             <p className="mt-3 text-mocha">No favorites yet</p>
             <p className="mt-1 text-sm text-mocha/70">Heart items while you shop to save them here.</p>
@@ -61,7 +61,7 @@ export default function FavoritesPage() {
             {products.map((product) => (
               <div
                 key={product.id}
-                className="group flex gap-4 rounded-xl border border-latte/20 bg-white p-4 transition-all hover:shadow-md"
+                className="group flex gap-4 rounded-xl border border-latte/20 bg-card p-4 transition-all hover:shadow-md"
               >
                 <Link href={`/shop/product/${product.slug}`} className="flex-shrink-0">
                   <div className="h-20 w-20 rounded-lg bg-gradient-to-br from-amber-800 to-stone-900 overflow-hidden">

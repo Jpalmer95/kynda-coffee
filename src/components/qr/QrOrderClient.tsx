@@ -169,7 +169,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
 
   return (
     <div className="mt-10 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-      <div className="rounded-3xl border border-latte/20 bg-white p-5 sm:p-8">
+      <div className="rounded-3xl border border-latte/20 bg-card p-5 sm:p-8">
         <div className="flex flex-col justify-between gap-4 border-b border-latte/20 pb-5 sm:flex-row sm:items-end">
           <div>
             <h2 className="font-heading text-2xl font-bold text-espresso">Orderable Items</h2>
@@ -215,7 +215,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                           Size / variation
                           <select
                             name={`variation:${item.providerItemId}`}
-                            className="mt-1 w-full rounded-xl border border-latte/40 bg-white px-3 py-2 text-sm"
+                            className="mt-1 w-full rounded-xl border border-latte/40 bg-card px-3 py-2 text-sm"
                             defaultValue={item.variations[0]?.providerVariationId}
                           >
                             {item.variations.map((variation) => (
@@ -232,7 +232,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                           {item.modifierLists.map((list) => {
                             const type = list.maxSelectedModifiers === 1 ? "radio" : "checkbox";
                             return (
-                              <fieldset key={list.id} className="rounded-xl bg-white px-3 py-2 text-sm">
+                              <fieldset key={list.id} className="rounded-xl bg-card px-3 py-2 text-sm">
                                 <legend className="font-medium text-espresso">
                                   {list.name}
                                   {list.maxSelectedModifiers ? ` (max ${list.maxSelectedModifiers})` : ""}
@@ -246,7 +246,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                                         value={modifier.providerModifierId}
                                         className="peer sr-only"
                                       />
-                                      <div className="inline-flex items-center gap-1 rounded-full border border-latte/20 bg-white px-3 py-1.5 text-xs font-medium text-mocha transition-all peer-checked:border-bronze peer-checked:bg-bronze/5 peer-checked:text-forest hover:border-latte/40 active:scale-95">
+                                      <div className="inline-flex items-center gap-1 rounded-full border border-latte/20 bg-card px-3 py-1.5 text-xs font-medium text-mocha transition-all peer-checked:border-bronze peer-checked:bg-bronze/5 peer-checked:text-forest hover:border-latte/40 active:scale-95">
                                         {modifier.name}
                                         {modifier.priceCents > 0 && (
                                           <span className="opacity-70">+{modifier.priceLabel}</span>
@@ -270,7 +270,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                             min={1}
                             max={20}
                             defaultValue={1}
-                            className="mt-1 w-full rounded-xl border border-latte/40 bg-white px-3 py-2 text-sm"
+                            className="mt-1 w-full rounded-xl border border-latte/40 bg-card px-3 py-2 text-sm"
                           />
                         </label>
                         <label className="text-sm font-medium text-espresso">
@@ -278,7 +278,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                           <input
                             name={`notes:${item.providerItemId}`}
                             placeholder="No ice, extra hot, etc."
-                            className="mt-1 w-full rounded-xl border border-latte/40 bg-white px-3 py-2 text-sm"
+                            className="mt-1 w-full rounded-xl border border-latte/40 bg-card px-3 py-2 text-sm"
                           />
                         </label>
                       </div>
@@ -295,7 +295,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
         )}
       </div>
 
-      <aside className="h-fit rounded-3xl border border-latte/20 bg-white p-5 shadow-sm xl:sticky xl:top-24">
+      <aside className="h-fit rounded-3xl border border-latte/20 bg-card p-5 shadow-sm xl:sticky xl:top-24">
         <div className="flex items-center gap-2">
           <ShoppingBag className="h-5 w-5 text-forest" />
           <h2 className="font-heading text-2xl font-bold text-espresso">Your QR Order</h2>

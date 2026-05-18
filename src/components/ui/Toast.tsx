@@ -33,10 +33,10 @@ const ICONS: Record<ToastType, React.ReactNode> = {
 };
 
 const STYLES: Record<ToastType, string> = {
-  success: "border-sage/30 bg-white",
-  error: "border-bronze/30 bg-white",
-  info: "border-latte/40 bg-white",
-  cart: "border-bronze/30 bg-white",
+  success: "border-sage/30 bg-card",
+  error: "border-bronze/30 bg-card",
+  info: "border-latte/40 bg-card",
+  cart: "border-bronze/30 bg-card",
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {

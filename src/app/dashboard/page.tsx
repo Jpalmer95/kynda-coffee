@@ -164,7 +164,7 @@ const QUICK_LINKS = [
 function MetricCard({ metric }: { metric: Metric }) {
   const isUp = metric.change > 0;
   return (
-    <div className="rounded-xl border border-latte/20 bg-white p-6">
+    <div className="rounded-xl border border-latte/20 bg-card p-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-mocha">{metric.label}</p>
         <div className={`rounded-lg bg-cream p-2 ${metric.color}`}>
@@ -230,7 +230,7 @@ function NudgeCard({ nudge }: { nudge: Nudge }) {
       className={`rounded-xl border p-5 transition-all hover:shadow-md ${
         nudge.priority === "high"
           ? "border-bronze/30 bg-bronze/5"
-          : "border-latte/20 bg-white"
+          : "border-latte/20 bg-card"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -329,7 +329,7 @@ export default function DashboardPage() {
           {/* Right: Quick Links + Daily Motivation */}
           <div className="space-y-6">
             {/* Quick Links */}
-            <div className="rounded-xl border border-latte/20 bg-white p-6">
+            <div className="rounded-xl border border-latte/20 bg-card p-6">
               <h2 className="font-heading text-lg font-semibold text-espresso">
                 Quick Access
               </h2>
@@ -377,7 +377,7 @@ export default function DashboardPage() {
             </div>
 
             {/* This Week */}
-            <div className="rounded-xl border border-latte/20 bg-white p-6">
+            <div className="rounded-xl border border-latte/20 bg-card p-6">
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-mocha" />
                 <h2 className="font-heading text-lg font-semibold text-espresso">

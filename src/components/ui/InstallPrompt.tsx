@@ -56,7 +56,7 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+80px)] left-4 right-4 z-50 sm:left-auto sm:right-6 sm:w-80 sm:bottom-6">
-      <div className="rounded-2xl border border-latte/30 bg-white p-4 shadow-xl animate-slide-up">
+      <div className="rounded-2xl border border-latte/30 bg-card p-4 shadow-xl animate-slide-up">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-surface">
             <span className="text-lg">☕</span>
