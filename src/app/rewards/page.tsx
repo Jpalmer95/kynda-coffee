@@ -78,8 +78,8 @@ export default function RewardsPage() {
           </h2>
           <div className="mt-6 grid gap-6 sm:grid-cols-3">
             <div className="rounded-2xl border border-latte/20 bg-white p-6 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/10">
-                <Coffee className="h-6 w-6 text-rust" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
+                <Coffee className="h-6 w-6 text-forest" />
               </div>
               <h3 className="mt-3 font-medium text-espresso">Shop & Earn</h3>
               <p className="mt-1 text-sm text-mocha">
@@ -87,8 +87,8 @@ export default function RewardsPage() {
               </p>
             </div>
             <div className="rounded-2xl border border-latte/20 bg-white p-6 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/10">
-                <Star className="h-6 w-6 text-rust" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
+                <Star className="h-6 w-6 text-forest" />
               </div>
               <h3 className="mt-3 font-medium text-espresso">Level Up</h3>
               <p className="mt-1 text-sm text-mocha">
@@ -96,8 +96,8 @@ export default function RewardsPage() {
               </p>
             </div>
             <div className="rounded-2xl border border-latte/20 bg-white p-6 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rust/10">
-                <Gift className="h-6 w-6 text-rust" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/10">
+                <Gift className="h-6 w-6 text-forest" />
               </div>
               <h3 className="mt-3 font-medium text-espresso">Redeem</h3>
               <p className="mt-1 text-sm text-mocha">
@@ -136,7 +136,7 @@ export default function RewardsPage() {
                     <ul className="mt-2 grid gap-1 sm:grid-cols-2">
                       {tier.perks.map((perk) => (
                         <li key={perk} className="flex items-center gap-2 text-sm text-mocha">
-                          <Star className="h-3 w-3 text-rust flex-shrink-0" />
+                          <Star className="h-3 w-3 text-forest flex-shrink-0" />
                           {perk}
                         </li>
                       ))}
@@ -165,7 +165,7 @@ export default function RewardsPage() {
                 {REDEMPTIONS.map((r) => (
                   <tr key={r.stars} className="hover:bg-cream/30">
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-rust/10 px-2 py-0.5 text-xs font-medium text-rust">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-bronze/10 px-2 py-0.5 text-xs font-medium text-forest">
                         <Star className="h-3 w-3" fill="currentColor" />
                         {r.stars}
                       </span>
@@ -181,7 +181,7 @@ export default function RewardsPage() {
         {/* CTA */}
         <div className="mt-12 sm:mt-16 text-center">
           <div className="rounded-2xl bg-surface p-6 sm:p-10">
-            <Truck className="mx-auto h-8 w-8 text-rust" />
+            <Truck className="mx-auto h-8 w-8 text-forest" />
             <h2 className="mt-4 font-heading text-xl sm:text-2xl font-bold text-sand">
               Ready to Start Earning?
             </h2>

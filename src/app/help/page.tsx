@@ -102,13 +102,13 @@ export default function HelpPage() {
         <div className="container-max max-w-3xl">
           {/* Header */}
           <div className="text-center">
-            <HelpCircle className="mx-auto h-10 w-10 text-rust" aria-hidden="true" />
+            <HelpCircle className="mx-auto h-10 w-10 text-forest" aria-hidden="true" />
             <h1 className="mt-4 font-heading text-3xl sm:text-4xl font-bold text-espresso">
               Help & FAQ
             </h1>
             <p className="mt-3 text-base sm:text-lg text-mocha">
               Quick answers to common questions. Can&apos;t find what you need?{" "}
-              <Link href="/contact" className="text-rust hover:underline">
+              <Link href="/contact" className="text-forest hover:underline">
                 Contact us
               </Link>
               .
@@ -139,7 +139,7 @@ export default function HelpPage() {
             {FAQS.map((section) => (
               <div key={section.category}>
                 <div className="flex items-center gap-2 mb-4">
-                  <section.icon className="h-5 w-5 text-rust" aria-hidden="true" />
+                  <section.icon className="h-5 w-5 text-forest" aria-hidden="true" />
                   <h2 className="font-heading text-xl font-semibold text-espresso">
                     {section.category}
                   </h2>

@@ -63,7 +63,7 @@ export default function GiftCardsPage() {
     <section className="section-padding">
       <div className="container-max max-w-3xl">
         <div className="text-center">
-          <Gift className="mx-auto h-10 w-10 text-rust" aria-hidden="true" />
+          <Gift className="mx-auto h-10 w-10 text-forest" aria-hidden="true" />
           <h1 className="mt-4 font-heading text-3xl sm:text-4xl font-bold text-espresso">
             Gift Cards
           </h1>
@@ -86,7 +86,7 @@ export default function GiftCardsPage() {
                   onClick={() => setAmount(amt)}
                   className={`rounded-xl border-2 px-4 py-3 text-center text-sm font-semibold transition-all ${
                     amount === amt
-                      ? "border-rust bg-rust/5 text-rust"
+                      ? "border-rust bg-rust/5 text-forest"
                       : "border-latte/20 text-espresso hover:border-latte/40"
                   }`}
                 >
@@ -158,7 +158,7 @@ export default function GiftCardsPage() {
           <p>Gift cards never expire. Redeemable online or in-store.</p>
           <p className="mt-1">
             Questions?{" "}
-            <Link href="/contact" className="text-rust hover:underline">
+            <Link href="/contact" className="text-forest hover:underline">
               Contact us
             </Link>
           </p>
