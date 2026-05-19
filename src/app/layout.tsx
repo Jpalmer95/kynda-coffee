@@ -110,7 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased touch-pan-y relative relative-z-0 noise-bg">
+      <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased touch-pan-y relative relative-z-0 bg-[url('/noise.png')] dark:bg-[#0E150F]">
         <ThemeProvider>
           <ToastProvider>
             <OfflineBanner />

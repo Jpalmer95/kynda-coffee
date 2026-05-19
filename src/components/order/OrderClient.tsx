@@ -8,6 +8,7 @@ import type {
   PosCatalogModifier,
 } from "@/lib/pos/catalog";
 import { formatMoney } from "@/lib/pos/catalog";
+import { formatPrice } from "@/lib/utils";
 import type { QrFulfillmentMode, QrPaymentPreference } from "@/lib/orders/qr-order";
 
 interface CartLine {
@@ -204,102 +205,101 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
   return (
     <div className="mt-12">
-      {/* Fulfillment mode selector */}
-      <div className="mb-8 flex flex-wrap gap-2">
+      {/* Order Options */}
+      <div className="mb-0 flex flex-wrap gap-2">
         {(["table", "lobby", "pickup", "parking"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setFulfillmentMode(mode)}
-            className={`rounded-full px-5 py-2 text-sm font-medium transition ${
+            className={`rounded-[4px] px-5 py-3 text-sm font-medium transition cursor-pointer ${
               fulfillmentMode === mode
-                ? "bg-surface text-sand"
-                : "bg-card text-espresso ring-1 ring-latte/30 hover:bg-latte/10"
+                ? "bg-surface-800 text-sand border border-[#4ADE80]/30 shadow-[0_0_15px_rgba(74,222,128,0.1)]"
+                : "bg-surface-800 text-sand-50 border border-[#3d4a3e] hover:bg-[#1f2520] hover:border-forest"
             }`}
           >
-            {mode === "table" ? "At a Table" : mode === "parking" ? "Parking Spot" : mode === "pickup" ? "Curbside Pickup" : "In the Lobby"}
+            {mode === "table" ? "Table" : mode === "parking" ? "Parking Spot" : mode === "pickup" ? "Curbside Auto" : "Lobby Pickup"}
           </button>
         ))}
       </div>
 
       {/* Fulfillment label for table/parking */}
       {fulfillmentMode !== "lobby" && fulfillmentMode !== "pickup" && (
-        <div className="mb-10 max-w-sm">
-          <label className="block text-sm font-medium text-mocha mb-1">
-            {fulfillmentMode === "table" ? "Table number or name" : "Parking spot #"}
+        <div className="mb-0 mt-8 max-w-sm">
+          <label className="block text-sm font-medium text-[#bccabb] mb-1">
+            {fulfillmentMode === "table" ? "Table number or name" : "Parking spot number"}
           </label>
           <input
             type="text"
             value={fulfillmentLabel}
             onChange={(e) => setFulfillmentLabel(e.target.value)}
             placeholder={fulfillmentMode === "table" ? "Table 7" : "Spot A14"}
-            className="w-full rounded-xl border border-latte/30 px-4 py-3 text-lg"
+            className="w-full rounded-[4px] border border-[#3d4a3e] bg-[#121513] px-4 py-3 text-lg text-sand focus:border-[#4ADE80] focus:ring-1 focus:ring-[#4ADE80] outline-none"
           />
         </div>
       )}
 
       {/* Car description for curbside pickup */}
       {fulfillmentMode === "pickup" && (
-        <div className="mb-10 max-w-md">
-          <label className="block text-sm font-medium text-mocha mb-1">
+        <div className="mb-0 mt-8 max-w-md">
+          <label className="block text-sm font-medium text-[#bccabb] mb-1">
             Vehicle description <span className="text-red-500">*</span>
           </label>
-          <p className="text-xs text-mocha/70 mb-2">
-            So we can find you quickly when we bring your order out.
+          <p className="text-xs text-[#869486] mb-2">
+            So we can find you easily when we bring your order out.
           </p>
           <input
             type="text"
             value={carDescription}
             onChange={(e) => setCarDescription(e.target.value)}
             placeholder="e.g. Blue Honda Civic, TX plate ABC-123"
-            className="w-full rounded-xl border border-latte/30 px-4 py-3 text-lg"
+            className="w-full rounded-[4px] border border-[#3d4a3e] bg-[#121513] px-4 py-3 text-lg text-sand focus:border-[#4ADE80] focus:ring-1 focus:ring-[#4ADE80] outline-none"
             required
           />
         </div>
       )}
 
       {/* Split bill option */}
-      <label className="mb-10 flex items-center gap-3 text-sm text-mocha cursor-pointer max-w-fit">
+      <label className="mb-8 mt-8 flex items-center gap-3 text-sm text-[#bccabb] cursor-pointer max-w-fit hover:text-white transition-colors">
         <input
           type="checkbox"
           checked={splitBill}
           onChange={(e) => setSplitBill(e.target.checked)}
-          className="accent-forest size-4"
+          className="accent-forest size-4 cursor-pointer"
         />
-        <span className="flex items-center gap-2">
-          <Users className="size-4" /> This is a group order — we can split the bill later
+        <span className="flex items-center gap-2 select-none">
+          <Users className="size-4 text-[#4ADE80]" /> This is a group order — split the bill later
         </span>
       </label>
 
-      {/* Menu */}
       <div className="space-y-12">
         {categories.map((category, idx) => (
           <div key={idx}>
-            <h2 className="mb-5 font-heading text-2xl tracking-tight text-espresso">
+            <h2 className="mb-6 font-heading text-3xl font-bold tracking-tight text-sand border-b border-latte/20 pb-4">
               {category.name}
             </h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {category.items.map((item) => (
-                <div key={item.providerItemId} className="rounded-3xl border border-latte/20 bg-card p-6 shadow-sm">
-                  <div className="flex justify-between mb-4">
+                <div key={item.providerItemId} className="flex flex-col h-full rounded-[12px] border border-[#3d4a3e] bg-[#1a1d1b] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-transform hover:-translate-y-1 hover:border-[#4ADE80]/30 hover:shadow-[0_0_20px_rgba(74,222,128,0.1)]">
+                  <div className="flex flex-col justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-xl tracking-tight text-espresso">{item.name}</h3>
-                      {item.description && <p className="mt-1 text-sm text-mocha/80 line-clamp-2">{item.description}</p>}
+                      <h3 className="font-heading text-xl font-bold tracking-tight text-sand">{item.name}</h3>
+                      {item.description && <p className="mt-2 text-sm text-[#BCCABB] line-clamp-2">{item.description}</p>}
                     </div>
-                    <div className="font-mono text-lg text-espresso shrink-0 pl-4">
-                      {formatMoney(item.variations[0]?.priceCents ?? 0)}
+                    <div className="font-mono text-base font-bold text-[#4ADE80] mt-3">
+                      from {formatMoney(item.variations[0]?.priceCents ?? 0)}
                     </div>
                   </div>
 
-                  <form onSubmit={(e) => { e.preventDefault(); addItem(item, e.currentTarget); }} className="space-y-4">
+                  <form onSubmit={(e) => { e.preventDefault(); addItem(item, e.currentTarget); }} className="mt-auto flex flex-col space-y-4">
                     {/* Variations */}
                     {item.variations.length > 1 && (
                       <div>
-                        <div className="text-xs tracking-widest text-mocha mb-1.5">SIZE / OPTION</div>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="text-[11px] font-bold tracking-widest text-[#BCCABB] mb-2 uppercase">SIZE / OPTION</div>
+                        <div className="flex flex-wrap gap-2">
                           {item.variations.map((v) => (
                             <label key={v.providerVariationId} className="cursor-pointer">
                               <input type="radio" name={`variation:${item.providerItemId}`} value={v.providerVariationId} defaultChecked={v === item.variations[0]} className="peer hidden" />
-                              <div className="rounded-xl border border-latte/30 bg-card px-3 py-1.5 text-sm peer-checked:border-surface peer-checked:bg-surface peer-checked:text-sand">
+                              <div className="rounded-[4px] border border-[#3d4a3e] bg-[#121513] px-3 py-1.5 text-sm peer-checked:border-[#4ADE80] peer-checked:bg-[#4ADE80]/10 peer-checked:text-[#6DFE9C]">
                                 {v.name} &nbsp; {formatMoney(v.priceCents)}
                               </div>
                             </label>
@@ -320,24 +320,24 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
                           return (
                             <div key={list.providerModifierListId}>
-                              <div className="mb-1.5 text-xs tracking-widest text-mocha">{list.name}</div>
+                              <div className="mb-2 text-[11px] font-bold tracking-widest text-[#BCCABB] uppercase">{list.name}</div>
                               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                                 {visibleModifiers.map((mod) => {
                                   const inputName = `modifier:${item.providerItemId}:${list.providerModifierListId}`;
                                   return (
-                                    <label key={mod.providerModifierId} className="flex items-center gap-1.5">
-                                      <input type={inputType} name={inputName} value={mod.providerModifierId} />
-                                      {mod.name} {mod.priceCents > 0 && <span className="text-mocha">+{formatMoney(mod.priceCents)}</span>}
+                                    <label key={mod.providerModifierId} className="flex items-center gap-2 cursor-pointer">
+                                      <input type={inputType} name={inputName} value={mod.providerModifierId} className="accent-[#4ADE80] border-[#3d4a3e] bg-[#121513] size-4" />
+                                      <span className="text-sand">{mod.name}</span> {mod.priceCents > 0 && <span className="text-[#869486] font-mono text-xs">+{formatMoney(mod.priceCents)}</span>}
                                     </label>
                                   );
                                 })}
                               </div>
                               {hasMore && (
-                                <button
-                                  type="button"
-                                  onClick={() => toggleModifierList(item.providerItemId, list.providerModifierListId)}
-                                  className="mt-1 flex items-center gap-1 text-xs font-medium text-forest hover:text-espresso"
-                                >
+                                  <button
+                                   type="button"
+                                   onClick={() => toggleModifierList(item.providerItemId, list.providerModifierListId)}
+                                   className="mt-3 flex items-center gap-1 text-[11px] font-bold tracking-widest text-[#4ADE80] uppercase hover:text-[#6DFE9C] transition-colors"
+                                 >
                                   {isExpanded ? (
                                     <>
                                       Show less <ChevronUp className="size-3" />
@@ -355,9 +355,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3 pt-2">
-                      <input type="number" name={`quantity:${item.providerItemId}`} defaultValue={1} min="1" max="20" className="w-16 rounded-xl border px-3 py-2 font-mono" />
-                      <button type="submit" className="btn-accent shrink-0">Add to order</button>
+                    <div className="flex items-center gap-4 pt-4 mt-auto border-t border-[#3d4a3e]">
+                      <input type="number" name={`quantity:${item.providerItemId}`} defaultValue={1} min="1" max="20" className="w-20 rounded-[4px] border border-[#3d4a3e] bg-[#121513] text-sand px-4 py-2.5 font-mono text-center outline-none focus:ring-1 focus:border-[#4ADE80] focus:ring-[#4ADE80]" />
+                      <button type="submit" className="btn-accent shrink-0 tracking-widest text-xs uppercase font-bold w-full py-3 shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:shadow-[0_0_20px_rgba(74,222,128,0.2)]">ADD TO ORDER</button>
                     </div>
                   </form>
                 </div>
@@ -368,86 +368,134 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       </div>
 
       {/* Floating Cart Button */}
-      <button
-        onClick={() => setShowCart(true)}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-3xl bg-surface px-6 py-4 font-semibold text-sand shadow-xl md:bottom-8 md:right-8"
-      >
+      {itemCount > 0 && (
+        <button
+          onClick={() => setShowCart(true)}
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-[4px] bg-[#4ADE80] border border-[#4ADE80] px-6 py-4 font-bold tracking-widest text-[#121513] shadow-[0_0_20px_rgba(74,222,128,0.3)] md:bottom-8 md:right-8 uppercase hover:bg-[#6DFE9C] hover:shadow-[0_0_30px_rgba(74,222,128,0.5)] transition-all"
+        >
         <ShoppingCart className="size-5" /> {itemCount} item{itemCount !== 1 ? "s" : ""} • {formatMoney(subtotalCents)}
       </button>
+      )}
 
       {/* Cart Drawer */}
       {showCart && (
         <div className="fixed inset-0 z-[60] flex justify-end bg-black/60" onClick={() => setShowCart(false)}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md h-full overflow-auto bg-card p-8 shadow-2xl"
+            className="w-full max-w-md h-full overflow-auto bg-[#161A17] p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)] border-l border-[#3d4a3e]"
           >
             <div className="flex justify-between items-center mb-6">
               <div>
-                <div className="font-heading text-3xl tracking-tight">Your Order</div>
-                {splitBill && <div className="text-sm text-forest font-medium mt-0.5">Group order (you&apos;ll split later)</div>}
+                <div className="font-heading text-3xl tracking-tight text-sand">Your Order</div>
+                {splitBill && <div className="text-[11px] uppercase tracking-widest text-[#4ADE80] font-bold mt-1">Group order (split later)</div>}
               </div>
-              <button onClick={() => setShowCart(false)} className="text-xl text-mocha">×</button>
+              <button onClick={() => setShowCart(false)} className="text-xl text-[#BCCABB] hover:text-white">×</button>
             </div>
 
             {cart.length === 0 ? (
               <p className="text-mocha">Your cart is empty.</p>
             ) : (
               <>
-                <div className="divide-y">
+                <div className="divide-y divide-[#3d4a3e]">
                   {cart.map((line) => (
-                    <div key={line.id} className="py-4 flex gap-3">
+                    <div key={line.id} className="py-4 flex gap-3 text-sand">
                       <div className="flex-1">
-                        <div className="font-medium">{line.itemName} {line.variationName && `— ${line.variationName}`}</div>
-                        {line.modifierNames.length > 0 && <div className="text-xs text-mocha mt-0.5">{line.modifierNames.join(", ")}</div>}
+                        <div className="font-heading font-bold text-lg">{line.itemName} {line.variationName && line.variationName !== "Regular" && <span className="text-[#869486] font-body text-sm font-medium">— {line.variationName}</span>}</div>
+                        {line.modifierNames.length > 0 && <div className="text-[11px] uppercase tracking-widest font-bold text-[#4ADE80] opacity-90 mt-1">{line.modifierNames.join(" • ")}</div>}
                       </div>
-                      <div className="text-right font-mono w-20 tabular-nums">{formatMoney(line.unitPriceCents)}</div>
-                      <div className="flex items-center gap-2 pl-3 border-l">
-                        <button onClick={() => updateQuantity(line.id, line.quantity - 1)}><Minus size={15} /></button>
-                        <div className="w-7 text-center font-mono tabular-nums tracking-widest">{line.quantity}</div>
-                        <button onClick={() => updateQuantity(line.id, line.quantity + 1)}><Plus size={15} /></button>
+                      <div className="text-right font-mono font-bold w-20 tabular-nums text-[#4ADE80] mt-1">{formatPrice(line.unitPriceCents)}</div>
+                      <div className="flex items-center gap-2 pl-3 border-l border-[#3d4a3e]">
+                        <button onClick={() => updateQuantity(line.id, line.quantity - 1)} className="hover:text-white text-[#BCCABB]"><Minus size={15} /></button>
+                        <div className="w-7 text-center font-mono tabular-nums tracking-widest font-bold">{line.quantity}</div>
+                        <button onClick={() => updateQuantity(line.id, line.quantity + 1)} className="hover:text-white text-[#BCCABB]"><Plus size={15} /></button>
                       </div>
-                      <button onClick={() => removeLine(line.id)} className="text-forest/70 hover:text-forest ml-1"><Trash2 size={15} /></button>
+                      <button onClick={() => removeLine(line.id)} className="text-[#869486] hover:text-red-500 ml-1 transition-colors"><Trash2 size={15} /></button>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t pt-4 mt-4 flex justify-between text-xl font-semibold">
+                <div className="border-t border-[#3d4a3e] pt-4 mt-6 flex justify-between text-2xl font-bold font-heading text-sand">
                   <div>Total</div>
-                  <div>{formatMoney(subtotalCents)}</div>
+                  <div className="font-mono text-[#4ADE80] break-keep">{formatPrice(subtotalCents)}</div>
                 </div>
 
-                {/* Customer Info */}
-                <div className="mt-8 space-y-4">
-                  <input type="text" placeholder="Your name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} className="input w-full" required />
-                  <input type="tel" placeholder="Phone number" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="input w-full" required />
-                  <input type="email" placeholder="Email (optional)" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="input w-full" />
-                  <textarea placeholder="Order notes for the whole ticket (optional)" value={orderNotes} onChange={(e) => setOrderNotes(e.target.value)} className="input w-full resize-y" />
+                {/* Customer Info Form Area */}
+                <div className="space-y-4 mt-8">
+                  <label className="block">
+                    <span className="sr-only">Name</span>
+                    <input 
+                      type="text" 
+                      autoComplete="name" 
+                      name="name"
+                      placeholder="Your name" 
+                      value={customerName} 
+                      onChange={(e) => setCustomerName(e.target.value)} 
+                      className="input w-full bg-[#121513] border border-[#3d4a3e] px-4 py-3 rounded-[4px] outline-none focus:border-[#4ADE80] focus:ring-1 focus:ring-[#4ADE80] text-sand" 
+                      required 
+                    />
+                  </label>
+                  
+                  <label className="block">
+                    <span className="sr-only">Phone</span>
+                    <input 
+                      type="tel" 
+                      autoComplete="tel" 
+                      name="phone"
+                      placeholder="Phone number" 
+                      value={customerPhone} 
+                      onChange={(e) => setCustomerPhone(e.target.value)} 
+                      className="input w-full bg-[#121513] border border-[#3d4a3e] px-4 py-3 rounded-[4px] outline-none focus:border-[#4ADE80] focus:ring-1 focus:ring-[#4ADE80] text-sand" 
+                      required 
+                    />
+                  </label>
+                  
+                  <label className="block">
+                    <span className="sr-only">Email</span>
+                    <input 
+                      type="email" 
+                      autoComplete="email" 
+                      name="email"
+                      placeholder="Email (optional)" 
+                      value={customerEmail} 
+                      onChange={(e) => setCustomerEmail(e.target.value)} 
+                      className="input w-full bg-[#121513] border border-[#3d4a3e] px-4 py-3 rounded-[4px] outline-none focus:border-[#4ADE80] focus:ring-1 focus:ring-[#4ADE80] text-sand" 
+                    />
+                  </label>
+                  
+                  <label className="block">
+                    <span className="sr-only">Notes</span>
+                    <textarea 
+                      placeholder="Order notes for the whole ticket (optional)" 
+                      value={orderNotes} 
+                      name="notes"
+                      onChange={(e) => setOrderNotes(e.target.value)} 
+                      className="input w-full resize-y bg-[#121513] border border-[#3d4a3e] px-4 py-3 rounded-[4px] outline-none focus:border-[#4ADE80] focus:ring-1 focus:ring-[#4ADE80] text-sand" 
+                    />
+                  </label>
                 </div>
 
-                {/* Payment method */}
-                <div className="mt-8">
-                  <div className="font-medium text-sm mb-2 tracking-widest text-mocha">HOW WOULD YOU LIKE TO PAY?</div>
-                  <select value={paymentPreference} onChange={(e) => setPaymentPreference(e.target.value as QrPaymentPreference)} className="input w-full">
-                    <option value="pay_at_counter">Pay at the counter when I arrive</option>
-                    <option value="stripe">Pay with card now (Stripe)</option>
+                <div className="mt-8 mb-8 border-t border-[#3d4a3e] pt-6">
+                  <div className="font-bold text-[11px] mb-2 tracking-widest text-[#BCCABB] uppercase">HOW WOULD YOU LIKE TO PAY?</div>
+                  <select value={paymentPreference} onChange={(e) => setPaymentPreference(e.target.value as QrPaymentPreference)} className="input w-full bg-[#121513] border border-[#3d4a3e] px-4 py-3 rounded-[4px] mt-2 block appearance-none outline-none focus:ring-1 focus:border-[#4ADE80] focus:ring-[#4ADE80] text-sand cursor-pointer text-base">
+                    <option value="pay_at_counter">Pay at Counter (Cash, Card)</option>
+                    <option value="stripe">Pay Online (Card, Apple Pay, Google Pay)</option>
                   </select>
                 </div>
-
-                {error && <div className="mt-4 text-red-600 text-sm">{error}</div>}
-
+                
+                {error && <div className="mt-4 text-red-500 text-sm border-l-2 border-red-500 pl-3">{error}</div>}
+                
                 <button
                   onClick={submitOrder}
                   disabled={submitting || cart.length === 0}
-                  className="mt-6 w-full btn-accent flex items-center justify-center gap-2 disabled:opacity-70 py-4 text-lg"
+                  className="mt-8 w-full btn-accent flex items-center justify-center gap-2 disabled:opacity-70 py-4 text-base tracking-widest font-bold uppercase transition-transform shadow-[0_0_20px_rgba(74,222,128,0.15)] hover:shadow-[0_0_25px_rgba(74,222,128,0.3)] hover:-translate-y-1 hover:border-[#6DFE9C]"
                 >
-                  {submitting ? <Loader2 className="animate-spin" /> : paymentPreference === "stripe" ? "Pay & place order" : "Submit my order"}
+                  {submitting ? <Loader2 className="animate-spin h-5 w-5" /> : paymentPreference === "stripe" ? "PAY & PLACE ORDER" : "SUBMIT ORDER"}
                 </button>
 
-                <div className="mt-2 text-center text-[11px] text-mocha">
+                <div className="mt-4 text-center text-xs tracking-wide text-[#BCCABB]">
                   {paymentPreference === "stripe"
-                    ? "You\u0027ll be redirected to our secure Stripe checkout."
-                    : "You\u0027ll see a confirmation number on screen after you submit."}
+                    ? "You'll be redirected to our secure Stripe checkout (Cards, Apple Pay, Google Pay)."
+                    : "You'll see a confirmation number on screen after you submit."}
                 </div>
               </>
             )}
@@ -457,19 +505,19 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
       {/* Success State */}
       {success && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-6">
-          <div className="max-w-md text-center bg-card rounded-3xl p-9">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center">✓</div>
-            <div className="font-heading text-4xl tracking-[-1px]">Order received!</div>
-            <div className="mx-auto mt-2 max-w-xs text-sm text-mocha">
-              We got order #{success.order?.order_number ?? success.order_number}. We&apos;ll start making it right away.
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-6 backdrop-blur-[12px]">
+          <div className="max-w-md text-center bg-[#1a1d1b] border border-[#3d4a3e] rounded-[12px] p-9 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-[4px] bg-[#4ADE80] text-[#121513] flex items-center justify-center font-bold text-lg">✓</div>
+            <div className="font-heading text-4xl font-bold tracking-tight text-sand">Order received</div>
+            <div className="mx-auto mt-3 max-w-xs text-sm text-[#BCCABB]">
+              We got order <strong className="text-[#4ADE80]">#{success.order?.order_number ?? success.order_number}</strong>. We'll start crafting it right away.
             </div>
             {paymentPreference === "stripe" ? (
-              <button onClick={() => { if (success.order?.id) payOnline(success.order.id); }} className="mt-8 btn-accent px-10">
-                Pay securely with Stripe
+              <button disabled={submitting} onClick={() => { if (success.order?.id) payOnline(success.order.id); }} className="mt-8 btn-accent w-full flex items-center justify-center gap-2 uppercase tracking-widest font-bold py-4">
+                {submitting ? <Loader2 className="animate-spin h-5 w-5" /> : "PAY SECURELY"}
               </button>
             ) : (
-              <button onClick={() => { setSuccess(null); setShowCart(false); }} className="mt-8 btn-accent px-10">Awesome — thanks!</button>
+              <button onClick={() => { setSuccess(null); setShowCart(false); }} className="mt-8 btn-accent w-full uppercase tracking-widest font-bold py-4">AWESOME — THANKS</button>
             )}
           </div>
         </div>

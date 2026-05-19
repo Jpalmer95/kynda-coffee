@@ -73,7 +73,7 @@ const config: Config = {
 
         // ========= Accent Bronze (DESIGN.md Accent-Bronze) =========
         bronze: {
-          DEFAULT: "#A67C52",
+          DEFAULT: "rgb(var(--accent-bronze) / <alpha-value>)",
           50: "#F5EDE4",
           100: "#E8D9C8",
           200: "#D4B999",

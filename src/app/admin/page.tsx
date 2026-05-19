@@ -162,14 +162,14 @@ export default function AdminPage() {
               <CardWrapper
                 key={stat.label}
                 href={stat.href || ""}
-                className={`rounded-[12px] border border-[#3d4a3e] bg-[#1a1d1b] p-4 sm:p-5 ${stat.href ? "transition-all hover:-translate-y-1 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:border-forest/40 cursor-pointer" : ""}`}
+                className={`rounded-[12px] border border-[#3d4a3e] bg-[url("/noise.png")] bg-[#1a1d1b] p-4 sm:p-5 ${stat.href ? "transition-all hover:-translate-y-1 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:border-forest/40 cursor-pointer" : ""}`}
               >
                 <div className="flex items-center justify-between">
                   <stat.icon className="h-4 w-4 text-mocha-400" aria-hidden="true" />
-                  {!stat.loading && <ArrowUpRight className="h-3.5 w-3.5 text-forest dark:text-forest-400" aria-hidden="true" />}
+                  {!stat.loading && <ArrowUpRight className="h-3.5 w-3.5 text-[#4ADE80]" aria-hidden="true" />}
                 </div>
-                <p className="mt-4 text-xs sm:text-sm font-medium tracking-wide text-sand-50/70 uppercase">{stat.label}</p>
-                <p className={`mt-1 font-heading text-xl sm:text-2xl font-bold text-sand`}>
+                <p className="mt-4 text-xs sm:text-sm font-medium tracking-[0.05em] text-[#bccabb] uppercase">{stat.label}</p>
+                <p className={`mt-1 font-heading text-2xl sm:text-3xl font-bold text-sand`}>
                   {stat.loading ? (
                     <span className="inline-block h-6 w-16 animate-pulse rounded bg-latte/20" />
                   ) : (
@@ -182,7 +182,7 @@ export default function AdminPage() {
         </div>
 
         {/* Quick Links */}
-        <h2 className="mb-4 mt-12 font-heading text-xl font-bold text-sand tracking-wide">
+        <h2 className="mb-4 mt-12 font-heading text-xl font-bold text-sand tracking-wide uppercase">
           Quick Access
         </h2>
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -190,10 +190,10 @@ export default function AdminPage() {
             <Link
               key={section.href}
               href={section.href}
-              className="group flex flex-col items-start rounded-[12px] border border-[#3d4a3e] bg-[#1a1d1b] p-6 transition-all hover:border-forest/50 hover:-translate-y-1 dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
+              className="group flex flex-col items-start rounded-[12px] border border-[#3d4a3e] bg-[#1a1d1b] bg-[url('/noise.png')] p-6 transition-all hover:border-forest/50 hover:-translate-y-1 dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
             >
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#242c25] border border-[#3d4a3e] transition-colors group-hover:bg-forest/10 group-hover:border-forest/30">
-                <section.icon className="h-5 w-5 text-sand-50 transition-colors group-hover:text-forest dark:group-hover:text-forest-400" aria-hidden="true" />
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[4px] bg-[#242c25] border border-[#3d4a3e] transition-colors group-hover:bg-forest/10 group-hover:border-forest/30">
+                <section.icon className="h-5 w-5 text-[#869486] transition-colors group-hover:text-forest dark:text-[#869486] dark:group-hover:text-[#4ADE80]" aria-hidden="true" />
               </div>
               <div className="mt-5">
                 <h2 className="font-heading text-lg font-bold text-sand group-hover:text-white transition-colors">

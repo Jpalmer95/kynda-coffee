@@ -28,14 +28,14 @@
 :root {
   /* === Light Mode (default) === */
 
-  /* Light Mode (default): Surface-Canvas & Surface-Sand */
-  --bg-cream:        251 249 246;  /* #FBF9F6 (Surface-Canvas) */
+  /* Sand/canvas page background */
+  --bg-cream:        251 249 246;  /* #FBF9F6 */
   --bg-cream-50:     253 252 250; 
   --bg-cream-100:    245 243 240;  /* #F5F3F0 (Surface-Sand) */
   --bg-cream-200:    235 231 226;
 
   /* Card surface — white in light, warm stone in dark */
-  --bg-card:         255 255 255;  /* #FFFFFF */
+  --bg-card:         245 243 240;  /* #F5F3F0 (Surface-Sand) */
 
   /* Dark container surface (headers, footers, buttons, CTA blocks)
      ALWAYS dark in both modes so that light text on it passes.
@@ -83,6 +83,8 @@
   --accent-sage-400:    120 196 128;  /* #78C480 */
   --accent-sage-500:    30 80 48;     /* #1E5030 */
   --accent-sage-600:    74 122 82;    /* #4A7A52 */
+  
+  --accent-bronze: 166 124 82;
 
   /* Focus ring */
   --focus-ring:        27 48 34;    /* #1B3022 */
@@ -91,7 +93,7 @@
 
 /* === Dark Mode (set by .dark class on <html>) === */
 .dark {
-  /* Kynda Obsidian Background Layering (True Dark + Cyber-Organic) */
+  /* Dark mode: Kynda Obsidian Background Layering (True Dark + Cyber-Organic) */
   --bg-cream:        14 21 15;     /* #0E150F Surface */
   --bg-cream-50:     26 33 27;     /* #1A211B Surface-Container */
   --bg-cream-100:    18 21 19;     /* #121513 Background-Deep */
@@ -105,14 +107,13 @@
   --bg-surface-800:  9 16 10;      /* #09100A Surface-Container-Lowest */
 
   /* Primary text — soft off-white #FBF9F6 to reduce eye strain */
-  --text-espresso:    251 249 246;  /* #FBF9F6 */
+  --text-espresso:    221 229 218;  /* #DDE5DA On-Surface (muted slightly from true white) */
   --text-espresso-50:  188 202 187;  /* #BCCABB On-Surface-Variant */
-  --text-espresso-100: 221 229 218;  /* #DDE5DA On-Surface */
+  --text-espresso-100: 251 249 246;  /* #FBF9F6 bright pop */
   --text-espresso-200: 230 222 210;  
 
-  /* White/cream text */
   --text-sand:       251 249 246;  /* #FBF9F6 */
-  --text-sand-50:    221 229 218;  /* #DDE5DA */
+  --text-sand-50:    242 240 237;  /* #F2F0ED Inverse-On-Surface */
 
   /* Dark borders - using slightly green tinted Outlines */
   --border-latte:     61 74 62;     /* #3D4A3E Outline-Variant */
@@ -128,7 +129,7 @@
   --text-mocha-400:    188 202 187;  
   --text-mocha-500:    188 202 187;  
   --text-mocha-600:    221 229 218;  
-  --text-mocha-700:    251 249 246;  
+  --text-mocha-700:    251 249 246;
 
   /* Emerald Green / Cyber-Organic Luminous */
   --accent-forest:     74 222 128;   /* #4ADE80 Primary-Container */
@@ -144,6 +145,8 @@
   --accent-sage-400:    120 196 128;  /* #78C480 */
   --accent-sage-500:    120 196 128;  /* #78C480 */
   --accent-sage-600:    168 216 176;  /* #A8D8B0 */
+  
+  --accent-bronze:      166 124 82;
 
   /* Focus ring */
   --focus-ring:        74 222 128;   /* #4ADE80 */
@@ -230,21 +233,21 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 }
 
 /* ============================================================
-   Background Noise global
+   Noise Filter Layer
    ============================================================ */
 .noise-bg::before {
   content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 100;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.05;
   mix-blend-mode: overlay;
 }
 
 [data-theme="dark"] .noise-bg::before {
-  opacity: 0.05;
+  opacity: 0.08; /* Slightly stronger noise for dark mode */
 }
 
 /* ============================================================
@@ -252,23 +255,22 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
    ============================================================ */
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-[4px] bg-surface px-6 py-3 text-sm font-body font-semibold text-sand shadow-sm transition-all duration-200 hover:bg-surface-800 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
+  @apply inline-flex items-center justify-center rounded-[4px] bg-surface px-6 py-3 text-sm font-body font-semibold text-sand shadow-sm transition-all duration-200 hover:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
   min-height: 44px;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-[4px] border border-latte px-6 py-3 text-sm font-body font-semibold text-espresso transition-colors duration-200 hover:bg-forest/10 hover:border-forest/50 active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-[4px] border border-latte px-6 py-3 text-sm font-body font-semibold text-espresso transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
   min-height: 44px;
 }
 
 .btn-accent {
-  @apply inline-flex items-center justify-center rounded-[4px] bg-forest px-6 py-3 text-sm font-body font-semibold shadow-sm transition-all duration-200 hover:bg-forest-600 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-[4px] bg-forest px-6 py-3 text-sm font-body font-semibold shadow-sm transition-all duration-200 hover:bg-forest-600 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   /* Light mode: white on dark forest green */
   color: #FFFFFF;
   min-height: 44px;
 }
 
-/* Dark mode: dark text on luminous emerald */
 [data-theme="dark"] .btn-accent {
   background-color: var(--accent-forest) !important;
   color: #003919 !important; /* on-primary */
@@ -279,6 +281,11 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 [data-theme="dark"] .btn-accent:hover {
   background-color: rgb(var(--accent-forest-300)) !important;
   box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-[4px] border border-latte px-6 py-3 text-sm font-body font-semibold text-espresso transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2 hover:bg-forest/10 hover:border-forest/50;
+  min-height: 44px;
 }
 
 [data-theme="dark"] .btn-secondary {
@@ -292,7 +299,7 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 }
 
 .btn-ghost {
-  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-mocha transition-all duration-200 hover:bg-latte-300 hover:text-espresso active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-latte focus:ring-offset-1;
+  @apply inline-flex items-center justify-center rounded-[4px] px-4 py-2 text-sm font-body font-semibold text-mocha transition-all duration-200 hover:bg-latte-300 hover:text-espresso active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-latte focus:ring-offset-1;
   min-height: 44px;
 }
 
@@ -312,7 +319,7 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
   @apply px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-24;
 }
 
-.container-max { @apply mx-auto max-w-7xl; }
+.container-max { @apply mx-auto max-w-[1280px]; }
 
 /* ============================================================
    Cart badge text — white on dark green in light, dark text on light green in dark

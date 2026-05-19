@@ -48,13 +48,13 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-surface">
       {/* Admin Header */}
-      <header className="sticky top-0 z-40 border-b border-latte/20 bg-surface text-sand shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+      <header className="sticky top-0 z-40 border-b border-[#3d4a3e] bg-surface text-sand shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
         <div className="flex items-center justify-between px-4 py-4 sm:px-6">
         <div className="flex items-center gap-4">
           <span className="font-heading text-xl font-bold tracking-tight text-white drop-shadow-sm">
             Kynda Admin
           </span>
-          <div className="h-5 w-px bg-latte/40 dark:bg-latte/20" />
+          <div className="h-5 w-px bg-[#3d4a3e]" />
           <span className="text-sm font-medium tracking-[0.05em] font-body text-[#bccabb] uppercase">
             Management Portal
           </span>
@@ -71,7 +71,7 @@ export default function AdminLayout({
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:block w-64 sticky top-[69px] h-[calc(100vh-69px)] border-r border-latte/20 bg-surface text-sand overflow-y-auto">
+        <aside className="hidden lg:block w-64 sticky top-[69px] h-[calc(100vh-69px)] border-r border-[#3d4a3e] bg-surface text-sand overflow-y-auto">
           <nav className="p-4 space-y-1.5" aria-label="Admin navigation">
             {ADMIN_LINKS.map((link) => {
               const isActive =
@@ -120,7 +120,7 @@ export default function AdminLayout({
                     className={cn("h-5 w-5", isActive && "text-[#6DFE9C]")}
                     strokeWidth={isActive ? 2.5 : 1.5}
                   />
-                  <span className="text-[10px] font-medium leading-none">
+                  <span className="text-[10px] font-medium leading-none tracking-widest mt-1 uppercase text-[#BCCABB]">
                     {link.label}
                   </span>
                 </Link>

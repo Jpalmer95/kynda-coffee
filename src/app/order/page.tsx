@@ -26,36 +26,36 @@ export default async function OrderPage({
   return (
     <section className="section-padding">
       <div className="container-max">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-bronze/10 text-forest">
-            <Coffee className="h-7 w-7" aria-hidden="true" />
+        <div className="mx-auto max-w-3xl text-center flex flex-col items-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[12px] bg-[#1a1d1b] border border-[#3d4a3e] text-[#4ADE80] shadow-[0_0_20px_rgba(74,222,128,0.1)]">
+            <Coffee className="h-8 w-8" aria-hidden="true" />
           </div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-forest">
+          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.28em] text-[#4ADE80]">
             Fast • Fresh • Yours
           </p>
-          <h1 className="font-heading text-4xl font-bold text-espresso sm:text-6xl">
+          <h1 className="font-heading text-4xl font-bold text-sand sm:text-6xl tracking-tight">
             Order at Kynda Coffee
           </h1>
-          <p className="mt-4 max-w-prose text-base text-mocha sm:text-lg">
+          <p className="mt-5 max-w-prose text-base text-[#BCCABB] sm:text-lg">
             Choose your fulfillment, add what you love, and pay how you prefer. 
             Great for solo orders, groups at tables, or easy curbside pickup.
           </p>
-          <p className="mt-3 text-sm text-mocha">
-            {itemCount} items available right now — everything you see is ready to order.
+          <p className="mt-4 text-[11px] font-bold tracking-widest text-[#869486] uppercase">
+            {itemCount} items available right now — ready to craft.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-4">
+        <div className="mt-12 grid gap-6 md:grid-cols-4">
           {[
             { icon: MapPin, title: "Table", desc: "Dine-in at one of our tables" },
             { icon: Coffee, title: "Lobby", desc: "Order while you relax or wait" },
             { icon: ShoppingBag, title: "Curbside", desc: "We'll bring it out to your car" },
             { icon: Users, title: "Parking Spot", desc: "Quick handoff from the lot" },
           ].map((mode) => (
-            <div key={mode.title} className="rounded-2xl border border-latte/20 bg-card p-5 shadow-sm">
-              <mode.icon className="h-6 w-6 text-forest" aria-hidden="true" />
-              <h3 className="mt-3 font-heading text-xl font-semibold text-espresso">{mode.title}</h3>
-              <p className="mt-1 text-sm text-mocha">{mode.desc}</p>
+            <div key={mode.title} className="rounded-[12px] border border-[#3d4a3e] bg-[#1a1d1b] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.2)] transition-transform hover:-translate-y-1 hover:border-[#4ADE80]/30 hover:shadow-[0_0_15px_rgba(74,222,128,0.05)]">
+              <mode.icon className="h-7 w-7 text-[#4ADE80]" aria-hidden="true" />
+              <h3 className="mt-4 font-heading text-xl font-bold text-sand tracking-tight">{mode.title}</h3>
+              <p className="mt-2 text-sm text-[#BCCABB]">{mode.desc}</p>
             </div>
           ))}
         </div>
@@ -67,12 +67,12 @@ export default async function OrderPage({
           initialLabel={labelParam}
         />
 
-        <div className="mt-10 flex flex-col items-center gap-4 text-center text-sm text-mocha">
-          <Link href="/menu" className="btn-secondary">
+        <div className="mt-12 flex flex-col items-center gap-6 text-center text-sm text-[#BCCABB]">
+          <Link href="/menu" className="btn-secondary rounded-[4px] border-[#3d4a3e] px-8 hover:border-[#4ADE80] hover:text-white">
             Back to full menu
           </Link>
-          <p className="max-w-xs text-xs">
-            Don&apos;t want to order online? Just come to the counter — we&apos;re happy to help in person.
+          <p className="max-w-xs text-xs tracking-wide">
+            Don't want to order online? Just come to the counter — we're happy to help in person.
           </p>
         </div>
       </div>
