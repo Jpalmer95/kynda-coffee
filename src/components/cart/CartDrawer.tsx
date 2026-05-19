@@ -271,9 +271,9 @@ export function CartDrawer() {
           {/* Footer */}
           {(shopItems.length > 0 || menuItems.length > 0) && (
             <div className="border-t border-latte/20 bg-surface px-4 py-6 sm:px-6 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)]">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-base text-sand/80">Subtotal</span>
-                <span className="text-xl font-bold text-sand">{formatPrice(totalSubtotal)}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-base text-sand/80 font-body tracking-[0.05em] uppercase">Subtotal</span>
+                  <span className="font-heading text-2xl font-bold text-sand tracking-tight">{formatPrice(totalSubtotal)}</span>
               </div>
               <p className="mt-1 text-xs text-sand-50/60 mb-2">Shipping & taxes calculated at checkout</p>
 

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Montserrat, Playfair_Display } from "next/font/google";
 import "@/styles/globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -12,7 +12,7 @@ import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { ThemeProvider } from "@/lib/theme/context";
 
-const body = Inter({
+const body = Montserrat({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
@@ -110,7 +110,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased touch-pan-y">
+      <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased touch-pan-y relative relative-z-0 noise-bg">
         <ThemeProvider>
           <ToastProvider>
             <OfflineBanner />

@@ -28,15 +28,15 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
       : categories.filter((c) => c.name === activeCategory);
 
   return (
-    <div className="mt-10">
+    <div className="mt-10 max-w-[1280px] mx-auto px-4 sm:px-6">
       {/* Category Filter Tabs - Desktop */}
       <div className="mb-6 hidden flex-wrap items-center justify-center gap-3 sm:flex">
         <button
           onClick={() => setActiveCategory("all")}
           className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
             activeCategory === "all"
-              ? "bg-surface text-sand shadow-sm"
-              : "bg-latte/10 text-mocha hover:bg-latte/20 hover:text-espresso"
+              ? "bg-forest/10 border border-forest text-forest dark:text-forest-400 font-bold"
+              : "bg-surface/5 border border-latte/10 text-mocha hover:bg-surface/10 hover:text-espresso"
           }`}
         >
           All
@@ -47,8 +47,8 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
             onClick={() => setActiveCategory(name)}
             className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
               activeCategory === name
-                ? "bg-surface text-sand shadow-sm"
-                : "bg-latte/10 text-mocha hover:bg-latte/20 hover:text-espresso"
+                ? "bg-forest/10 border border-forest text-forest dark:text-forest-400 font-bold"
+                : "bg-surface/5 border border-latte/10 text-mocha hover:bg-surface/10 hover:text-espresso"
             }`}
           >
             {name}
@@ -126,27 +126,26 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                 <button
                   key={item.providerItemId}
                   onClick={() => setSelectedItem(item)}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-latte/70 bg-card text-left shadow-sm transition-all hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-forest dark:border-forest/20 dark:shadow-[inset_0_0_0_0.5px_rgba(74,222,128,0.2)] dark:hover:shadow-[inset_0_0_0_1px_rgba(74,222,128,0.4)]"
+                  className="group relative flex flex-col overflow-hidden rounded-[12px] border border-latte/70 bg-card text-left shadow-sm transition-all hover:shadow-hover hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-forest dark:border-[#2f372f]/40 dark:shadow-[0_0_15px_rgba(74,222,128,0)] dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.2)]"
                 >
-                  {/* Image */}
                   {item.imageUrls.length > 0 ? (
-                    <div className="relative aspect-[4/3] overflow-hidden">
+                    <div className="relative aspect-square overflow-hidden bg-[#121513]">
                       <Image
                         src={item.imageUrls[0]}
                         alt={item.name}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                       {/* Price Badge Overlay */}
-                      <div className="absolute right-3 top-3 rounded-full bg-surface/90 px-3 py-1 font-mono text-sm font-bold text-sand shadow-sm backdrop-blur-sm">
+                      <div className="absolute right-3 top-3 rounded bg-surface/90 px-3 py-1 font-body text-sm font-bold tracking-widest text-sand shadow-sm backdrop-blur-sm border border-latte/10">
                         {item.priceLabel}
                       </div>
                     </div>
                   ) : (
-                    <div className="relative flex aspect-[4/3] items-center justify-center bg-latte/10">
+                    <div className="relative flex aspect-square items-center justify-center bg-[#121513]">
                       <Coffee className="h-12 w-12 text-latte" />
-                      <div className="absolute right-3 top-3 rounded-full bg-surface/90 px-3 py-1 font-mono text-sm font-bold text-sand shadow-sm backdrop-blur-sm">
+                      <div className="absolute right-3 top-3 rounded bg-surface/90 px-3 py-1 font-body text-sm font-bold tracking-widest text-sand shadow-sm backdrop-blur-sm border border-latte/10">
                         {item.priceLabel}
                       </div>
                     </div>
@@ -167,10 +166,10 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                       <div className="mt-4 pt-4 border-t border-latte/30">
                         <div className="flex items-center justify-between">
                            {item.variations.length > 1 ? (
-                            <span className="text-[11px] font-medium uppercase tracking-wider text-mocha">Customizable</span>
-                           ) : <span className="text-[11px] font-medium uppercase tracking-wider text-transparent select-none">Fixed</span>}
+                            <span className="text-[11px] font-body uppercase tracking-[0.05em] text-[#869486]">Customizable</span>
+                           ) : <span className="text-[11px] font-body uppercase tracking-[0.05em] text-transparent select-none">Fixed</span>}
                            
-                           <span className="rounded-full border border-forest/20 px-3 py-1 text-sm font-bold text-forest transition-colors group-hover:bg-forest/5 dark:text-forest-400 dark:border-forest-400/30 dark:group-hover:bg-forest-400/10">
+                           <span className="rounded-[4px] border border-forest/80 px-4 py-1.5 text-sm font-bold text-forest transition-colors group-hover:bg-forest/10 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.2)]">
                              + ADD
                            </span>
                         </div>

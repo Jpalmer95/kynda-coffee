@@ -95,7 +95,7 @@ const config: Config = {
       },
       fontFamily: {
         heading: ["Playfair Display", "Georgia", "serif"],
-        body: ["Inter", "system-ui", "sans-serif"],
+        body: ["Montserrat", "system-ui", "sans-serif"],
       },
       borderRadius: { "4xl": "2rem" },
       boxShadow: {

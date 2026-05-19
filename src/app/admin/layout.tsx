@@ -48,17 +48,17 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-surface">
       {/* Admin Header */}
-      <header className="sticky top-0 z-40 border-b border-latte/20 bg-surface text-sand shadow-sm">
+      <header className="sticky top-0 z-40 border-b border-latte/20 bg-surface text-sand shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
         <div className="flex items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-4">
-            <span className="font-heading text-xl font-bold tracking-tight">
-              Kynda Admin
-            </span>
-            <div className="h-5 w-px bg-latte/40 dark:bg-latte/20" />
-            <span className="text-sm font-medium tracking-wider text-sand-50 uppercase">
-              Management Portal
-            </span>
-          </div>
+        <div className="flex items-center gap-4">
+          <span className="font-heading text-xl font-bold tracking-tight text-white drop-shadow-sm">
+            Kynda Admin
+          </span>
+          <div className="h-5 w-px bg-latte/40 dark:bg-latte/20" />
+          <span className="text-sm font-medium tracking-[0.05em] font-body text-[#bccabb] uppercase">
+            Management Portal
+          </span>
+        </div>
           <Link
             href="/"
             className="flex items-center gap-1.5 rounded-lg text-sm text-sand hover:text-white transition-colors"
@@ -81,10 +81,10 @@ export default function AdminLayout({
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors border",
+                    "flex items-center gap-3 rounded-[8px] px-3 py-2.5 text-sm font-medium transition-colors border",
                     isActive
-                      ? "bg-forest/10 border-forest text-forest dark:text-forest-400 shadow-[inset_0_0_8px_rgba(74,222,128,0.15)]"
-                      : "border-transparent text-sand-50 hover:bg-white/5 hover:text-white"
+                      ? "bg-[#6DFE9C]/10 border-[#6DFE9C]/30 text-[#6DFE9C]"
+                      : "border-transparent text-[#bccabb] hover:bg-white/5 hover:text-white"
                   )}
                   aria-current={isActive ? "page" : undefined}
                 >
@@ -98,7 +98,7 @@ export default function AdminLayout({
 
         {/* Mobile Top Nav */}
         <nav
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-latte/20 bg-surface pb-safe"
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-[#3d4a3e] bg-surface pb-safe"
           style={{ paddingBottom: "max(env(safe-area-inset-bottom), 8px)" }}
           aria-label="Admin mobile navigation"
         >
@@ -112,12 +112,12 @@ export default function AdminLayout({
                   href={link.href}
                   className={cn(
                     "flex flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1.5 min-w-[3.5rem] transition-colors",
-                    isActive ? "text-forest dark:text-forest-400" : "text-sand-50"
+                    isActive ? "text-[#6DFE9C]" : "text-[#bccabb]"
                   )}
                   aria-current={isActive ? "page" : undefined}
                 >
                   <link.icon
-                    className={cn("h-5 w-5", isActive && "text-forest dark:text-forest-400")}
+                    className={cn("h-5 w-5", isActive && "text-[#6DFE9C]")}
                     strokeWidth={isActive ? 2.5 : 1.5}
                   />
                   <span className="text-[10px] font-medium leading-none">

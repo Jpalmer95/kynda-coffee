@@ -91,52 +91,52 @@
 
 /* === Dark Mode (set by .dark class on <html>) === */
 .dark {
-  /* Charcoal page background — Surface-Midnight & Surface-Deep */
-  --bg-cream:        18 26 20;     /* #121A14 (Surface-Midnight) */
-  --bg-cream-50:     25 35 27;     /* Lighter midnight for hover/states */
-  --bg-cream-100:    26 37 29;     /* #1A251D (Surface-Deep) */
-  --bg-cream-200:    34 48 38;
+  /* Kynda Obsidian Background Layering (True Dark + Cyber-Organic) */
+  --bg-cream:        14 21 15;     /* #0E150F Surface */
+  --bg-cream-50:     26 33 27;     /* #1A211B Surface-Container */
+  --bg-cream-100:    18 21 19;     /* #121513 Background-Deep */
+  --bg-cream-200:    36 44 37;     /* #242C25 Surface-Container-High */
 
-  /* Card surface — Surface-Deep */
-  --bg-card:         26 37 29;     /* #1A251D */
+  /* Product Cards & Elev Surface */
+  --bg-card:         26 29 27;     /* #1A1D1B Surface-Card */
 
   /* Dark container surface — consistent */
-  --bg-surface:      18 26 20;     /* #121A14 */
-  --bg-surface-800:  11 15 12;     /* Deeper */
+  --bg-surface:      14 21 15;     /* #0E150F */
+  --bg-surface-800:  9 16 10;      /* #09100A Surface-Container-Lowest */
 
-  /* Primary text — light sand on dark bg: 14.8:1 */
-  --text-espresso:    245 240 232;  /* #F5F0E8 */
-  --text-espresso-50:  200 191 176;  /* #C8BFB0 — 7.2:1 */
-  --text-espresso-100: 216 208 195;  /* #D8CFC2 */
-  --text-espresso-200: 230 222 210;  /* #E6DED2 */
+  /* Primary text — soft off-white #FBF9F6 to reduce eye strain */
+  --text-espresso:    251 249 246;  /* #FBF9F6 */
+  --text-espresso-50:  188 202 187;  /* #BCCABB On-Surface-Variant */
+  --text-espresso-100: 221 229 218;  /* #DDE5DA On-Surface */
+  --text-espresso-200: 230 222 210;  
 
-  /* White/cream text (for use on dark surfaces) */
-  --text-sand:       245 240 232;  /* #F5F0E8 */
-  --text-sand-50:    250 247 242;  /* #FAF7F2 */
+  /* White/cream text */
+  --text-sand:       251 249 246;  /* #FBF9F6 */
+  --text-sand-50:    221 229 218;  /* #DDE5DA */
 
-  /* Dark borders */
-  --border-latte:     68 64 60;     /* #44403C */
-  --border-latte-300:  87 83 78;     /* #57534E */
-  --border-latte-400:  68 64 60;     /* #44403C */
-  --border-latte-500:  120 113 108;  /* #78716C */
-  --border-latte-600:  168 162 158;  /* #A8A29E */
-  --border-latte-700:  214 211 209;  /* #D6D3D1 */
+  /* Dark borders - using slightly green tinted Outlines */
+  --border-latte:     61 74 62;     /* #3D4A3E Outline-Variant */
+  --border-latte-300:  71 74 71;    
+  --border-latte-400:  61 74 62;     
+  --border-latte-500:  134 148 134;  /* #869486 Outline */
+  --border-latte-600:  134 148 134;  
+  --border-latte-700:  188 202 187;  
 
-  /* Secondary muted text — 7.5:1 on charcoal */
-  --text-mocha:       168 162 158;  /* #A8A29E */
-  --text-mocha-300:    120 113 108;  /* #78716C — 4.8:1 */
-  --text-mocha-400:    168 162 158;  /* #A8A29E */
-  --text-mocha-500:    168 162 158;  /* #A8A29E */
-  --text-mocha-600:    214 211 209;  /* #D6D3D1 */
-  --text-mocha-700:    231 229 228;  /* #E7E5E4 */
+  /* Secondary muted text */
+  --text-mocha:       188 202 187;  /* #BCCABB On-Surface-Variant */
+  --text-mocha-300:    134 148 134; 
+  --text-mocha-400:    188 202 187;  
+  --text-mocha-500:    188 202 187;  
+  --text-mocha-600:    221 229 218;  
+  --text-mocha-700:    251 249 246;  
 
-  /* Forest Green — Luminous Emerald in dark mode */
-  --accent-forest:     74 222 128;   /* #4ADE80 (Brand-Luminous) */
-  --accent-forest-300:  134 239 172;  /* #86EFAC */
-  --accent-forest-400:  74 222 128;   /* #4ADE80 */
-  --accent-forest-500:  34 197 94;    /* #22C55E */
-  --accent-forest-600:  22 163 74;    /* #16A34A */
-  --accent-forest-700:  21 128 61;    /* #15803D */
+  /* Emerald Green / Cyber-Organic Luminous */
+  --accent-forest:     74 222 128;   /* #4ADE80 Primary-Container */
+  --accent-forest-300:  107 251 154;  /* #6BFB9A Primary */
+  --accent-forest-400:  109 254 156;   /* #6DFE9C Primary-Fixed */
+  --accent-forest-500:  77 224 130;   /* #4DE082 Surface-Tint */
+  --accent-forest-600:  0 109 54;     /* #006D36 Inverse-Primary */
+  --accent-forest-700:  0 94 45;     
 
   /* Sage */
   --accent-sage:       120 196 128;  /* #78C480 — 9.0:1 */
@@ -147,7 +147,7 @@
 
   /* Focus ring */
   --focus-ring:        74 222 128;   /* #4ADE80 */
-  --focus-ring-offset: 18 26 20;     /* #121A14 */
+  --focus-ring-offset: 14 21 15;     /* #0E150F */
 }
 
 /* ============================================================
@@ -215,8 +215,8 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 }
 
 [data-theme="dark"] .glass-nav {
-  /* Using Surface-Midnight 80% with 12px backdrop blur */
-  background-color: rgba(18, 26, 20, 0.8);
+  /* Using Surface-Midnight 90% with 12px backdrop blur */
+  background-color: rgba(14, 21, 15, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -230,21 +230,39 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 }
 
 /* ============================================================
+   Background Noise global
+   ============================================================ */
+.noise-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+}
+
+[data-theme="dark"] .noise-bg::before {
+  opacity: 0.05;
+}
+
+/* ============================================================
    Component Classes
    ============================================================ */
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-xl bg-surface px-6 py-3 text-sm font-medium text-sand shadow-sm transition-all duration-200 hover:bg-surface-800 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
+  @apply inline-flex items-center justify-center rounded-[4px] bg-surface px-6 py-3 text-sm font-body font-semibold text-sand shadow-sm transition-all duration-200 hover:bg-surface-800 hover:shadow-hover focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
   min-height: 44px;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-xl border border-latte-600 px-6 py-3 text-sm font-medium text-espresso transition-all duration-200 hover:bg-latte-300 active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-[4px] border border-latte px-6 py-3 text-sm font-body font-semibold text-espresso transition-colors duration-200 hover:bg-forest/10 hover:border-forest/50 active:scale-[0.98] disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
   min-height: 44px;
 }
 
 .btn-accent {
-  @apply inline-flex items-center justify-center rounded-xl bg-forest px-6 py-3 text-sm font-medium shadow-sm transition-all duration-200 hover:bg-forest-600 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-[4px] bg-forest px-6 py-3 text-sm font-body font-semibold shadow-sm transition-all duration-200 hover:bg-forest-600 hover:shadow-soft active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   /* Light mode: white on dark forest green */
   color: #FFFFFF;
   min-height: 44px;
@@ -252,14 +270,25 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 
 /* Dark mode: dark text on luminous emerald */
 [data-theme="dark"] .btn-accent {
-  background-color: rgb(var(--accent-forest));
-  color: #121A14 !important;
-  box-shadow: 0 0 12px rgba(74, 222, 128, 0.2);
+  background-color: var(--accent-forest) !important;
+  color: #003919 !important; /* on-primary */
+  border: none;
+  box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
 }
 
 [data-theme="dark"] .btn-accent:hover {
-  background-color: rgb(var(--accent-forest-300));
-  box-shadow: 0 0 16px rgba(74, 222, 128, 0.3);
+  background-color: rgb(var(--accent-forest-300)) !important;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+}
+
+[data-theme="dark"] .btn-secondary {
+  color: #FBF9F6 !important;
+  border-color: #3D4A3E; /* Outline-Variant */
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.4);
 }
 
 .btn-ghost {
@@ -268,13 +297,13 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 }
 
 .input-field {
-  @apply w-full rounded-lg border border-latte-600 bg-card px-4 py-3 text-espresso placeholder:text-mocha-400 shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  @apply w-full rounded-md border border-latte-600 bg-card px-4 py-3 text-espresso placeholder:text-mocha-400 shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   min-height: 44px;
   font-size: 16px;
 }
 
 .select-field {
-  @apply w-full rounded-lg border border-latte-600 bg-card px-4 py-3 text-espresso shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
+  @apply w-full rounded-md border border-latte-600 bg-card px-4 py-3 text-espresso shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   min-height: 44px;
   font-size: 16px;
 }

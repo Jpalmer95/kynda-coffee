@@ -150,7 +150,7 @@ export default function AdminPage() {
             <h1 className="font-heading text-2xl sm:text-3xl font-bold text-sand">
               Dashboard
             </h1>
-            <p className="text-sm text-sand-50">Overview & Quick Access</p>
+            <p className="text-sm text-sand-50/70 tracking-widest font-body uppercase">Overview & Quick Access</p>
           </div>
         </div>
 
@@ -162,7 +162,7 @@ export default function AdminPage() {
               <CardWrapper
                 key={stat.label}
                 href={stat.href || ""}
-                className={`rounded-[24px] border border-latte/10 bg-surface-800 p-4 sm:p-5 ${stat.href ? "transition-all hover:-translate-y-1 hover:shadow-hover hover:border-forest/20 cursor-pointer" : ""}`}
+                className={`rounded-[12px] border border-[#3d4a3e] bg-[#1a1d1b] p-4 sm:p-5 ${stat.href ? "transition-all hover:-translate-y-1 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:border-forest/40 cursor-pointer" : ""}`}
               >
                 <div className="flex items-center justify-between">
                   <stat.icon className="h-4 w-4 text-mocha-400" aria-hidden="true" />
@@ -182,17 +182,17 @@ export default function AdminPage() {
         </div>
 
         {/* Quick Links */}
-        <h2 className="mb-4 mt-12 font-heading text-lg font-bold text-sand tracking-wide uppercase">
+        <h2 className="mb-4 mt-12 font-heading text-xl font-bold text-sand tracking-wide">
           Quick Access
         </h2>
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {sections.map((section) => (
             <Link
               key={section.href}
               href={section.href}
-              className="group flex flex-col items-start rounded-[24px] border border-latte/10 bg-surface-800 p-6 transition-all hover:border-forest/30 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
+              className="group flex flex-col items-start rounded-[12px] border border-[#3d4a3e] bg-[#1a1d1b] p-6 transition-all hover:border-forest/50 hover:-translate-y-1 dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
             >
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-surface/50 border border-latte/5 transition-colors group-hover:bg-forest/10 group-hover:border-forest/20">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[8px] bg-[#242c25] border border-[#3d4a3e] transition-colors group-hover:bg-forest/10 group-hover:border-forest/30">
                 <section.icon className="h-5 w-5 text-sand-50 transition-colors group-hover:text-forest dark:group-hover:text-forest-400" aria-hidden="true" />
               </div>
               <div className="mt-5">
