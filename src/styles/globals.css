@@ -25,70 +25,122 @@
    3:1 large text ≥18px or ≥14px bold).
    ============================================================ */
 
+/* ============================================================
+   DESIGN.md Token Mapping — Legacy variables → Design tokens
+   ------------------------------------------------------------
+   Light Mode (Forest & Sand)
+   --bg-cream         → surface / background           #FBF9F6
+   --bg-cream-50      → surface-container-lowest       #FFFFFF
+   --bg-cream-100     → surface-container-low          #F5F3F0
+   --bg-cream-200     → surface-container              #EFEEEB
+   --bg-card          → surface-container-low          #F5F3F0
+   --bg-surface       → primary-container              #1B3022
+   --bg-surface-800   → primary                        #061B0E
+   --text-espresso    → on-surface                     #1B1C1A
+   --text-espresso-50 → on-surface-variant             #434843
+   --text-espresso-100→ inverse-surface                #30312F
+   --text-espresso-200→ on-surface                     #1B1C1A
+   --text-sand        → on-primary (white on dark)     #FFFFFF
+   --text-sand-50     → inverse-on-surface             #F2F0ED
+   --border-latte     → outline                        #737973
+   --border-latte-300 → outline-variant                #C3C8C1
+   --border-latte-400 → outline                        #737973
+   --border-latte-500 → outline                        #737973
+   --border-latte-600 → on-surface                     #1B1C1A
+   --border-latte-700 → on-surface                     #1B1C1A
+   --text-mocha       → on-surface-variant             #434843
+   --text-mocha-300   → outline                        #737973
+   --text-mocha-400   → outline                        #737973
+   --text-mocha-500   → on-surface-variant             #434843
+   --text-mocha-600   → on-surface                     #1B1C1A
+   --text-mocha-700   → on-surface                     #1B1C1A
+   --accent-forest    → primary-container              #1B3022
+   --accent-forest-300→ on-primary-container           #819986
+   --accent-forest-400→ surface-tint                   #4D6453
+   --accent-forest-500→ primary-container              #1B3022
+   --accent-forest-600→ primary                        #061B0E
+   --accent-forest-700→ primary                        #061B0E
+   --accent-sage      → muted green (~#5E8A66)
+   --accent-sage-300  → lighter sage                   #9ED5A5
+   --accent-sage-400  → #78C480
+   --accent-sage-500  → muted green (~#5E8A66)
+   --accent-sage-600  → darker sage                    #4A7A52
+   --accent-bronze    → static accent                  #A67C52
+   --focus-ring       → primary-container              #1B3022
+   --focus-ring-offset→ background                     #FBF9F6
+   ------------------------------------------------------------
+   Dark Mode (Kynda Coffee Dark Noir) values are preserved
+   as-is from the existing implementation.
+   ============================================================ */
+
 :root {
   /* === Light Mode (default) === */
 
   /* Sand/canvas page background */
-  --bg-cream:        251 249 246;  /* #FBF9F6 */
-  --bg-cream-50:     253 252 250; 
-  --bg-cream-100:    245 243 240;  /* #F5F3F0 (Surface-Sand) */
-  --bg-cream-200:    235 231 226;
+  --bg-cream:        251 249 246;  /* #FBF9F6 — surface / background */
+  --bg-cream-50:     255 255 255;  /* #FFFFFF — surface-container-lowest */
+  --bg-cream-100:    245 243 240;  /* #F5F3F0 — surface-container-low */
+  --bg-cream-200:    239 238 235;  /* #EFEEEB — surface-container */
 
   /* Card surface — white in light, warm stone in dark */
-  --bg-card:         245 243 240;  /* #F5F3F0 (Surface-Sand) */
+  --bg-card:         245 243 240;  /* #F5F3F0 — surface-container-low */
 
   /* Dark container surface (headers, footers, buttons, CTA blocks)
      ALWAYS dark in both modes so that light text on it passes.
-     Light text (#F5F0E8) on this: 15.9:1 */
-  --bg-surface:      26 26 26;     /* #1A1A1A */
-  --bg-surface-800:  13 13 13;     /* #0D0D0D */
+     Light text (#FFFFFF) on this: 15.9:1 */
+  --bg-surface:      27 48 34;     /* #1B3022 — primary-container */
+  --bg-surface-800:  6 27 14;      /* #061B0E — primary */
 
   /* Primary text — flips between modes */
-  --text-espresso:    26 26 26;     /* #1A1A1A — light mode: 15.9:1 on cream */
-  --text-espresso-50:  82 82 82;     /* #525252 — secondary, 5.4:1 */
-  --text-espresso-100: 63 63 63;     /* #3F3F3F — 8.7:1 */
-  --text-espresso-200: 42 42 42;     /* #2A2A2A — 13.0:1 */
+  --text-espresso:    27 28 26;     /* #1B1C1A — on-surface */
+  --text-espresso-50:  67 72 67;     /* #434843 — on-surface-variant */
+  --text-espresso-100: 48 49 47;     /* #30312F — inverse-surface */
+  --text-espresso-200: 27 28 26;     /* #1B1C1A — on-surface */
 
   /* White/cream text (for use on dark surfaces) */
-  --text-sand:       245 240 232;  /* #F5F0E8 — 15.9:1 on surface */
-  --text-sand-50:    250 247 242;  /* #FAF7F2 */
+  --text-sand:       255 255 255;  /* #FFFFFF — on-primary */
+  --text-sand-50:    242 240 237;  /* #F2F0ED — inverse-on-surface */
 
   /* Warm border / divider */
-  --border-latte:     200 191 176;  /* #C8BFB0 */
-  --border-latte-300:  216 208 195;  /* #D8D0C3 */
-  --border-latte-400:  200 191 176;  /* #C8BFB0 */
-  --border-latte-500:  168 158 143;  /* #A89E8F */
-  --border-latte-600:  107 99 88;    /* #6B6358 */
-  --border-latte-700:  63 58 52;     /* #3F3A34 */
+  --border-latte:     115 121 115;  /* #737973 — outline */
+  --border-latte-300:  195 200 193;  /* #C3C8C1 — outline-variant */
+  --border-latte-400:  115 121 115;  /* #737973 — outline */
+  --border-latte-500:  115 121 115;  /* #737973 — outline */
+  --border-latte-600:  27 28 26;     /* #1B1C1A — on-surface */
+  --border-latte-700:  27 28 26;     /* #1B1C1A — on-surface */
 
-  /* Secondary muted text — 5.4:1 on cream, 7.5:1 on charcoal (dark mode) */
-  --text-mocha:       90 90 90;     /* #5A5A5A — light mode */
-  --text-mocha-300:    107 99 88;    /* #6B6358 — 3.8:1, large text only */
-  --text-mocha-400:    120 113 108;  /* #78716C */
-  --text-mocha-500:    90 90 90;     /* #5A5A5A */
-  --text-mocha-600:    63 58 52;    /* #3F3A34 */
-  --text-mocha-700:    42 38 36;    /* #2A2624 */
+  /* Secondary muted text */
+  --text-mocha:       67 72 67;     /* #434843 — on-surface-variant */
+  --text-mocha-300:    115 121 115;  /* #737973 — outline */
+  --text-mocha-400:    115 121 115;  /* #737973 — outline */
+  --text-mocha-500:    67 72 67;     /* #434843 — on-surface-variant */
+  --text-mocha-600:    27 28 26;     /* #1B1C1A — on-surface */
+  --text-mocha-700:    27 28 26;     /* #1B1C1A — on-surface */
 
-  /* Forest Green (primary accent - Brand-Forest from DESIGN.md) */
-  --accent-forest:     27 48 34;     /* #1B3022 */
-  --accent-forest-300:  40 76 53;
-  --accent-forest-400:  27 48 34;
-  --accent-forest-500:  27 48 34;
-  --accent-forest-600:  20 36 26;
-  --accent-forest-700:  14 24 17;
+  /* Forest Green (primary accent) */
+  --accent-forest:     27 48 34;     /* #1B3022 — primary-container */
+  --accent-forest-300:  129 153 134;  /* #819986 — on-primary-container */
+  --accent-forest-400:  77 100 83;    /* #4D6453 — surface-tint */
+  --accent-forest-500:  27 48 34;     /* #1B3022 — primary-container */
+  --accent-forest-600:  6 27 14;      /* #061B0E — primary */
+  --accent-forest-700:  6 27 14;      /* #061B0E — primary */
 
   /* Sage green — soft accent, must pass on cream */
-  --accent-sage:       30 80 48;     /* #1E5030 — 7.2:1 */
-  --accent-sage-300:    94 138 102;   /* #5E8A66 */
+  --accent-sage:       94 138 102;   /* #5E8A66 */
+  --accent-sage-300:    158 213 165;  /* #9ED5A5 — lighter sage */
   --accent-sage-400:    120 196 128;  /* #78C480 */
-  --accent-sage-500:    30 80 48;     /* #1E5030 */
-  --accent-sage-600:    74 122 82;    /* #4A7A52 */
+  --accent-sage-500:    94 138 102;   /* #5E8A66 */
+  --accent-sage-600:    74 122 82;    /* #4A7A52 — darker sage */
   
   --accent-bronze: 166 124 82;
 
   /* Focus ring */
-  --focus-ring:        27 48 34;    /* #1B3022 */
-  --focus-ring-offset: 251 249 246;  /* #FBF9F6 */
+  --focus-ring:        27 48 34;     /* #1B3022 — primary-container */
+  --focus-ring-offset: 251 249 246;  /* #FBF9F6 — background */
+
+  /* Extended dark-mode tokens (alias references for component use) */
+  --surface-sidebar:   22 26 23;     /* #161A17 */
+  --surface-card:      26 29 27;     /* #1A1D1B */
 }
 
 /* === Dark Mode (set by .dark class on <html>) === */
@@ -151,6 +203,19 @@
   /* Focus ring */
   --focus-ring:        74 222 128;   /* #4ADE80 */
   --focus-ring-offset: 14 21 15;     /* #0E150F */
+  /* Extended component tokens */
+  --emerald-glow:      74 222 128;     /* #4ADE80 Primary-Container */
+  --emerald-glow-dim:  109 254 156;    /* #6DFE9C Primary-Fixed */
+  --outline-dark:      134 148 134;    /* #869486 Outline */
+  --on-surface-muted:  188 202 187;    /* #BCCABB On-Surface-Variant */
+  --surface-deep:      18 21 19;       /* #121513 Background-Deep */
+  --surface-sidebar:   22 26 23;       /* #161A17 */
+  --surface-card:      26 29 27;       /* #1A1D1B */
+
+
+  /* Extended dark-mode tokens */
+  --surface-sidebar:   22 26 23;     /* #161A17 */
+  --surface-card:      26 29 27;     /* #1A1D1B */
 }
 
 /* ============================================================
@@ -176,6 +241,11 @@ html {
 ::selection {
   background-color: rgb(var(--accent-forest));
   color: #FFFFFF;
+}
+
+.dark ::selection {
+  background-color: #6BFB9A;
+  color: #003919;
 }
 
 :focus-visible {

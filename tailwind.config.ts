@@ -26,10 +26,13 @@ const config: Config = {
         // ========= Card Surface (switches light<->dark) =========
         card: { DEFAULT: "rgb(var(--bg-card) / <alpha-value>)" },
 
-        // ========= Dark Container Surface (always dark, both modes) =========
+        // ========= Dark Container Surface (switches light<->dark) =========
         surface: {
           DEFAULT: "rgb(var(--bg-surface) / <alpha-value>)",
           800: "rgb(var(--bg-surface-800) / <alpha-value>)",
+          sidebar: "rgb(var(--surface-sidebar) / <alpha-value>)",
+          card: "rgb(var(--surface-card) / <alpha-value>)",
+          deep: "rgb(var(--surface-deep) / <alpha-value>)",
         },
 
         // ========= Border (switches light<->dark) =========
@@ -52,7 +55,7 @@ const config: Config = {
           700: "rgb(var(--text-mocha-700) / <alpha-value>)",
         },
 
-        // ========= Forest Green (DESIGN.md Brand-Forest / Brand-Luminous) =========
+        // ========= Forest Green (switches light<->dark — primary accent) =========
         forest: {
           DEFAULT: "rgb(var(--accent-forest) / <alpha-value>)",
           300: "rgb(var(--accent-forest-300) / <alpha-value>)",
@@ -71,7 +74,7 @@ const config: Config = {
           600: "rgb(var(--accent-sage-600) / <alpha-value>)",
         },
 
-        // ========= Accent Bronze (DESIGN.md Accent-Bronze) =========
+        // ========= Accent Bronze (static) =========
         bronze: {
           DEFAULT: "rgb(var(--accent-bronze) / <alpha-value>)",
           50: "#F5EDE4",
@@ -84,11 +87,24 @@ const config: Config = {
           700: "#523A27",
         },
 
-        // ========= Light text for dark surfaces (always #F5F0E8) =========
-        // Used as text-sand on bg-surface. This NEVER switches modes.
+        // ========= Light text for dark surfaces (switches light<->dark) =========
         sand: {
           DEFAULT: "rgb(var(--text-sand) / <alpha-value>)",
           50: "rgb(var(--text-sand-50) / <alpha-value>)",
+        },
+
+        // ========= Extended semantic tokens (switches) =========
+        emerald: {
+          DEFAULT: "rgb(var(--emerald-glow) / <alpha-value>)",
+          dim: "rgb(var(--emerald-glow-dim) / <alpha-value>)",
+        },
+        outline: {
+          DEFAULT: "rgb(var(--border-latte) / <alpha-value>)",
+          variant: "rgb(var(--border-latte-300) / <alpha-value>)",
+          dark: "rgb(var(--outline-dark) / <alpha-value>)",
+        },
+        muted: {
+          DEFAULT: "rgb(var(--on-surface-muted) / <alpha-value>)",
         },
 
         // NOTE: "rust" legacy alias removed — replaced by bronze per DESIGN.md
@@ -97,7 +113,7 @@ const config: Config = {
         heading: ["Playfair Display", "Georgia", "serif"],
         body: ["Montserrat", "system-ui", "sans-serif"],
       },
-      borderRadius: { "4xl": "2rem" },
+      borderRadius: { "4xl": "2rem", sm: "0.25rem", DEFAULT: "0.5rem", md: "0.75rem", lg: "1rem", xl: "1.5rem" },
       boxShadow: {
         soft: "0 2px 10px rgba(0, 0, 0, 0.06)",
         hover: "0 10px 25px rgba(0, 0, 0, 0.08)",

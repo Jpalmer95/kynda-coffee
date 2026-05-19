@@ -79,7 +79,7 @@ export function CartDrawer() {
       {/* Floating cart button (mobile) */}
         <button
           onClick={() => setOpen(true)}
-          className="fixed right-4 bottom-24 z-40 flex h-14 w-14 items-center justify-center rounded-[8px] bg-forest text-[#1A1D1B] shadow-lg transition-transform hover:scale-105 active:scale-95 lg:hidden"
+          className="fixed right-4 bottom-24 z-40 flex h-14 w-14 items-center justify-center rounded-[8px] bg-forest text-[surface-card] shadow-lg transition-transform hover:scale-105 active:scale-95 lg:hidden"
           aria-label={`Open cart (${item_count} items)`}
         >
           <ShoppingBag className="h-6 w-6" />
@@ -105,7 +105,7 @@ export function CartDrawer() {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md transform bg-[#161a17] shadow-[0_0_40px_rgba(0,0,0,0.5)] border-l border-[#3d4a3e] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] touch-pan-y ${
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-md transform bg-[surface-sidebar] shadow-[0_0_40px_rgba(0,0,0,0.5)] border-l border-[latte] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] touch-pan-y ${
           open ? "" : "translate-x-full"
         }`}
         style={{ transform: transformStyle }}
@@ -153,7 +153,7 @@ export function CartDrawer() {
                       {shopItems.map((item) => (
                         <div
                           key={`${item.product.id}-${JSON.stringify(item.selectedVariant)}`}
-                          className="flex gap-4 rounded-[12px] border border-latte/70 bg-card p-4 shadow-sm transition-all dark:border-[#2f372f]/40"
+                          className="flex gap-4 rounded-[12px] border border-latte/70 bg-card p-4 shadow-sm transition-all dark:border-[latte]/40"
                         >
                           <Link
                             href={`/shop/product/${item.product.slug}`}
@@ -167,12 +167,12 @@ export function CartDrawer() {
                             <Link
                               href={`/shop/product/${item.product.slug}`}
                               onClick={() => setOpen(false)}
-                              className="block truncate font-heading text-lg font-bold text-espresso hover:text-forest dark:text-[#FBF9F6] dark:hover:text-[#4ADE80]"
+                              className="block truncate font-heading text-lg font-bold text-espresso hover:text-forest dark:text-[sand] dark:hover:text-[forest]"
                             >
                               {item.product.name}
                             </Link>
                         {item.selectedVariant && (
-                          <div className="mt-2 text-[11px] text-[#4ADE80] font-bold tracking-widest uppercase opacity-90 line-clamp-1">
+                          <div className="mt-2 text-[11px] text-[forest] font-bold tracking-widest uppercase opacity-90 line-clamp-1">
                             {item.selectedVariant.size && <span>{item.selectedVariant.size}</span>}
                             {item.selectedVariant.grind && <span>{item.selectedVariant.size ? " • " : ""}{item.selectedVariant.grind.replace(/-/g, " ")}</span>}
                             {item.selectedVariant.color && <span>{(item.selectedVariant.size || item.selectedVariant.grind) ? " • " : ""}{item.selectedVariant.color}</span>}
@@ -208,7 +208,7 @@ export function CartDrawer() {
                                 </button>
                               </div>
                               <div className="flex gap-2">
-                        <span className="font-mono text-base font-bold text-[#4ADE80]">
+                        <span className="font-mono text-base font-bold text-[forest]">
                           {formatPrice(item.product.price_cents * item.quantity)}
                         </span>
                           </div>
@@ -228,17 +228,17 @@ export function CartDrawer() {
                       {menuItems.map((item) => (
                         <div
                           key={item.id}
-                          className="flex gap-4 rounded-[12px] border border-latte/70 bg-card p-4 shadow-sm transition-all dark:border-[#2f372f]/40"
+                          className="flex gap-4 rounded-[12px] border border-latte/70 bg-card p-4 shadow-sm transition-all dark:border-[latte]/40"
                         >
                           <div className="min-w-0 flex-1">
-                            <div className="font-heading text-lg font-bold text-espresso dark:text-[#FBF9F6]">
+                            <div className="font-heading text-lg font-bold text-espresso dark:text-[sand]">
                               {item.itemName}
                               {item.variationName && item.variationName !== "Regular" && (
                                 <span className="text-mocha font-body text-sm font-medium"> — {item.variationName}</span>
                               )}
                             </div>
                             {item.modifierNames.length > 0 && (
-                              <div className="mt-2 text-[11px] uppercase tracking-wider font-bold text-forest dark:text-[#6DFE9C] opacity-90 line-clamp-2">
+                              <div className="mt-2 text-[11px] uppercase tracking-wider font-bold text-forest dark:text-[forest-300] opacity-90 line-clamp-2">
                                 {item.modifierNames.join(" • ")}
                               </div>
                             )}
@@ -272,7 +272,7 @@ export function CartDrawer() {
                                 </button>
                               </div>
                                   <div className="flex gap-2">
-                        <span className="font-mono text-base font-bold text-[#4ADE80]">
+                        <span className="font-mono text-base font-bold text-[forest]">
                           {formatPrice(item.unitPriceCents * item.quantity)}
                         </span>
                           </div>
@@ -289,18 +289,18 @@ export function CartDrawer() {
 
           {/* Footer */}
           {(shopItems.length > 0 || menuItems.length > 0) && (
-            <div className="border-t border-[#3d4a3e] bg-[#0E150F] px-4 py-6 sm:px-6 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)]">
+            <div className="border-t border-[latte] bg-[cream] px-4 py-6 sm:px-6 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)]">
                 <div className="flex items-center justify-between">
-                  <span className="text-base text-[#BCCABB] font-body tracking-[0.05em] uppercase">Subtotal</span>
-                  <span className="font-heading text-2xl font-bold tracking-tight text-[#4ADE80]">{formatPrice(totalSubtotal)}</span>
+                  <span className="text-base text-[mocha] font-body tracking-[0.05em] uppercase">Subtotal</span>
+                  <span className="font-heading text-2xl font-bold tracking-tight text-[forest]">{formatPrice(totalSubtotal)}</span>
               </div>
-              <p className="mt-1 text-xs text-[#869486] mb-2">Shipping & taxes calculated at checkout</p>
+              <p className="mt-1 text-xs text-[latte-500] mb-2">Shipping & taxes calculated at checkout</p>
 
               {shopItems.length > 0 && (
                 <Link
                   href="/shop/cart"
                   onClick={() => setOpen(false)}
-                  className="btn-accent mt-3 flex w-full items-center justify-center py-4 text-sm font-bold uppercase tracking-[0.05em] rounded-[4px] border border-[#6DFE9C]/30"
+                  className="btn-accent mt-3 flex w-full items-center justify-center py-4 text-sm font-bold uppercase tracking-[0.05em] rounded-[4px] border border-[forest-300]/30"
                 >
                   Shop Checkout
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -313,8 +313,8 @@ export function CartDrawer() {
                   onClick={() => setOpen(false)}
                   className={`flex w-full items-center justify-center py-4 text-sm font-bold uppercase tracking-[0.05em] rounded-[4px] transition-colors ${
                     shopItems.length > 0
-                      ? "btn-secondary mt-2 bg-transparent text-[#BCCABB] border-[#3d4a3e] hover:bg-forest/10 hover:text-[#4ADE80] hover:border-[#4ADE80]/30"
-                      : "btn-accent mt-3 border border-[#6DFE9C]/30"
+                      ? "btn-secondary mt-2 bg-transparent text-[mocha] border-[latte] hover:bg-forest/10 hover:text-[forest] hover:border-[forest]/30"
+                      : "btn-accent mt-3 border border-[forest-300]/30"
                   }`}
                 >
                   Place Menu Order

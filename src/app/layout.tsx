@@ -102,7 +102,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     document.documentElement.classList.add('dark');
                     document.documentElement.setAttribute('data-theme', 'dark');
                   } else {
-                    document.documentElement.removeAttribute('data-theme');
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.setAttribute('data-theme', 'light');
                   }
                 } catch (_) {}
               })();
@@ -110,7 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased touch-pan-y relative relative-z-0 bg-[url('/noise.png')] dark:bg-[#0E150F]">
+        <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased touch-pan-y relative relative-z-0 bg-[url('/noise.png')]">
         <ThemeProvider>
           <ToastProvider>
             <OfflineBanner />

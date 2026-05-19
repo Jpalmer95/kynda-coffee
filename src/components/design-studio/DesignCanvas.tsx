@@ -207,7 +207,7 @@ export function DesignCanvas({ onSave, onPriceChange, initialDesignUrl }: Design
       </div>
 
       {/* Canvas Area */}
-      <div className="relative bg-[#f8f5f0] rounded-[24px] overflow-hidden border border-latte/30 shadow-sm mx-auto" style={{ width: 620, height: 620 }}>
+      <div className="relative bg-cream rounded-[24px] overflow-hidden border border-latte/30 shadow-sm mx-auto" style={{ width: 620, height: 620 }}>
         <Stage
           ref={stageRef}
           width={620}
