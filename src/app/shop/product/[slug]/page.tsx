@@ -439,6 +439,7 @@ export default function ProductDetailPage() {
                 </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-card text-espresso"
+                  aria-label="Increase quantity"
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                 </button>

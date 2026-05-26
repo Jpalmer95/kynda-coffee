@@ -405,11 +405,11 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       </div>
                       <div className="text-right font-mono font-bold w-20 tabular-nums text-[forest] mt-1">{formatPrice(line.unitPriceCents)}</div>
                       <div className="flex items-center gap-2 pl-3 border-l border-[latte]">
-                        <button onClick={() => updateQuantity(line.id, line.quantity - 1)} className="hover:text-white text-[mocha]"><Minus size={15} /></button>
+                        <button onClick={() => updateQuantity(line.id, line.quantity - 1)} className="hover:text-white text-[mocha]" aria-label="Decrease quantity"><Minus size={15} aria-hidden="true" /></button>
                         <div className="w-7 text-center font-mono tabular-nums tracking-widest font-bold">{line.quantity}</div>
-                        <button onClick={() => updateQuantity(line.id, line.quantity + 1)} className="hover:text-white text-[mocha]"><Plus size={15} /></button>
+                        <button onClick={() => updateQuantity(line.id, line.quantity + 1)} className="hover:text-white text-[mocha]" aria-label="Increase quantity"><Plus size={15} aria-hidden="true" /></button>
                       </div>
-                      <button onClick={() => removeLine(line.id)} className="text-[latte-500] hover:text-red-500 ml-1 transition-colors"><Trash2 size={15} /></button>
+                      <button onClick={() => removeLine(line.id)} className="text-[latte-500] hover:text-red-500 ml-1 transition-colors" aria-label="Remove item"><Trash2 size={15} aria-hidden="true" /></button>
                     </div>
                   ))}
                 </div>

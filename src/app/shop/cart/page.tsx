@@ -167,20 +167,20 @@ export default function CartPage() {
 
                   <div className="mt-2 flex items-center justify-between">
                     <div className="flex items-center gap-1 sm:gap-2">
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-card text-espresso transition-colors hover:bg-latte/20">
-                        <Minus className="h-3.5 w-3.5" />
+                      <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-card text-espresso transition-colors hover:bg-latte/20" aria-label="Decrease quantity">
+                        <Minus className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                       <span className="w-7 text-center text-sm font-medium">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-card text-espresso transition-colors hover:bg-latte/20">
-                        <Plus className="h-3.5 w-3.5" />
+                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-latte bg-card text-espresso transition-colors hover:bg-latte/20" aria-label="Increase quantity">
+                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm sm:text-base font-semibold text-espresso">
                         {formatPrice(item.product.price_cents * item.quantity)}
                       </span>
-                      <button onClick={() => handleRemove(item.product.id, item.product.name)} className="rounded-lg p-1.5 text-mocha transition-colors hover:bg-bronze/10 hover:text-forest">
-                        <Trash2 className="h-4 w-4" />
+                      <button onClick={() => handleRemove(item.product.id, item.product.name)} className="rounded-lg p-1.5 text-mocha transition-colors hover:bg-bronze/10 hover:text-forest" aria-label="Remove item">
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </button>
                     </div>
                   </div>

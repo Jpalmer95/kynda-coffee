@@ -1,0 +1,3 @@
+## 2026-05-26 - Missing ARIA Labels on Icon-Only Buttons
+**Learning:** Icon-only buttons for quantity adjustments (+/-) and item removal (trash icon) frequently lack `aria-label`s across various components (cart, QR orders, product detail pages). This is a recurring accessibility pattern in this app that needs to be actively checked.
+**Action:** When working on or reviewing any component that involves lists of items with inline actions (like carts or order summaries), explicitly check for icon-only buttons and ensure they have descriptive `aria-label`s and that the icons have `aria-hidden="true"`.

@@ -360,14 +360,18 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
                     {line.notes && <p className="mt-1 text-xs text-mocha">Note: {line.notes}</p>}
                   </div>
                   <button type="button" onClick={() => updateQuantity(line.id, 0)} className="text-mocha hover:text-forest" aria-label={`Remove ${line.itemName}`}>
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => updateQuantity(line.id, line.quantity - 1)} className="rounded-full border border-latte p-1"><Minus className="h-3 w-3" /></button>
+                    <button type="button" onClick={() => updateQuantity(line.id, line.quantity - 1)} className="rounded-full border border-latte p-1" aria-label="Decrease quantity">
+                      <Minus className="h-3 w-3" aria-hidden="true" />
+                    </button>
                     <span className="text-sm font-medium">{line.quantity}</span>
-                    <button type="button" onClick={() => updateQuantity(line.id, line.quantity + 1)} className="rounded-full border border-latte p-1"><Plus className="h-3 w-3" /></button>
+                    <button type="button" onClick={() => updateQuantity(line.id, line.quantity + 1)} className="rounded-full border border-latte p-1" aria-label="Increase quantity">
+                      <Plus className="h-3 w-3" aria-hidden="true" />
+                    </button>
                   </div>
                   <span className="font-semibold text-espresso">{formatMoney(line.unitPriceCents * line.quantity)}</span>
                 </div>
