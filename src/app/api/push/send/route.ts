@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getAdminUser } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const { user } = await getAdminUser(req);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    // Simple admin auth check via secret header
-    const adminSecret = req.headers.get("x-admin-secret");
-    if (adminSecret !== process.env.ADMIN_SECRET) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     const { title, body, url, target = "all" } = await req.json();
     if (!title || !body) {

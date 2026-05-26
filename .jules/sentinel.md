@@ -1,0 +1,5 @@
+## 2024-05-15 - Hardcoded Client-Side Admin Secret Leak
+
+**Vulnerability:** A critical security flaw was identified where the administrative secret (`NEXT_PUBLIC_ADMIN_SECRET`) was exposed to the client in `src/app/admin/marketing/page.tsx`. The API endpoint `/api/push/send` incorrectly relied on this secret for authorization by expecting an `x-admin-secret` header.
+**Learning:** Prefixing environment variables with `NEXT_PUBLIC_` exposes them in the client bundle. Any secret intended for backend authentication MUST NOT be prefixed with `NEXT_PUBLIC_`. The current implementation also bypassed proper user authentication for an admin endpoint.
+**Prevention:** Always use proper session-based authentication for sensitive endpoints rather than hardcoded shared secrets. Avoid using `NEXT_PUBLIC_` for any environment variable that contains sensitive information like passwords, secrets, or API keys. Admin routes should strictly enforce authentication using the user session (e.g. `getAdminUser()`).
