@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
 import { ShoppingCart, SlidersHorizontal, X, Coffee, Minus, Plus } from "lucide-react";
 import type { PosCatalogCategoryGroup, PosCatalogItem } from "@/lib/pos/catalog";
@@ -21,11 +21,18 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
 
   const { items, item_count, subtotal_cents, updateQuantity, removeItem } = useMenuCartStore();
 
-        const allCategoryNames = categories.map((c) => c.name);
-  const activeCategories =
-    activeCategory === "all"
+  // ⚡ Bolt: Memoize derived category state
+  // Why: MenuClient consumes global cart state (`useMenuCartStore`). This means the entire component
+  // re-renders every time an item is added or cart quantity updates.
+  // Impact: Prevents O(N) array mapping and filtering (allocating new array refs) on every cart update render,
+  // reducing JS thread work and preventing unnecessary cascading re-renders in potential child components.
+  const allCategoryNames = useMemo(() => categories.map((c) => c.name), [categories]);
+
+  const activeCategories = useMemo(() => {
+    return activeCategory === "all"
       ? categories
       : categories.filter((c) => c.name === activeCategory);
+  }, [activeCategory, categories]);
 
   return (
     <div className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

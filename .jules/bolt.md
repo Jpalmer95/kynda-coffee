@@ -1,0 +1,3 @@
+## 2024-05-30 - Memoizing list processing on global cart state changes
+**Learning:** React components consuming Zustand stores (like `useMenuCartStore`) re-render on every state change (e.g. cart quantity update). If these components perform O(N) array transformations (like mapping categories), those operations run on every keystroke/cart action, potentially blocking the main thread.
+**Action:** Always check if a component consuming a global store performs heavy mapping or filtering of props on every render. Use `useMemo` to cache these derived state values to prevent unnecessary re-computations and reference allocations.
