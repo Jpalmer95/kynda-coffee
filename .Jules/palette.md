@@ -1,0 +1,1 @@
+## 2024-05-28 - [Added ARIA attributes to cart buttons]\n**Learning:** Interactive icon-only buttons in cart components (MenuClient and OrderClient) lacked screen reader accessibility.\n**Action:** Applied `aria-label` to quantity adjusters, item removal, and modal controls, and `aria-live` to dynamic quantity displays.

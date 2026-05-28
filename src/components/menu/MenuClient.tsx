@@ -203,9 +203,10 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
         <button
           onClick={() => setShowCart(true)}
           className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-[8px] border border-[forest-300]/30 bg-forest-300/10 text-forest-300 px-5 py-4 font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(74,222,128,0.15)] transition-transform hover:scale-105 active:scale-95"
+          aria-label={`View cart with ${item_count} item${item_count !== 1 ? "s" : ""}, total ${formatMoney(subtotal_cents)}`}
         >
-          <ShoppingCart className="h-5 w-5" />
-          <span>
+          <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+          <span aria-hidden="true">
             {item_count} Item{item_count !== 1 ? "s" : ""} · {formatMoney(subtotal_cents)}
           </span>
         </button>
@@ -228,8 +229,9 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
               <button
                 onClick={() => setShowCart(false)}
                 className="rounded-[4px] border border-[latte] bg-[surface-sidebar] p-2 text-sand-50 hover:bg-[latte] hover:text-sand"
+                aria-label="Close cart"
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
 
@@ -263,22 +265,25 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                             <button
                               onClick={() => updateQuantity(line.id, line.quantity - 1)}
                               className="flex h-8 w-8 items-center justify-center rounded-sm text-sand-50 hover:bg-[latte] hover:text-white"
+                              aria-label={`Decrease quantity of ${line.itemName}`}
                             >
-                              <Minus className="h-4 w-4" />
+                              <Minus className="h-4 w-4" aria-hidden="true" />
                             </button>
-                            <span className="w-8 text-center text-sm font-bold text-sand">
+                            <span className="w-8 text-center text-sm font-bold text-sand" aria-live="polite" aria-atomic="true" aria-label={`Quantity: ${line.quantity}`}>
                               {line.quantity}
                             </span>
                             <button
                               onClick={() => updateQuantity(line.id, line.quantity + 1)}
                               className="flex h-8 w-8 items-center justify-center rounded-sm text-sand-50 hover:bg-[latte] hover:text-white"
+                              aria-label={`Increase quantity of ${line.itemName}`}
                             >
-                              <Plus className="h-4 w-4" />
+                              <Plus className="h-4 w-4" aria-hidden="true" />
                             </button>
                           </div>
                           <button
                             onClick={() => removeItem(line.id)}
                             className="text-sm font-bold text-[latte-500] transition-colors hover:text-red-500 underline decoration-[latte] underline-offset-4"
+                            aria-label={`Remove ${line.itemName} from cart`}
                           >
                             Remove
                           </button>

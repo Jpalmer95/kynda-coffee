@@ -372,8 +372,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         <button
           onClick={() => setShowCart(true)}
           className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-[4px] bg-[forest] border border-[forest] px-6 py-4 font-bold tracking-widest text-surface-deep shadow-[0_0_20px_rgba(74,222,128,0.3)] md:bottom-8 md:right-8 uppercase hover:bg-forest-300 hover:shadow-[0_0_30px_rgba(74,222,128,0.5)] transition-all"
+          aria-label={`View cart with ${itemCount} item${itemCount !== 1 ? "s" : ""}, total ${formatMoney(subtotalCents)}`}
         >
-        <ShoppingCart className="size-5" /> {itemCount} item{itemCount !== 1 ? "s" : ""} • {formatMoney(subtotalCents)}
+        <ShoppingCart className="size-5" aria-hidden="true" /> <span aria-hidden="true">{itemCount} item{itemCount !== 1 ? "s" : ""} • {formatMoney(subtotalCents)}</span>
       </button>
       )}
 
@@ -389,7 +390,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                 <div className="font-heading text-3xl tracking-tight text-sand">Your Order</div>
                 {splitBill && <div className="text-[11px] uppercase tracking-widest text-[forest] font-bold mt-1">Group order (split later)</div>}
               </div>
-              <button onClick={() => setShowCart(false)} className="text-xl text-[mocha] hover:text-white">×</button>
+              <button onClick={() => setShowCart(false)} aria-label="Close cart" className="text-xl text-[mocha] hover:text-white">×</button>
             </div>
 
             {cart.length === 0 ? (
@@ -405,11 +406,11 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       </div>
                       <div className="text-right font-mono font-bold w-20 tabular-nums text-[forest] mt-1">{formatPrice(line.unitPriceCents)}</div>
                       <div className="flex items-center gap-2 pl-3 border-l border-[latte]">
-                        <button onClick={() => updateQuantity(line.id, line.quantity - 1)} className="hover:text-white text-[mocha]"><Minus size={15} /></button>
-                        <div className="w-7 text-center font-mono tabular-nums tracking-widest font-bold">{line.quantity}</div>
-                        <button onClick={() => updateQuantity(line.id, line.quantity + 1)} className="hover:text-white text-[mocha]"><Plus size={15} /></button>
+                        <button onClick={() => updateQuantity(line.id, line.quantity - 1)} aria-label={`Decrease quantity of ${line.itemName}`} className="hover:text-white text-[mocha]"><Minus size={15} aria-hidden="true" /></button>
+                        <div className="w-7 text-center font-mono tabular-nums tracking-widest font-bold" aria-live="polite" aria-atomic="true" aria-label={`Quantity: ${line.quantity}`}>{line.quantity}</div>
+                        <button onClick={() => updateQuantity(line.id, line.quantity + 1)} aria-label={`Increase quantity of ${line.itemName}`} className="hover:text-white text-[mocha]"><Plus size={15} aria-hidden="true" /></button>
                       </div>
-                      <button onClick={() => removeLine(line.id)} className="text-[latte-500] hover:text-red-500 ml-1 transition-colors"><Trash2 size={15} /></button>
+                      <button onClick={() => removeLine(line.id)} aria-label={`Remove ${line.itemName} from cart`} className="text-[latte-500] hover:text-red-500 ml-1 transition-colors"><Trash2 size={15} aria-hidden="true" /></button>
                     </div>
                   ))}
                 </div>
