@@ -1,0 +1,5 @@
+
+## 2024-05-28 - [CRITICAL] Missing Authentication in Next.js API Routes due to Middleware Bypass
+**Vulnerability:** Several sensitive administrative endpoints under `/api/admin/*` were completely unauthenticated, allowing unauthenticated requests to modify store settings, read/create/delete promo codes, and read/modify gift cards.
+**Learning:** Next.js middleware in this project explicitly bypasses protection for `/api/` paths (`if (pathname.startsWith("/admin") && !pathname.startsWith("/api/"))`), which pushes the responsibility of authentication to the individual route handlers. This architectural pattern is highly error-prone, as developers can easily forget to include the manual auth check (`const { user } = await getAdminUser(req);`) when creating new endpoints.
+**Prevention:** Always verify that every single file matching `src/app/api/admin/**/*.ts` calls `getAdminUser()` or another authentication method, as the middleware provides zero protection for these paths. Consider refactoring the middleware to enforce authentication for `/api/admin/*` paths to establish a secure-by-default architecture.

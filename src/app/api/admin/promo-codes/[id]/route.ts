@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getAdminUser } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +8,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { user } = await getAdminUser(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const { id } = await params;
     const body = await req.json();
@@ -32,9 +36,12 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { user } = await getAdminUser(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const { id } = await params;
     const { error } = await supabaseAdmin()

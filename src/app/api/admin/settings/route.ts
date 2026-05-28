@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getAdminUser } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
 // GET current settings
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { user } = await getAdminUser(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const { data, error } = await supabaseAdmin()
       .from("store_settings")
@@ -25,6 +29,9 @@ export async function GET() {
 
 // POST save settings
 export async function POST(req: NextRequest) {
+  const { user } = await getAdminUser(req);
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const body = await req.json();
 
