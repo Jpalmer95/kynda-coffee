@@ -79,6 +79,64 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const loyaltyPointsRedeemed = parseInt(metadata.loyalty_points_redeemed ?? "0", 10);
   const loyaltyValueCents = parseInt(metadata.loyalty_value_cents ?? "0", 10);
 
+  // ── Printful merch order confirmation ──
+  // If this checkout came from the merch checkout flow, confirm the draft
+  // Printful order now that payment has succeeded.
+  const printfulDraftId = metadata.printful_draft_id;
+  if (printfulDraftId) {
+    try {
+      const { confirmOrder } = await import("@/lib/printful/client");
+      await confirmOrder(Number(printfulDraftId));
+      console.log(`[Stripe Webhook] Confirmed Printful order ${printfulDraftId}`);
+
+      // Update order record if we have one
+      const kyndaOrderId = metadata.kynda_order_id;
+      if (kyndaOrderId) {
+        const db = supabaseAdmin();
+        const { data: existing } = await db
+          .from("orders")
+          .select("metadata")
+          .eq("id", kyndaOrderId)
+          .maybeSingle();
+        if (existing) {
+          await db
+            .from("orders")
+            .update({
+              fulfillment_status: "processing",
+              payment_status: "paid",
+              paid_at: new Date().toISOString(),
+              metadata: {
+                ...((existing.metadata as Record<string, unknown>) || {}),
+                printful_order_id: Number(printfulDraftId),
+                confirmed_at: new Date().toISOString(),
+              },
+            })
+            .eq("id", kyndaOrderId);
+        }
+      }
+
+      // Send order confirmation email for merch orders
+      try {
+        const { sendEmail } = await import("@/lib/email/service");
+        await sendEmail({
+          to: email,
+          subject: "Your Kynda merch order is confirmed! 🎨",
+          template: "order-confirmation",
+          data: {
+            customer_name: metadata.customer_name || email.split("@")[0],
+            order_type: "merch",
+            printful_order_id: printfulDraftId,
+          },
+        });
+      } catch (emailErr) {
+        console.warn("[Stripe Webhook] Merch confirmation email failed:", emailErr);
+      }
+    } catch (pfErr: any) {
+      console.error("[Stripe Webhook] Printful confirmation failed:", pfErr.message);
+      // Non-fatal — order is paid, we can confirm manually from admin
+    }
+  }
+
   // Calculate amount paid (after discounts, loyalty, etc.)
   const amountTotalCents = session.amount_total ?? 0;
 
