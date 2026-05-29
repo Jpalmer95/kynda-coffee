@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import type { Product } from "@/types";
 import {
   Sparkles,
@@ -9,6 +9,10 @@ import {
   Wand2,
   ShoppingCart,
   Info,
+  Save,
+  FolderOpen,
+  Trash2,
+  Check,
 } from "lucide-react";
 import {
   DesignCanvas,
@@ -29,12 +33,28 @@ import {
   calculateRetailPrice,
 } from "@/lib/printful/catalog";
 
-type StudioTab = "products" | "presets" | "generate";
+type StudioTab = "products" | "presets" | "generate" | "saved";
+
+interface SavedDesign {
+  id: string;
+  name: string;
+  product_id: string | null;
+  variant_id: number | null;
+  product_type: string | null;
+  layers: DesignLayer[];
+  view: string;
+  thumbnail_url: string | null;
+  prompt: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 const DEFAULT_PRODUCT = PRINTFUL_CATALOG[0]; // Unisex Tee
+const AUTOSAVE_DELAY_MS = 30_000; // 30 seconds of inactivity
 
 export default function DesignStudioPage() {
   const canvasRef = useRef<DesignCanvasHandle>(null);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [activeTab, setActiveTab] = useState<StudioTab>("products");
   const [selectedProduct, setSelectedProduct] = useState<PrintfulProduct>(DEFAULT_PRODUCT);
@@ -54,6 +74,13 @@ export default function DesignStudioPage() {
   // Canvas state
   const [currentLayers, setCurrentLayers] = useState<DesignLayer[]>([]);
 
+  // Design persistence state
+  const [currentDesignId, setCurrentDesignId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "unsaved" | "saving" | "error">("idle");
+  const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
+  const [isLoadingDesigns, setIsLoadingDesigns] = useState(false);
+
   const addItem = useCartStore((s) => s.addItem);
   const retailPrice = calculateRetailPrice(selectedProduct, selectedVariant || undefined);
 
@@ -70,16 +97,159 @@ export default function DesignStudioPage() {
 
   const handleDesignChange = useCallback((layers: DesignLayer[]) => {
     setCurrentLayers(layers);
+    // Mark as unsaved when layers change (and we have layers)
+    if (layers.length > 0) {
+      setSaveStatus("unsaved");
+    }
   }, []);
 
-  const handleSave = useCallback(
-    (layers: DesignLayer[], productId: string) => {
-      // TODO: Wire to Supabase saved_designs
-      console.log("Design saved:", { layers, productId });
-      alert("Design saved to your account!");
-    },
-    []
-  );
+  // ── Autosave: fires 30s after the last canvas change ──
+  useEffect(() => {
+    if (saveStatus !== "unsaved" || currentLayers.length === 0) return;
+
+    // Clear any existing timer
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+
+    autosaveTimerRef.current = setTimeout(() => {
+      handleSaveDesign(true);
+    }, AUTOSAVE_DELAY_MS);
+
+    return () => {
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentLayers, saveStatus]);
+
+  // ── Save design to Supabase ──
+  async function handleSaveDesign(isAutosave = false) {
+    if (currentLayers.length === 0) return;
+    setIsSaving(true);
+    setSaveStatus("saving");
+
+    try {
+      // Generate thumbnail from canvas
+      const thumbnail = canvasRef.current?.exportThumbnail() || null;
+
+      const payload = {
+        id: currentDesignId || undefined,
+        name: currentDesignId ? undefined : `${selectedProduct.name} Design`,
+        product_id: selectedProduct.id,
+        variant_id: selectedVariant?.id || null,
+        product_type: selectedProduct.id,
+        layers: currentLayers,
+        view,
+        thumbnail_url: thumbnail,
+        prompt: prompt || null,
+      };
+
+      const res = await fetch("/api/designs/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Likely not authenticated — silently skip autosave errors
+        if (!isAutosave) console.error("Save failed:", data.error);
+        setSaveStatus("error");
+        return;
+      }
+
+      // Track the design ID so future saves update instead of creating duplicates
+      if (data.design?.id) {
+        setCurrentDesignId(data.design.id);
+      }
+      setSaveStatus("saved");
+
+      // Refresh saved designs list if we're on the saved tab
+      if (activeTab === "saved") {
+        fetchSavedDesigns();
+      }
+    } catch {
+      setSaveStatus("error");
+      if (!isAutosave) alert("Failed to save design. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // ── Load saved designs from Supabase ──
+  async function fetchSavedDesigns() {
+    setIsLoadingDesigns(true);
+    try {
+      const res = await fetch("/api/designs/save");
+      if (!res.ok) {
+        setSavedDesigns([]);
+        return;
+      }
+      const data = await res.json();
+      setSavedDesigns(data.designs ?? []);
+    } catch {
+      setSavedDesigns([]);
+    } finally {
+      setIsLoadingDesigns(false);
+    }
+  }
+
+  // ── Load a saved design back onto the canvas ──
+  function handleLoadDesign(design: SavedDesign) {
+    // Restore the product if different
+    const product = PRINTFUL_CATALOG.find(
+      (p) => p.id === design.product_id || p.id === design.product_type
+    );
+    if (product) {
+      setSelectedProduct(product);
+      // Restore variant if available
+      if (design.variant_id) {
+        const variant = product.variants.find((v) => v.id === design.variant_id);
+        if (variant) setSelectedVariant(variant);
+      }
+    }
+
+    // Restore view
+    if (design.view === "back" || design.view === "front") {
+      setView(design.view);
+    }
+
+    // Load layers onto canvas
+    canvasRef.current?.loadLayers(design.layers);
+    setCurrentLayers(design.layers);
+    setCurrentDesignId(design.id);
+    setSaveStatus("saved");
+    setActiveTab("products");
+  }
+
+  // ── Delete a saved design ──
+  async function handleDeleteDesign(designId: string) {
+    if (!confirm("Delete this design?")) return;
+
+    try {
+      await fetch(`/api/designs/${designId}`, { method: "DELETE" });
+      setSavedDesigns((prev) => prev.filter((d) => d.id !== designId));
+      if (currentDesignId === designId) {
+        setCurrentDesignId(null);
+        setSaveStatus("idle");
+      }
+    } catch {
+      alert("Failed to delete design.");
+    }
+  }
+
+  // ── Tab switch: load designs when switching to saved tab ──
+  useEffect(() => {
+    if (activeTab === "saved") {
+      fetchSavedDesigns();
+    }
+  }, [activeTab]);
+
+  // Cleanup autosave timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    };
+  }, []);
 
   // Imperative add-to-canvas
   const addImageToCanvas = useCallback(
@@ -253,6 +423,16 @@ export default function DesignStudioPage() {
               <Palette size={16} /> Designs
             </button>
             <button
+              onClick={() => setActiveTab("saved")}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                activeTab === "saved"
+                  ? "bg-background text-espresso shadow-sm"
+                  : "text-mocha hover:text-espresso"
+              }`}
+            >
+              <FolderOpen size={16} /> My Designs
+            </button>
+            <button
               onClick={() => setActiveTab("generate")}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
                 activeTab === "generate"
@@ -287,6 +467,84 @@ export default function DesignStudioPage() {
                 onSelectDesign={addImageToCanvas}
                 selectedProductId={selectedProduct.id}
               />
+            )}
+
+            {activeTab === "saved" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-heading text-xl">My Saved Designs</h3>
+                  <button
+                    onClick={fetchSavedDesigns}
+                    className="text-sm text-forest hover:underline"
+                  >
+                    Refresh
+                  </button>
+                </div>
+
+                {isLoadingDesigns ? (
+                  <div className="text-center py-12 text-mocha">
+                    Loading your designs...
+                  </div>
+                ) : savedDesigns.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FolderOpen size={40} className="mx-auto text-mocha/40 mb-3" />
+                    <p className="text-mocha">No saved designs yet.</p>
+                    <p className="text-sm text-mocha/70 mt-1">
+                      Create a design and hit Save to see it here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {savedDesigns.map((design) => (
+                      <div
+                        key={design.id}
+                        className="group relative bg-card rounded-xl border border-latte/20 overflow-hidden hover:shadow-hover transition cursor-pointer"
+                        onClick={() => handleLoadDesign(design)}
+                      >
+                        {/* Thumbnail */}
+                        <div className="aspect-square bg-muted">
+                          {design.thumbnail_url ? (
+                            <img
+                              src={design.thumbnail_url}
+                              alt={design.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-mocha/40">
+                              <Package size={32} />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="p-2.5">
+                          <div className="text-sm font-medium truncate">
+                            {design.name}
+                          </div>
+                          <div className="text-xs text-mocha truncate">
+                            {PRINTFUL_CATALOG.find(
+                              (p) => p.id === design.product_id || p.id === design.product_type
+                            )?.name || design.product_id || "Custom"}{" "}
+                            · {new Date(design.updated_at).toLocaleDateString()}
+                          </div>
+                        </div>
+
+                        {/* Delete button (visible on hover) */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDesign(design.id);
+                          }}
+                          className="absolute top-2 right-2 p-1.5 rounded-lg bg-background/80 opacity-0 group-hover:opacity-100 transition hover:bg-destructive/10 hover:text-destructive"
+                          aria-label="Delete design"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {activeTab === "generate" && (
@@ -383,10 +641,41 @@ export default function DesignStudioPage() {
               product={selectedProduct}
               view={view}
               onViewChange={setView}
-              onSave={handleSave}
+              onSave={() => handleSaveDesign(false)}
               onDesignChange={handleDesignChange}
               initialDesignUrl={null}
             />
+
+            {/* Save Button + Status */}
+            <div className="flex items-center justify-between bg-card rounded-xl p-3 border border-latte/20">
+              <div className="flex items-center gap-2 text-sm">
+                {saveStatus === "saved" && (
+                  <span className="flex items-center gap-1 text-green-600">
+                    <Check size={14} /> Saved
+                  </span>
+                )}
+                {saveStatus === "unsaved" && (
+                  <span className="text-amber-600">Unsaved changes</span>
+                )}
+                {saveStatus === "saving" && (
+                  <span className="text-mocha">Saving...</span>
+                )}
+                {saveStatus === "error" && (
+                  <span className="text-red-500">Save failed</span>
+                )}
+                {saveStatus === "idle" && (
+                  <span className="text-mocha">No design yet</span>
+                )}
+              </div>
+              <button
+                onClick={() => handleSaveDesign(false)}
+                disabled={!hasDesign || isSaving}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-forest/10 text-forest hover:bg-forest/20 transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Save size={14} />
+                {isSaving ? "Saving..." : "Save Design"}
+              </button>
+            </div>
 
             {/* Cart / Order Section */}
             <div className="bg-card rounded-xl p-4 border border-latte/20 space-y-4">

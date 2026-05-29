@@ -39,6 +39,8 @@ export interface DesignCanvasHandle {
   addLayerFromUrl: (url: string, type: DesignLayer["type"], name?: string) => void;
   clearLayers: () => void;
   getLayers: () => DesignLayer[];
+  loadLayers: (layers: DesignLayer[]) => void;
+  exportThumbnail: () => string | null; // Returns dataURL or null
 }
 
 interface DesignCanvasProps {
@@ -242,10 +244,24 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
 
     const getLayers = useCallback(() => layers, [layers]);
 
+    const loadLayers = useCallback((newLayers: DesignLayer[]) => {
+      setLayers(newLayers);
+      setSelectedLayerId(null);
+    }, []);
+
+    const exportThumbnail = useCallback((): string | null => {
+      if (!stageRef.current) return null;
+      try {
+        return stageRef.current.toDataURL({ pixelRatio: 0.5, mimeType: "image/jpeg", quality: 0.7 });
+      } catch {
+        return null;
+      }
+    }, []);
+
     useImperativeHandle(
       ref,
-      () => ({ addLayerFromUrl, clearLayers, getLayers }),
-      [addLayerFromUrl, clearLayers, getLayers]
+      () => ({ addLayerFromUrl, clearLayers, getLayers, loadLayers, exportThumbnail }),
+      [addLayerFromUrl, clearLayers, getLayers, loadLayers, exportThumbnail]
     );
 
     const updateLayer = (id: string, changes: Partial<DesignLayer>) => {
