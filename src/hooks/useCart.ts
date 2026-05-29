@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Cart, CartItem, Product } from "@/types";
 import { haptic } from "@/lib/haptics";
+import { backupCart } from "@/lib/idb";
 
 interface CartStore extends Cart {
   addItem: (product: Product, quantity?: number, variant?: CartItem["selectedVariant"]) => void;
@@ -138,3 +139,8 @@ export const useCartStore = create<CartStore>()(
     { name: "kynda-cart" }
   )
 );
+
+// Mirror cart state to IndexedDB for offline resilience
+useCartStore.subscribe((state) => {
+  backupCart("shop", state.items).catch(() => {});
+});

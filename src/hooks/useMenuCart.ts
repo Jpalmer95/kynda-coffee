@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { PosCatalogItem, PosCatalogVariation, PosCatalogModifier } from "@/lib/pos/catalog";
 import { haptic } from "@/lib/haptics";
+import { backupCart } from "@/lib/idb";
 
 export interface MenuCartItem {
   id: string;
@@ -120,3 +121,8 @@ export const useMenuCartStore = create<MenuCartStore>()(
     { name: "kynda-menu-cart" }
   )
 );
+
+// Mirror menu cart to IndexedDB for offline resilience
+useMenuCartStore.subscribe((state) => {
+  backupCart("menu", state.items).catch(() => {});
+});

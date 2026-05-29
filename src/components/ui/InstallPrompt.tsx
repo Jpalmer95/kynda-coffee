@@ -14,8 +14,11 @@ export function InstallPrompt() {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    // Check if already installed (standalone display or navigator)
+    if (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as unknown as Record<string, unknown>).standalone === true
+    ) {
       setIsInstalled(true);
       return;
     }
@@ -25,16 +28,25 @@ export function InstallPrompt() {
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    const handleInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
 
-    // Check if user previously dismissed
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    window.addEventListener("appinstalled", handleInstalled);
+
+    // Check if user previously dismissed (suppress for 14 days)
     const dismissedAt = localStorage.getItem("kynda-install-dismissed");
     if (dismissedAt) {
       const daysSince = (Date.now() - Number(dismissedAt)) / (1000 * 60 * 60 * 24);
-      if (daysSince < 7) setDismissed(true);
+      if (daysSince < 14) setDismissed(true);
     }
 
-    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      window.removeEventListener("appinstalled", handleInstalled);
+    };
   }, []);
 
   const handleInstall = async () => {
@@ -56,35 +68,40 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+80px)] left-4 right-4 z-50 sm:left-auto sm:right-6 sm:w-80 sm:bottom-6">
-      <div className="rounded-2xl border border-latte/30 bg-card p-4 shadow-xl animate-slide-up">
+      <div className="rounded-2xl border border-border/40 bg-card p-4 shadow-xl animate-slide-up backdrop-blur-sm">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-surface">
             <span className="text-lg">☕</span>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-espresso">Add Kynda to Home Screen</p>
-            <p className="mt-0.5 text-xs text-mocha">
-              Get faster access, offline browsing, and exclusive app-only offers.
+            <p className="text-sm font-semibold text-foreground">
+              Add Kynda to Home Screen
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Faster access, offline browsing, and app-only offers.
             </p>
             <div className="mt-3 flex gap-2">
               <button
+                type="button"
                 onClick={handleInstall}
-                className="inline-flex items-center gap-1.5 rounded-full bg-surface px-4 py-2 text-xs font-medium text-sand hover:bg-mocha transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full bg-surface px-4 py-2 text-xs font-medium text-sand hover:bg-surface-800 transition-colors"
               >
                 <Download className="h-3.5 w-3.5" />
                 Install
               </button>
               <button
+                type="button"
                 onClick={handleDismiss}
-                className="rounded-full px-4 py-2 text-xs font-medium text-mocha hover:bg-latte/20 transition-colors"
+                className="rounded-full px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
               >
                 Not now
               </button>
             </div>
           </div>
           <button
+            type="button"
             onClick={handleDismiss}
-            className="flex-shrink-0 rounded-lg p-1 text-mocha hover:bg-latte/20 transition-colors"
+            className="flex-shrink-0 rounded-lg p-1 text-muted-foreground hover:bg-muted transition-colors"
             aria-label="Dismiss install prompt"
           >
             <X className="h-4 w-4" />
