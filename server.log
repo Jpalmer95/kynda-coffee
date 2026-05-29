@@ -1,0 +1,88 @@
+
+> kynda-coffee@0.1.0 dev /app
+> next dev -p 3000 -H 0.0.0.0
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://0.0.0.0:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+
+ ✓ Starting...
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+ ✓ Ready in 1882ms
+ ○ Compiling / ...
+ GET / 200 in 5.8s (compile: 5.3s, render: 536ms)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createClient (src/lib/supabase/middleware.ts:13:38)
+    at middleware (src/middleware.ts:19:46)
+  11 |   });
+  12 |
+> 13 |   const supabase = createServerClient(supabaseUrl, supabaseKey, {
+     |                                      ^
+  14 |     cookies: {
+  15 |       getAll() {
+  16 |         return request.cookies.getAll();
+ GET /noise.png 404 in 1636ms (compile: 1192ms, render: 443ms)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createClient (src/lib/supabase/middleware.ts:13:38)
+    at middleware (src/middleware.ts:19:46)
+  11 |   });
+  12 |
+> 13 |   const supabase = createServerClient(supabaseUrl, supabaseKey, {
+     |                                      ^
+  14 |     cookies: {
+  15 |       getAll() {
+  16 |         return request.cookies.getAll();
+ GET /sw.js 404 in 1576ms (compile: -161838µs, proxy.ts: 1553ms, render: 185ms)
+ GET /api/products?featured=true&limit=4 404 in 2.0s (compile: -12684µs, proxy.ts: 2.0s, render: 21ms)
+ GET / 200 in 120ms (compile: 4ms, render: 116ms)
+ GET /noise.png 404 in 93ms (compile: 6ms, render: 88ms)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createClient (src/lib/supabase/middleware.ts:13:38)
+    at middleware (src/middleware.ts:19:46)
+  11 |   });
+  12 |
+> 13 |   const supabase = createServerClient(supabaseUrl, supabaseKey, {
+     |                                      ^
+  14 |     cookies: {
+  15 |       getAll() {
+  16 |         return request.cookies.getAll();
+ GET /sw.js 404 in 79ms (compile: -14537µs, proxy.ts: 74ms, render: 19ms)
+ ⨯ Error: Your project's URL and Key are required to create a Supabase client!
+
+Check your Supabase project's API settings to find these values
+
+https://supabase.com/dashboard/project/_/settings/api
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
+    at createClient (src/lib/supabase/middleware.ts:13:38)
+    at middleware (src/middleware.ts:19:46)
+  11 |   });
+  12 |
+> 13 |   const supabase = createServerClient(supabaseUrl, supabaseKey, {
+     |                                      ^
+  14 |     cookies: {
+  15 |       getAll() {
+  16 |         return request.cookies.getAll();
+ GET /api/products?featured=true&limit=4 404 in 87ms (compile: -30409µs, proxy.ts: 80ms, render: 37ms)

@@ -136,12 +136,13 @@ export function CartDrawer() {
                 <ShoppingBag className="h-12 w-12 text-latte" />
                 <p className="mt-4 font-medium text-espresso">Your cart is empty</p>
                 <p className="mt-1 text-sm text-mocha">Browse our shop or menu and add something you love.</p>
-                <button
+                <Link
+                  href="/shop"
                   onClick={() => setOpen(false)}
-                  className="btn-primary mt-6"
+                  className="btn-primary mt-6 inline-flex"
                 >
                   Start Shopping
-                </button>
+                </Link>
               </div>
             ) : (
               <div className="space-y-6">
@@ -185,7 +186,7 @@ export function CartDrawer() {
                                   <button
                                     onClick={() => removeShopItem(item.product.id)}
                                     className="flex h-8 w-8 items-center justify-center rounded-[4px] text-mocha hover:text-red-600 hover:bg-latte/20"
-                                    aria-label="Remove item"
+                                    aria-label={`Remove ${item.product.name} from cart`}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </button>
@@ -193,16 +194,16 @@ export function CartDrawer() {
                                   <button
                                     onClick={() => updateShopQty(item.product.id, item.quantity - 1)}
                                     className="flex h-8 w-8 items-center justify-center rounded-[4px] text-espresso hover:bg-latte/20"
-                                    aria-label="Decrease quantity"
+                                    aria-label={`Decrease quantity of ${item.product.name}`}
                                   >
                                     <Minus className="h-4 w-4" />
                                   </button>
                                 )}
-                                <span className="w-8 text-center text-sm font-bold text-espresso">{item.quantity}</span>
+                                <span className="w-8 text-center text-sm font-bold text-espresso" aria-label={`Quantity: ${item.quantity}`}>{item.quantity}</span>
                                 <button
                                   onClick={() => updateShopQty(item.product.id, item.quantity + 1)}
                                   className="flex h-8 w-8 items-center justify-center rounded-[4px] text-espresso hover:bg-latte/20"
-                                  aria-label="Increase quantity"
+                                  aria-label={`Increase quantity of ${item.product.name}`}
                                 >
                                   <Plus className="h-4 w-4" />
                                 </button>
@@ -249,7 +250,7 @@ export function CartDrawer() {
                                   <button
                                     onClick={() => removeMenuItem(item.id)}
                                     className="flex h-8 w-8 items-center justify-center rounded-[4px] text-mocha hover:text-red-600 hover:bg-latte/20"
-                                    aria-label="Remove item"
+                                    aria-label={`Remove ${item.itemName} from cart`}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </button>
@@ -257,16 +258,16 @@ export function CartDrawer() {
                                   <button
                                     onClick={() => updateMenuQty(item.id, item.quantity - 1)}
                                     className="flex h-8 w-8 items-center justify-center rounded-[4px] text-espresso hover:bg-latte/20"
-                                    aria-label="Decrease quantity"
+                                    aria-label={`Decrease quantity of ${item.itemName}`}
                                   >
                                     <Minus className="h-4 w-4" />
                                   </button>
                                 )}
-                                <span className="w-8 text-center text-sm font-bold text-espresso">{item.quantity}</span>
+                                <span className="w-8 text-center text-sm font-bold text-espresso" aria-label={`Quantity: ${item.quantity}`}>{item.quantity}</span>
                                 <button
                                   onClick={() => updateMenuQty(item.id, item.quantity + 1)}
                                   className="flex h-8 w-8 items-center justify-center rounded-[4px] text-espresso hover:bg-latte/20"
-                                  aria-label="Increase quantity"
+                                  aria-label={`Increase quantity of ${item.itemName}`}
                                 >
                                   <Plus className="h-4 w-4" />
                                 </button>
