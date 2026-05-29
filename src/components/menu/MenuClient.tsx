@@ -118,7 +118,7 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
       <div className="space-y-12">
         {activeCategories.map((category) => (
           <div key={category.name}>
-            <h2 className="mb-6 font-heading text-3xl font-bold tracking-tight text-sand border-b border-latte/20 pb-4">
+            <h2 className="mb-6 font-heading text-3xl font-bold tracking-tight text-espresso border-b border-latte/20 pb-4">
               {category.name}
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
@@ -138,14 +138,14 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                       {/* Price Badge Overlay */}
-                      <div className="absolute right-3 top-3 rounded-[4px] bg-surface/90 px-3 py-1 font-body text-sm font-bold tracking-widest text-[sand] shadow-sm backdrop-blur-sm border border-latte/10">
+                      <div className="absolute right-3 top-3 rounded-[4px] bg-surface/90 px-3 py-1 font-body text-sm font-bold tracking-widest text-sand shadow-sm backdrop-blur-sm border border-latte/10">
                         {item.priceLabel}
                       </div>
                     </div>
                   ) : (
                     <div className="relative flex aspect-square items-center justify-center bg-surface-deep">
                       <Coffee className="h-12 w-12 text-latte" />
-                      <div className="absolute right-3 top-3 rounded-[4px] bg-surface/90 px-3 py-1 font-body text-sm font-bold tracking-widest text-[sand] shadow-sm backdrop-blur-sm border border-latte/10">
+                      <div className="absolute right-3 top-3 rounded-[4px] bg-surface/90 px-3 py-1 font-body text-sm font-bold tracking-widest text-sand shadow-sm backdrop-blur-sm border border-latte/10">
                         {item.priceLabel}
                       </div>
                     </div>

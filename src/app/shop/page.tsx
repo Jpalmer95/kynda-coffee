@@ -186,7 +186,7 @@ export default function ShopPage() {
             <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-sand">
               Want Something Unique?
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-latte/70">
+            <p className="mt-3 text-sm sm:text-base text-sand/90">
               Head to the Design Studio to create your own custom merch with AI.
               Choose your product, browse trends, generate designs, and see them
               come to life.

@@ -27,9 +27,9 @@ export default function AboutPage() {
               <Flame className="h-6 w-6 text-sand" aria-hidden="true" />
             </div>
             <h2 className="font-heading text-2xl sm:text-3xl font-bold text-sand tracking-wide">
-              KYNDA <span className="text-latte/70 font-normal italic">/KEN-DUH/</span>
+              KYNDA <span className="text-sand/80 font-normal italic">/KEN-DUH/</span>
             </h2>
-            <p className="mt-3 text-base sm:text-lg text-latte/80 max-w-xl mx-auto">
+            <p className="mt-3 text-base sm:text-lg text-sand/80 max-w-xl mx-auto">
               To light or tend a fire. To heat a room. To kindle a flame.
             </p>
           </div>
@@ -137,8 +137,8 @@ export default function AboutPage() {
               </div>
               <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
                 <Phone className="h-5 w-5 text-sand/70 flex-shrink-0" />
-                <p className="text-sm text-latte/80">
-                  <a href="tel:+15122196781" className="hover:text-sand transition-colors">
+                <p className="text-sm text-sand/80">
+                  <a href="tel:+151****6781" className="hover:text-sand transition-colors">
                     (512) 219-6781
                   </a>
                 </p>
@@ -146,8 +146,7 @@ export default function AboutPage() {
               <div className="flex items-center gap-3 sm:flex-col sm:gap-2">
                 <Clock className="h-5 w-5 text-sand/70 flex-shrink-0" />
                 <div className="text-sm text-sand/80">
-                  <p>Mon – Fri: 6:30 AM – 5:00 PM</p>
-                  <p>Sat – Sun: 7:00 AM – 5:00 PM</p>
+                  <p>Mon – Sun: 7:00 AM – 5:00 PM</p>
                 </div>
               </div>
             </div>

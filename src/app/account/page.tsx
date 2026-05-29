@@ -196,7 +196,7 @@ export default function AccountPage() {
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="input-field pl-10"
+                      className="input-field pl-12"
                     />
                   </div>
                 </div>
