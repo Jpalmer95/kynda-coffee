@@ -74,7 +74,7 @@
 - [x] Menu specials section (highlight featured items)
 - [x] Kiosk mode (/kiosk - tablet-optimized, Square-only payment)
 - [ ] "Build Your Own" custom drink builder
-- [ ] QR table ordering (/order?table=X)
+- [x] QR table ordering (/order?table=X)
 - [x] Fulfillment mode selector (pickup/curbside/to-go/delivery)
 - [x] Curbside vehicle description input (mandatory when mode = pickup)
 - [x] Delivery platform links (DoorDash/Uber Eats buttons)

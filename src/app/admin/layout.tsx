@@ -18,6 +18,7 @@ import {
   GraduationCap,
   Share2,
   CreditCard,
+  QrCode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ const ADMIN_LINKS = [
   { href: "/admin/training", label: "Training", icon: GraduationCap },
   { href: "/admin/marketing", label: "Marketing", icon: Share2 },
   { href: "/admin/square", label: "Square", icon: CreditCard },
+  { href: "/admin/qr-tables", label: "QR Tables", icon: QrCode },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
