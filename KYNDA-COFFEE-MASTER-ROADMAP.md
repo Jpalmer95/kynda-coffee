@@ -1,7 +1,7 @@
 # Kynda Coffee Platform — Master Implementation Roadmap
 
-**Last Updated:** 2026-05-29 16:30  
-**Status:** Phase 2 Complete, Starting Phase 3  
+**Last Updated:** 2026-05-29  
+**Status:** Phase 5 Complete (5.1–5.3), Starting Phase 6  
 **Total Pages:** 69 (17 admin, 52 customer/staff)
 
 ---
@@ -684,53 +684,41 @@
 - `src/lib/marketing/image/watermark.ts`
 - `src/app/api/marketing/images/process/route.ts`
 
-### 5.3 Multi-Platform Posting
+### 5.3 Multi-Platform Posting ✅
 
 **Priority:** Medium  
-**Effort:** 8-10 hours
+**Effort:** 8-10 hours  
+**Status:** COMPLETE (2026-05-29)
 
-- [ ] Integrate social platform APIs
-  - Instagram Graph API (Business account)
-  - Twitter/X API v2
-  - Facebook Pages API
-  - (Optional: TikTok, Pinterest)
-- [ ] Create `social_posts` table
-  ```sql
-  CREATE TABLE social_posts (
-    id UUID PRIMARY KEY,
-    platform TEXT NOT NULL, -- 'instagram', 'twitter', 'facebook'
-    text TEXT NOT NULL,
-    image_urls TEXT[], -- multiple images for carousel
-    scheduled_at TIMESTAMPTZ,
-    published_at TIMESTAMPTZ,
-    external_id TEXT, -- platform's post ID
-    status TEXT, -- 'draft', 'scheduled', 'published', 'failed'
-    error_message TEXT,
-    created_by UUID REFERENCES auth.users(id),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-  ```
-- [ ] Build "Schedule Post" flow
-  - Select platform(s)
-  - Write text (or use AI suggestion)
-  - Upload image(s)
-  - Pick date/time
-  - Preview post (platform-specific UI)
-  - "Schedule" or "Publish Now"
-- [ ] Create cron job to publish scheduled posts
-  - Runs every 15 minutes
+- [x] Integrate social platform APIs
+  - Instagram Graph API (Business account via Facebook Graph API)
+  - Twitter/X API v2 (OAuth 1.0a + media upload v1.1)
+  - Facebook Pages API (Graph API v21)
+  - TikTok placeholder (client stub)
+- [x] Create `social_posts` table (done in Phase 5.1)
+- [x] Build "Schedule Post" flow
+  - `/admin/marketing/social` page with form (platform selector, text, image URL, schedule datetime)
+  - Preview post (platform-specific character limits, image preview)
+  - "Schedule" or "Publish Now" (publishes immediately and updates status)
+- [x] Create cron-ready publish-due endpoint
+  - POST `/api/marketing/social/publish-due` (cron-safe, secured by CRON_SECRET)
   - Publishes posts where `scheduled_at <= NOW()` AND `status = 'scheduled'`
-  - Updates `status` and `published_at` on success
-- [ ] Add "Scheduled Posts" calendar view (`/admin/marketing/schedule`)
+  - Updates `status` and `published_at` on success; `status = 'failed'` + error message on fail
+- [x] Platform status cards (shows each platform connected/not configured)
+- [x] Posts list with filter tabs (All / Draft / Scheduled / Published / Failed)
+- [x] Publish retry button on failed/draft posts
 
-**Files to Create:**
-- `src/app/admin/marketing/schedule/page.tsx`
-- `src/components/marketing/PostScheduler.tsx`
-- `src/components/marketing/PlatformPreview.tsx`
-- `src/lib/marketing/platforms/instagram.ts`
-- `src/lib/marketing/platforms/twitter.ts`
-- `src/lib/marketing/platforms/facebook.ts`
-- `src/app/api/marketing/publish/route.ts` — cron handler
+**Files Created:**
+- `src/app/admin/marketing/social/page.tsx`
+- `src/lib/marketing/social/types.ts` — platform/post type definitions
+- `src/lib/marketing/social/twitter.ts` — X/Twitter v2 API client
+- `src/lib/marketing/social/facebook.ts` — Facebook Pages client
+- `src/lib/marketing/social/instagram.ts` — Instagram Graph API client (2-step)
+- `src/lib/marketing/social/publisher.ts` — orchestrator (single publish, batch publishDue, CRUD)
+- `src/app/api/marketing/social/schedule/route.ts` — create draft/scheduled post
+- `src/app/api/marketing/social/publish-now/route.ts` — immediate publish
+- `src/app/api/marketing/social/publish-due/route.ts` — cron endpoint
+- `src/app/api/marketing/social/posts/route.ts` — list + platform status
 
 ### 5.4 Analytics Dashboard
 

@@ -39,6 +39,7 @@ const ADMIN_LINKS = [
   { href: "/admin/marketing", label: "Marketing", icon: Share2 },
   { href: "/admin/marketing/chat", label: "AI Chat", icon: BotMessageSquare },
   { href: "/admin/marketing/images", label: "Images", icon: ImageIcon },
+  { href: "/admin/marketing/social", label: "Social", icon: Share2 },
   { href: "/admin/square", label: "Square", icon: CreditCard },
   { href: "/admin/qr-tables", label: "QR Tables", icon: QrCode },
   { href: "/admin/settings", label: "Settings", icon: Settings },
