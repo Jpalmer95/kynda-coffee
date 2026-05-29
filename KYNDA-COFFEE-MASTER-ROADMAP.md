@@ -73,7 +73,7 @@
 - [x] Dietary filters (vegan, gluten-free, dairy-free)
 - [x] Menu specials section (highlight featured items)
 - [x] Kiosk mode (/kiosk - tablet-optimized, Square-only payment)
-- [ ] "Build Your Own" custom drink builder
+- [x] "Build Your Own" custom drink builder
 - [x] QR table ordering (/order?table=X)
 - [x] Fulfillment mode selector (pickup/curbside/to-go/delivery)
 - [x] Curbside vehicle description input (mandatory when mode = pickup)
