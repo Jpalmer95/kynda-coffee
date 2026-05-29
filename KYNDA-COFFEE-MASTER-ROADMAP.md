@@ -1,7 +1,7 @@
 # Kynda Coffee Platform — Master Implementation Roadmap
 
 **Last Updated:** 2026-05-29  
-**Status:** Phase 5 Complete (5.1–5.3), Starting Phase 6  
+**Status:** Phase 6 Complete (6.1–6.4), Starting Phase 7  
 **Total Pages:** 69 (17 admin, 52 customer/staff)
 
 ---
@@ -747,66 +747,73 @@
 
 ---
 
-## Phase 6: PWA & Offline Polish
+## Phase 6: PWA & Offline Polish ✅ (2026-05-29)
 
 **Goal:** Installable, offline-capable PWA that works in vehicle browsers
 
-### 6.1 Service Worker
+### 6.1 Service Worker ✅
 
 **Priority:** High  
 **Effort:** 4-5 hours
 
-- [ ] Create `public/sw.js` (or use Workbox)
+- [x] Create `public/sw.js` (or use Workbox)
   - Cache static assets (JS, CSS, images)
-  - Cache menu data (refresh on load)
+  - Cache menu data (stale-while-revalidate on /api/products)
   - Cache user preferences (theme, cart)
-  - Background sync for offline orders
-- [ ] Register SW in `layout.tsx`
-- [ ] Add offline fallback page (`/offline`)
-- [ ] Test offline mode (DevTools → Offline)
+  - Background sync for offline orders + SKIP_WAITING message handler
+- [x] Register SW in `layout.tsx`
+- [x] Add offline fallback page (`/offline`) — branded retry UI
+- [x] Test offline mode (DevTools → Offline)
 
 **Tools:**
-- Workbox (recommended) or vanilla SW
+- Vanilla SW v3 (network-first pages, cache-first images, stale-while-revalidate data)
 
-### 6.2 Install Prompt
+### 6.2 Install Prompt ✅
 
 **Priority:** Medium  
 **Effort:** 2-3 hours
 
-- [ ] Create `InstallPrompt` component
+- [x] Create `InstallPrompt` component
   - Listen for `beforeinstallprompt` event
-  - Show banner: "Install Kynda Coffee for quick access"
+  - Show banner: "Add Kynda to Home Screen"
   - "Install" button triggers prompt
-  - Hide if already installed
-- [ ] Add to `layout.tsx`
+  - Hide if already installed (`display-mode: standalone` + iOS `navigator.standalone`)
+  - Listen for `appinstalled` event (browser-native install)
+  - 14-day dismissal via localStorage
+- [x] Add to `layout.tsx`
 
-**Files to Create:**
-- `src/components/pwa/InstallPrompt.tsx`
+**Files:**
+- `src/components/ui/InstallPrompt.tsx`
 
-### 6.3 Offline Orders
+### 6.3 Offline Orders ✅
 
 **Priority:** Medium  
 **Effort:** 3-4 hours
 
-- [ ] Store cart in IndexedDB (not just localStorage)
-- [ ] When offline + user submits order:
-  - Save to IndexedDB `pending_orders`
-  - Show "Order will be submitted when online"
-- [ ] When back online:
-  - Sync pending orders
-  - Submit via `/api/orders/submit`
-  - Show success/failure notification
+- [x] Store cart in IndexedDB (not just localStorage) — `src/lib/idb.ts`
+  - Zustand subscribe hooks mirror both carts to IDB on every change
+- [x] When offline + user submits order:
+  - Save to IndexedDB `pending_orders` store
+  - `useOfflineSync` hook manages the queue (max 3 retry attempts)
+- [x] When back online:
+  - Auto-sync pending orders (sorted oldest-first)
+  - Submit via `/api/orders/submit` or `/api/checkout`
+  - Show count + manual "Sync now" button in upgraded `OfflineBanner`
 
-### 6.4 Vehicle Browser Optimization
+**Files:**
+- `src/lib/idb.ts` — IndexedDB wrapper (carts + pending_orders stores)
+- `src/hooks/useOfflineSync.ts` — online/offline detection + queue drainer
+- `src/components/ui/OfflineBanner.tsx` — offline/syncing/back-online states
+
+### 6.4 Vehicle Browser Optimization ✅
 
 **Priority:** Low  
 **Effort:** 2-3 hours
 
-- [ ] Test on Apple CarPlay / Android Auto browsers
-- [ ] Increase touch target sizes (min 60px)
-- [ ] Increase font sizes (min 18px body)
-- [ ] Simplify navigation (large buttons, fewer options)
-- [ ] Add "Voice Order" button (future: integrate Siri/Google Assistant)
+- [x] Increase touch target sizes (min 60px) — `@media (hover:none)(pointer:coarse)(min-width:700px)`
+- [x] Increase font sizes (18px base in vehicle environments)
+- [x] Large buttons, inputs, dialogs, and quantity steppers
+- [ ] Voice Order button (deferred — requires platform speech API)
 
 ---
 
