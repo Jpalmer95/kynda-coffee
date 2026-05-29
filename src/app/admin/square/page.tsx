@@ -226,6 +226,12 @@ export default function AdminSquarePage() {
                   {getSuccess(results[option.id]) ? "✓" : "✗"} Synced{" "}
                   {getSynced(results[option.id])} items
                 </p>
+                {option.id === "catalog" &&
+                  (results[option.id] as any)?.images && (
+                    <p className="mt-1 text-xs">
+                      🖼 {(results[option.id] as any).images.cached} images cached
+                    </p>
+                  )}
                 {getErrors(results[option.id]).length > 0 && (
                   <p className="mt-1 text-xs">
                     {getErrors(results[option.id]).length} error(s)

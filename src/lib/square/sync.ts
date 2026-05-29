@@ -11,6 +11,7 @@ interface SyncResult {
 }
 
 import { buildImageLookup } from "@/lib/square/catalog-transform";
+import { cacheAllSquareImages } from "@/lib/square/image-cache";
 
 // ---- Catalog Sync (Square → Supabase) ----
 
@@ -29,6 +30,16 @@ export async function syncCatalog(): Promise<SyncResult> {
     
     // We need images mapped so items can find their image data
     const images = buildImageLookup(objects as any);
+
+    // Cache every Square image into Supabase Storage so URLs never expire.
+    // Already-cached files are cheap no-ops (probe-based cache check).
+    let durableImages: Record<string, string> = {};
+    try {
+      durableImages = await cacheAllSquareImages(images);
+    } catch (err) {
+      result.errors.push(`Image cache warning (non-fatal): ${String(err)}`);
+    }
+
     const items = objects.filter((obj) => obj.type === "ITEM");
 
     for (const item of items) {
@@ -41,17 +52,26 @@ export async function syncCatalog(): Promise<SyncResult> {
         const isSellable = variation?.itemVariationData?.sellable;
         const itemAny = item as any;
         const itemDataAny = (item.itemData ?? {}) as any;
-        const imageIds = Array.from(new Set([
-          ...(Array.isArray(itemDataAny.imageIds) ? itemDataAny.imageIds : []),
-          ...(Array.isArray(itemDataAny.image_ids) ? itemDataAny.image_ids : []),
-          ...(Array.isArray(itemAny.imageIds) ? itemAny.imageIds : []),
-          ...(Array.isArray(itemAny.image_ids) ? itemAny.image_ids : []),
-          itemDataAny.imageId,
-          itemDataAny.image_id,
-          itemAny.imageId,
-          itemAny.image_id,
-        ].filter((id): id is string => typeof id === "string" && id.trim().length > 0)));
-        const imageUrls = imageIds.map((id) => images[id]).filter(Boolean);
+        const imageIds = Array.from(
+          new Set(
+            [
+              ...(Array.isArray(itemDataAny.imageIds) ? itemDataAny.imageIds : []),
+              ...(Array.isArray(itemDataAny.image_ids) ? itemDataAny.image_ids : []),
+              ...(Array.isArray(itemAny.imageIds) ? itemAny.imageIds : []),
+              ...(Array.isArray(itemAny.image_ids) ? itemAny.image_ids : []),
+              itemDataAny.imageId,
+              itemDataAny.image_id,
+              itemAny.imageId,
+              itemAny.image_id,
+            ].filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+          )
+        );
+
+        // Remap signed URLs → durable cached URLs. Fall back to signed URL if
+        // the cache step failed for a specific image.
+        const imageUrls = imageIds
+          .map((id) => durableImages[id] ?? images[id])
+          .filter((url): url is string => Boolean(url));
         
         const product = {
           slug: item.itemData?.name
