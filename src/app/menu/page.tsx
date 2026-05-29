@@ -1,5 +1,6 @@
 import { getPosCatalog } from "@/lib/pos/catalog";
 import { MenuClient } from "@/components/menu/MenuClient";
+import { DeliveryPlatforms } from "@/components/order/DeliveryPlatforms";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,11 @@ export default async function MenuPage() {
           <p className="mt-3 text-sm text-mocha">
             {itemCount} items available right now — everything you see is ready to order.
           </p>
+        </div>
+
+        {/* Delivery links — compact view */}
+        <div className="mt-6 flex justify-center">
+          <DeliveryPlatforms compact />
         </div>
 
         <MenuClient categories={categories} generatedAt={catalog.generatedAt} />
