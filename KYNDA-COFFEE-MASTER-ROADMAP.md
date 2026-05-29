@@ -605,27 +605,36 @@
 
 **Goal:** AI-powered marketing automation with chat interface + multi-platform posting
 
-### 5.1 Marketing AI Chat Interface
+### 5.1 Marketing AI Chat Interface ✅
 
 **Priority:** High  
-**Effort:** 6-8 hours
+**Effort:** 6-8 hours  
+**Status:** COMPLETE (2026-05-29)
 
-- [ ] Create `/admin/marketing/chat` page
+- [x] Create `/admin/marketing/chat` page
   - Chat UI (like ChatGPT)
-  - Sidebar with conversation history
+  - Sidebar with conversation history (localStorage)
   - "New Conversation" button
-- [ ] Integrate with Claude/GPT-4 API
-  - System prompt: "You are a marketing assistant for Kynda Coffee..."
-  - Context: brand voice, target audience, past campaigns
-- [ ] Add "Marketing Agent" tools
-  - `generate_social_post(platform, topic)` → returns post text
-  - `create_image_caption(image_url)` → returns alt text + caption
-  - `suggest_hashtags(post_text)` → returns hashtag array
-  - `schedule_post(platform, text, image_url, publish_at)` → queues post
-- [ ] Add "Quick Actions" buttons
-  - "Write Instagram post about [product]"
-  - "Generate Twitter thread about [topic]"
-  - "Create Facebook event announcement"
+- [x] Integrate with Claude API (`claude-sonnet-4-20250514`)
+  - System prompt: Kynda Coffee brand voice + marketing knowledge
+  - Context: brand voice, target audience, Old Norse heritage, location
+- [x] Marketing Agent tools (Claude tool-use API, server-side executor):
+  - `generate_social_post(platform, topic)` → structured guidelines for copy
+  - `create_image_caption(image_description)` → alt-text + caption templates
+  - `suggest_hashtags(post_text)` → brand, location, niche, trending groups
+  - `schedule_post(platform, text, publish_at)` → saves to social_posts table
+  - `generate_weekly_calendar(week_start, platforms)` → daily content themes
+- [x] "Quick Actions" buttons (Instagram post, Twitter thread, Facebook event, weekly plan)
+
+**Files Created:**
+- `src/app/admin/marketing/chat/page.tsx`
+- `src/components/marketing/ChatInterface.tsx`
+- `src/components/marketing/ChatMessage.tsx`
+- `src/lib/marketing/claude.ts` — Claude API wrapper with tool-calling loop
+- `src/lib/marketing/tools/definitions.ts` — 5 tool JSON schemas
+- `src/lib/marketing/tools/executor.ts` — server-side tool implementations
+- `src/app/api/marketing/chat/route.ts` — POST endpoint with auth check
+- `supabase/migrations/20260529_social_posts.sql` — social_posts table + RLS
 
 **Files to Create:**
 - `src/app/admin/marketing/chat/page.tsx`
