@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 import Image, { ImageProps } from "next/image";
 import type { Product } from "@/types";
 
@@ -19,7 +19,7 @@ interface ProductImageProps {
  * - Graceful fallback to category placeholder / emoji icon
  * - Square-sourced images are expected to already be in product.images[0]
  */
-export function ProductImage({
+export const ProductImage = memo(function ProductImage({
   product,
   className = "",
   sizes = "(max-width: 768px) 100vw, 50vw",
@@ -67,7 +67,7 @@ export function ProductImage({
       </div>
     </div>
   );
-}
+});
 
 // Consistent category mappings (kept private to this module)
 function getCategoryGradient(category: string): string {

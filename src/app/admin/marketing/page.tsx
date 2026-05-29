@@ -31,7 +31,6 @@ export default function MarketingPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": process.env.NEXT_PUBLIC_ADMIN_SECRET || "",
         },
         body: JSON.stringify({ title, body, url: url || "/" }),
       });
