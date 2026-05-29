@@ -573,3 +573,65 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
   animation: shimmer 1.5s infinite;
 }
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ============================================================
+   Vehicle Browser Optimization (Phase 6.4)
+   Targets wide touch-screen environments (Apple CarPlay, Android Auto,
+   in-dash browsers). Bumps interactive elements to 60px+ touch targets
+   and 18px minimum font.
+   Trigger: pointer:coarse + viewport width >= 700px (vehicle displays
+   are typically 800–1280px wide)
+   ============================================================ */
+
+@media (hover: none) and (pointer: coarse) and (min-width: 700px) {
+  html { font-size: 18px; }
+
+  button,
+  a[role="button"],
+  [role="tab"],
+  [role="menuitem"],
+  input[type="button"],
+  input[type="submit"],
+  .touch-target {
+    min-height: 60px !important;
+    min-width: 60px !important;
+    font-size: 18px !important;
+    padding: 12px 20px !important;
+    border-radius: 16px !important;
+  }
+
+  /* Input fields — comfortable for gloved fingers */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 18px !important;
+    min-height: 56px !important;
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Bottom nav items — extra tall + wide */
+  nav a, nav button {
+    min-height: 64px !important;
+    min-width: 72px !important;
+  }
+
+  /* Quantity steppers — large tap zones */
+  [aria-label*="Increase"],
+  [aria-label*="Decrease"],
+  [aria-label*="Remove"] {
+    min-width: 56px !important;
+    min-height: 56px !important;
+  }
+
+  /* Dialogs/modals — more breathing room */
+  [role="dialog"] {
+    padding: 24px !important;
+    font-size: 18px;
+  }
+}
