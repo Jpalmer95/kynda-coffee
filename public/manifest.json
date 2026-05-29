@@ -4,8 +4,8 @@
   "description": "Organic Specialty Coffee — Order, Shop & Design Custom Merch",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#2c1810",
-  "theme_color": "#2c1810",
+  "background_color": "#FBF9F5",
+  "theme_color": "#061B0E",
   "orientation": "portrait-primary",
   "icons": [
     {
