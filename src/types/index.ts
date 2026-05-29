@@ -38,7 +38,7 @@ export interface Product {
   stripe_product_id?: string;
   stripe_price_id?: string;
   // Source tracking
-  source: "square" | "online" | "both";
+  source: "square" | "online" | "both" | "design_studio";
   square_item_id?: string;
   square_variation_id?: string;
   track_inventory: boolean;

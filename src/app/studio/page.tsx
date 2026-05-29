@@ -1,48 +1,97 @@
 "use client";
 
-import React, { useState } from 'react';
-import type { Product } from '@/types';
-import { Sparkles, Save, CreditCard } from 'lucide-react';
-import { DesignCanvas, DesignLayer } from '@/components/design-studio/DesignCanvas';
-import { useCartStore } from '@/hooks/useCart';
-import { formatPrice } from '@/lib/utils';
+import React, { useState, useCallback } from "react";
+import type { Product } from "@/types";
+import {
+  Sparkles,
+  Package,
+  Palette,
+  Wand2,
+  ShoppingCart,
+  Info,
+} from "lucide-react";
+import { DesignCanvas, type DesignLayer } from "@/components/design-studio/DesignCanvas";
+import { ProductCatalog } from "@/components/design-studio/ProductCatalog";
+import { VariantSelector } from "@/components/design-studio/VariantSelector";
+import { PresetDesigns } from "@/components/design-studio/PresetDesigns";
+import { useCartStore } from "@/hooks/useCart";
+import { formatPrice } from "@/lib/utils";
+import {
+  PRINTFUL_CATALOG,
+  type PrintfulProduct,
+  type ProductVariant,
+  type DefaultDesign,
+  KYND_LOGO,
+  calculateRetailPrice,
+} from "@/lib/printful/catalog";
 
-const PRODUCT_MARKUP: Record<string, { baseCents: number; multiplier: number }> = {
-  mug:    { baseCents: 850, multiplier: 2.8 },
-  tshirt: { baseCents: 1280, multiplier: 2.5 },
-  glass:  { baseCents: 780, multiplier: 2.8 },
-  tote:   { baseCents: 650, multiplier: 2.8 },
-};
+type StudioTab = "products" | "presets" | "generate";
 
-function getRetailPrice(p: string): number {
-  const r = PRODUCT_MARKUP[p];
-  return r ? Math.round(r.baseCents * r.multiplier) : 2400;
-}
+const DEFAULT_PRODUCT = PRINTFUL_CATALOG[0]; // Unisex Tee
 
 export default function DesignStudioPage() {
+  const [activeTab, setActiveTab] = useState<StudioTab>("products");
+  const [selectedProduct, setSelectedProduct] = useState<PrintfulProduct>(DEFAULT_PRODUCT);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [view, setView] = useState<"front" | "back">("front");
+
+  // AI Generation state
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState<string | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<'mug' | 'tshirt' | 'glass' | 'tote'>('mug');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedDesign, setGeneratedDesign] = useState<{ url: string; prompt: string } | null>(null);
-  const [currentLayers, setCurrentLayers] = useState<DesignLayer[]>([]);
   const [credits, setCredits] = useState({ free: 10, paid: 0 });
-  
-  const addItem = useCartStore(s => s.addItem);
+
+  // Canvas state
+  const [currentLayers, setCurrentLayers] = useState<DesignLayer[]>([]);
+
+  const addItem = useCartStore((s) => s.addItem);
+
+  // Calculate current retail price
+  const retailPrice = calculateRetailPrice(selectedProduct, selectedVariant || undefined);
+
+  const handleSelectProduct = useCallback((product: PrintfulProduct) => {
+    setSelectedProduct(product);
+    setSelectedVariant(null); // Reset variant
+    setCurrentLayers([]); // Clear canvas
+    setView("front");
+  }, []);
+
+  const handleDesignChange = useCallback((layers: DesignLayer[]) => {
+    setCurrentLayers(layers);
+  }, []);
+
+  const handleSave = useCallback(
+    (layers: DesignLayer[], productId: string) => {
+      // TODO: Wire to Supabase saved_designs
+      console.log("Design saved:", { layers, productId });
+      alert("Design saved! (Will auto-save to your account soon)");
+    },
+    []
+  );
+
+  const addImageToCanvas = useCallback(
+    (design: DefaultDesign | { id: string; name: string; url: string; type: "sticker" }) => {
+      // Get the image URL from either DefaultDesign (imageUrl) or sticker (url)
+      const imageUrl = "imageUrl" in design ? design.imageUrl : design.url;
+      setGeneratedDesign({ url: imageUrl, prompt: design.name });
+    },
+    []
+  );
 
   const generateDesign = async () => {
     if (!prompt.trim()) return;
     setIsGenerating(true);
 
     try {
-      const res = await fetch('/api/designs/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/designs/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: prompt.trim(),
           style_preset: style,
-          product_type: selectedProduct,
-        })
+          product_type: selectedProduct.id,
+        }),
       });
 
       const data = await res.json();
@@ -53,6 +102,7 @@ export default function DesignStudioPage() {
 
       setGeneratedDesign({ url: data.image_url, prompt: data.prompt });
       if (data.credits_remaining) setCredits(data.credits_remaining);
+      setActiveTab("products"); // Switch back to see it on canvas
     } catch {
       alert("Something went wrong generating the design.");
     } finally {
@@ -61,122 +111,288 @@ export default function DesignStudioPage() {
   };
 
   const handleAddToCart = () => {
-    if (!generatedDesign) return;
+    if (currentLayers.length === 0) {
+      alert("Add something to your design first!");
+      return;
+    }
 
     const product: Product = {
-      id: `custom-${Date.now()}`,
-      slug: `custom-${selectedProduct}`,
-      name: `Custom ${selectedProduct}`,
-      description: generatedDesign.prompt,
+      id: `custom-${selectedProduct.id}-${Date.now()}`,
+      slug: `custom-${selectedProduct.id}`,
+      name: `Custom ${selectedProduct.name}`,
+      description: `Custom designed ${selectedProduct.name}${selectedVariant?.size ? ` - ${selectedVariant.size}` : ""}${selectedVariant?.colorName ? ` (${selectedVariant.colorName})` : ""}`,
       category:
-        selectedProduct === "tshirt"
+        selectedProduct.category === "apparel"
           ? "merch-apparel"
-          : selectedProduct === "mug"
-            ? "merch-mugs"
-            : selectedProduct === "glass"
-              ? "merch-glassware"
+          : selectedProduct.category === "drinkware"
+            ? "merch-drinkware"
+            : selectedProduct.category === "wall-art"
+              ? "merch-wall-art"
               : "merch-accessories",
-      price_cents: getRetailPrice(selectedProduct),
-      images: [generatedDesign.url],
-      source: "online",
+      price_cents: retailPrice,
+      images: [selectedProduct.imageUrl],
+      source: "design_studio",
       track_inventory: false,
       is_active: true,
       is_featured: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      design_data: {
+        product_id: selectedProduct.id,
+        printful_product_id: selectedProduct.printfulId,
+        printful_variant_id: selectedVariant?.id,
+        variant_size: selectedVariant?.size,
+        variant_color: selectedVariant?.colorName,
+        layers: currentLayers,
+        view,
+      },
     } as Product;
 
     addItem(product, 1);
-
-    window.location.href = '/cart';
+    window.location.href = "/cart";
   };
 
-  const handleSaveDesign = (layers: DesignLayer[]) => {
-    // In the next phase this will hit Supabase saved_designs
-    alert("Design saved! (Will be automatically saved to your account soon)");
-  };
+  const hasDesign = currentLayers.length > 0;
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-10 pb-20 text-espresso">
-      <div className="text-center mb-14">
-        <div className="inline bg-forest-300/30 px-4 py-1 text-sm rounded-full text-forest-600">✨ AI-Powered</div>
-        <h1 className="font-heading text-6xl mt-3 tracking-tighter">Design Studio</h1>
-        <p className="text-xl text-mocha mt-3">Create custom merch that is truly yours.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-24 text-espresso">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center gap-2 bg-forest/10 px-4 py-1.5 rounded-full text-forest text-sm mb-4">
+          <Sparkles size={14} />
+          AI-Powered Custom Merch
+        </div>
+        <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl tracking-tight">
+          Design Studio
+        </h1>
+        <p className="text-lg text-mocha mt-3 max-w-2xl mx-auto">
+          Pick a product, add your design, and order custom merch shipped to your door.
+        </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-x-12 gap-y-8">
-        {/* Prompt + Controls */}
-        <div>
-          <div>
-            <div className="uppercase text-xs font-medium tracking-[1.5px] text-mocha mb-2">DESCRIBE YOUR VISION</div>
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="A minimalist coffee cup with steam forming a heart shape..."
-              className="w-full min-h-[110px] text-2xl px-6 py-5 border border-latte/30 rounded-3xl placeholder:text-gray-300"
-            />
-          </div>
-
-          <div className="mt-5">
-            <div className="uppercase text-xs tracking-widest text-mocha mb-3">STYLE INSPIRATION</div>
-            {[
-              "☕ Coffee Art","🌿 Hill Country","⬜ Minimal","📻 Vintage","🎨 Abstract","✏️ Typography"
-            ].map((label, index) => {
-              const id = ["coffee-art","nature-texas","minimal","vintage","abstract","bold-typography"][index];
-              return (
-                <button
-                  key={index}
-                  onClick={() => setStyle(id === style ? null : id)}
-                  className={`mr-2 mb-2 px-5 py-1.5 rounded-2xl text-sm border ${style === id ? "text-bronze bg-bronze text-sand" : "border-latte/30"}`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
-          <button 
-            onClick={generateDesign}
-            disabled={isGenerating || !prompt.trim()}
-            className="mt-6 w-full py-4 rounded-3xl bg-surface disabled:bg-gray-300 text-sand text-lg font-medium flex items-center justify-center gap-2"
-          >
-            {isGenerating ? "Creating your design..." : "✨ Generate with AI"}
-          </button>
-
-          <div className="mt-4 text-xs text-center text-gray-500">
-            {credits.free} free generations left this month. Upload your own PNG anytime.
-          </div>
-        </div>
-
-        {/* Canvas + Product + Cart */}
-        <div>
-          <DesignCanvas 
-            onSave={handleSaveDesign}
-            onPriceChange={() => {}}
-            initialDesignUrl={generatedDesign?.url}
-          />
-
-          {generatedDesign && (
-            <div className="mt-8 flex items-center justify-between px-2">
-              <div>
-                <div className="font-mono text-4xl tabular-nums tracking-tighter">
-                  {formatPrice(getRetailPrice(selectedProduct))}
-                </div>
-                <div className="text-sm text-gray-500">Made to order • Ships in 5–8 days</div>
+      {/* Main Layout */}
+      <div className="grid lg:grid-cols-[1fr_620px] gap-8 lg:gap-12">
+        {/* Left Panel: Tabs + Content */}
+        <div className="order-2 lg:order-1">
+          {/* Product Info Bar */}
+          <div className="bg-card rounded-xl p-4 mb-6 border border-latte/20">
+            <div className="flex items-start gap-3">
+              <img
+                src={selectedProduct.imageUrl}
+                alt={selectedProduct.name}
+                className="w-14 h-14 rounded-lg object-cover"
+              />
+              <div className="flex-1 min-w-0">
+                <h2 className="font-semibold text-lg">{selectedProduct.name}</h2>
+                <p className="text-sm text-mocha line-clamp-1">{selectedProduct.description}</p>
               </div>
-              <div>
-                <button onClick={handleAddToCart} className="font-medium px-10 py-4 bg-bronze text-sand rounded-3xl">
-                  Add to cart
-                </button>
+              <div className="text-right">
+                <div className="text-2xl font-bold tabular-nums">
+                  {formatPrice(retailPrice)}
+                </div>
+                <div className="text-xs text-mocha">Free shipping on orders $50+</div>
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 mb-6 bg-card/50 rounded-xl p-1">
+            <button
+              onClick={() => setActiveTab("products")}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                activeTab === "products"
+                  ? "bg-background text-espresso shadow-sm"
+                  : "text-mocha hover:text-espresso"
+              }`}
+            >
+              <Package size={16} />
+              Product
+            </button>
+            <button
+              onClick={() => setActiveTab("presets")}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                activeTab === "presets"
+                  ? "bg-background text-espresso shadow-sm"
+                  : "text-mocha hover:text-espresso"
+              }`}
+            >
+              <Palette size={16} />
+              Designs
+            </button>
+            <button
+              onClick={() => setActiveTab("generate")}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                activeTab === "generate"
+                  ? "bg-background text-espresso shadow-sm"
+                  : "text-mocha hover:text-espresso"
+              }`}
+            >
+              <Wand2 size={16} />
+              AI Create
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          <div>
+            {activeTab === "products" && (
+              <div className="space-y-6">
+                <ProductCatalog
+                  selectedProduct={selectedProduct}
+                  onSelectProduct={handleSelectProduct}
+                />
+                <div className="border-t border-latte/20 pt-6">
+                  <VariantSelector
+                    variants={selectedProduct.variants}
+                    selectedVariant={selectedVariant}
+                    onSelectVariant={setSelectedVariant}
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeTab === "presets" && (
+              <PresetDesigns
+                onSelectDesign={addImageToCanvas}
+                selectedProductId={selectedProduct.id}
+              />
+            )}
+
+            {activeTab === "generate" && (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-xs font-medium text-mocha mb-2 uppercase tracking-wider">
+                    Describe Your Vision
+                  </label>
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="A minimalist coffee cup with steam forming a heart shape..."
+                    className="w-full min-h-[120px] px-4 py-3 border border-latte/30 rounded-xl placeholder:text-mocha/50 text-espresso bg-background resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-mocha mb-2 uppercase tracking-wider">
+                    Style Inspiration
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[
+                      { id: "coffee-art", label: "☕ Coffee Art" },
+                      { id: "nature-texas", label: "🌿 Hill Country" },
+                      { id: "minimal", label: "⬜ Minimal" },
+                      { id: "vintage", label: "📻 Vintage" },
+                      { id: "abstract", label: "🎨 Abstract" },
+                      { id: "bold-typography", label: "✏️ Typography" },
+                    ].map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => setStyle(style === s.id ? null : s.id)}
+                        className={`px-4 py-2 rounded-full text-sm border transition ${
+                          style === s.id
+                            ? "bg-forest text-sand border-forest"
+                            : "border-latte/30 hover:border-forest/50"
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={generateDesign}
+                  disabled={isGenerating || !prompt.trim()}
+                  className="w-full py-4 rounded-xl bg-surface disabled:opacity-50 text-sand text-lg font-medium flex items-center justify-center gap-2 transition hover:bg-surface-800"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Wand2 size={20} className="animate-spin" />
+                      Creating your design...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={20} />
+                      Generate with AI
+                    </>
+                  )}
+                </button>
+
+                <div className="text-xs text-center text-mocha">
+                  {credits.free} free generations left this month
+                </div>
+
+                {generatedDesign && (
+                  <div className="rounded-xl overflow-hidden border border-latte/20">
+                    <img
+                      src={generatedDesign.url}
+                      alt="Generated design"
+                      className="w-full aspect-square object-cover"
+                    />
+                    <div className="p-3 bg-card text-center">
+                      <button
+                        onClick={() => setActiveTab("products")}
+                        className="text-sm text-forest font-medium"
+                      >
+                        ✓ Added to canvas — go customize it!
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Panel: Canvas + Cart */}
+        <div className="order-1 lg:order-2">
+          <div className="sticky top-24 space-y-6">
+            <DesignCanvas
+              product={selectedProduct}
+              view={view}
+              onViewChange={setView}
+              onSave={handleSave}
+              onDesignChange={handleDesignChange}
+              initialDesignUrl={generatedDesign?.url}
+            />
+
+            {/* Cart / Order Section */}
+            <div className="bg-card rounded-xl p-4 border border-latte/20 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm text-mocha">Total</div>
+                  <div className="text-3xl font-bold tabular-nums">
+                    {formatPrice(retailPrice)}
+                  </div>
+                </div>
+                <div className="text-right text-xs text-mocha space-y-0.5">
+                  <div>Made to order</div>
+                  <div>Ships in 5–8 business days</div>
+                  {selectedVariant?.size && <div>Size: {selectedVariant.size}</div>}
+                  {selectedVariant?.colorName && <div>Color: {selectedVariant.colorName}</div>}
+                </div>
+              </div>
+
+              <button
+                onClick={handleAddToCart}
+                disabled={!hasDesign}
+                className="w-full py-4 rounded-xl bg-forest text-white font-medium text-lg flex items-center justify-center gap-2 transition hover:bg-forest-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ShoppingCart size={20} />
+                {hasDesign ? "Add to Cart" : "Add Something to Your Design First"}
+              </button>
+            </div>
+
+            {/* Info */}
+            <div className="flex items-start gap-2 text-xs text-mocha">
+              <Info size={14} className="shrink-0 mt-0.5" />
+              <p>
+                All custom merch is printed and shipped on demand by our fulfillment partner.
+                Designs are moderated for appropriate content. Returns accepted for defects only.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-
-      <p className="text-center text-xs mt-24 text-gray-400">
-        All designs are user-generated. We perform basic moderation on inappropriate content.
-      </p>
     </div>
   );
 }
