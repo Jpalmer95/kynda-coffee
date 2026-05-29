@@ -645,25 +645,36 @@
 - `src/lib/marketing/tools/image-caption.ts`
 - `src/lib/marketing/tools/scheduler.ts`
 
-### 5.2 Image Processing Pipeline
+### 5.2 Image Processing Pipeline ✅
 
 **Priority:** High  
-**Effort:** 4-6 hours
+**Effort:** 4-6 hours  
+**Status:** COMPLETE (2026-05-29)
 
-- [ ] Create image upload component
+- [x] Create image upload component
   - Drag-and-drop or file picker
   - Upload to Supabase Storage `marketing-images/`
   - Return URL
-- [ ] Build `/admin/marketing/images` page
+- [x] Build `/admin/marketing/images` page
   - Grid of uploaded images
   - "Process Image" button on each
-- [ ] Image processing pipeline
-  - Auto-crop + resize for each platform (IG square, story, FB cover, etc.)
-  - Add watermark (Kynda logo, subtle)
+- [x] Image processing pipeline
+  - Auto-crop + resize for each platform (IG square/portrait/story, FB post/cover, X post, TikTok)
+  - Add watermark (Kynda logo, subtle — 15% opacity, south-east corner)
   - Generate alt text with Claude Vision
   - Suggest filters/edits (brightness, contrast, saturation)
-- [ ] Add "Apply Edits" preview (before/after)
-- [ ] Store processed versions in Storage
+- [x] "Apply Edits" preview (before/after) — variant grid with copy URL / download / open
+- [x] Store processed versions in Storage
+
+**Files Created:**
+- `src/app/admin/marketing/images/page.tsx`
+- `src/components/marketing/ImageUploader.tsx`
+- `src/lib/marketing/image/processor.ts` — sharp-based resize + watermark pipeline
+- `src/app/api/marketing/images/upload/route.ts` — multipart upload
+- `src/app/api/marketing/images/process/route.ts` — resize all 7 presets
+- `src/app/api/marketing/images/alt-text/route.ts` — Claude Vision analysis
+- `src/app/api/marketing/images/list/route.ts` — list all images + variants
+- `supabase/migrations/20260529_marketing_images_bucket.sql`
 
 **Files to Create:**
 - `src/app/admin/marketing/images/page.tsx`
