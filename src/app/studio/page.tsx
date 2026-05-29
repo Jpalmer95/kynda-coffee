@@ -26,6 +26,7 @@ import { useCartStore } from "@/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
 import {
   PRINTFUL_CATALOG,
+  PRODUCT_MARKUP,
   type PrintfulProduct,
   type ProductVariant,
   type DefaultDesign,
@@ -278,6 +279,19 @@ export default function DesignStudioPage() {
     setIsGenerating(true);
 
     try {
+      // Content moderation gate — check prompt before generation
+      const modRes = await fetch("/api/designs/moderate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: prompt.trim() }),
+      });
+      const modData = await modRes.json();
+
+      if (!modData.safe) {
+        alert(modData.message || "Your prompt contains inappropriate content. Please revise.");
+        return;
+      }
+
       const res = await fetch("/api/designs/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -311,10 +325,44 @@ export default function DesignStudioPage() {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (currentLayers.length === 0) {
       alert("Add something to your design first — upload art, pick a preset, or generate with AI!");
       return;
+    }
+
+    // Profitability guardrail — verify margin before proceeding
+    const markup = PRODUCT_MARKUP[selectedProduct.category];
+    const baseCost = selectedProduct.basePriceCents + (selectedVariant?.additionalPriceCents || 0);
+    const profitCents = retailPrice - baseCost - markup.shippingBufferCents;
+
+    if (profitCents < 100) {
+      // Less than $1 profit — block the order
+      alert("This product configuration doesn't meet our pricing requirements. Please select a different variant or contact us.");
+      return;
+    }
+
+    // Image moderation gate — check canvas thumbnail before adding to cart
+    if (isSaving) return; // Don't double-submit
+
+    try {
+      const thumbnail = canvasRef.current?.exportThumbnail();
+      if (thumbnail) {
+        const modRes = await fetch("/api/designs/moderate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image_url: thumbnail }),
+        });
+        const modData = await modRes.json();
+
+        if (!modData.safe) {
+          alert(modData.message || "This design contains inappropriate content and cannot be ordered.");
+          return;
+        }
+      }
+    } catch {
+      // Fail open — Printful also moderates at production time
+      console.warn("Image moderation check failed, proceeding with order");
     }
 
     const product: Product = {
@@ -352,7 +400,7 @@ export default function DesignStudioPage() {
     } as Product;
 
     addItem(product, 1);
-    window.location.href = "/cart";
+    window.location.href = "/shop/merch/checkout";
   };
 
   const hasDesign = currentLayers.length > 0;

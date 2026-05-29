@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
@@ -24,7 +25,7 @@ function getCategoryLabel(category: string): string {
   return labels[category] ?? category;
 }
 
-export function ProductCard({ product, onQuickView }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product, onQuickView }: ProductCardProps) {
   const categoryLabel = getCategoryLabel(product.category);
 
   return (
@@ -130,4 +131,4 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
       </Link>
     </div>
   );
-}
+});
