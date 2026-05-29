@@ -5,7 +5,8 @@ import Image from "next/image";
 import { ShoppingCart, SlidersHorizontal, X, Coffee, Minus, Plus, Search, Leaf, Wheat, MilkOff } from "lucide-react";
 import type { PosCatalogCategoryGroup, PosCatalogItem } from "@/lib/pos/catalog";
 import { formatMoney } from "@/lib/pos/catalog";
-import { MenuItemDialog } from "./MenuItemDialog";
+import { MenuItemDialog } from "@/components/menu/MenuItemDialog";
+import { MenuSpecials } from "@/components/menu/MenuSpecials";
 import { useMenuCartStore } from "@/hooks/useMenuCart";
 
 interface MenuClientProps {
@@ -55,6 +56,12 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
   const { items, item_count, subtotal_cents, updateQuantity, removeItem } = useMenuCartStore();
 
   const allCategoryNames = useMemo(() => categories.map((c) => c.name), [categories]);
+
+  // Flatten all items across categories for MenuSpecials
+  const allItems = useMemo(
+    () => categories.flatMap((c) => c.items),
+    [categories]
+  );
 
   // Build a cache of dietary tags per item so we don't re-run regex in render
   const itemDietaryCache = useMemo(() => {
@@ -150,6 +157,9 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
 
   return (
     <div className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Menu Specials — surfaced featured items */}
+      <MenuSpecials items={allItems} onSelectItem={setSelectedItem} />
+
       {/* Search Bar */}
       <div className="relative mb-5 max-w-xl mx-auto">
         <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-mocha pointer-events-none" />
