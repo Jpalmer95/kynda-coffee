@@ -13,6 +13,7 @@ interface OrderPageClientProps {
   generatedAt: string;
   initialMode?: string;
   initialLabel?: string;
+  initialTableNumber?: string;
 }
 
 export function OrderPageClient({
@@ -20,6 +21,7 @@ export function OrderPageClient({
   generatedAt,
   initialMode,
   initialLabel,
+  initialTableNumber,
 }: OrderPageClientProps) {
   const router = useRouter();
   const orderSectionRef = useRef<HTMLDivElement>(null);
@@ -84,11 +86,22 @@ export function OrderPageClient({
       {/* Order form — only shown for non-delivery modes */}
       {selectedMode && selectedMode !== "delivery" && (
         <div ref={orderSectionRef} className="scroll-mt-24">
+          {initialTableNumber && selectedMode === "table" && (
+            <div className="mb-4 flex items-center justify-center gap-2 rounded-lg bg-forest/10 border border-forest/30 px-4 py-2.5 text-center">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-forest text-sand text-xs font-bold">
+                ✓
+              </span>
+              <span className="text-sm font-semibold text-espresso">
+                Ordering for Table {initialTableNumber} — we&apos;ll bring it right to you
+              </span>
+            </div>
+          )}
           <OrderClient
             categories={categories}
             generatedAt={generatedAt}
             initialMode={selectedMode}
             initialLabel={initialLabel}
+            initialTableNumber={initialTableNumber}
           />
         </div>
       )}

@@ -28,6 +28,7 @@ interface Props {
   generatedAt: string;
   initialMode?: string;
   initialLabel?: string;
+  initialTableNumber?: string;
 }
 
 function selectedVariationId(item: PosCatalogItem, formData: FormData): string {

@@ -22,6 +22,12 @@ export default async function OrderPage({
 
   const modeParam = typeof params.mode === "string" ? params.mode : undefined;
   const labelParam = typeof params.label === "string" ? params.label : undefined;
+  const tableParam = typeof params.table === "string" ? params.table : undefined;
+
+  // When a ?table=X param is present (QR code scan), force table mode
+  // and pre-fill the label with the table identifier
+  const effectiveMode = tableParam ? "table" : modeParam;
+  const effectiveLabel = tableParam && !labelParam ? `Table ${tableParam}` : labelParam;
 
   return (
     <section className="section-padding">
@@ -49,8 +55,9 @@ export default async function OrderPage({
           <OrderPageClient
             categories={categories}
             generatedAt={catalog.generatedAt}
-            initialMode={modeParam}
-            initialLabel={labelParam}
+            initialMode={effectiveMode}
+            initialLabel={effectiveLabel}
+            initialTableNumber={tableParam}
           />
         </div>
 
