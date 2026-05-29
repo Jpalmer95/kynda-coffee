@@ -83,7 +83,14 @@ export type NormalizedSquareItem = {
   trackInventory: boolean;
   itemType: "menu" | "retail" | "merch" | "modifier" | "service" | "gift_card" | "unknown";
   cafeOrRetail: "cafe" | "retail";
+  /** Primary image URL (short-lived Square signed URL). For backward compatibility. */
   imageUrl?: string;
+  /**
+   * All image URLs for the item, in Square's preferred order.
+   * Populated after `cacheAllSquareImages()` runs in the sync pipeline.
+   */
+  imageUrls: string[];
+  /** All Square image IDs associated with this item. */
   squareImageIds: string[];
   modifierListIds: string[];
   taxIds: string[];
@@ -188,7 +195,12 @@ export function normalizeSquareItems(
     const itemType = classifySquareItem(itemName, category.name);
     const cafeOrRetail = cafeOrRetailForItemType(itemType);
     const imageIds = collectSquareImageIds(obj);
-    const imageUrl = imageIds.map((id: string) => images[id]).find(Boolean);
+    // Ordered list: primary first, then the rest. Keep all URLs so downstream
+    // consumers (gallery/carousel) can render more than just the hero image.
+    const imageUrls = imageIds
+      .map((id: string) => images[id])
+      .filter((url): url is string => Boolean(url));
+    const imageUrl = imageUrls[0];
     const modifierListIds = (itemData.modifierListInfo || [])
       .filter((info) => info.enabled !== false && info.modifierListId)
       .map((info) => info.modifierListId!)
@@ -214,6 +226,7 @@ export function normalizeSquareItems(
         itemType,
         cafeOrRetail,
         imageUrl,
+        imageUrls,
         squareImageIds: imageIds,
         modifierListIds,
         taxIds,

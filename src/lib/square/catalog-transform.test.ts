@@ -84,6 +84,7 @@ describe("Square catalog transforms", () => {
     assert.equal(normalized[0].itemType, "menu");
     assert.equal(normalized[0].cafeOrRetail, "cafe");
     assert.equal(normalized[0].imageUrl, "https://example.com/latte.jpg");
+    assert.deepEqual(normalized[0].imageUrls, ["https://example.com/latte.jpg"]);
     assert.deepEqual(normalized[0].modifierListIds, ["MOD_MILK"]);
     assert.deepEqual(normalized[0].taxIds, ["TAX_SALES"]);
     assert.equal(normalized[1].squareVariationId, "VAR_LARGE");

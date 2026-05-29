@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { fetchInventoryCounts, fetchSquareCatalogSnapshot, rawForJsonb } from "@/lib/square/catalog";
 import { toNumber, type SquareObjectLike } from "@/lib/square/catalog-transform";
+import { cacheAllSquareImages } from "@/lib/square/image-cache";
 
 const PROVIDER = "square";
 
@@ -171,6 +172,18 @@ export async function POST(req: NextRequest) {
     const variationIds = snapshot.items.map((i) => i.squareVariationId);
     const inventoryCounts = await fetchInventoryCounts(variationIds);
 
+    // Cache every Square image into our own durable Supabase Storage bucket
+    // so URLs never rot. Square's signed URLs expire within 24 hours; ours
+    // live forever. This is safe to re-run — already-cached files are skipped.
+    let durableImages: Record<string, string> = {};
+    let imagesCached = 0;
+    try {
+      durableImages = await cacheAllSquareImages(snapshot.images);
+      imagesCached = Object.keys(durableImages).length;
+    } catch (err) {
+      console.warn("[square-sync] image cache step failed (non-fatal):", String(err));
+    }
+
     const errors: string[] = [];
     const rawResult = await upsertRawObjects(supabase, snapshot.objects);
     errors.push(...rawResult.errors);
@@ -184,10 +197,23 @@ export async function POST(req: NextRequest) {
     let successCount = 0;
     let failCount = 0;
 
+    // Build per-item durable image URL lists from the cached map.
+    // Key on squareImageIds so every variation of the same item gets the same URLs.
+    const itemDurableImageUrls = snapshot.items.reduce<Record<string, string[]>>((acc, item) => {
+      if (item.squareImageIds.length === 0) return acc;
+      acc[`${item.squareItemId}:${item.squareVariationId}`] = item.squareImageIds
+        .map((id) => durableImages[id])
+        .filter((url): url is string => Boolean(url));
+      return acc;
+    }, {});
+
     for (const item of snapshot.items) {
       const availableShipping = item.itemType === "merch" || item.itemType === "retail" || item.itemType === "gift_card";
       const availableQr = item.cafeOrRetail === "cafe";
       const availableDelivery = item.itemType === "menu";
+      const durableUrls =
+        itemDurableImageUrls[`${item.squareItemId}:${item.squareVariationId}`] ??
+        (item.imageUrl ? [item.imageUrl] : []);
 
       const { error: squareError } = await supabase
         .from("square_catalog_items")
@@ -209,7 +235,7 @@ export async function POST(req: NextRequest) {
           available_delivery: item.isActive && availableDelivery,
           available_shipping: item.isActive && availableShipping,
           available_qr: item.isActive && availableQr,
-          image_url: item.imageUrl,
+          image_url: durableUrls[0] ?? item.imageUrl,
           square_image_ids: item.squareImageIds,
           modifier_list_ids: item.modifierListIds,
           tax_ids: item.taxIds,
@@ -236,7 +262,7 @@ export async function POST(req: NextRequest) {
           available_delivery: item.isActive && availableDelivery,
           available_shipping: item.isActive && availableShipping,
           available_qr: item.isActive && availableQr,
-          image_urls: item.imageUrl ? [item.imageUrl] : [],
+          image_urls: durableUrls,
           modifier_list_ids: item.modifierListIds,
           tax_ids: item.taxIds,
           raw: rawForJsonb(item.raw),
@@ -305,6 +331,7 @@ export async function POST(req: NextRequest) {
       synced: successCount,
       failed: failCount,
       total: snapshot.items.length,
+      images: { total: imagesCached, cached: Object.keys(durableImages).length },
       rawObjects: snapshot.objects.length,
       categories: Object.keys(snapshot.categories).length,
       modifiers: modifierResult.syncedModifiers,
