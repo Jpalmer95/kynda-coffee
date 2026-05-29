@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { ShoppingCart, SlidersHorizontal, X, Coffee, Minus, Plus } from "lucide-react";
+import { ShoppingCart, SlidersHorizontal, X, Coffee, Minus, Plus, Search, Leaf, Wheat, MilkOff } from "lucide-react";
 import type { PosCatalogCategoryGroup, PosCatalogItem } from "@/lib/pos/catalog";
 import { formatMoney } from "@/lib/pos/catalog";
 import { MenuItemDialog } from "./MenuItemDialog";
@@ -13,8 +13,41 @@ interface MenuClientProps {
   generatedAt: string;
 }
 
+// Heuristic dietary tag detection — derived from item name/description.
+// Square POS doesn't expose structured dietary flags, so we pattern-match
+// common keywords. Admin can override via catalog_overrides.metadata.dietary.
+type DietaryTag = "vegan" | "gluten-free" | "dairy-free";
+
+const DIETARY_RULES: Record<DietaryTag, { include: RegExp; exclude: RegExp }> = {
+  vegan: {
+    include: /\bvegan\b|plant.based\b|dairy.free\b/i,
+    exclude: /\bmilk\b|\bcream\b|\bcheese\b|\bbutter\b|\bhoney\b|\byogurt\b|\beyggs?\b/i,
+  },
+  "gluten-free": {
+    include: /\bgluten.free\b|GF\b|\bwheat.free\b/i,
+    exclude: /\bcroissant\b|\bmuffin\b|\bbread\b|\bbagel\b|\bcookie\b|\bcake\b|\bwrap\b|\bsandwich\b|\bpastry\b/i,
+  },
+  "dairy-free": {
+    include: /\bdairy.free\b|\boat.milk\b|\balmond\b|\bcoconut\b/i,
+    exclude: /\bmilk(?!.*oat)(?!.*almond)(?!.*coconut)\b|\bcream\b|\bcheese\b|\bbutter\b|\byogurt\b|\blatte\b(?!.*oat)/i,
+  },
+};
+
+function getDietaryTags(item: PosCatalogItem): Set<DietaryTag> {
+  const text = `${item.name} ${item.description}`;
+  const tags = new Set<DietaryTag>();
+  for (const [tag, rule] of Object.entries(DIETARY_RULES)) {
+    if (rule.include.test(text) && !rule.exclude.test(text)) {
+      tags.add(tag as DietaryTag);
+    }
+  }
+  return tags;
+}
+
 export function MenuClient({ categories, generatedAt }: MenuClientProps) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeDietary, setActiveDietary] = useState<Set<DietaryTag>>(new Set());
   const [selectedItem, setSelectedItem] = useState<PosCatalogItem | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [showCart, setShowCart] = useState(false);
@@ -23,16 +56,148 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
 
   const allCategoryNames = useMemo(() => categories.map((c) => c.name), [categories]);
 
-  const activeCategories = useMemo(
-    () =>
-      activeCategory === "all"
-        ? categories
-        : categories.filter((c) => c.name === activeCategory),
-    [activeCategory, categories]
+  // Build a cache of dietary tags per item so we don't re-run regex in render
+  const itemDietaryCache = useMemo(() => {
+    const cache = new Map<string, Set<DietaryTag>>();
+    for (const cat of categories) {
+      for (const item of cat.items) {
+        cache.set(item.providerItemId, getDietaryTags(item));
+      }
+    }
+    return cache;
+  }, [categories]);
+
+  // Available dietary tags across current menu
+  const availableDietaryTags = useMemo(() => {
+    const seen = new Set<DietaryTag>();
+    for (const tags of itemDietaryCache.values()) {
+      for (const t of tags) seen.add(t);
+    }
+    return Array.from(seen);
+  }, [itemDietaryCache]);
+
+  const isItemVisible = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return (item: PosCatalogItem) => {
+      // Category filter
+      if (activeCategory !== "all" && item.categoryName !== activeCategory) return false;
+      // Dietary filter (AND)
+      if (activeDietary.size > 0) {
+        const tags = itemDietaryCache.get(item.providerItemId);
+        for (const t of activeDietary) {
+          if (!tags?.has(t)) return false;
+        }
+      }
+      // Search
+      if (query && !(
+        item.name.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        item.categoryName.toLowerCase().includes(query)
+      )) return false;
+      return true;
+    };
+  }, [activeCategory, searchQuery, activeDietary, itemDietaryCache]);
+
+  // Apply filters to categories
+  const activeCategories = useMemo(() => {
+    const sources = activeCategory === "all"
+      ? categories
+      : categories.filter((c) => c.name === activeCategory);
+    return sources
+      .map((cat) => ({ ...cat, items: cat.items.filter(isItemVisible) }))
+      .filter((cat) => cat.items.length > 0);
+  }, [activeCategory, categories, isItemVisible]);
+
+  const visibleItemCount = useMemo(
+    () => activeCategories.reduce((sum, c) => sum + c.items.length, 0),
+    [activeCategories]
   );
+
+  const totalItemCount = useMemo(
+    () => categories.reduce((sum, c) => sum + c.items.length, 0),
+    [categories]
+  );
+
+  const hasActiveFilters =
+    activeCategory !== "all" || searchQuery.trim().length > 0 || activeDietary.size > 0;
+
+  function clearFilters() {
+    setActiveCategory("all");
+    setSearchQuery("");
+    setActiveDietary(new Set());
+  }
+
+  function toggleDietary(tag: DietaryTag) {
+    setActiveDietary((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag);
+      else next.add(tag);
+      return next;
+    });
+  }
+
+  const dietaryIcon = (tag: DietaryTag) => {
+    if (tag === "vegan") return <Leaf className="h-3.5 w-3.5" />;
+    if (tag === "gluten-free") return <Wheat className="h-3.5 w-3.5" />;
+    return <MilkOff className="h-3.5 w-3.5" />;
+  };
+
+  const dietaryLabel: Record<DietaryTag, string> = {
+    vegan: "Vegan",
+    "gluten-free": "Gluten-Free",
+    "dairy-free": "Dairy-Free",
+  };
 
   return (
     <div className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Search Bar */}
+      <div className="relative mb-5 max-w-xl mx-auto">
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-mocha pointer-events-none" />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search the menu..."
+          aria-label="Search menu items"
+          className="w-full rounded-full border border-latte/30 bg-card py-3 pl-11 pr-10 text-sm text-espresso placeholder:text-mocha/60 focus:border-forest focus:outline-none focus:ring-1 focus:ring-forest"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-mocha hover:bg-latte/20 hover:text-espresso"
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Dietary Filter Chips */}
+      {availableDietaryTags.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-2">
+          {(["vegan", "gluten-free", "dairy-free"] as DietaryTag[])
+            .filter((t) => availableDietaryTags.includes(t))
+            .map((tag) => {
+              const active = activeDietary.has(tag);
+              return (
+                <button
+                  key={tag}
+                  onClick={() => toggleDietary(tag)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                    active
+                      ? "bg-forest text-sand shadow-sm"
+                      : "border border-latte/30 bg-card text-mocha hover:border-forest/50 hover:text-espresso"
+                  }`}
+                  aria-pressed={active}
+                >
+                  {dietaryIcon(tag)}
+                  {dietaryLabel[tag]}
+                </button>
+              );
+            })}
+        </div>
+      )}
+
       {/* Category Filter Tabs - Desktop */}
       <div className="mb-6 hidden flex-wrap items-center justify-center gap-3 md:flex">
         <button
@@ -104,16 +269,16 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
       </div>
 
       {/* Active filter indicator */}
-      {activeCategory !== "all" && (
-        <div className="mb-4 flex items-center gap-2">
-          <span className="text-sm font-body text-[latte-500] uppercase tracking-wider">
-            Showing: <span className="font-bold text-espresso">{activeCategory}</span>
+      {hasActiveFilters && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-body text-mocha uppercase tracking-wider">
+            Showing <span className="font-bold text-espresso">{visibleItemCount}</span> of {totalItemCount} items
           </span>
           <button
-            onClick={() => setActiveCategory("all")}
+            onClick={clearFilters}
             className="flex items-center gap-1 rounded-[4px] border border-latte/20 bg-latte/10 px-2 py-0.5 text-xs font-bold font-body uppercase text-mocha hover:bg-latte/30 tracking-widest"
           >
-            Clear <X className="h-3 w-3" />
+            Clear all <X className="h-3 w-3" />
           </button>
         </div>
       )}
@@ -195,8 +360,16 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
       {activeCategories.length === 0 && (
         <div className="py-20 text-center">
           <Coffee className="mx-auto h-12 w-12 text-latte" />
-          <p className="mt-4 text-lg text-mocha">No items in this category right now.</p>
-          <p className="mt-1 text-sm text-mocha/60">Check back soon — we&apos;re always brewing something new.</p>
+          <p className="mt-4 text-lg text-mocha">
+            {hasActiveFilters ? "No items match your filters." : "No items in this category right now."}
+          </p>
+          <p className="mt-1 text-sm text-mocha/60">
+            {hasActiveFilters ? (
+              <button onClick={clearFilters} className="text-forest underline hover:no-underline">Clear filters</button>
+            ) : (
+              "Check back soon — we're always brewing something new."
+            )}
+          </p>
         </div>
       )}
 

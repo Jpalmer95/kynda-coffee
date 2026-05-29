@@ -68,12 +68,16 @@
 - [x] Real mockup images — Supabase Storage bucket, admin sync route, DesignCanvas fallback to product image
 - [x] Profitability guardrails — margin check (>$1/item) before Add to Cart, PRODUCT_MARKUP tiered multipliers
 
-**Menu Ordering**
-- [ ] Fulfillment mode selector (pickup/curbside/to-go/delivery)
-- [ ] Vehicle description for curbside
-- [ ] Delivery platform links (DoorDash/Uber Eats)
-- [ ] Kiosk mode
-- [ ] QR table ordering
+**Menu Ordering — Phase 3 (2026-05-29)**
+- [ ] Menu search bar + category filters
+- [ ] Dietary filters (vegan, gluten-free, dairy-free)
+- [ ] Menu specials section (highlight featured items)
+- [ ] Kiosk mode (/kiosk - tablet-optimized, Square-only payment)
+- [ ] "Build Your Own" custom drink builder
+- [ ] QR table ordering (/order?table=X)
+- [x] Fulfillment mode selector (pickup/curbside/to-go/delivery)
+- [x] Curbside vehicle description input (mandatory when mode = pickup)
+- [x] Delivery platform links (DoorDash/Uber Eats buttons)
 
 ---
 
