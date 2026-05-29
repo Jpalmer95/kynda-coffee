@@ -1,7 +1,7 @@
 # Kynda Coffee Platform — Master Implementation Roadmap
 
-**Last Updated:** 2026-05-29  
-**Status:** Phase 1 Complete, Moving to Phase 2  
+**Last Updated:** 2026-05-29 16:30  
+**Status:** Phase 2 Complete, Starting Phase 3  
 **Total Pages:** 69 (17 admin, 52 customer/staff)
 
 ---
@@ -61,11 +61,12 @@
 
 ### 🚧 In Progress
 
-**Design Studio**
-- [ ] Save/load designs to Supabase (user account)
-- [ ] End-to-end Printful order submission
-- [ ] Content moderation API
-- [ ] Real mockup images (currently placeholder URLs)
+**Design Studio — Phase 2 (2026-05-29)**
+- [x] Save/load designs to Supabase (user account) — autosave + thumbnails + RLS
+- [x] End-to-end Printful order submission — draft → confirm on payment → webhook tracking + /shop/merch/checkout
+- [x] Content moderation API — OpenAI Moderation (text) + GPT-4o vision (canvas images), gating Generate and Add to Cart
+- [x] Real mockup images — Supabase Storage bucket, admin sync route, DesignCanvas fallback to product image
+- [x] Profitability guardrails — margin check (>$1/item) before Add to Cart, PRODUCT_MARKUP tiered multipliers
 
 **Menu Ordering**
 - [ ] Fulfillment mode selector (pickup/curbside/to-go/delivery)
