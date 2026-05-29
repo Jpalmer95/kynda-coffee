@@ -84,6 +84,50 @@ function useImage(url: string | undefined): HTMLImageElement | null {
   return image;
 }
 
+/**
+ * Loads an image from `primary` URL; on failure, falls back to `fallbackUrl`.
+ * Used for mockup images so the canvas always shows *something* even when
+ * Printful CDN URLs 404 before the admin sync has run.
+ */
+function useImageWithFallback(
+  primary: string | undefined,
+  fallbackUrl: string | undefined
+): HTMLImageElement | null {
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    if (!primary) {
+      setImage(null);
+      return;
+    }
+
+    let cancelled = false;
+    let triedFallback = false;
+
+    const img = new window.Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (!cancelled) setImage(img);
+    };
+    img.onerror = () => {
+      if (cancelled) return;
+      if (!triedFallback && fallbackUrl) {
+        triedFallback = true;
+        img.src = fallbackUrl;
+      } else {
+        setImage(null);
+      }
+    };
+    img.src = primary;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [primary, fallbackUrl]);
+
+  return image;
+}
+
 // ============================================================
 // DesignCanvasLayer — loads its own image and renders via Konva
 // ============================================================
@@ -188,7 +232,7 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
 
     // Mockup image
     const currentMockupUrl = view === "front" ? product.mockupImages.front : product.mockupImages.back;
-    const mockupImage = useImage(currentMockupUrl || undefined);
+    const mockupImage = useImageWithFallback(currentMockupUrl || undefined, product.imageUrl);
 
     // Auto-add initial design
     useEffect(() => {
