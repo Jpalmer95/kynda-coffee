@@ -7,6 +7,7 @@ import type { PosCatalogCategoryGroup, PosCatalogItem } from "@/lib/pos/catalog"
 import { formatMoney } from "@/lib/pos/catalog";
 import { MenuItemDialog } from "@/components/menu/MenuItemDialog";
 import { MenuSpecials } from "@/components/menu/MenuSpecials";
+import { BuildYourOwn } from "@/components/menu/BuildYourOwn";
 import { useMenuCartStore } from "@/hooks/useMenuCart";
 
 interface MenuClientProps {
@@ -157,8 +158,11 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
 
   return (
     <div className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Menu Specials — surfaced featured items */}
-      <MenuSpecials items={allItems} onSelectItem={setSelectedItem} />
+    {/* Menu Specials — surfaced featured items */}
+    <MenuSpecials items={allItems} onSelectItem={setSelectedItem} />
+
+    {/* Build Your Own — custom drink builder */}
+    <BuildYourOwn items={allItems} />
 
       {/* Search Bar */}
       <div className="relative mb-5 max-w-xl mx-auto">
