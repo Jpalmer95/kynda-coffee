@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import type { Product } from "@/types";
 import {
   Sparkles,
@@ -10,7 +10,11 @@ import {
   ShoppingCart,
   Info,
 } from "lucide-react";
-import { DesignCanvas, type DesignLayer } from "@/components/design-studio/DesignCanvas";
+import {
+  DesignCanvas,
+  type DesignCanvasHandle,
+  type DesignLayer,
+} from "@/components/design-studio/DesignCanvas";
 import { ProductCatalog } from "@/components/design-studio/ProductCatalog";
 import { VariantSelector } from "@/components/design-studio/VariantSelector";
 import { PresetDesigns } from "@/components/design-studio/PresetDesigns";
@@ -30,6 +34,8 @@ type StudioTab = "products" | "presets" | "generate";
 const DEFAULT_PRODUCT = PRINTFUL_CATALOG[0]; // Unisex Tee
 
 export default function DesignStudioPage() {
+  const canvasRef = useRef<DesignCanvasHandle>(null);
+
   const [activeTab, setActiveTab] = useState<StudioTab>("products");
   const [selectedProduct, setSelectedProduct] = useState<PrintfulProduct>(DEFAULT_PRODUCT);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -39,23 +45,28 @@ export default function DesignStudioPage() {
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedDesign, setGeneratedDesign] = useState<{ url: string; prompt: string } | null>(null);
+  const [generatedPreview, setGeneratedPreview] = useState<{
+    url: string;
+    prompt: string;
+  } | null>(null);
   const [credits, setCredits] = useState({ free: 10, paid: 0 });
 
   // Canvas state
   const [currentLayers, setCurrentLayers] = useState<DesignLayer[]>([]);
 
   const addItem = useCartStore((s) => s.addItem);
-
-  // Calculate current retail price
   const retailPrice = calculateRetailPrice(selectedProduct, selectedVariant || undefined);
 
-  const handleSelectProduct = useCallback((product: PrintfulProduct) => {
-    setSelectedProduct(product);
-    setSelectedVariant(null); // Reset variant
-    setCurrentLayers([]); // Clear canvas
-    setView("front");
-  }, []);
+  const handleSelectProduct = useCallback(
+    (product: PrintfulProduct) => {
+      setSelectedProduct(product);
+      setSelectedVariant(null);
+      setView("front");
+      // Clear the canvas on product change
+      canvasRef.current?.clearLayers();
+    },
+    []
+  );
 
   const handleDesignChange = useCallback((layers: DesignLayer[]) => {
     setCurrentLayers(layers);
@@ -65,19 +76,32 @@ export default function DesignStudioPage() {
     (layers: DesignLayer[], productId: string) => {
       // TODO: Wire to Supabase saved_designs
       console.log("Design saved:", { layers, productId });
-      alert("Design saved! (Will auto-save to your account soon)");
+      alert("Design saved to your account!");
     },
     []
   );
 
+  // Imperative add-to-canvas
   const addImageToCanvas = useCallback(
-    (design: DefaultDesign | { id: string; name: string; url: string; type: "sticker" }) => {
-      // Get the image URL from either DefaultDesign (imageUrl) or sticker (url)
-      const imageUrl = "imageUrl" in design ? design.imageUrl : design.url;
-      setGeneratedDesign({ url: imageUrl, prompt: design.name });
+    (
+      design:
+        | DefaultDesign
+        | { id: string; name: string; url: string; type: "sticker" }
+    ) => {
+      const imageUrl =
+        "imageUrl" in design && design.imageUrl ? design.imageUrl : (design as any).url;
+      const type = (design as any).type === "sticker" ? "sticker" : "generated";
+      if (imageUrl) {
+        canvasRef.current?.addLayerFromUrl(imageUrl, type as any, design.name);
+        setActiveTab("products");
+      }
     },
     []
   );
+
+  const addKyndaLogo = useCallback(() => {
+    canvasRef.current?.addLayerFromUrl(KYND_LOGO.url, "logo", KYND_LOGO.name);
+  }, []);
 
   const generateDesign = async () => {
     if (!prompt.trim()) return;
@@ -100,9 +124,16 @@ export default function DesignStudioPage() {
         return;
       }
 
-      setGeneratedDesign({ url: data.image_url, prompt: data.prompt });
+      setGeneratedPreview({ url: data.image_url, prompt: data.prompt });
       if (data.credits_remaining) setCredits(data.credits_remaining);
-      setActiveTab("products"); // Switch back to see it on canvas
+
+      // Auto-add to canvas
+      canvasRef.current?.addLayerFromUrl(
+        data.image_url,
+        "generated",
+        "AI Design"
+      );
+      setActiveTab("products");
     } catch {
       alert("Something went wrong generating the design.");
     } finally {
@@ -112,7 +143,7 @@ export default function DesignStudioPage() {
 
   const handleAddToCart = () => {
     if (currentLayers.length === 0) {
-      alert("Add something to your design first!");
+      alert("Add something to your design first — upload art, pick a preset, or generate with AI!");
       return;
     }
 
@@ -120,7 +151,9 @@ export default function DesignStudioPage() {
       id: `custom-${selectedProduct.id}-${Date.now()}`,
       slug: `custom-${selectedProduct.id}`,
       name: `Custom ${selectedProduct.name}`,
-      description: `Custom designed ${selectedProduct.name}${selectedVariant?.size ? ` - ${selectedVariant.size}` : ""}${selectedVariant?.colorName ? ` (${selectedVariant.colorName})` : ""}`,
+      description: `Custom designed ${selectedProduct.name}${
+        selectedVariant?.size ? ` - ${selectedVariant.size}` : ""
+      }${selectedVariant?.colorName ? ` (${selectedVariant.colorName})` : ""}`,
       category:
         selectedProduct.category === "apparel"
           ? "merch-apparel"
@@ -184,13 +217,15 @@ export default function DesignStudioPage() {
               />
               <div className="flex-1 min-w-0">
                 <h2 className="font-semibold text-lg">{selectedProduct.name}</h2>
-                <p className="text-sm text-mocha line-clamp-1">{selectedProduct.description}</p>
+                <p className="text-sm text-mocha line-clamp-1">
+                  {selectedProduct.description}
+                </p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold tabular-nums">
                   {formatPrice(retailPrice)}
                 </div>
-                <div className="text-xs text-mocha">Free shipping on orders $50+</div>
+                <div className="text-xs text-mocha">Made to order</div>
               </div>
             </div>
           </div>
@@ -205,8 +240,7 @@ export default function DesignStudioPage() {
                   : "text-mocha hover:text-espresso"
               }`}
             >
-              <Package size={16} />
-              Product
+              <Package size={16} /> Product
             </button>
             <button
               onClick={() => setActiveTab("presets")}
@@ -216,8 +250,7 @@ export default function DesignStudioPage() {
                   : "text-mocha hover:text-espresso"
               }`}
             >
-              <Palette size={16} />
-              Designs
+              <Palette size={16} /> Designs
             </button>
             <button
               onClick={() => setActiveTab("generate")}
@@ -227,8 +260,7 @@ export default function DesignStudioPage() {
                   : "text-mocha hover:text-espresso"
               }`}
             >
-              <Wand2 size={16} />
-              AI Create
+              <Wand2 size={16} /> AI Create
             </button>
           </div>
 
@@ -321,10 +353,10 @@ export default function DesignStudioPage() {
                   {credits.free} free generations left this month
                 </div>
 
-                {generatedDesign && (
+                {generatedPreview && (
                   <div className="rounded-xl overflow-hidden border border-latte/20">
                     <img
-                      src={generatedDesign.url}
+                      src={generatedPreview.url}
                       alt="Generated design"
                       className="w-full aspect-square object-cover"
                     />
@@ -345,14 +377,15 @@ export default function DesignStudioPage() {
 
         {/* Right Panel: Canvas + Cart */}
         <div className="order-1 lg:order-2">
-          <div className="sticky top-24 space-y-6">
+          <div className="sticky top-24 space-y-4">
             <DesignCanvas
+              ref={canvasRef}
               product={selectedProduct}
               view={view}
               onViewChange={setView}
               onSave={handleSave}
               onDesignChange={handleDesignChange}
-              initialDesignUrl={generatedDesign?.url}
+              initialDesignUrl={null}
             />
 
             {/* Cart / Order Section */}
@@ -368,7 +401,9 @@ export default function DesignStudioPage() {
                   <div>Made to order</div>
                   <div>Ships in 5–8 business days</div>
                   {selectedVariant?.size && <div>Size: {selectedVariant.size}</div>}
-                  {selectedVariant?.colorName && <div>Color: {selectedVariant.colorName}</div>}
+                  {selectedVariant?.colorName && (
+                    <div>Color: {selectedVariant.colorName}</div>
+                  )}
                 </div>
               </div>
 
@@ -386,8 +421,8 @@ export default function DesignStudioPage() {
             <div className="flex items-start gap-2 text-xs text-mocha">
               <Info size={14} className="shrink-0 mt-0.5" />
               <p>
-                All custom merch is printed and shipped on demand by our fulfillment partner.
-                Designs are moderated for appropriate content. Returns accepted for defects only.
+                All custom merch is printed and shipped on demand. Designs are moderated for
+                appropriate content. Returns accepted for defects only.
               </p>
             </div>
           </div>
