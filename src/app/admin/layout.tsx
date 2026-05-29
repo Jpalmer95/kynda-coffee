@@ -20,6 +20,7 @@ import {
   CreditCard,
   QrCode,
   BotMessageSquare,
+  ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ const ADMIN_LINKS = [
   { href: "/admin/training", label: "Training", icon: GraduationCap },
   { href: "/admin/marketing", label: "Marketing", icon: Share2 },
   { href: "/admin/marketing/chat", label: "AI Chat", icon: BotMessageSquare },
+  { href: "/admin/marketing/images", label: "Images", icon: ImageIcon },
   { href: "/admin/square", label: "Square", icon: CreditCard },
   { href: "/admin/qr-tables", label: "QR Tables", icon: QrCode },
   { href: "/admin/settings", label: "Settings", icon: Settings },

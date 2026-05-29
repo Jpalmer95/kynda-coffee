@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Send, Loader2, BotMessageSquare, ArrowRight } from "lucide-react";
+import { Send, Loader2, BotMessageSquare, ImageIcon, ArrowRight } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 export default function MarketingPage() {
@@ -79,26 +79,48 @@ export default function MarketingPage() {
       <p className="text-sm text-mocha">Send automated emails and push notifications.</p>
 
       {/* AI Marketing Chat Banner */}
-      <Link
-        href="/admin/marketing/chat"
-        className="mt-8 max-w-2xl flex items-center gap-4 rounded-xl border border-forest/30 bg-forest/5 p-5 hover:bg-forest/10 transition-colors group"
-      >
-        <div className="h-12 w-12 rounded-xl bg-forest/15 flex items-center justify-center flex-shrink-0">
-          <BotMessageSquare className="h-6 w-6 text-forest" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
-            AI Marketing Assistant
-            <span className="text-xs font-body font-normal px-2 py-0.5 rounded-full bg-forest/10 text-forest">
-              New
-            </span>
-          </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Generate social posts, hashtags, weekly content calendars — powered by Claude.
-          </p>
-        </div>
-        <ArrowRight className="h-5 w-5 text-forest opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-      </Link>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-8 max-w-4xl">
+        <Link
+          href="/admin/marketing/chat"
+          className="flex items-center gap-4 rounded-xl border border-forest/30 bg-forest/5 p-5 hover:bg-forest/10 transition-colors group"
+        >
+          <div className="h-12 w-12 rounded-xl bg-forest/15 flex items-center justify-center flex-shrink-0">
+            <BotMessageSquare className="h-6 w-6 text-forest" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
+              AI Chat
+              <span className="text-xs font-body font-normal px-2 py-0.5 rounded-full bg-forest/10 text-forest">
+                New
+              </span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Social posts, hashtags, content calendars.
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-forest opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </Link>
+        <Link
+          href="/admin/marketing/images"
+          className="flex items-center gap-4 rounded-xl border border-forest/30 bg-forest/5 p-5 hover:bg-forest/10 transition-colors group"
+        >
+          <div className="h-12 w-12 rounded-xl bg-forest/15 flex items-center justify-center flex-shrink-0">
+            <ImageIcon className="h-6 w-6 text-forest" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
+              Image Pipeline
+              <span className="text-xs font-body font-normal px-2 py-0.5 rounded-full bg-forest/10 text-forest">
+                New
+              </span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Resize, watermark, AI alt-text for all platforms.
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-forest opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </Link>
+      </div>
 
       {/* Email Automation Section */}
       <div className="mt-8 max-w-2xl rounded-xl border border-latte/20 bg-card p-6">
