@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat, Playfair_Display } from "next/font/google";
+import { EB_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "@/styles/globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -12,18 +12,18 @@ import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { ThemeProvider } from "@/lib/theme/context";
 
-const body = Montserrat({
+const body = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
   weight: ["400", "500", "600", "700"],
 });
 
-const heading = Playfair_Display({
+const heading = EB_Garamond({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
-  weight: ["600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#286849",
+  themeColor: "#1B3022",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,

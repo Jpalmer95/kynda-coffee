@@ -3,6 +3,18 @@
 @tailwind utilities;
 
 /* ============================================================
+   Kynda Coffee — Design System v2 (Modern Artisan)
+   ============================================================
+   Light Mode: Heirloom Cream + Deep Forest Green
+   Dark Mode:  Clean Charcoal + Sage Green
+
+   All CSS variables are bare RGB triplets so Tailwind opacity
+   modifiers work via rgb(var(...) / <alpha-value>).
+
+   WCAG 2.2 AA verified: ≥4.5:1 normal text, ≥3:1 large text.
+   ============================================================ */
+
+/* ============================================================
    No-transitions: prevent FOUC on theme switch
    ============================================================ */
 .no-transitions *,
@@ -13,101 +25,67 @@
 }
 
 /* ============================================================
-   Theme: CSS Custom Variables for Light / Dark Mode
-   Light = sand/canvas + forest green
-   Dark  = charcoal + sand text + bright green accent
-   ============================================================
-
-   All variables are bare RGB triplets (no rgb() wrapper) so
-   Tailwind opacity modifiers work via rgb(var(...) / <alpha-value>).
-
-   Contrast targets — all meet WCAG 2.2 AA (4.5:1 normal text,
-   3:1 large text ≥18px or ≥14px bold).
-   ============================================================ */
-
-/* ============================================================
-   DESIGN.md Token Mapping — Legacy variables → Design tokens
-   ------------------------------------------------------------
-   Light Mode (Forest & Sand)
-   --bg-cream         → surface / background           #FBF9F6
-   --bg-cream-50      → surface-container-lowest       #FFFFFF
-   --bg-cream-100     → surface-container-low          #F5F3F0
-   --bg-cream-200     → surface-container              #EFEEEB
-   --bg-card          → surface-container-low          #F5F3F0
-   --bg-surface       → primary-container              #1B3022
-   --bg-surface-800   → primary                        #061B0E
-   --text-espresso    → on-surface                     #1B1C1A
-   --text-espresso-50 → on-surface-variant             #434843
-   --text-espresso-100→ inverse-surface                #30312F
-   --text-espresso-200→ on-surface                     #1B1C1A
-   --text-sand        → on-primary (white on dark)     #FFFFFF
-   --text-sand-50     → inverse-on-surface             #F2F0ED
-   --border-latte     → outline                        #737973
-   --border-latte-300 → outline-variant                #C3C8C1
-   --border-latte-400 → outline                        #737973
-   --border-latte-500 → outline                        #737973
-   --border-latte-600 → on-surface                     #1B1C1A
-   --border-latte-700 → on-surface                     #1B1C1A
-   --text-mocha       → on-surface-variant             #434843
-   --text-mocha-300   → outline                        #737973
-   --text-mocha-400   → outline                        #737973
-   --text-mocha-500   → on-surface-variant             #434843
-   --text-mocha-600   → on-surface                     #1B1C1A
-   --text-mocha-700   → on-surface                     #1B1C1A
-   --accent-forest    → primary-container              #1B3022
-   --accent-forest-300→ on-primary-container           #819986
-   --accent-forest-400→ surface-tint                   #4D6453
-   --accent-forest-500→ primary-container              #1B3022
-   --accent-forest-600→ primary                        #061B0E
-   --accent-forest-700→ primary                        #061B0E
-   --accent-sage      → muted green (~#5E8A66)
-   --accent-sage-300  → lighter sage                   #9ED5A5
-   --accent-sage-400  → #78C480
-   --accent-sage-500  → muted green (~#5E8A66)
-   --accent-sage-600  → darker sage                    #4A7A52
-   --accent-bronze    → static accent                  #A67C52
-   --focus-ring       → primary-container              #1B3022
-   --focus-ring-offset→ background                     #FBF9F6
-   ------------------------------------------------------------
-   Dark Mode (Kynda Coffee Dark Noir) values are preserved
-   as-is from the existing implementation.
+   NEW SEMANTIC TOKENS (DESIGN.md v2 standard names)
+   These coexist with legacy names for gradual migration.
    ============================================================ */
 
 :root {
-  /* === Light Mode (default) === */
+  /* === DESIGN.md v2 Semantic Tokens (Light) === */
+  --background:        251 249 245;  /* #FBF9F5 — Heirloom Cream */
+  --foreground:        27 28 26;     /* #1B1C1A — On-Surface */
+  --card:              245 243 239;  /* #F5F3EF — Card surface */
+  --card-foreground:    27 28 26;     /* #1B1C1A */
+  --popover:           255 255 255;  /* #FFFFFF */
+  --popover-foreground: 27 28 26;     /* #1B1C1A */
+  --primary:           6 27 14;      /* #061B0E — Deep Forest Green */
+  --primary-foreground: 255 255 255; /* #FFFFFF */
+  --secondary:         100 94 83;    /* #645E53 — Roasted Earth */
+  --secondary-foreground: 255 255 255; /* #FFFFFF */
+  --muted:             234 232 228;  /* #EAE8E4 */
+  --muted-foreground:  67 72 67;     /* #434843 */
+  --accent:            140 120 81;   /* #8C7851 — Roasted Earth accent */
+  --accent-foreground: 255 255 255;  /* #FFFFFF */
+  --destructive:       186 26 26;    /* #BA1A1A */
+  --destructive-foreground: 255 255 255;
+  --border:            115 121 115;  /* #737973 */
+  --input:             195 200 193;  /* #C3C8C1 */
+  --ring:              6 27 14;      /* #061B0E */
+
+  /* === Legacy variables (keep existing components working) === */
 
   /* Sand/canvas page background */
-  --bg-cream:        251 249 246;  /* #FBF9F6 — surface / background */
-  --bg-cream-50:     255 255 255;  /* #FFFFFF — surface-container-lowest */
-  --bg-cream-100:    245 243 240;  /* #F5F3F0 — surface-container-low */
-  --bg-cream-200:    239 238 235;  /* #EFEEEB — surface-container */
+  --bg-cream:        251 249 245;  /* #FBF9F5 — surface / background */
+  --bg-cream-50:     255 255 255;  /* #FFFFFF — popover / white */
+  --bg-cream-100:    245 243 239;  /* #F5F3EF — card surface */
+  --bg-cream-200:    234 232 228;  /* #EAE8E4 — muted background */
 
-  /* Card surface — white in light, warm stone in dark */
-  --bg-card:         245 243 240;  /* #F5F3F0 — surface-container-low */
+  /* Card surface */
+  --bg-card:         245 243 239;  /* #F5F3EF */
 
-  /* Dark container surface (headers, footers, buttons, CTA blocks)
-     ALWAYS dark in both modes so that light text on it passes.
-     Light text (#FFFFFF) on this: 15.9:1 */
-  --bg-surface:      27 48 34;     /* #1B3022 — primary-container */
-  --bg-surface-800:  6 27 14;      /* #061B0E — primary */
+  /* Dark container surface (headers, footers, CTA blocks)
+     ALWAYS dark in both modes so light text on it passes contrast. */
+  --bg-surface:      27 48 34;     /* #1B3022 — Deep Forest (primary-container) */
+  --bg-surface-800:  6 27 14;      /* #061B0E — primary (darkest green) */
 
   /* Primary text — flips between modes */
   --text-espresso:    27 28 26;     /* #1B1C1A — on-surface */
   --text-espresso-50:  67 72 67;     /* #434843 — on-surface-variant */
   --text-espresso-100: 48 49 47;     /* #30312F — inverse-surface */
   --text-espresso-200: 27 28 26;     /* #1B1C1A — on-surface */
+  --text-espresso-800: 6 27 14;      /* #061B0E — primary (darkest) */
+  --text-espresso-900: 3 14 7;       /* #030E07 — ultra dark */
 
-  /* White/cream text (for use on dark surfaces) */
+  /* White/cream text (for dark surfaces) */
   --text-sand:       255 255 255;  /* #FFFFFF — on-primary */
   --text-sand-50:    242 240 237;  /* #F2F0ED — inverse-on-surface */
 
-  /* Warm border / divider */
+  /* Borders */
   --border-latte:     115 121 115;  /* #737973 — outline */
-  --border-latte-300:  195 200 193;  /* #C3C8C1 — outline-variant */
+  --border-latte-300:  195 200 193;  /* #C3C8C1 — outline-variant (lighter) */
   --border-latte-400:  115 121 115;  /* #737973 — outline */
   --border-latte-500:  115 121 115;  /* #737973 — outline */
-  --border-latte-600:  27 28 26;     /* #1B1C1A — on-surface */
-  --border-latte-700:  27 28 26;     /* #1B1C1A — on-surface */
+  --border-latte-600:  27 28 26;     /* #1B1C1A — on-surface (dark) */
+  --border-latte-700:  27 28 26;     /* #1B1C1A — on-surface (dark) */
 
   /* Secondary muted text */
   --text-mocha:       67 72 67;     /* #434843 — on-surface-variant */
@@ -118,104 +96,205 @@
   --text-mocha-700:    27 28 26;     /* #1B1C1A — on-surface */
 
   /* Forest Green (primary accent) */
-  --accent-forest:     27 48 34;     /* #1B3022 — primary-container */
+  --accent-forest:     27 48 34;     /* #1B3022 — primary-container (forest bg) */
   --accent-forest-300:  129 153 134;  /* #819986 — on-primary-container */
   --accent-forest-400:  77 100 83;    /* #4D6453 — surface-tint */
   --accent-forest-500:  27 48 34;     /* #1B3022 — primary-container */
   --accent-forest-600:  6 27 14;      /* #061B0E — primary */
   --accent-forest-700:  6 27 14;      /* #061B0E — primary */
 
-  /* Sage green — soft accent, must pass on cream */
+  /* Sage green — soft organic accent */
   --accent-sage:       94 138 102;   /* #5E8A66 */
   --accent-sage-300:    158 213 165;  /* #9ED5A5 — lighter sage */
   --accent-sage-400:    120 196 128;  /* #78C480 */
   --accent-sage-500:    94 138 102;   /* #5E8A66 */
   --accent-sage-600:    74 122 82;    /* #4A7A52 — darker sage */
-  
-  --accent-bronze: 166 124 82;
+
+  /* Bronze — warm static accent */
+  --accent-bronze:     166 124 82;   /* #A67C52 */
 
   /* Focus ring */
   --focus-ring:        27 48 34;     /* #1B3022 — primary-container */
-  --focus-ring-offset: 251 249 246;  /* #FBF9F6 — background */
+  --focus-ring-offset: 251 249 245;  /* #FBF9F5 — background */
 
-  /* Extended dark-mode tokens (alias references for component use) */
-  --surface-sidebar:   22 26 23;     /* #161A17 */
-  --surface-card:      26 29 27;     /* #1A1D1B */
+  /* Extended component tokens */
+  --surface-sidebar:   245 243 240;  /* Slightly warm — light mode sidebar */
+  --surface-card:      245 243 240;  /* Light mode card bg */
+  --surface-deep:      239 238 235;  /* Slightly deeper than card */
+  --emerald-glow:      94 138 102;   /* #5E8A66 — sage glow (subtle in light) */
+  --emerald-glow-dim:  129 153 134;  /* #819986 */
+  --outline-dark:      61 74 62;     /* #3D4A3E */
+  --on-surface-muted:  67 72 67;     /* #434843 */
 }
 
-/* === Dark Mode (set by .dark class on <html>) === */
+/* === Dark Mode (set by .dark class AND [data-theme="dark"]) === */
 .dark {
-  /* Dark mode: Kynda Obsidian Background Layering (True Dark + Cyber-Organic) */
-  --bg-cream:        14 21 15;     /* #0E150F Surface */
-  --bg-cream-50:     26 33 27;     /* #1A211B Surface-Container */
-  --bg-cream-100:    18 21 19;     /* #121513 Background-Deep */
-  --bg-cream-200:    36 44 37;     /* #242C25 Surface-Container-High */
+  /* === DESIGN.md v2 Semantic Tokens (Dark — Clean Charcoal) === */
+  --background:        19 19 19;     /* #131313 — Clean Charcoal base */
+  --foreground:        229 226 225;  /* #E5E2E1 — Warm Cream text */
+  --card:              28 27 27;     /* #1C1B1B — Raised charcoal */
+  --card-foreground:    229 226 225;  /* #E5E2E1 */
+  --popover:           38 38 38;     /* #262626 — Elevated charcoal */
+  --popover-foreground: 229 226 225;  /* #E5E2E1 */
+  --primary:           180 205 184;  /* #B4CDB8 — Sage Green (softer forest) */
+  --primary-foreground: 32 53 39;    /* #203527 — Dark green on sage */
+  --secondary:         200 198 195;  /* #C8C6C3 — Subdued button bg */
+  --secondary-foreground: 48 49 46;  /* #30312E — Dark text */
+  --muted:             42 42 42;     /* #2A2A2A — Subtle surface */
+  --muted-foreground:  195 200 193;  /* #C3C8C1 */
+  --accent:            182 204 186;  /* #B6CCBA — Muted sage accent */
+  --accent-foreground: 34 53 40;     /* #223528 */
+  --destructive:       255 180 171;  /* #FFB4AB */
+  --destructive-foreground: 105 0 5; /* #690005 */
+  --border:            141 146 140;  /* #8D928C */
+  --input:             67 72 67;     /* #434843 */
+  --ring:              180 205 184;  /* #B4CDB8 */
 
-  /* Product Cards & Elev Surface */
-  --bg-card:         26 29 27;     /* #1A1D1B Surface-Card */
+  /* === Legacy variables (Dark — Clean Charcoal) === */
 
-  /* Dark container surface — consistent */
-  --bg-surface:      14 21 15;     /* #0E150F */
-  --bg-surface-800:  9 16 10;      /* #09100A Surface-Container-Lowest */
+  /* Pure charcoal backgrounds — NO green tint */
+  --bg-cream:        19 19 19;     /* #131313 — Charcoal base */
+  --bg-cream-50:     28 27 27;     /* #1C1B1B — Raised surface */
+  --bg-cream-100:    24 24 24;     /* #181818 — Between bg and card */
+  --bg-cream-200:    42 42 42;     /* #2A2A2A — Muted surface */
 
-  /* Primary text — soft off-white #FBF9F6 to reduce eye strain */
-  --text-espresso:    221 229 218;  /* #DDE5DA On-Surface (muted slightly from true white) */
-  --text-espresso-50:  188 202 187;  /* #BCCABB On-Surface-Variant */
-  --text-espresso-100: 251 249 246;  /* #FBF9F6 bright pop */
-  --text-espresso-200: 230 222 210;  
+  /* Card surface — slightly raised charcoal */
+  --bg-card:         28 27 27;     /* #1C1B1B */
 
-  --text-sand:       251 249 246;  /* #FBF9F6 */
-  --text-sand-50:    242 240 237;  /* #F2F0ED Inverse-On-Surface */
+  /* Dark container surface — consistent charcoal */
+  --bg-surface:      32 32 32;     /* #202020 — Elevated container */
+  --bg-surface-800:  19 19 19;     /* #131313 — Base charcoal */
 
-  /* Dark borders - using slightly green tinted Outlines */
-  --border-latte:     61 74 62;     /* #3D4A3E Outline-Variant */
-  --border-latte-300:  71 74 71;    
-  --border-latte-400:  61 74 62;     
-  --border-latte-500:  134 148 134;  /* #869486 Outline */
-  --border-latte-600:  134 148 134;  
-  --border-latte-700:  188 202 187;  
+  /* Text — warm cream, reduces eye strain vs pure white */
+  --text-espresso:    229 226 225;  /* #E5E2E1 — Warm cream */
+  --text-espresso-50:  195 200 193;  /* #C3C8C1 — Muted variant */
+  --text-espresso-100: 229 226 225;  /* #E5E2E1 — Warm cream */
+  --text-espresso-200: 229 226 225;  /* #E5E2E1 */
+  --text-espresso-800: 255 255 255;  /* #FFFFFF — brightest */
+  --text-espresso-900: 255 255 255;  /* #FFFFFF */
 
-  /* Secondary muted text */
-  --text-mocha:       188 202 187;  /* #BCCABB On-Surface-Variant */
-  --text-mocha-300:    134 148 134; 
-  --text-mocha-400:    188 202 187;  
-  --text-mocha-500:    188 202 187;  
-  --text-mocha-600:    221 229 218;  
-  --text-mocha-700:    251 249 246;
+  /* Cream text on dark surfaces */
+  --text-sand:       229 226 225;  /* #E5E2E1 — Warm cream */
+  --text-sand-50:    200 198 195;  /* #C8C6C3 — Slightly muted */
 
-  /* Emerald Green / Cyber-Organic Luminous */
-  --accent-forest:     74 222 128;   /* #4ADE80 Primary-Container */
-  --accent-forest-300:  107 251 154;  /* #6BFB9A Primary */
-  --accent-forest-400:  109 254 156;   /* #6DFE9C Primary-Fixed */
-  --accent-forest-500:  77 224 130;   /* #4DE082 Surface-Tint */
-  --accent-forest-600:  0 109 54;     /* #006D36 Inverse-Primary */
-  --accent-forest-700:  0 94 45;     
+  /* Borders — neutral grey, no green tint */
+  --border-latte:     58 58 58;     /* #3A3A3A — Subtle dark border */
+  --border-latte-300:  67 72 67;    /* #434843 — Input border */
+  --border-latte-400:  80 85 80;    /* #505550 — Mid border */
+  --border-latte-500:  100 105 100; /* #646964 — Visible border */
+  --border-latte-600:  141 146 140; /* #8D928C — Strong border */
+  --border-latte-700:  195 200 193; /* #C3C8C1 — Lightest border */
 
-  /* Sage */
-  --accent-sage:       120 196 128;  /* #78C480 — 9.0:1 */
-  --accent-sage-300:    158 213 165;  /* #9ED5A5 */
-  --accent-sage-400:    120 196 128;  /* #78C480 */
-  --accent-sage-500:    120 196 128;  /* #78C480 */
-  --accent-sage-600:    168 216 176;  /* #A8D8B0 */
-  
-  --accent-bronze:      166 124 82;
+  /* Muted text */
+  --text-mocha:       195 200 193;  /* #C3C8C1 — Muted variant */
+  --text-mocha-300:    100 105 100; /* #646964 */
+  --text-mocha-400:    141 146 140; /* #8D928C */
+  --text-mocha-500:    195 200 193; /* #C3C8C1 */
+  --text-mocha-600:    229 226 225; /* #E5E2E1 */
+  --text-mocha-700:    255 255 255; /* #FFFFFF */
+
+  /* Sage Green — soft, sophisticated (replaces neon emerald) */
+  --accent-forest:     180 205 184;  /* #B4CDB8 — Sage primary */
+  --accent-forest-300:  195 218 198;  /* #C3DAC6 — Lighter sage */
+  --accent-forest-400:  170 195 174;  /* #AAC3AE — Mid sage */
+  --accent-forest-500:  160 185 164;  /* #A0B9A4 — Darker sage */
+  --accent-forest-600:  140 165 144;  /* #8CA590 — Muted sage */
+  --accent-forest-700:  120 145 124;  /* #78917C — Dark sage */
+
+  /* Sage accent */
+  --accent-sage:       180 205 184;  /* #B4CDB8 — Same as forest */
+  --accent-sage-300:    195 218 198;  /* #C3DAC6 */
+  --accent-sage-400:    170 200 176;  /* #AAC8B0 */
+  --accent-sage-500:    160 185 164;  /* #A0B9A4 */
+  --accent-sage-600:    145 170 150;  /* #91AA96 */
+
+  /* Bronze — warm static accent (same in dark) */
+  --accent-bronze:      166 124 82;  /* #A67C52 */
 
   /* Focus ring */
-  --focus-ring:        74 222 128;   /* #4ADE80 */
-  --focus-ring-offset: 14 21 15;     /* #0E150F */
+  --focus-ring:        180 205 184;  /* #B4CDB8 */
+  --focus-ring-offset: 19 19 19;     /* #131313 */
+
   /* Extended component tokens */
-  --emerald-glow:      74 222 128;     /* #4ADE80 Primary-Container */
-  --emerald-glow-dim:  109 254 156;    /* #6DFE9C Primary-Fixed */
-  --outline-dark:      134 148 134;    /* #869486 Outline */
-  --on-surface-muted:  188 202 187;    /* #BCCABB On-Surface-Variant */
-  --surface-deep:      18 21 19;       /* #121513 Background-Deep */
-  --surface-sidebar:   22 26 23;       /* #161A17 */
-  --surface-card:      26 29 27;       /* #1A1D1B */
+  --surface-sidebar:   24 24 24;     /* #181818 — Dark sidebar */
+  --surface-card:      28 27 27;     /* #1C1B1B — Card surface */
+  --surface-deep:      14 14 14;     /* #0E0E0E — Deepest surface */
+  --emerald-glow:      160 195 168;  /* #A0C3A8 — Subtle sage glow */
+  --emerald-glow-dim:  140 175 148;  /* #8CAF94 — Dimmer glow */
+  --outline-dark:      58 58 58;     /* #3A3A3A — Subtle outline */
+  --on-surface-muted:  141 146 140;  /* #8D928C — Muted on-surface */
+}
 
+/* Also support [data-theme="dark"] for the JS theme toggle */
+[data-theme="dark"] {
+  --background:        19 19 19;
+  --foreground:        229 226 225;
+  --card:              28 27 27;
+  --card-foreground:    229 226 225;
+  --popover:           38 38 38;
+  --popover-foreground: 229 226 225;
+  --primary:           180 205 184;
+  --primary-foreground: 32 53 39;
+  --secondary:         200 198 195;
+  --secondary-foreground: 48 49 46;
+  --muted:             42 42 42;
+  --muted-foreground:  195 200 193;
+  --accent:            182 204 186;
+  --accent-foreground: 34 53 40;
+  --destructive:       255 180 171;
+  --destructive-foreground: 105 0 5;
+  --border:            141 146 140;
+  --input:             67 72 67;
+  --ring:              180 205 184;
 
-  /* Extended dark-mode tokens */
-  --surface-sidebar:   22 26 23;     /* #161A17 */
-  --surface-card:      26 29 27;     /* #1A1D1B */
+  --bg-cream:        19 19 19;
+  --bg-cream-50:     28 27 27;
+  --bg-cream-100:    24 24 24;
+  --bg-cream-200:    42 42 42;
+  --bg-card:         28 27 27;
+  --bg-surface:      32 32 32;
+  --bg-surface-800:  19 19 19;
+  --text-espresso:    229 226 225;
+  --text-espresso-50:  195 200 193;
+  --text-espresso-100: 229 226 225;
+  --text-espresso-200: 229 226 225;
+  --text-espresso-800: 255 255 255;
+  --text-espresso-900: 255 255 255;
+  --text-sand:       229 226 225;
+  --text-sand-50:    200 198 195;
+  --border-latte:     58 58 58;
+  --border-latte-300:  67 72 67;
+  --border-latte-400:  80 85 80;
+  --border-latte-500:  100 105 100;
+  --border-latte-600:  141 146 140;
+  --border-latte-700:  195 200 193;
+  --text-mocha:       195 200 193;
+  --text-mocha-300:    100 105 100;
+  --text-mocha-400:    141 146 140;
+  --text-mocha-500:    195 200 193;
+  --text-mocha-600:    229 226 225;
+  --text-mocha-700:    255 255 255;
+  --accent-forest:     180 205 184;
+  --accent-forest-300:  195 218 198;
+  --accent-forest-400:  170 195 174;
+  --accent-forest-500:  160 185 164;
+  --accent-forest-600:  140 165 144;
+  --accent-forest-700:  120 145 124;
+  --accent-sage:       180 205 184;
+  --accent-sage-300:    195 218 198;
+  --accent-sage-400:    170 200 176;
+  --accent-sage-500:    160 185 164;
+  --accent-sage-600:    145 170 150;
+  --accent-bronze:      166 124 82;
+  --focus-ring:        180 205 184;
+  --focus-ring-offset: 19 19 19;
+  --surface-sidebar:   24 24 24;
+  --surface-card:      28 27 27;
+  --surface-deep:      14 14 14;
+  --emerald-glow:      160 195 168;
+  --emerald-glow-dim:  140 175 148;
+  --outline-dark:      58 58 58;
+  --on-surface-muted:  141 146 140;
 }
 
 /* ============================================================
@@ -243,9 +322,10 @@ html {
   color: #FFFFFF;
 }
 
-.dark ::selection {
-  background-color: #6BFB9A;
-  color: #003919;
+.dark ::selection,
+[data-theme="dark"] ::selection {
+  background-color: rgba(180, 205, 184, 0.3);
+  color: #E5E2E1;
 }
 
 :focus-visible {
@@ -282,14 +362,17 @@ button, a, input, select, textarea, [role="button"] {
 
 a.inline, button.inline { min-height: auto; min-width: auto; }
 
-/* Glassmorphism Classes (From DESIGN.md) */
+/* ============================================================
+   Glassmorphism (Nav / Header)
+   ============================================================ */
+
 .glass-nav {
   @apply bg-cream/90 backdrop-blur-[12px];
 }
 
+.dark .glass-nav,
 [data-theme="dark"] .glass-nav {
-  /* Using Surface-Midnight 90% with 12px backdrop blur */
-  background-color: rgba(14, 21, 15, 0.9);
+  background-color: rgba(19, 19, 19, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -298,13 +381,15 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
   @apply border-b border-latte/30;
 }
 
+.dark .glass-nav-border,
 [data-theme="dark"] .glass-nav-border {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* very subtle */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* ============================================================
    Noise Filter Layer
    ============================================================ */
+
 .noise-bg::before {
   content: "";
   position: absolute;
@@ -312,12 +397,13 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
   z-index: 0;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.05;
+  opacity: 0.04;
   mix-blend-mode: overlay;
 }
 
+.dark .noise-bg::before,
 [data-theme="dark"] .noise-bg::before {
-  opacity: 0.08; /* Slightly stronger noise for dark mode */
+  opacity: 0.06;
 }
 
 /* ============================================================
@@ -325,51 +411,49 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
    ============================================================ */
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-[4px] bg-surface px-6 py-3 text-sm font-body font-semibold text-sand shadow-sm transition-all duration-200 hover:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
+  @apply inline-flex items-center justify-center rounded-md bg-surface px-6 py-3 text-sm font-body font-semibold text-sand shadow-sm transition-all duration-200 hover:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50 disabled:shadow-none;
   min-height: 44px;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-[4px] border border-latte px-6 py-3 text-sm font-body font-semibold text-espresso transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2;
+  @apply inline-flex items-center justify-center rounded-md border border-latte px-6 py-3 text-sm font-body font-semibold text-espresso transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2 hover:bg-forest/10 hover:border-forest/50;
   min-height: 44px;
 }
 
+.dark .btn-secondary,
+[data-theme="dark"] .btn-secondary {
+  color: #E5E2E1 !important;
+  border-color: #3A3A3A;
+}
+
+.dark .btn-secondary:hover,
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: rgba(180, 205, 184, 0.1);
+  border-color: rgba(180, 205, 184, 0.3);
+}
+
 .btn-accent {
-  @apply inline-flex items-center justify-center rounded-[4px] bg-forest px-6 py-3 text-sm font-body font-semibold shadow-sm transition-all duration-200 hover:bg-forest-600 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
-  /* Light mode: white on dark forest green */
+  @apply inline-flex items-center justify-center rounded-md bg-forest px-6 py-3 text-sm font-body font-semibold shadow-sm transition-all duration-200 hover:bg-forest-600 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   color: #FFFFFF;
   min-height: 44px;
 }
 
+.dark .btn-accent,
 [data-theme="dark"] .btn-accent {
-  background-color: var(--accent-forest) !important;
-  color: #003919 !important; /* on-primary */
+  background-color: rgb(180, 205, 184) !important;
+  color: #203527 !important;
   border: none;
-  box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
+  box-shadow: 0 0 20px rgba(180, 205, 184, 0.15);
 }
 
+.dark .btn-accent:hover,
 [data-theme="dark"] .btn-accent:hover {
-  background-color: rgb(var(--accent-forest-300)) !important;
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
-}
-
-.btn-secondary {
-  @apply inline-flex items-center justify-center rounded-[4px] border border-latte px-6 py-3 text-sm font-body font-semibold text-espresso transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-espresso focus:ring-offset-2 hover:bg-forest/10 hover:border-forest/50;
-  min-height: 44px;
-}
-
-[data-theme="dark"] .btn-secondary {
-  color: #FBF9F6 !important;
-  border-color: #3D4A3E; /* Outline-Variant */
-}
-
-[data-theme="dark"] .btn-secondary:hover {
-  background-color: rgba(74, 222, 128, 0.1);
-  border-color: rgba(74, 222, 128, 0.4);
+  background-color: rgb(195, 218, 198) !important;
+  box-shadow: 0 0 25px rgba(180, 205, 184, 0.25);
 }
 
 .btn-ghost {
-  @apply inline-flex items-center justify-center rounded-[4px] px-4 py-2 text-sm font-body font-semibold text-mocha transition-all duration-200 hover:bg-latte-300 hover:text-espresso active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-latte focus:ring-offset-1;
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-body font-semibold text-mocha transition-all duration-200 hover:bg-latte-300 hover:text-espresso active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-latte focus:ring-offset-1;
   min-height: 44px;
 }
 
@@ -392,10 +476,15 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 .container-max { @apply mx-auto max-w-[1280px]; }
 
 /* ============================================================
-   Cart badge text — white on dark green in light, dark text on light green in dark
+   Cart badge text
    ============================================================ */
+
 .cart-badge-text { color: #FFFFFF; }
-[data-theme="dark"] .cart-badge-text { color: #0D331F; }
+
+.dark .cart-badge-text,
+[data-theme="dark"] .cart-badge-text {
+  color: #203527;
+}
 
 /* ============================================================
    Animations
@@ -457,7 +546,7 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
   position: sticky;
   bottom: 0;
   padding-bottom: max(env(safe-area-inset-bottom), 12px);
-  background: linear-gradient(to top, rgb(var(--bg-cream)), rgb(var(--bg-cream), 0.9), transparent);
+  background: linear-gradient(to top, rgb(var(--bg-cream)), rgb(var(--bg-cream) / 0.9), transparent);
 }
 
 .aspect-product { aspect-ratio: 1 / 1; }
@@ -466,6 +555,12 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
 
 .card-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .card-lift:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); }
+
+.dark .card-lift:hover,
+[data-theme="dark"] .card-lift:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .card-lift { transition: none; }
   .card-lift:hover { transform: none; }

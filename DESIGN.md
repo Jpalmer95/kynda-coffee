@@ -1,329 +1,242 @@
-Dark Mode
----
-name: Kynda Coffee Dark Noir
-colors:
-  surface: '#0e150f'
-  surface-dim: '#0e150f'
-  surface-bright: '#333b34'
-  surface-container-lowest: '#09100a'
-  surface-container-low: '#161d17'
-  surface-container: '#1a211b'
-  surface-container-high: '#242c25'
-  surface-container-highest: '#2f372f'
-  on-surface: '#dde5da'
-  on-surface-variant: '#bccabb'
-  inverse-surface: '#dde5da'
-  inverse-on-surface: '#2b322b'
-  outline: '#869486'
-  outline-variant: '#3d4a3e'
-  surface-tint: '#4de082'
-  primary: '#6bfb9a'
-  on-primary: '#003919'
-  primary-container: '#4ade80'
-  on-primary-container: '#005e2d'
-  inverse-primary: '#006d36'
-  secondary: '#c5c7c4'
-  on-secondary: '#2e312f'
-  secondary-container: '#474a47'
-  on-secondary-container: '#b7b9b6'
-  tertiary: '#7df6c5'
-  on-tertiary: '#003827'
-  tertiary-container: '#5fd9aa'
-  on-tertiary-container: '#005d42'
-  error: '#ffb4ab'
-  on-error: '#690005'
-  error-container: '#93000a'
-  on-error-container: '#ffdad6'
-  primary-fixed: '#6dfe9c'
-  primary-fixed-dim: '#4de082'
-  on-primary-fixed: '#00210c'
-  on-primary-fixed-variant: '#005227'
-  secondary-fixed: '#e1e3df'
-  secondary-fixed-dim: '#c5c7c4'
-  on-secondary-fixed: '#191c1a'
-  on-secondary-fixed-variant: '#454745'
-  tertiary-fixed: '#80f9c8'
-  tertiary-fixed-dim: '#62dcad'
-  on-tertiary-fixed: '#002115'
-  on-tertiary-fixed-variant: '#00513a'
-  background: '#0e150f'
-  on-background: '#dde5da'
-  surface-variant: '#2f372f'
-  background-base: '#121513'
-  surface-card: '#1A1D1B'
-  surface-sidebar: '#161A17'
-  on-surface-muted: rgba(255, 255, 255, 0.6)
-  emerald-glow: rgba(74, 222, 128, 0.2)
-  border-subtle: rgba(74, 222, 128, 0.1)
-typography:
-  display-lg:
-    fontFamily: Playfair Display
-    fontSize: 48px
-    fontWeight: '700'
-    lineHeight: '1.1'
-    letterSpacing: -0.02em
-  display-lg-mobile:
-    fontFamily: Playfair Display
-    fontSize: 36px
-    fontWeight: '700'
-    lineHeight: '1.2'
-  headline-md:
-    fontFamily: Playfair Display
-    fontSize: 32px
-    fontWeight: '600'
-    lineHeight: '1.3'
-  headline-sm:
-    fontFamily: Playfair Display
-    fontSize: 24px
-    fontWeight: '600'
-    lineHeight: '1.4'
-  body-lg:
-    fontFamily: Montserrat // Uses body font config
-    fontSize: 18px
-    fontWeight: '400'
-    lineHeight: '1.6'
-  body-md:
-    fontFamily: Montserrat
-    fontSize: 16px
-    fontWeight: '400'
-    lineHeight: '1.6'
-  label-sm:
-    fontFamily: Montserrat // Uses body font config
-    fontSize: 12px
-    fontWeight: '600'
-    lineHeight: '1.2'
-    letterSpacing: 0.05em
-rounded:
-  sm: 0.25rem
-  DEFAULT: 0.5rem
-  md: 0.75rem
-  lg: 1rem
-  xl: 1.5rem
-  full: 9999px
-spacing:
-  margin-mobile: 16px
-  margin-desktop: 40px
-  gutter: 24px
-  base: 8px
-  section-padding: 80px
-  container-max: 1280px
+# Kynda Coffee Design System v2 — Modern Artisan
+
+This document is the **single source of truth** for the Kynda Coffee platform's visual identity. All colors, typography, spacing, and component rules are defined here.
+
+## 1. Brand Philosophy
+
+Kynda Coffee is a premium specialty coffee shop in Horseshoe Bay, TX. The digital platform reflects:
+
+- **Warmth & Craft** — Heirloom cream surfaces, earthy accents
+- **Precision** — Clean geometric typography, consistent spacing
+- **Nature** — Deep forest green, sage accents, organic shapes
+- **Sophistication** — Charcoal dark mode, refined palette (no neon)
+
+The aesthetic avoids industrial "roaster" vibes. Instead: elegant, earthy, welcoming.
+
 ---
 
-## Brand & Style
+## 2. Color Palette
 
-Kynda Coffee embodies a "Dark Noir" aesthetic that blends artisanal craftsmanship with a premium, high-tech edge. The brand personality is sophisticated, nocturnal, and focused on the ritual of coffee roasting. 
+All colors are defined as CSS custom properties (bare RGB triplets) in `src/styles/globals.css`, consumed by Tailwind via `rgb(var(--token) / <alpha-value>)`.
 
-The design style is a hybrid of **Minimalism** and **Tactile Glassmorphism**. It utilizes an abyssal dark palette punctuated by vibrant "Emerald Glow" accents. A subtle digital noise texture is applied globally to the background to evoke a sense of physical material and depth, moving away from "flat" digital surfaces toward something that feels like an upscale, dimly lit espresso bar. The UI should feel precise yet organic, mirroring the balance between the science of roasting and the art of brewing.
+### 2.1 Light Mode — "Organic Minimalism"
 
-## Colors
+Heirloom Cream base with Deep Forest Green accents. Evokes specialty coffee precision with cozy café warmth.
 
-The color palette is built on a foundation of deep, layered blacks and forest greens to create a true "Dark Mode" experience that avoids pure #000000.
+| Semantic Token       | Tailwind Class              | Hex       | Description                          | Contrast |
+|:---------------------|:----------------------------|:----------|:-------------------------------------|:---------|
+| `background`         | `bg-background`             | `#FBF9F5` | Main page background (Heirloom Cream)| N/A      |
+| `foreground`         | `text-foreground`           | `#1B1C1A` | Main body text                       | 16.3:1 ✓ |
+| `card`               | `bg-card`                   | `#F5F3EF` | Card surfaces                        | N/A      |
+| `card-foreground`    | `text-card-foreground`      | `#1B1C1A` | Text on cards                        | 15.1:1 ✓ |
+| `popover`            | `bg-popover`                | `#FFFFFF` | Dropdowns, modals                    | N/A      |
+| `primary`            | `bg-primary`                | `#061B0E` | Deep Forest Green (CTAs)             | N/A      |
+| `primary-foreground` | `text-primary-foreground`   | `#FFFFFF` | Text on primary                      | 17.9:1 ✓ |
+| `secondary`          | `bg-secondary`              | `#645E53` | Roasted Earth secondary              | N/A      |
+| `secondary-foreground`| `text-secondary-foreground`| `#FFFFFF` | Text on secondary                    | 6.7:1 ✓  |
+| `muted`              | `bg-muted`                  | `#EAE8E4` | Subtle backgrounds                   | N/A      |
+| `muted-foreground`   | `text-muted-foreground`     | `#434843` | Helper text, subdued content         | 8.9:1 ✓  |
+| `accent`             | `bg-accent`                 | `#8C7851` | Roasted Earth accent                 | N/A      |
+| `accent-foreground`  | `text-accent-foreground`    | `#FFFFFF` | Text on accent                       | 4.9:1 ✓  |
+| `destructive`        | `bg-destructive`            | `#BA1A1A` | Error states                         | N/A      |
+| `border`             | `border-border`             | `#737973` | Default borders                      | N/A      |
+| `input`              | `border-input`              | `#C3C8C1` | Input field borders                  | N/A      |
+| `ring`               | `ring-ring`                 | `#061B0E` | Focus rings                          | N/A      |
 
-- **Primary Emerald (#4ADE80):** Used for primary actions, active states, and brand highlights. It often carries a glow effect to simulate light in a dark environment.
-- **Abyssal Neutrals:** The background starts at `#121513`, with container surfaces stepping up to `#161A17` and `#1A1D1B` to create hierarchy through tonal depth rather than heavy shadows.
-- **Typography Colors:** Primary text is off-white for high legibility without harshness. Secondary text uses a reduced opacity (60%) or muted emerald tints to maintain the moody atmosphere.
+### 2.2 Dark Mode — "Clean Charcoal"
 
-## Typography
+Sophisticated pure-charcoal base (no green tint) with sage green accents. Mature, modern, readable.
 
-The system uses a sophisticated pairing of a serif and a geometric sans-serif:
+| Semantic Token       | Tailwind Class              | Hex       | Description                          | Contrast |
+|:---------------------|:----------------------------|:----------|:-------------------------------------|:---------|
+| `background`         | `bg-background`             | `#131313` | Clean Charcoal base                   | N/A      |
+| `foreground`         | `text-foreground`           | `#E5E2E1` | Warm Cream text                      | 14.4:1 ✓ |
+| `card`               | `bg-card`                   | `#1C1B1B` | Slightly raised charcoal             | N/A      |
+| `card-foreground`    | `text-card-foreground`      | `#E5E2E1` | Text on cards                        | 13.1:1 ✓ |
+| `popover`            | `bg-popover`                | `#262626` | Elevated charcoal                    | N/A      |
+| `primary`            | `bg-primary`                | `#B4CDB8` | Sage Green (softer forest)           | N/A      |
+| `primary-foreground` | `text-primary-foreground`   | `#203527` | Dark green on sage buttons           | 7.7:1 ✓  |
+| `secondary`          | `bg-secondary`              | `#C8C6C3` | Subdued button backgrounds           | N/A      |
+| `secondary-foreground`| `text-secondary-foreground`| `#30312E` | Dark text on secondary               | 10.7:1 ✓ |
+| `muted`              | `bg-muted`                  | `#2A2A2A` | Subtle dark surfaces                 | N/A      |
+| `muted-foreground`   | `text-muted-foreground`     | `#C3C8C1` | Subdued text                         | 10.9:1 ✓ |
+| `accent`             | `bg-accent`                 | `#B6CCBA` | Muted sage accent                    | N/A      |
+| `accent-foreground`  | `text-accent-foreground`    | `#223528` | Text on accent                       | 8.0:1 ✓  |
+| `destructive`        | `bg-destructive`            | `#FFB4AB` | Error states                         | N/A      |
+| `border`             | `border-border`             | `#8D928C` | Default borders                      | N/A      |
+| `input`              | `border-input`              | `#434843` | Input field borders                  | N/A      |
+| `ring`               | `ring-ring`                 | `#B4CDB8` | Focus rings                          | N/A      |
 
-- **Playfair Display (Headlines):** Provides a literary, premium feel. It should be used for branding, page titles, and product names. High-contrast strokes add elegance to the dark background.
-- **Montserrat (Body & UI):** A clean, geometric sans-serif that ensures high readability for descriptions, navigation, and technical data. 
-- **Character:** Labels and buttons utilize uppercase styling with increased letter spacing to create a modern, "terminal-like" aesthetic.
+### 2.3 Legacy Token Compatibility
 
-## Layout & Spacing
+The following legacy Tailwind class names remain available and map to the semantic tokens above. New code should prefer the semantic names.
 
-The layout utilizes a **Fixed Grid** approach for the main content area to maintain a controlled editorial feel.
+| Legacy Class    | Maps To (Light) | Maps To (Dark)  | Notes                           |
+|:----------------|:----------------|:----------------|:--------------------------------|
+| `bg-cream`      | background      | background      | Page background                 |
+| `text-espresso` | foreground      | foreground      | Primary text                    |
+| `bg-surface`    | primary-cont.   | dark charcoal   | Dark container (headers/CTAs)   |
+| `text-sand`     | white           | warm cream      | Text on dark surfaces           |
+| `border-latte`  | border          | border          | Default borders                 |
+| `text-mocha`    | muted-fg        | muted-fg        | Secondary text                  |
+| `bg-forest`     | forest green    | sage green      | Primary accent color            |
+| `bg-sage`       | sage            | sage            | Secondary accent                |
+| `text-sand`     | white           | warm cream      | Light text on dark containers   |
+| `bg-card`       | card            | card            | Card surfaces                   |
 
-- **Grid:** On desktop, a standard 12-column grid is used within a `1280px` container.
-- **Sidebar:** A fixed `256px` (64rem) sidebar persists on the left for navigation, providing a stable anchor for the application.
-- **Rhythm:** An 8px base unit drives all spacing. Sections are separated by generous padding (`80px`) to allow the high-quality imagery and typography to breathe.
-- **Responsive:** On mobile, margins shrink to `16px`, the sidebar transforms into a top-header with a hamburger menu, and product grids collapse to a single column.
+---
 
-## Elevation & Depth
+## 3. Typography
 
-Hierarchy is established through **Tonal Layering** and **Luminescent Borders** rather than traditional drop shadows.
+### Heading Font: EB Garamond (Serif)
 
-- **Surface Tiers:** The furthest back layer is the noise-textured background. Navigation sidebars and cards sit one "tier" above this with slightly lighter hex values.
-- **Emerald Glow:** Active elements or hovered cards use a soft emerald glow (`0 0 15px rgba(74, 222, 128, 0.2)`). This simulates neon-like lighting.
-- **Borders:** Thin, low-opacity borders (`0.5px` or `1px`) are used to define shapes. Primary borders use `#4ADE80` at 15-30% opacity to maintain a crisp, technical look.
-- **Noise Overlay:** A global `0.05` opacity fractal noise filter is layered over the entire UI to prevent "banding" on dark gradients and add a tactile, grainy texture.
+Classic, elegant serif for headlines. Conveys the precision of specialty coffee craft.
 
-## Shapes
+```
+font-heading → EB Garamond, Georgia, serif
+```
 
-The shape language is "Subtly Softened." While the brand is technical and sharp, the use of rounded corners prevents it from feeling aggressive or cold.
+- Used for: `h1`, `h2`, `h3`, display text, hero titles
+- Weights: 400, 500, 600, 700, 800
 
-- **Containers:** Product cards and main surface areas use a `0.75rem` (12px) radius.
-- **Buttons:** Primary action buttons use a sharper `0.25rem` (4px) radius to emphasize their functional, "tool-like" nature.
-- **Images:** Always follow the container's rounding to maintain a unified silhouette.
+### Body Font: Plus Jakarta Sans (Geometric Sans)
 
-## Components
+Clean, rounded geometric sans-serif. Modern, friendly, highly readable.
+
+```
+font-body → Plus Jakarta Sans, system-ui, sans-serif
+```
+
+- Used for: paragraphs, buttons, navigation, labels, form inputs
+- Weights: 400, 500, 600, 700
+
+### Type Scale
+
+| Role        | Size (rem) | Weight | Tracking  | Use Case                         |
+|:------------|:-----------|:-------|:----------|:---------------------------------|
+| Display     | 3.5–4.5    | 700    | -0.02em   | Hero headlines                   |
+| H1          | 2.5–3.0    | 700    | -0.01em   | Page titles                      |
+| H2          | 2.0–2.25   | 600    | -0.01em   | Section headings                 |
+| H3          | 1.5–1.75   | 600    | normal    | Card titles                      |
+| Body        | 1.0        | 400    | normal    | Paragraphs                       |
+| Body Small  | 0.875      | 400    | normal    | Helper text, captions            |
+| Label       | 0.75–0.875 | 600    | 0.05em    | Buttons, tags, badges            |
+
+---
+
+## 4. Radii / Shapes
+
+Soft edges reflecting ceramic cups and natural forms.
+
+| Token      | Value     | Use Case                     |
+|:-----------|:----------|:-----------------------------|
+| `radius-sm`  | 0.25rem (4px)  | Small elements (badges)      |
+| `radius-md`  | 0.5rem (8px)   | Buttons, inputs              |
+| `radius-lg`  | 0.75rem (12px) | Cards                        |
+| `radius-xl`  | 1rem (16px)    | Feature images, modals       |
+
+---
+
+## 5. Elevation & Shadows
+
+| Token       | Value                                    | Use Case            |
+|:------------|:-----------------------------------------|:--------------------|
+| `shadow-soft` | `0 2px 10px rgba(0, 0, 0, 0.06)`      | Cards at rest       |
+| `shadow-hover`| `0 10px 25px rgba(0, 0, 0, 0.08)`     | Cards on hover      |
+| `shadow-glow` | `0 0 20px rgba(180, 205, 184, 0.15)`  | Dark mode accent glow |
+
+---
+
+## 6. Component Patterns
 
 ### Buttons
-- **Primary Ghost:** Outlined with `#4ADE80`, uppercase text. On hover, they fill with the primary color and transition text to the darkest neutral.
-- **Active Tab:** Indicated by an emerald bottom border and full-opacity text.
+
+- **Primary (`.btn-primary`)**: `bg-surface` (dark green/charcoal) + `text-sand` (white/cream). Solid, high-contrast.
+- **Secondary (`.btn-secondary`)**: Transparent with `border-latte` border + `text-espresso`. Hover reveals forest tint.
+- **Accent (`.btn-accent`)**: `bg-forest` (forest green/sage) + white text (light) or dark green text (dark). For CTAs and key actions.
+- **Ghost (`.btn-ghost`)**: No background, `text-mocha`. Subtle interactions.
+
+All buttons: `min-height: 44px`, `rounded-md`, 44px touch target minimum.
 
 ### Cards
-- **Product Card:** Features a `dark-surface` background, an image with an aspect-ratio of 1:1, and a floating price tag in a semi-transparent dark pill.
-- **Hover State:** Cards should translate `-4px` on the Y-axis and gain the "Emerald Glow" effect.
+
+- Background: `bg-card` (`bg-cream-100` in legacy)
+- Border: `border border-latte/20` (subtle)
+- Radius: `rounded-lg`
+- Shadow: `shadow-soft` at rest, `shadow-hover` on interaction
+- Hover: `card-lift` utility class adds subtle Y translation
 
 ### Navigation
-- **Sidebar Links:** High-contrast icons (Material Symbols) paired with Montserrat body text. Active states use a solid background fill with the primary color.
-- **Mobile Header:** A backdrop-blur (90% opacity) is used to maintain legibility as the user scrolls through images.
 
-### Chips/Badges
-- Small, uppercase labels with thin borders. Used for pricing, categories, or status indicators.
+- Glassmorphism: `glass-nav` class — 90% opacity background + 12px backdrop blur
+- Border: `glass-nav-border` — subtle bottom divider
+- Fixed top, z-index layered
 
-Light Mode:
----
-name: Forest & Sand
-colors:
-  surface: '#fbf9f6'
-  surface-dim: '#dbdad7'
-  surface-bright: '#fbf9f6'
-  surface-container-lowest: '#ffffff'
-  surface-container-low: '#f5f3f0'
-  surface-container: '#efeeeb'
-  surface-container-high: '#eae8e5'
-  surface-container-highest: '#e4e2df'
-  on-surface: '#1b1c1a'
-  on-surface-variant: '#434843'
-  inverse-surface: '#30312f'
-  inverse-on-surface: '#f2f0ed'
-  outline: '#737973'
-  outline-variant: '#c3c8c1'
-  surface-tint: '#4d6453'
-  primary: '#061b0e'
-  on-primary: '#ffffff'
-  primary-container: '#1b3022'
-  on-primary-container: '#819986'
-  inverse-primary: '#b4cdb8'
-  secondary: '#5e5e5c'
-  on-secondary: '#ffffff'
-  secondary-container: '#e1dfdc'
-  on-secondary-container: '#636360'
-  tertiary: '#1a1711'
-  on-tertiary: '#ffffff'
-  tertiary-container: '#2f2b24'
-  on-tertiary-container: '#989289'
-  error: '#ba1a1a'
-  on-error: '#ffffff'
-  error-container: '#ffdad6'
-  on-error-container: '#93000a'
-  primary-fixed: '#d0e9d4'
-  primary-fixed-dim: '#b4cdb8'
-  on-primary-fixed: '#0b2013'
-  on-primary-fixed-variant: '#364c3c'
-  secondary-fixed: '#e4e2df'
-  secondary-fixed-dim: '#c8c6c3'
-  on-secondary-fixed: '#1b1c1a'
-  on-secondary-fixed-variant: '#474745'
-  tertiary-fixed: '#eae1d7'
-  tertiary-fixed-dim: '#cdc5bc'
-  on-tertiary-fixed: '#1f1b15'
-  on-tertiary-fixed-variant: '#4b463f'
-  background: '#fbf9f6'
-  on-background: '#1b1c1a'
-  surface-variant: '#e4e2df'
-typography:
-  display-lg:
-    fontFamily: Playfair Display
-    fontSize: 48px
-    fontWeight: '700'
-    lineHeight: '1.2'
-  headline-lg:
-    fontFamily: Playfair Display
-    fontSize: 32px
-    fontWeight: '600'
-    lineHeight: '1.3'
-  headline-md:
-    fontFamily: Playfair Display
-    fontSize: 24px
-    fontWeight: '600'
-    lineHeight: '1.4'
-  headline-lg-mobile:
-    fontFamily: Playfair Display
-    fontSize: 28px
-    fontWeight: '600'
-    lineHeight: '1.3'
-  body-lg:
-    fontFamily: Inter // Uses body font config
-    fontSize: 18px
-    fontWeight: '400'
-    lineHeight: '1.6'
-  body-md:
-    fontFamily: Inter
-    fontSize: 16px
-    fontWeight: '400'
-    lineHeight: '1.6'
-  label-md:
-    fontFamily: Inter
-    fontSize: 14px
-    fontWeight: '600'
-    lineHeight: '1.2'
-    letterSpacing: 0.05em
-  label-sm:
-    fontFamily: Inter
-    fontSize: 12px
-    fontWeight: '500'
-    lineHeight: '1.2'
-    letterSpacing: 0.05em
-rounded:
-  sm: 0.125rem
-  DEFAULT: 0.25rem
-  md: 0.375rem
-  lg: 0.5rem
-  xl: 0.75rem
-  full: 9999px
-spacing:
-  container-max: 1280px
-  gutter: 24px
-  margin-mobile: 16px
-  margin-desktop: 40px
-  stack-sm: 8px
-  stack-md: 16px
-  stack-lg: 32px
 ---
 
-## Brand & Style
-This design system embodies an **Organic-Tech** aesthetic, merging the warmth of natural materials with the precision of modern digital interfaces. It targets a premium, health-conscious, and environmentally aware audience who values quality and heritage. 
+## 7. Accessibility
 
-The visual style is a blend of **Minimalism** and **Tactile** design. It uses generous whitespace to create a sense of calm (Forest) while utilizing subtle tonal layering to represent physical surfaces (Sand). The emotional response should be one of refined tranquility and reliable craftsmanship.
+All color combinations meet **WCAG 2.2 AA**:
 
-## Colors
-The palette is centered on high-contrast natural tones. 
-- **Surface-Canvas (#FBF9F6):** The primary backdrop, providing a clean, warm foundation.
-- **Surface-Sand (#F5F3F0):** Used for secondary containers, cards, and subtle UI differentiation.
-- **Brand-Forest (#1B3022):** The primary color for branding, high-level headings, and primary action states.
-- **Accents:** Use muted earth tones for status or secondary indicators, ensuring they never compete with the core Forest/Sand relationship.
+- Normal text (<18px): ≥4.5:1 contrast ratio
+- Large text (≥18px or ≥14px bold): ≥3:1 contrast ratio  
+- UI components / icons: ≥3:1 contrast ratio
+- Touch targets: ≥44px minimum
+- Focus indicators: 2px solid ring with 2px offset
+- `prefers-reduced-motion`: all animations disabled
 
-## Typography
-The typographic system pairs the authoritative, literary feel of **Playfair Display** with the functional clarity of **Inter**. 
-- **Serif (Headlines):** Use Playfair Display for all major headings and brand moments to evoke a premium, editorial feel.
-- **Sans-Serif (UI/Body):** Use Inter for all functional elements, descriptions, and labels to ensure maximum legibility and a "tech" precision.
-- **Hierarchy:** Maintain clear contrast between heading sizes. Labels should often use uppercase with slight letter spacing to differentiate from body prose.
+---
 
-## Layout & Spacing
-The layout follows a **Fixed Grid** philosophy on desktop to maintain an editorial, magazine-like composition, transitioning to a fluid model on mobile.
-- **Grid:** A 12-column grid system with 24px gutters. 
-- **Rhythm:** Spacing follows an 8px base unit. Use generous vertical "stack" spacing (32px+) between major sections to emphasize the minimalist aesthetic.
-- **Sidebars:** Functional sidebars (like cart or filters) should use the Surface-Sand color to visually separate from the Surface-Canvas main content area.
+## 8. Implementation Architecture
 
-## Elevation & Depth
-This system avoids heavy shadows in favor of **Tonal Layers** and **Low-contrast Outlines**.
-- **Stacking:** Depth is conveyed by placing Surface-Sand elements over Surface-Canvas. 
-- **Outlines:** Use 1px borders in a slightly darker shade than the surface (e.g., #E8E4E0) to define boundaries without adding visual weight.
-- **Shadows:** If used for high-importance modals, employ a very soft, highly diffused ambient shadow with a hint of the Forest tint: `0px 12px 32px rgba(27, 48, 34, 0.05)`.
+### Theme Switching
 
-## Shapes
-Shapes are disciplined and "Soft." 
-- **Radius:** Standard UI elements like buttons and input fields use a 0.25rem (4px) radius. Larger containers like cards use 0.5rem (8px).
-- **Hard Edges:** Use sharp 0px edges for full-width sections or footer blocks to ground the layout.
-- **Consistency:** Avoid pill-shapes for functional buttons; keep them rectangular with soft corners to maintain the sophisticated, architectural tone.
+JavaScript-driven via `ThemeProvider` context:
+1. Sets `.dark` class + `data-theme="dark"` attribute on `<html>`
+2. CSS variables in `globals.css` respond to both selectors
+3. Persists to `localStorage` as `kynda-theme`
+4. Inline script in `<head>` prevents FOUC
 
-## Components
-- **Buttons:** Primary buttons are solid Brand-Forest with white Inter text. Secondary buttons use a Brand-Forest outline or Surface-Sand background.
-- **Cards:** Product cards use the Surface-Sand background with no border, or a thin subtle outline. Images should have a consistent aspect ratio and slightly softened corners.
-- **Chips/Filters:** Use a "capsule" shape for active filters to distinguish them from standard buttons. Active state is Brand-Forest; inactive is Surface-Sand.
-- **Inputs:** Clean, bottom-border only or light-outlined fields with Inter labels. Focus states should clearly use the Brand-Forest color.
-- **Lists:** Use generous padding between list items. Use thin dividers in the tertiary color (#D9D1C7) to maintain structure without clutter.
+### Tailwind Integration
+
+All colors mapped in `tailwind.config.ts` using `rgb(var(--token) / <alpha-value>)` pattern, enabling opacity modifiers:
+
+```
+bg-primary/90  →  90% opacity primary background
+text-foreground/75  →  75% opacity text
+border-border/50  →  50% opacity border
+```
+
+### Email Templates
+
+Email clients do NOT read CSS variables. All email colors must be hardcoded hex:
+- Forest green accents: `#1B3022`
+- Text: `#1B1C1A`
+- Secondary text: `#434843`
+- Backgrounds: `#F5F3EF`
+
+**Never use deprecated brown/beige hex colors** from the old theme.
+
+---
+
+## 9. Migration Guide
+
+When updating existing components from legacy to semantic tokens:
+
+| Old Pattern                   | New Pattern                        |
+|:------------------------------|:-----------------------------------|
+| `bg-cream`                    | `bg-background`                    |
+| `text-espresso`               | `text-foreground`                  |
+| `bg-card` (unchanged)         | `bg-card`                          |
+| `bg-surface`                  | `bg-surface` (keep — special case) |
+| `text-sand`                   | `text-sand` (keep — special case)  |
+| `border-latte`                | `border-border`                    |
+| `text-mocha`                  | `text-muted-foreground`            |
+| `bg-forest`                   | `bg-primary`                       |
+| `bg-cream-200`                | `bg-muted`                         |
+
+**Note**: `bg-surface` and `text-sand` are intentionally kept as-is because they serve a special purpose (always-dark containers that don't invert in either mode).
+
+---
+
+*Last updated: 2026-05-29*
