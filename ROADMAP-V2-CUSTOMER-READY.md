@@ -226,8 +226,12 @@ with timing stats and clear pickup tagging.
 
 # EPIC 4 — Team Portal: Barista & Baker Academy + Operations
 
-**State today:** Shell pages for checklists/handbook/recipes/waste-log/training (87–217 lines).
-`training_platform` migration exists.
+**State today (audited 2026-05-30):** Better than the original audit suggested. The
+`004_training_platform.sql` schema is genuinely robust — courses → modules → lessons → quizzes →
+lesson/module/course progress with completion functions. **A full Specialty Coffee curriculum is
+already seeded** (`src/scripts/modules-*.ts` — seed-to-cup, espresso, brew methods, etc.).
+`20260529_staff_portal_tables.sql` provides recipes, checklists + completions, waste_entries, and
+handbook tables with RLS. Pages exist for checklists/handbook/recipes/waste-log/training.
 
 **Target:** A genuine staff operating system: a robust **Specialty Coffee Barista + Baker course**
 with modules, quizzes, and tracked completion; living handbook with acknowledgment; recipes (linked
@@ -236,25 +240,28 @@ loss analytics; and a **New-Employee Onboarding Hub** (blank I-9, W-4, handbook,
 checklist — one place to expedite onboarding).
 
 **Work:**
-- [ ] **Academy**: expand `training_modules` content into a real curriculum — Coffee Fundamentals
-  (origin, roast, extraction theory), Espresso (dialing in, milk steaming/latte art), Brew Methods
-  (pour-over, batch, cold brew), Baking basics, Food safety/allergens, Customer service, POS/ordering
-  flow. Each module: rich content + optional video + multiple-choice quiz + pass threshold.
-- [ ] Quiz engine with scoring, retries, and `training_progress` tracking; staff dashboard shows
-  % complete, badges/certificates on module completion.
-- [ ] Handbook: section nav + search + "Acknowledge & date" (stored), "last updated" stamps.
+- [x] **Academy** curriculum + quiz engine + progress tracking — already built (robust seed-to-cup
+  course content in `src/scripts/modules-*.ts` on the courses/modules/lessons/quizzes schema with
+  `update_module_progress` / `check_course_completion` functions). *Polish remaining below.*
+- [x] **Onboarding Hub** (`/staff/onboarding`) — migration 019 (`onboarding_documents` library +
+  `onboarding_progress` per-hire tracker, RLS); page groups docs (Government Forms / Handbook /
+  Training / Checklists) with required badges + a personal checklist when a manager assigns tasks.
+  I-9 + W-4 link to official USCIS/IRS always-current sources; internal docs in the `onboarding`
+  Storage bucket. Quick-link added to staff dashboard (commit a95b2a5).
+- [ ] Baking + Food-safety/allergens academy modules (extend the existing curriculum scripts).
+- [ ] Admin onboarding management UI (assign tasks per hire, upload handbook/packet PDFs to the
+  `onboarding` bucket) — table + RLS ready; needs the admin screen.
+- [ ] Handbook: add "Acknowledge & date" (stored) + "last updated" stamps to the existing page.
 - [ ] Recipes: ingredient/step views, scaling, **cost-per-recipe pulled from MenuMetrics** (Epic 7),
   prep timers.
-- [ ] Checklists: opening/closing/mid-shift; per-item check + notes + photo (e.g., temp logs);
-  `checklist_completions` logged with who/when; admin sees compliance history.
-- [ ] **Waste Log**: product picker (from catalog), qty+unit, reason, auto cost (from MenuMetrics/
-  vendor cost), photo; analytics page (waste by reason/product, trend over time, $ lost/month,
-  feeds inventory reconciliation in Epic 7).
-- [ ] **Onboarding Hub** (`/staff/onboarding`, admin-managed): document library with blank
-  fillable/printable **I-9, W-4**, handbook PDF, training packet, checklist; per-new-hire onboarding
-  tracker (docs received? training assigned? quizzes passed?). Store templates in Supabase Storage
-  `onboarding/` bucket; gate downloads to staff/admin.
-- [ ] Staff auth hardening: `is_staff` flag, invite flow, `/staff/*` middleware (audit current).
+- [ ] Checklists: per-item notes + photo (temp logs); admin compliance-history view.
+- [ ] **Waste Log**: auto cost (from MenuMetrics/vendor cost), photo; analytics page (waste by
+  reason/product, trend, $ lost/month) feeding inventory reconciliation in Epic 7.
+- [ ] Staff auth hardening: `is_staff`/role flag, invite flow, `/staff/*` middleware (audit current).
+
+> **Progress (2026-05-30, commit a95b2a5):** Onboarding Hub shipped (the one fully-missing piece);
+> Academy + quiz/progress infrastructure confirmed already in place. Remaining Epic 4 work is polish
+> + admin management UIs + the MenuMetrics-cost wiring (lands with Epic 7).
 
 **Why it matters:** Owner wants real training (not a stub), faster onboarding, and loss tracking.
 Good baristas + low waste = margin and customer experience.
