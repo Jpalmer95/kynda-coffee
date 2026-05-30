@@ -483,7 +483,10 @@ delightful account/loyalty.
   KDS (Epic 3); **pickup/café confirmation email now sent** on `/api/orders/submit` (commit d372f39).
   Remaining: SMS confirmation (Twilio).
 - [ ] Shop checkout trust: shipping rates, clear taxes/fees, order tracking (`/track-order` exists).
-- [ ] Loyalty/rewards + subscriptions UX review; referral/affiliate surfaces (tables exist).
+- [x] Loyalty/rewards + subscriptions UX review; referral/affiliate surfaces (tables exist).
+  *(Review done, commit 20a231e: fixed /account/rewards tier thresholds to match the loyalty
+  API, fixed /refer wrong-domain share link → window.location.origin + copy-to-clipboard;
+  verified redemption-rate copy + referral 10%/self-referral/expiry are coherent.)*
 - [ ] Accessibility + performance pass (WCAG 2.2 AA already targeted): keyboard nav, ARIA, contrast,
   Lighthouse ≥ 90, Core Web Vitals.
 - [x] **SEO structured data**: `LocalBusiness` + `Organization` schemas (were defined-but-unused) now
