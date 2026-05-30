@@ -81,6 +81,12 @@ export default function AdminPage() {
       icon: Users,
     },
     {
+      href: "/admin/insights",
+      label: "Growth Insights",
+      desc: "Ranked, actionable recommendations from your data",
+      icon: TrendingUp,
+    },
+    {
       href: "/admin/marketing",
       label: "Marketing Agent",
       desc: "AI-powered email, SMS, and social campaigns",
