@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendEmail } from "@/lib/email/send";
 
 export const dynamic = "force-dynamic";
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/** Owner notification address(es): ADMIN_EMAILS / ADMIN_EMAIL, else FROM_EMAIL. */
+function ownerInbox(): string[] {
+  const raw = [
+    ...(process.env.ADMIN_EMAILS?.split(",") ?? []),
+    ...(process.env.ADMIN_EMAIL?.split(",") ?? []),
+  ]
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (raw.length) return Array.from(new Set(raw));
+  const from = process.env.FROM_EMAIL;
+  return from ? [from] : [];
+}
 
 export async function POST(req: NextRequest) {
   // Rate limit: 5 submissions per IP per hour
@@ -34,11 +52,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanMessage = message.trim();
+
     // Store in Supabase contact_submissions table
     const { error } = await supabaseAdmin().from("contact_submissions").insert({
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      message: message.trim(),
+      name: cleanName,
+      email: cleanEmail,
+      message: cleanMessage,
       type,
       status: "new",
     });
@@ -49,6 +71,23 @@ export async function POST(req: NextRequest) {
         { error: "Failed to send message. Please try again later." },
         { status: 500 }
       );
+    }
+
+    // Best-effort owner notification — never block the customer on email delivery.
+    const inbox = ownerInbox();
+    if (inbox.length) {
+      const html = `
+        <div style="font-family:Georgia,serif;color:#2b2b2b">
+          <h2 style="color:#b5572f">New ${escapeHtml(type)} message — Kynda Coffee</h2>
+          <p><strong>From:</strong> ${escapeHtml(cleanName)} &lt;${escapeHtml(cleanEmail)}&gt;</p>
+          <p style="white-space:pre-wrap;border-left:3px solid #e7ddcd;padding-left:12px">${escapeHtml(cleanMessage)}</p>
+          <p style="color:#6f6257;font-size:13px">Reply directly to this email to respond, or manage it in the admin inbox at kyndacoffee.com/admin/inbox.</p>
+        </div>`;
+      sendEmail({
+        to: inbox,
+        subject: `New ${type} message from ${cleanName}`,
+        html,
+      }).catch((e) => console.error("Contact notification email failed:", e));
     }
 
     return NextResponse.json(

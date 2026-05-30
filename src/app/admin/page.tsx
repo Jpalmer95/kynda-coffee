@@ -18,6 +18,7 @@ import {
   TrendingUp,
   ArrowUpRight,
   Sparkles,
+  Inbox,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
@@ -85,6 +86,12 @@ export default function AdminPage() {
       label: "Growth Insights",
       desc: "Ranked, actionable recommendations from your data",
       icon: TrendingUp,
+    },
+    {
+      href: "/admin/inbox",
+      label: "Inbox",
+      desc: "Contact form messages — read, reply, and triage",
+      icon: Inbox,
     },
     {
       href: "/admin/marketing",
