@@ -544,8 +544,11 @@ business data at any time.
 - [ ] Cron-secret review on all autonomous endpoints (publish-due, scout, price-finder, low-stock).
 - [ ] Sentry (present) coverage + alerting; PostHog funnels for order conversion.
 - [ ] Uptime monitoring; Supabase query/perf monitoring; backup verification (restore test).
-- [ ] Test depth: extend Vitest (pricing engine, channel classifier, adapters) + Playwright E2E for
-  the money paths (menu order, shop checkout, merch dropship).
+- [~] Test depth: extend Vitest (pricing engine, channel classifier, adapters) + Playwright E2E for
+  the money paths (menu order, shop checkout, merch dropship). *(Money-path UNIT hardening done,
+  commit 92a81ec: `src/lib/checkout/totals.ts` validated order-totals — discount/loyalty clamped so
+  an order can never go negative/over-redeem — now wired into `/api/checkout`; 16 tests incl. abuse
+  cases. Suite at 266 tests. Remaining: Playwright E2E against the deployed money paths.)*
 
 **Why it matters:** Real revenue + real customer data demand this before scaling marketing/B2B.
 
