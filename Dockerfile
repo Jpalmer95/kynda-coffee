@@ -13,7 +13,7 @@ COPY . .
 # Build the application
 # NOTE: Do NOT set NODE_ENV=production before build
 # Next.js needs devDependencies during build
-RUN npm run build
+RUN if [ -f .env.production ]; then set -a && source .env.production && set +a; fi && npm run build
 
 # ---- Production Stage ----
 FROM node:20-alpine AS runner
