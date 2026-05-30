@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LocationClient } from "@/components/location/LocationClient";
+import { LocalBusinessSchema, OrganizationSchema } from "@/components/seo/JsonLd";
 
 export const metadata: Metadata = {
   title: "Find Us — Kynda Coffee",
@@ -9,5 +10,11 @@ export const metadata: Metadata = {
 };
 
 export default function LocationPage() {
-  return <LocationClient />;
+  return (
+    <>
+      <LocalBusinessSchema />
+      <OrganizationSchema />
+      <LocationClient />
+    </>
+  );
 }

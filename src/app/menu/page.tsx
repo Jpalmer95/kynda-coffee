@@ -4,6 +4,7 @@ import { CuratedSpecials } from "@/components/menu/CuratedSpecials";
 import { DeliveryPlatforms } from "@/components/order/DeliveryPlatforms";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { activeSpecials, type Special } from "@/lib/marketing/specials";
+import { MenuSchema, LocalBusinessSchema } from "@/components/seo/JsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +43,20 @@ export default async function MenuPage() {
   const categories = catalog.categories.filter((c) => c.items.length > 0);
   const itemCount = catalog.items.length;
 
+  // schema.org/Menu sections for the Google menu rich result (cap to keep payload sane)
+  const menuSections = categories.slice(0, 12).map((c) => ({
+    name: c.name,
+    items: c.items.slice(0, 30).map((item) => ({
+      name: item.name,
+      description: item.description || undefined,
+      priceUsd: item.priceCents ? item.priceCents / 100 : undefined,
+    })),
+  }));
+
   return (
     <section className="section-padding">
+      <MenuSchema sections={menuSections} />
+      <LocalBusinessSchema />
       <div className="container-max">
         <div className="mx-auto max-w-3xl text-center">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-forest">

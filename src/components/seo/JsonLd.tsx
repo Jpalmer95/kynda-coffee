@@ -4,12 +4,13 @@ import Script from "next/script";
 
 interface JsonLdProps {
   data: Record<string, unknown> | Record<string, unknown>[];
+  id?: string;
 }
 
-export function JsonLd({ data }: JsonLdProps) {
+export function JsonLd({ data, id = "json-ld" }: JsonLdProps) {
   return (
     <Script
-      id="json-ld"
+      id={id}
       type="application/ld+json"
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(data),
@@ -23,6 +24,7 @@ export function JsonLd({ data }: JsonLdProps) {
 export function OrganizationSchema() {
   return (
     <JsonLd
+      id="json-ld-organization"
       data={{
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -48,6 +50,7 @@ export function OrganizationSchema() {
 export function LocalBusinessSchema() {
   return (
     <JsonLd
+      id="json-ld-localbusiness"
       data={{
         "@context": "https://schema.org",
         "@type": "CafeOrCoffeeShop",
@@ -107,6 +110,7 @@ export function ProductSchema({
 }) {
   return (
     <JsonLd
+      id="json-ld-product"
       data={{
         "@context": "https://schema.org",
         "@type": "Product",
@@ -160,6 +164,7 @@ export function BreadcrumbSchema({
 }) {
   return (
     <JsonLd
+      id="json-ld-breadcrumb"
       data={{
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
@@ -181,6 +186,7 @@ export function FAQSchema({
 }) {
   return (
     <JsonLd
+      id="json-ld-faq"
       data={{
         "@context": "https://schema.org",
         "@type": "FAQPage",
@@ -191,6 +197,41 @@ export function FAQSchema({
             "@type": "Answer",
             text: q.answer,
           },
+        })),
+      }}
+    />
+  );
+}
+
+/**
+ * Menu structured data (schema.org/Menu) — drives Google's menu rich result for
+ * a local food business. Sections map to menu categories; items to dishes.
+ */
+export function MenuSchema({
+  sections,
+}: {
+  sections: { name: string; items: { name: string; description?: string; priceUsd?: number }[] }[];
+}) {
+  return (
+    <JsonLd
+      id="json-ld-menu"
+      data={{
+        "@context": "https://schema.org",
+        "@type": "Menu",
+        name: "Kynda Coffee Menu",
+        url: "https://kyndacoffee.com/menu",
+        hasMenuSection: sections.map((section) => ({
+          "@type": "MenuSection",
+          name: section.name,
+          hasMenuItem: section.items.map((item) => ({
+            "@type": "MenuItem",
+            name: item.name,
+            description: item.description || undefined,
+            offers:
+              item.priceUsd != null
+                ? { "@type": "Offer", price: item.priceUsd.toFixed(2), priceCurrency: "USD" }
+                : undefined,
+          })),
         })),
       }}
     />
