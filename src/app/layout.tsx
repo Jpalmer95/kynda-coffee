@@ -12,7 +12,8 @@ import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { ThemeProvider } from "@/lib/theme/context";
 import { PostHogProvider } from "@/lib/posthog/PostHogProvider";
-import "@/sentry.client.config";
+// TODO: Re-enable Sentry once client config import path is fixed for SSR
+// import "@/sentry.client.config";
 
 const body = Plus_Jakarta_Sans({
   subsets: ["latin"],
