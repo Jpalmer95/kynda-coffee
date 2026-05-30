@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ShoppingBag, Menu, X, Coffee, Search, User } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, Coffee } from "lucide-react";
+import Image from "next/image";
 import { useCartStore } from "@/hooks/useCart";
 import { useMenuCartStore } from "@/hooks/useMenuCart";
 import { useCartDrawer } from "@/hooks/useCartDrawer";
@@ -70,10 +71,14 @@ export function Header() {
             className="flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-forest"
             aria-label="Kynda Coffee Home"
           >
-            <Coffee className="h-7 w-7 text-forest sm:h-8 sm:w-8" aria-hidden="true" />
-            <span className="font-heading text-xl font-bold text-espresso sm:text-2xl">
-              Kynda
-            </span>
+            <Image
+              src="/images/logos/kynda-logo-black.png"
+              alt="Kynda Coffee"
+              width={120}
+              height={93}
+              className="h-8 sm:h-10 w-auto dark:invert"
+              priority
+            />
           </Link>
 
           {/* Desktop Nav */}

@@ -74,7 +74,7 @@ function NewsletterSection() {
         <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-sand">
           Stay in the Loop
         </h2>
-        <p className="mt-2 text-base text-latte/80">
+        <p className="mt-2 text-base text-sand/90">
           Get exclusive drops, seasonal roasts, and subscriber-only deals delivered to your inbox.
         </p>
 
@@ -91,7 +91,7 @@ function NewsletterSection() {
               placeholder="you@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="input-field flex-1 bg-card/10 border-white/20 text-sand placeholder:text-latte/50 focus:border-forest"
+              className="input-field flex-1 bg-card/10 border-white/20 text-sand placeholder:text-sand/50 focus:border-forest"
             />
             <button
               type="submit"
@@ -110,7 +110,7 @@ function NewsletterSection() {
           <p className="mt-3 text-sm text-red-300">{error}</p>
         )}
 
-        <p className="mt-4 text-xs text-latte/50">
+        <p className="mt-4 text-xs text-sand/70">
           No spam, ever. Unsubscribe anytime.
         </p>
       </div>
@@ -144,7 +144,7 @@ export default function HomePage() {
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 py-16 text-center sm:py-24">
           <div className="animate-fade-in">
-            <p className="mb-4 sm:mb-6 inline-block rounded-full border border-latte/30 px-3 py-1.5 text-xs sm:text-sm font-medium uppercase tracking-widest text-latte">
+            <p className="mb-4 sm:mb-6 inline-block rounded-full border border-sand/30 px-3 py-1.5 text-xs sm:text-sm font-medium uppercase tracking-widest text-sand/90">
               Organic Specialty Coffee · Est. 2020 · Horseshoe Bay, TX
             </p>
             <h1 className="font-heading text-4xl font-bold leading-[1.1] text-sand sm:text-6xl lg:text-7xl">
@@ -155,7 +155,7 @@ export default function HomePage() {
                 <span className="absolute -bottom-1 left-0 h-2 sm:h-3 w-full bg-bronze/20" />
               </span>
             </h1>
-            <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-latte/80">
+            <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-sand/90">
               Hand-selected micro-lot roasts using only the top 5% of coffee beans
               from around the world. Locally roasted, organic, and crafted with care.
             </p>
@@ -172,7 +172,7 @@ export default function HomePage() {
 
           {/* Scroll indicator */}
           <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-            <ChevronDown className="h-6 w-6 text-latte/40" aria-hidden="true" />
+            <ChevronDown className="h-6 w-6 text-sand/60" aria-hidden="true" />
           </div>
         </div>
       </section>
@@ -216,7 +216,7 @@ export default function HomePage() {
                   <h3 className="mt-4 sm:mt-5 font-heading text-lg sm:text-xl font-semibold text-espresso">
                     {item.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-mocha">
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {item.description}
                   </p>
                 </div>
@@ -236,7 +236,7 @@ export default function HomePage() {
             <h2 className="mt-2 font-heading text-2xl sm:text-3xl font-bold text-espresso lg:text-4xl">
               Freshly Roasted, Ready to Ship
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-mocha">
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground">
               Subscribe to Coffee Club and save 10% on every delivery.
             </p>
           </div>
@@ -269,7 +269,7 @@ export default function HomePage() {
                   <br />
                   Kynda Merch
                 </h2>
-                <p className="mt-4 text-base sm:text-lg leading-relaxed text-latte/70">
+                <p className="mt-4 text-base sm:text-lg leading-relaxed text-sand/90">
                   Browse trending designs, generate unique patterns with AI, and see
                   your creation on mugs, tees, glassware, and more. Every piece is
                   made to order.
@@ -314,7 +314,7 @@ export default function HomePage() {
             <h2 className="mt-4 font-heading text-2xl sm:text-3xl font-bold text-espresso lg:text-4xl">
               Skip the Line
             </h2>
-            <p className="mt-3 text-base sm:text-lg text-mocha">
+            <p className="mt-3 text-base sm:text-lg text-muted-foreground">
               Order ahead for pickup or get Kynda delivered via DoorDash and Uber Eats.
               Scan the QR code in-store or order right here.
             </p>
@@ -347,24 +347,24 @@ export default function HomePage() {
           <h2 className="mt-2 font-heading text-2xl sm:text-3xl font-bold text-espresso lg:text-4xl">
             Built with Passion, Poured with Love
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg text-mocha">
+          <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg text-muted-foreground">
             Started in 2020 with zero funding and a dream. Six years later,
             Kynda Coffee is a community staple — organic, local, and always honest.
           </p>
           <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-8">
             <div className="text-center">
               <p className="font-heading text-3xl sm:text-4xl font-bold text-espresso">6+</p>
-              <p className="text-sm text-mocha">Years Strong</p>
+              <p className="text-sm text-muted-foreground">Years Strong</p>
             </div>
             <div className="h-10 sm:h-12 w-px bg-latte/30" />
             <div className="text-center">
               <p className="font-heading text-3xl sm:text-4xl font-bold text-espresso">100%</p>
-              <p className="text-sm text-mocha">Organic Beans</p>
+              <p className="text-sm text-muted-foreground">Organic Beans</p>
             </div>
             <div className="h-10 sm:h-12 w-px bg-latte/30" />
             <div className="text-center">
               <p className="font-heading text-3xl sm:text-4xl font-bold text-espresso">Top 5%</p>
-              <p className="text-sm text-mocha">Micro-Lot Quality</p>
+              <p className="text-sm text-muted-foreground">Micro-Lot Quality</p>
             </div>
           </div>
 
@@ -375,10 +375,10 @@ export default function HomePage() {
                 <Star key={star} className="h-5 w-5 fill-bronze text-forest" aria-hidden="true" />
               ))}
             </div>
-            <p className="text-sm text-mocha">
+            <p className="text-sm text-muted-foreground">
               <span className="font-semibold text-espresso">4.9</span> out of 5 from 200+ local reviews
             </p>
-            <div className="flex items-center gap-1 text-sm text-mocha">
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 text-forest" aria-hidden="true" />
               <span>4315 FM 2147, Horseshoe Bay, TX</span>
             </div>
