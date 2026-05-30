@@ -49,7 +49,9 @@ export async function POST(
       line_items: buildStripeLineItemsForOrder(payableOrder),
       success_url: stripeSuccessUrl(origin, payableOrder),
       cancel_url: stripeCancelUrl(origin, payableOrder),
-      automatic_payment_methods: { enabled: true },
+      // Apple Pay / Google Pay / Link / card are enabled automatically for
+      // Checkout Sessions via the Stripe Dashboard. (automatic_payment_methods
+      // is a PaymentIntent-only param and is rejected by checkout.sessions.)
       metadata: buildStripeOrderMetadata(payableOrder),
     } as any);
 

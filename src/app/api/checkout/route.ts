@@ -198,7 +198,10 @@ export async function POST(req: NextRequest) {
       line_items: finalLineItems,
       success_url: `${parsed.success_url}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: parsed.cancel_url,
-      automatic_payment_methods: { enabled: true },
+      // Apple Pay / Google Pay / Link / card are enabled automatically for
+      // Checkout Sessions via the Stripe Dashboard payment-method settings.
+      // (automatic_payment_methods is a PaymentIntent-only param — passing it
+      // to checkout.sessions.create throws "Received unknown parameter".)
       shipping_address_collection: {
         allowed_countries: ["US"],
       },
