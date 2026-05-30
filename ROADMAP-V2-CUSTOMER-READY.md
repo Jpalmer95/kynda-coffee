@@ -8,7 +8,7 @@ coffee shop platform that is **POS-agnostic, data-owned, and AI-operated**, wher
 order food/drinks, buy shipped goods + merch, apply for work, and find our info; and the owner
 runs the entire business (metrics, marketing, sales, inventory, costs, B2B, staff) from one portal.
 
-> **Deployment status (2026-05-30):** Migrations **018–024 are APPLIED to production Supabase**
+> **Deployment status (2026-05-30):** Migrations **018–026 are APPLIED to production Supabase**
 > (`svfuuvaaynmcofyrkwus`) via the `:6543` transaction pooler — verified: `catalog_overrides.channel_visibility`,
 > `specials`, `onboarding_documents`+`onboarding_progress` (6 docs seeded), `social_posts` approval columns
 > (source/approved_by/approved_at/rejection_reason/special_id), `b2b_leads`/`b2b_accounts`/`b2b_orders`,
@@ -543,8 +543,13 @@ business data at any time.
   abuse vectors — designs/generate (FAL cost), gift-cards create/redeem (financial + code
   brute-force), reviews (spam), referrals/generate (junk rows), and locked square/sync-catalog
   behind CRON_SECRET/X-Agent-Key. Remaining: CSRF tokens, CSP+HSTS headers.)*
-- [ ] **RLS audit** — test every table with each role (anon, customer, staff, admin); the
-  `/account` public + private-subroute rule (from memory) must be verified.
+- [x] **RLS audit** — test every table with each role (anon, customer, staff, admin); the
+  `/account` public + private-subroute rule (from memory) must be verified. *(Done — audited live
+  via pg_policies + role grants; found + closed a real exposure: 16 sensitive tables (gift_cards,
+  loyalty/credit/referral, customer PII, orders/fulfillment, inventory, printful COGS) had RLS OFF
+  with full anon grants. Migrations 025 (enable RLS + admin-only policy) + 026 (SECURITY DEFINER
+  `is_staff()` helper, fixes a pre-existing profiles-policy recursion) APPLIED + verified: anon now
+  reads 0 rows. Commit 2b9ad73.)*
 - [ ] Cron-secret review on all autonomous endpoints (publish-due, scout, price-finder, low-stock).
 - [ ] Sentry (present) coverage + alerting; PostHog funnels for order conversion.
 - [ ] Uptime monitoring; Supabase query/perf monitoring; backup verification (restore test).
