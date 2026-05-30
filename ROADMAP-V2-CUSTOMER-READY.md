@@ -412,17 +412,26 @@ shipping + margin, via Epic 2); order → dropship → tracked.
 
 **Work:**
 - [ ] Prove the **full order path** end-to-end on real Printful (draft → Stripe pay → confirm →
-  webhook tracking → customer email). Document and smoke-test.
-- [ ] Replace ad-hoc markup with **Pricing Engine** (Epic 2): live retail = Printful variant cost +
-  shipping estimate + payment fee + target margin; never below floor.
-- [ ] **Recommendation engine**: preset packs (Kynda brand, seasonal, local Horseshoe Bay/Hill
-  Country, trending, genre). Generate-on-demand via FAL with brand-aware prompts; moderation-gated.
-- [ ] Canvas polish: layered stickers (logo/preset/upload/generated) with drag/resize/rotate,
-  front/back, true product-image underlay (real mockups in Storage), undo/redo, snapping.
+  webhook tracking → customer email). Document and smoke-test. *(Routes exist; needs live proof.)*
+- [x] Replace ad-hoc markup with **Pricing Engine** (Epic 2): `/api/printful/estimate` prices via
+  `calculatePrice` — live retail = Printful cost + shipping + payment fee + target margin, never
+  below floor (shipped in Epic 2, commit 3ffcf44).
+- [x] **Recommendation engine** (`src/lib/designs/recommendations.ts`, 14 tests): preset packs
+  (Kynda brand, local Hill Country, trending, funny/cool/sporty + minimal/nature/vintage/typography),
+  brand-aware `buildGenerationPrompt`, seasonal `recommendThemes` (commit bb28e7a).
+- [x] **Real AI generation**: `/api/designs/generate` rewired from a picsum stub to FAL flux/dev with
+  a moderated, brand-aware, print-ready prompt; graceful placeholder only when FAL_KEY unset.
+- [ ] Canvas polish: undo/redo, snapping, true product-image underlay (real mockups in Storage).
+  *(Layered stickers + drag/resize/rotate + front/back already in DesignCanvas.)*
 - [ ] **Catalog expansion + smart sourcing**: broaden Printful product set; auto-pull cost/variants;
-  a sourcing hook so trending non-merch Shop goods (Chemex, filters, candles) can be added with
-  adaptive pricing (Epic 1 + 2).
+  sourcing hook for trending non-merch Shop goods (Chemex, filters, candles) w/ adaptive pricing.
+- [ ] Surface the recommendation packs + one-tap seed prompts in the studio UI (`presets` tab).
 - [ ] My Designs (save/load, exists) + share + reorder.
+
+> **Progress (2026-05-30, commit bb28e7a):** Generation is now real (FAL + moderation + brand-aware
+> prompts) and the recommendation engine (brand/local/trending/genre packs) is built + tested. Pricing
+> already runs through the profit-guaranteed engine. Remaining: surface recs in the studio UI, prove
+> the live Printful order path, canvas undo/redo + real mockup underlay, and catalog/sourcing expansion.
 
 **Why it matters:** A signature differentiator and a high-margin revenue stream with zero inventory
 risk (dropship). Owner wants it "fully working and beautiful."
