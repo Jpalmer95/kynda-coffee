@@ -331,7 +331,10 @@ scheduled/posted. Automated newsletters and monthly-specials campaigns. Growth i
 > approval queue. The **Newsletter automation** is live too — migration 024 (newsletters table +
 > subscriber unsubscribe tokens), `src/lib/marketing/newsletter.ts` (branded HTML from specials, 11
 > tests) + `newsletter-sender.ts` (Resend, RFC-8058 one-click unsubscribe), `/admin/newsletters`
-> (generate→approve→schedule/send) and `/api/newsletter/send-due` cron (commit 6dc3f21). Remaining: insights dashboard.
+> (generate→approve→schedule/send) and `/api/newsletter/send-due` cron (commit 6dc3f21). The
+> **Growth Insights dashboard** is live too — `src/lib/marketing/insights.ts` (13 tests) +
+> `/api/admin/insights` + `/admin/insights` (commit d6fd89e): ranked, actionable recommendations
+> from sales/marketing/ops signals. **Epic 5 is COMPLETE.**
 
 **Why it matters:** This is the owner's headline ask — agents that drive growth and post on Kynda's
 behalf, with the owner dropping in assets and chatting with marketing agents. Approval-gated keeps
