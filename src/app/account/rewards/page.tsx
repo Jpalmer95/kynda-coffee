@@ -23,9 +23,9 @@ interface BalanceData {
 
 const TIERS = [
   { name: "bronze", label: "Bronze", threshold: 0, icon: Star, color: "text-amber-700" },
-  { name: "silver", label: "Silver", threshold: 7500, icon: Zap, color: "text-slate-500" },
-  { name: "gold", label: "Gold", threshold: 20000, icon: Crown, color: "text-yellow-600" },
-  { name: "kynda-vip", label: "Kynda VIP", threshold: 50000, icon: Coffee, color: "text-forest" },
+  { name: "silver", label: "Silver", threshold: 500, icon: Zap, color: "text-slate-500" },
+  { name: "gold", label: "Gold", threshold: 1500, icon: Crown, color: "text-yellow-600" },
+  { name: "kynda-vip", label: "Kynda VIP", threshold: 3000, icon: Coffee, color: "text-forest" },
 ];
 
 export default function AccountRewardsPage() {

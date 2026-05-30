@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Users, Gift, ArrowRight, CheckCircle } from "lucide-react";
+import { Users, Gift, ArrowRight, CheckCircle, Copy, Check } from "lucide-react";
 
 export default function ReferPage() {
   const [email, setEmail] = useState("");
@@ -10,6 +10,21 @@ export default function ReferPage() {
   const [success, setSuccess] = useState(false);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const shareUrl = code
+    ? `${typeof window !== "undefined" ? window.location.origin : "https://kyndacoffee.com"}/shop?ref=${code}`
+    : "";
+
+  async function copyShareUrl() {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard blocked — user can select manually */
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,12 +113,18 @@ export default function ReferPage() {
             </div>
 
             <p className="text-mocha">Share this code with friends or use the link below:</p>
-            <div className="mt-4 rounded-xl bg-latte/10 p-4 font-mono text-sm">
-              https://kynda.coffee/shop?ref={code}
-            </div>
+            <button
+              onClick={copyShareUrl}
+              className="mt-4 flex w-full items-center justify-between gap-2 rounded-xl bg-latte/10 p-4 text-left font-mono text-sm hover:bg-latte/20 transition"
+              title="Click to copy"
+            >
+              <span className="truncate">{shareUrl}</span>
+              {copied ? <Check className="h-4 w-4 flex-shrink-0 text-sage" /> : <Copy className="h-4 w-4 flex-shrink-0 text-mocha" />}
+            </button>
+            {copied && <p className="mt-1 text-xs text-sage">Copied to clipboard!</p>}
 
             <div className="mt-8 flex flex-col gap-3 text-left text-sm max-w-xs mx-auto">
-              <Link href="/shop" className="btn-primary justify-center">Browse the Menu</Link>
+              <Link href="/shop" className="btn-primary justify-center">Browse the Shop</Link>
               <Link href="/account" className="text-mocha hover:text-espresso">View your rewards dashboard →</Link>
             </div>
           </div>
