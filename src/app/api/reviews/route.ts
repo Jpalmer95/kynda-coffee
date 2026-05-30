@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,15 @@ export async function GET(req: NextRequest) {
 // POST /api/reviews
 export async function POST(req: NextRequest) {
   try {
+    // Spam guard: 5 review submissions/min/IP.
+    const ip = getClientIp(req);
+    const limit = rateLimit(ip, { identifier: "reviews", windowMs: 60_000, maxRequests: 5 });
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Too many submissions. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) } }
+      );
+    }
     const body = await req.json();
     const { product_id, email, name, rating, title, body: reviewBody } = body;
 

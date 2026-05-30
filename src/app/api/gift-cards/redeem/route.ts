@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Strict: redemption brute-forces card codes. 10/min/IP.
+    const ip = getClientIp(req);
+    const limit = rateLimit(ip, { identifier: "gift-card-redeem", windowMs: 60_000, maxRequests: 10 });
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) } }
+      );
+    }
     const body = await req.json();
     const { code, amount_cents } = body;
 

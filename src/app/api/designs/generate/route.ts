@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateDesign as falGenerate, KYND_STYLE_PRESETS } from "@/lib/fal/client";
 import { moderateText } from "@/lib/moderation/client";
 import { buildGenerationPrompt, type DesignTheme } from "@/lib/designs/recommendations";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,16 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(req: NextRequest) {
   try {
+    // AI generation costs money per call — rate-limit hard (10/min/IP).
+    const ip = getClientIp(req);
+    const limit = rateLimit(ip, { identifier: "designs-generate", windowMs: 60_000, maxRequests: 10 });
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Too many generations. Please slow down and try again shortly." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) } }
+      );
+    }
+
     const body = await req.json();
     const prompt = String(body.prompt ?? "").trim();
     const stylePresetKey = String(body.style_preset ?? "");

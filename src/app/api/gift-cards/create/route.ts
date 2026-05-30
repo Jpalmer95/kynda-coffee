@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 function generateCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -13,6 +14,14 @@ function generateCode() {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const limit = rateLimit(ip, { identifier: "gift-card-create", windowMs: 60_000, maxRequests: 5 });
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) } }
+      );
+    }
     const body = await req.json();
     const { amount_cents, recipient_email, message } = body;
 

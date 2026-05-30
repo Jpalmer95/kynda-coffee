@@ -153,6 +153,18 @@ async function upsertModifiers(supabase: ReturnType<typeof getSupabase>, objects
 
 export async function POST(req: NextRequest) {
   try {
+    // Expensive privileged op (full Square resync + image caching): require the
+    // CRON_SECRET bearer or X-Agent-Key (same as the other sync/cron endpoints).
+    const cronSecret = process.env.CRON_SECRET;
+    const agentKey = process.env.AGENT_API_KEY;
+    const authHeader = req.headers.get("authorization");
+    const headerAgentKey = req.headers.get("x-agent-key");
+    const cronOk = cronSecret ? authHeader === `Bearer ${cronSecret}` : false;
+    const agentOk = agentKey ? headerAgentKey === agentKey : false;
+    if ((cronSecret || agentKey) && !cronOk && !agentOk) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     await req.json().catch(() => ({}));
     const supabase = getSupabase();
 
