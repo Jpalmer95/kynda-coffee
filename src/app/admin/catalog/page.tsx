@@ -51,6 +51,7 @@ type Override = {
   is_hidden: boolean;
   is_featured: boolean | null;
   sort_order: number | null;
+  channel_visibility: string | null;
   menu_metrics_recipe_id: string | null;
   admin_notes: string | null;
 };
@@ -64,6 +65,14 @@ const CHANNELS = [
 ] as const;
 
 const ITEM_TYPES = ["menu", "retail", "merch", "modifier", "service", "gift_card", "unknown"];
+
+const CHANNEL_VISIBILITY_OPTIONS = [
+  { value: "auto", label: "Auto (use item type)" },
+  { value: "menu", label: "Menu only (food & drink)" },
+  { value: "shop", label: "Shop only (shipped/retail)" },
+  { value: "both", label: "Both Menu & Shop" },
+  { value: "hidden", label: "Hidden everywhere" },
+];
 
 function defaultOverride(item: CatalogItem): Override {
   return {
@@ -83,6 +92,7 @@ function defaultOverride(item: CatalogItem): Override {
     is_hidden: false,
     is_featured: null,
     sort_order: null,
+    channel_visibility: null,
     menu_metrics_recipe_id: null,
     admin_notes: null,
   };
@@ -288,6 +298,14 @@ export default function AdminCatalogPage() {
                           <option value="">Use synced: {item.itemType}</option>
                           {ITEM_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
                         </select>
+                      </label>
+                      <label className="block text-sm font-medium text-espresso">
+                        Show on (Menu vs Shop)
+                        <select value={override.channel_visibility ?? ""} onChange={(e) => updateOverride(item, { channel_visibility: e.target.value === "" ? null : e.target.value })} className="select-field mt-1 text-sm">
+                          <option value="">Auto (use item type)</option>
+                          {CHANNEL_VISIBILITY_OPTIONS.filter((o) => o.value !== "auto").map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                        <span className="mt-1 block text-xs font-normal text-mocha">Menu = food &amp; drink ordering. Shop = shipped/retail goods. Overrides the item-type guess.</span>
                       </label>
                       <label className="block text-sm font-medium text-espresso">
                         Sort order

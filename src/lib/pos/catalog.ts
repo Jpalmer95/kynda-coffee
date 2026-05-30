@@ -97,9 +97,25 @@ export interface CatalogOverrideRow {
   is_hidden: boolean;
   is_featured: boolean | null;
   sort_order: number | null;
+  channel_visibility: ChannelVisibility | null;
   menu_metrics_recipe_id: string | null;
   admin_notes: string | null;
 }
+
+/**
+ * Owner-controlled channel routing for an item (Epic 1: Menu vs Shop separation).
+ * - "auto"   — fall back to the item_type heuristic (merch still excluded from menu)
+ * - "menu"   — food/drink ordering surfaces only; never in Shop
+ * - "shop"   — shipped/retail goods only; never on Menu
+ * - "both"   — intentional allowlist (e.g. bagged retail coffee on Menu + Shop)
+ * - "hidden" — never shown on any public channel
+ */
+export type ChannelVisibility = "auto" | "menu" | "shop" | "both" | "hidden";
+
+/** Channels that represent the customer Menu (food & drink ordering). */
+const MENU_CHANNELS: PosCatalogChannel[] = ["menu", "qr", "pickup", "delivery"];
+/** Channels that represent the Shop (shipped/retail goods). */
+const SHOP_CHANNELS: PosCatalogChannel[] = ["shop", "shipping"];
 
 export interface PosCatalogVariation {
   id: string;
@@ -213,27 +229,44 @@ export function shouldIncludeItemForChannel(
     | "available_shipping"
     | "available_qr"
   >,
-  channel: PosCatalogChannel = "all"
+  channel: PosCatalogChannel = "all",
+  visibility: ChannelVisibility | null = null
 ): boolean {
   if (!item.is_active) return false;
+
+  // Owner-controlled channel routing takes precedence over heuristics (Epic 1).
+  // The customer Menu is strictly food/drink ordering; the Shop is strictly
+  // shipped/retail goods. Explicit decisions are never second-guessed.
+  if (visibility && visibility !== "auto") {
+    if (visibility === "hidden") return false;
+    const isMenuChannel = MENU_CHANNELS.includes(channel);
+    const isShopChannel = SHOP_CHANNELS.includes(channel);
+    if (visibility === "menu" && isShopChannel) return false;
+    if (visibility === "shop" && isMenuChannel) return false;
+    // "both" (or a matching side) passes through to the availability check below.
+  }
 
   switch (channel) {
     case "all":
       return true;
     case "menu":
+      // Food & drink ordering surface ONLY. Merch never appears on the Menu.
+      // (Retail food/drink like bagged coffee is fine; merch/gift_card is not.)
       return (
-        ["menu", "retail", "merch"].includes(item.item_type) &&
+        ["menu", "retail"].includes(item.item_type) &&
         (item.available_pickup || item.available_qr || item.available_online)
       );
     case "qr":
-      return item.available_qr && ["menu", "retail", "merch"].includes(item.item_type);
+      return item.available_qr && ["menu", "retail"].includes(item.item_type);
     case "pickup":
-      return item.available_pickup && ["menu", "retail", "merch"].includes(item.item_type);
+      return item.available_pickup && ["menu", "retail"].includes(item.item_type);
     case "delivery":
       return item.available_delivery && ["menu", "retail"].includes(item.item_type);
     case "shipping":
       return item.available_shipping && ["retail", "merch"].includes(item.item_type);
     case "shop":
+      // Shipped/retail goods surface: merch, retail goods, gift cards, anything
+      // explicitly shippable. Never made-to-order food/drink unless shippable.
       return (
         item.available_online &&
         (item.available_shipping || ["retail", "merch", "gift_card"].includes(item.item_type))
@@ -257,7 +290,7 @@ export function mapPosCatalogRows(
 
   return rows
     .filter((row) => !row.override?.is_hidden)
-    .filter((row) => shouldIncludeItemForChannel(row, channel))
+    .filter((row) => shouldIncludeItemForChannel(row, channel, row.override?.channel_visibility ?? null))
     .map((row) => {
       const variations = [...(row.variations ?? [])]
         .filter((variation) => variation.sellable !== false)
@@ -552,7 +585,7 @@ export async function getPosCatalog(options: GetPosCatalogOptions = {}): Promise
     const { data, error } = await supabaseAdmin()
       .from("catalog_overrides")
       .select(
-        "id, provider, provider_item_id, provider_variation_id, display_name, display_description, image_urls, category_name, item_type, available_online, available_pickup, available_delivery, available_shipping, available_qr, is_hidden, is_featured, sort_order, menu_metrics_recipe_id, admin_notes"
+        "id, provider, provider_item_id, provider_variation_id, display_name, display_description, image_urls, category_name, item_type, available_online, available_pickup, available_delivery, available_shipping, available_qr, is_hidden, is_featured, sort_order, channel_visibility, menu_metrics_recipe_id, admin_notes"
       )
       .in("provider_item_id", providerItemIds);
 

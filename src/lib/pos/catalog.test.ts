@@ -29,6 +29,7 @@ const overrides: CatalogOverrideRow[] = [
     is_hidden: false,
     is_featured: true,
     sort_order: 10,
+    channel_visibility: "menu",
     menu_metrics_recipe_id: "recipe-latte",
     admin_notes: "Keep visible on menu but not QR.",
   },
@@ -50,6 +51,7 @@ const overrides: CatalogOverrideRow[] = [
     is_hidden: true,
     is_featured: null,
     sort_order: null,
+    channel_visibility: null,
     menu_metrics_recipe_id: null,
     admin_notes: "Hide until photo is ready.",
   },
@@ -181,6 +183,40 @@ describe("POS catalog formatting", () => {
     expect(shouldIncludeItemForChannel(rows[1], "shop")).toBe(true);
     expect(shouldIncludeItemForChannel(rows[0], "shop")).toBe(false);
     expect(shouldIncludeItemForChannel(rows[0], "menu")).toBe(true);
+  });
+
+  it("excludes merch from the customer Menu (Epic 1: Menu vs Shop separation)", () => {
+    // rows[1] is the Kynda Hoodie (item_type: "merch", available_pickup: true).
+    // Even though it is pickup-available, merch must never appear on the food/drink Menu.
+    expect(shouldIncludeItemForChannel(rows[1], "menu")).toBe(false);
+    expect(shouldIncludeItemForChannel(rows[1], "pickup")).toBe(false);
+    expect(shouldIncludeItemForChannel(rows[1], "qr")).toBe(false);
+    // But merch still belongs in the Shop.
+    expect(shouldIncludeItemForChannel(rows[1], "shop")).toBe(true);
+  });
+
+  it("respects explicit owner channel_visibility over heuristics", () => {
+    const latte = rows[0]; // item_type "menu", normally menu-only
+    const hoodie = rows[1]; // item_type "merch", normally shop-only
+
+    // "hidden" hides everywhere.
+    expect(shouldIncludeItemForChannel(latte, "menu", "hidden")).toBe(false);
+    expect(shouldIncludeItemForChannel(latte, "shop", "hidden")).toBe(false);
+
+    // "shop" forces an item out of all Menu channels...
+    expect(shouldIncludeItemForChannel(latte, "menu", "shop")).toBe(false);
+    expect(shouldIncludeItemForChannel(latte, "qr", "shop")).toBe(false);
+
+    // "menu" forces an item out of all Shop channels...
+    expect(shouldIncludeItemForChannel(hoodie, "shop", "menu")).toBe(false);
+    expect(shouldIncludeItemForChannel(hoodie, "shipping", "menu")).toBe(false);
+
+    // "both" allows an item through on either side (subject to availability).
+    expect(shouldIncludeItemForChannel(hoodie, "shop", "both")).toBe(true);
+
+    // "auto" / null keeps the heuristic behavior.
+    expect(shouldIncludeItemForChannel(latte, "menu", "auto")).toBe(true);
+    expect(shouldIncludeItemForChannel(latte, "menu", null)).toBe(true);
   });
 
   it("maps raw POS rows into stable API items with sorted variations and modifiers", () => {

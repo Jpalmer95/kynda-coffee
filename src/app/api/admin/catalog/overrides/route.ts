@@ -19,9 +19,12 @@ const TEXT_FIELDS = [
   "display_description",
   "category_name",
   "item_type",
+  "channel_visibility",
   "menu_metrics_recipe_id",
   "admin_notes",
 ] as const;
+
+const VALID_CHANNEL_VISIBILITY = ["auto", "menu", "shop", "both", "hidden"];
 
 function normalizeString(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -47,6 +50,17 @@ function normalizeBody(body: any, userId: string) {
 
   for (const field of TEXT_FIELDS) {
     if (field in body) payload[field] = normalizeString(body[field]);
+  }
+
+  // Validate channel_visibility against the allowed enum (Epic 1: Menu vs Shop).
+  if ("channel_visibility" in body) {
+    const cv = normalizeString(body.channel_visibility);
+    if (cv && !VALID_CHANNEL_VISIBILITY.includes(cv)) {
+      throw new Error(
+        `channel_visibility must be one of: ${VALID_CHANNEL_VISIBILITY.join(", ")}`
+      );
+    }
+    payload.channel_visibility = cv;
   }
 
   if ("image_urls" in body) {
