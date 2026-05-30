@@ -11,6 +11,8 @@ import { BackToTop } from "@/components/ui/BackToTop";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { ThemeProvider } from "@/lib/theme/context";
+import { PostHogProvider } from "@/lib/posthog/PostHogProvider";
+import "@/sentry.client.config";
 
 const body = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -113,7 +115,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
         <body className="flex min-h-screen flex-col bg-cream text-espresso font-body antialiased touch-pan-y relative relative-z-0 bg-[url('/noise.png')]">
         <ThemeProvider>
-          <ToastProvider>
+          <PostHogProvider>
+            <ToastProvider>
             <OfflineBanner />
             <SkipLink />
             <Header />
@@ -138,6 +141,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               }}
             />
           </ToastProvider>
+          </PostHogProvider>
         </ThemeProvider>
       </body>
     </html>

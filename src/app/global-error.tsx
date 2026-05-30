@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 export default function GlobalError({
@@ -10,29 +11,45 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Global error:", error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (
     <html lang="en">
-      <body className="bg-cream text-espresso">
-        <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-          <h1 className="font-heading text-4xl font-bold text-espresso">
-            Oops
+      <body>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "100vh",
+            padding: "2rem",
+            fontFamily: "system-ui, sans-serif",
+            background: "#131313",
+            color: "#E5E2E1",
+          }}
+        >
+          <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>
+            Something went wrong
           </h1>
-          <p className="mt-2 text-mocha">
-            A critical error occurred. Please try again.
+          <p style={{ marginBottom: "2rem", opacity: 0.7 }}>
+            We&apos;ve been notified and are working on it.
           </p>
-          {error.digest && (
-            <p className="mt-1 text-xs text-mocha/50 font-mono">
-              Error ID: {error.digest}
-            </p>
-          )}
           <button
             onClick={reset}
-            className="mt-6 rounded-xl bg-surface px-6 py-3 text-sm font-medium text-sand transition-colors hover:bg-surface/90"
+            style={{
+              padding: "12px 24px",
+              background: "#B4CDB8",
+              color: "#203527",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "1rem",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
           >
-            Reload Page
+            Try Again
           </button>
         </div>
       </body>
