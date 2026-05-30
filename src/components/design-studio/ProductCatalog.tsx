@@ -48,8 +48,7 @@ export function ProductCatalog({ selectedProduct, onSelectProduct }: ProductCata
       if (failedImages.has(`${product.id}-printful`)) {
         return getProductPlaceholderSvg(product);
       }
-      // Mark supabase as failed, try printful next
-      setFailedImages((prev) => new Set(prev).add(`${product.id}-supabase`));
+      // Supabase failed, Printful hasn't failed yet — show it; onError handles next fallback
       return product.imageUrl;
     }
     return getHostedMockupUrl(product.id, "front");
