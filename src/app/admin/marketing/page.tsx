@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Send, Loader2, BotMessageSquare, ImageIcon, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Send, Loader2, BotMessageSquare, ImageIcon, ArrowRight, ShieldCheck, Sparkles, Mail } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 export default function MarketingPage() {
@@ -153,6 +153,23 @@ export default function MarketingPage() {
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
               Drop a feature image → auto-drafted posts in the approval queue.
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-forest opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </Link>
+        <Link
+          href="/admin/newsletters"
+          className="flex items-center gap-4 rounded-xl border border-forest/30 bg-forest/5 p-5 hover:bg-forest/10 transition-colors group"
+        >
+          <div className="h-12 w-12 rounded-xl bg-forest/15 flex items-center justify-center flex-shrink-0">
+            <Mail className="h-6 w-6 text-forest" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
+              Newsletters
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Generate from specials, approve, and send to subscribers.
             </p>
           </div>
           <ArrowRight className="h-5 w-5 text-forest opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
