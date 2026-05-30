@@ -319,7 +319,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             value={carDescription}
             onChange={(e) => setCarDescription(e.target.value)}
             placeholder="e.g. Blue Honda Civic, TX plate ABC-123"
-            className="w-full rounded-[4px] border border-[latte] bg-surface-deep px-4 py-3 text-lg text-sand focus:border-forest focus:ring-1 focus:ring-forest outline-none"
+            className="w-full rounded-[4px] border border-[latte] bg-background px-4 py-3 text-lg text-foreground placeholder:text-muted-foreground focus:border-forest focus:ring-1 focus:ring-forest outline-none"
             required
           />
         </div>
@@ -341,16 +341,16 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       {/* Carried-over order summary — shown when items exist so the customer
           can review and pay without scrolling past the whole menu. */}
       {itemCount > 0 && (
-        <div className="mb-10 rounded-[12px] border border-[forest]/40 bg-surface-card p-6 shadow-[0_0_20px_rgba(74,222,128,0.08)]">
+        <div className="mb-10 rounded-[12px] border border-[forest]/40 bg-card p-6 shadow-[0_0_20px_rgba(74,222,128,0.08)]">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="text-[11px] font-bold uppercase tracking-widest text-[forest]">
                 Your order is ready
               </div>
-              <div className="mt-1 font-heading text-2xl font-bold tracking-tight text-sand">
+              <div className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground">
                 {itemCount} item{itemCount !== 1 ? "s" : ""} • {formatPrice(subtotalCents)}
               </div>
-              <p className="mt-1 text-sm text-[mocha]">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Choose your pickup option above, then review &amp; pay.
               </p>
             </div>
@@ -369,9 +369,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       <button
         type="button"
         onClick={() => setShowMenu((v) => !v)}
-        className="mb-6 flex w-full items-center justify-between rounded-[8px] border border-[latte] bg-surface-card px-5 py-4 text-left transition-colors hover:border-[forest]/40"
+        className="mb-6 flex w-full items-center justify-between rounded-[8px] border border-[latte] bg-card px-5 py-4 text-left transition-colors hover:border-[forest]/40"
       >
-        <span className="font-heading text-xl font-bold tracking-tight text-sand">
+        <span className="font-heading text-xl font-bold tracking-tight text-foreground">
           {itemCount > 0 ? "Add more items" : "Browse the menu"}
         </span>
         {showMenu ? (
@@ -384,16 +384,16 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       <div className={`space-y-12 ${showMenu ? "" : "hidden"}`}>
         {categories.map((category, idx) => (
           <div key={idx}>
-            <h2 className="mb-6 font-heading text-3xl font-bold tracking-tight text-sand border-b border-latte/20 pb-4">
+            <h2 className="mb-6 font-heading text-3xl font-bold tracking-tight text-foreground border-b border-latte/20 pb-4">
               {category.name}
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {category.items.map((item) => (
-                <div key={item.providerItemId} className="flex flex-col h-full rounded-[12px] border border-[latte] bg-[surface-card] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-transform hover:-translate-y-1 hover:border-[forest]/30 hover:shadow-[0_0_20px_rgba(74,222,128,0.1)]">
+                <div key={item.providerItemId} className="flex flex-col h-full rounded-[12px] border border-[latte] bg-card p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-transform hover:-translate-y-1 hover:border-[forest]/30 hover:shadow-[0_0_20px_rgba(74,222,128,0.1)]">
                   <div className="flex flex-col justify-between mb-4">
                     <div>
-                      <h3 className="font-heading text-xl font-bold tracking-tight text-sand">{item.name}</h3>
-                      {item.description && <p className="mt-2 text-sm text-[mocha] line-clamp-2">{item.description}</p>}
+                      <h3 className="font-heading text-xl font-bold tracking-tight text-foreground">{item.name}</h3>
+                      {item.description && <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{item.description}</p>}
                     </div>
                     <div className="font-mono text-base font-bold text-[forest] mt-3">
                       from {formatMoney(item.variations[0]?.priceCents ?? 0)}
@@ -404,12 +404,12 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                     {/* Variations */}
                     {item.variations.length > 1 && (
                       <div>
-                        <div className="text-[11px] font-bold tracking-widest text-[mocha] mb-2 uppercase">SIZE / OPTION</div>
+                        <div className="text-[11px] font-bold tracking-widest text-muted-foreground mb-2 uppercase">SIZE / OPTION</div>
                         <div className="flex flex-wrap gap-2">
                           {item.variations.map((v) => (
                             <label key={v.providerVariationId} className="cursor-pointer">
                               <input type="radio" name={`variation:${item.providerItemId}`} value={v.providerVariationId} defaultChecked={v === item.variations[0]} className="peer hidden" />
-                              <div className="rounded-[4px] border border-[latte] bg-surface-deep px-3 py-1.5 text-sm peer-checked:border-forest peer-checked:bg-forest/10 peer-checked:text-forest-300">
+                              <div className="rounded-[4px] border border-[latte] bg-background px-3 py-1.5 text-sm peer-checked:border-forest peer-checked:bg-forest/10 peer-checked:text-forest-600">
                                 {v.name} &nbsp; {formatMoney(v.priceCents)}
                               </div>
                             </label>
@@ -430,14 +430,14 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
                           return (
                             <div key={list.providerModifierListId}>
-                              <div className="mb-2 text-[11px] font-bold tracking-widest text-[mocha] uppercase">{list.name}</div>
+                              <div className="mb-2 text-[11px] font-bold tracking-widest text-muted-foreground uppercase">{list.name}</div>
                               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                                 {visibleModifiers.map((mod) => {
                                   const inputName = `modifier:${item.providerItemId}:${list.providerModifierListId}`;
                                   return (
                                     <label key={mod.providerModifierId} className="flex items-center gap-2 cursor-pointer">
-                                      <input type={inputType} name={inputName} value={mod.providerModifierId} className="accent-forest border-[latte] bg-surface-deep size-4" />
-                                      <span className="text-sand">{mod.name}</span> {mod.priceCents > 0 && <span className="text-[latte-500] font-mono text-xs">+{formatMoney(mod.priceCents)}</span>}
+                                      <input type={inputType} name={inputName} value={mod.providerModifierId} className="accent-forest border-[latte] bg-background size-4" />
+                                      <span className="text-foreground">{mod.name}</span> {mod.priceCents > 0 && <span className="text-[latte-500] font-mono text-xs">+{formatMoney(mod.priceCents)}</span>}
                                     </label>
                                   );
                                 })}
@@ -466,8 +466,8 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                     )}
 
                     <div className="flex items-center gap-4 pt-4 mt-auto border-t border-[latte]">
-                      <input type="number" name={`quantity:${item.providerItemId}`} defaultValue={1} min="1" max="20" className="w-20 rounded-[4px] border border-[latte] bg-surface-deep text-sand px-4 py-2.5 font-mono text-center outline-none focus:ring-1 focus:border-forest focus:ring-forest" />
-                      <button type="submit" className="btn-accent shrink-0 tracking-widest text-xs uppercase font-bold w-full py-3 shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:shadow-[0_0_20px_rgba(74,222,128,0.2)]">ADD TO ORDER</button>
+                      <input type="number" name={`quantity:${item.providerItemId}`} defaultValue={1} min="1" max="20" className="w-20 rounded-[4px] border border-[latte] bg-background text-foreground px-4 py-2.5 font-mono text-center outline-none focus:ring-1 focus:border-forest focus:ring-forest" />
+                      <button type="submit" className="btn-accent shrink-0 tracking-widest text-xs uppercase font-bold py-3 shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:shadow-[0_0_20px_rgba(74,222,128,0.2)]">ADD TO ORDER</button>
                     </div>
                   </form>
                 </div>
