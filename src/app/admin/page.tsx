@@ -17,6 +17,7 @@ import {
   Mail,
   TrendingUp,
   ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
@@ -84,6 +85,12 @@ export default function AdminPage() {
       label: "Marketing Agent",
       desc: "AI-powered email, SMS, and social campaigns",
       icon: Megaphone,
+    },
+    {
+      href: "/admin/specials",
+      label: "Monthly Specials",
+      desc: "Feature specials at the top of the Menu + seed campaigns",
+      icon: Sparkles,
     },
     {
       href: "/admin/training",
