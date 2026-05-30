@@ -19,6 +19,7 @@ import {
   ArrowUpRight,
   Sparkles,
   Inbox,
+  Database,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
@@ -92,6 +93,12 @@ export default function AdminPage() {
       label: "Inbox",
       desc: "Contact form messages — read, reply, and triage",
       icon: Inbox,
+    },
+    {
+      href: "/admin/data-export",
+      label: "Data Export",
+      desc: "Own your data — download CSV or a full JSON bundle",
+      icon: Database,
     },
     {
       href: "/admin/marketing",
