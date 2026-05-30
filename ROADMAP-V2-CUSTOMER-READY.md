@@ -324,19 +324,29 @@ accounts, and supply other coffee shops. An agentic cron scouts opportunities; o
 **requests owner approval**, then proceeds to a guided outreach showcasing what Kynda offers.
 
 **Work:**
-- [ ] **B2B CRM data model**: `b2b_leads` (name, type=grocery/cafe/office/event, contact,
-  location, source, status: new→approved→contacted→negotiating→won/lost, notes, est_value),
-  `b2b_accounts` (active wholesale customers, terms, recurring order schedule), `b2b_orders`
-  (bulk/recurring orders, linked to fulfillment).
-- [ ] **Admin B2B portal** (`/admin/b2b`): Kanban pipeline (lead stages), account list, recurring
-  order scheduler, wholesale price sheet (uses Pricing Engine, Epic 2, wholesale margin tier).
-- [ ] **Wholesale catalog + landing**: public `/wholesale` page (apply to become a wholesale partner),
-  inquiry form → `b2b_leads`. Showcases bulk pricing, fulfillment, brand story.
-- [ ] **Hermes cron — B2B Scout** (skill + cron): on a schedule, search for local grocers, offices,
-  cafes, and event venues within range (web search + maps skill); score fit; insert as `new` leads;
-  **notify owner for approval**. Approved leads → agent drafts a tailored outreach email (Resend)
-  with a Kynda capabilities one-pager + price sheet link; owner approves send. Track replies.
-- [ ] Guardrail: scouting writes leads + drafts only; **no outreach sends without owner approval**.
+- [x] **B2B CRM data model** (migration 022): `b2b_leads` (company, type, contact, location, source,
+  status state machine new→approved→contacted→negotiating→won/lost/rejected, fit_score, est_value,
+  outreach-tracking cols), `b2b_accounts` (tier, discount_pct, cadence, terms), `b2b_orders`
+  (bulk/recurring). Admin RLS. (commit 6e76593)
+- [x] **Wholesale catalog + landing**: public `/wholesale` page (benefits pitch + partner inquiry
+  form) → `/api/wholesale/inquire` (rate-limited, scores the lead, inserts source=inbound/status=new).
+- [x] **Lead scoring** (`src/lib/b2b/leads.ts`, 11 tests): deterministic 0–100 fit score (type,
+  recurring value, local Hill Country boost, contactability, inbound signal), `isScoutWorthy`
+  threshold, and a `canTransition` pipeline state machine.
+- [ ] **Admin B2B portal** (`/admin/b2b`): replace the hardcoded mock with a Kanban pipeline over
+  `b2b_leads` (PIPELINE_STAGES ready), account list, recurring order scheduler, wholesale price sheet
+  (uses Pricing Engine `wholesale` profile from Epic 2).
+- [ ] **Hermes cron — B2B Scout** (skill + cron): search local grocers/offices/cafes/venues (web +
+  maps), score via `scoreLead`, insert `isScoutWorthy` finds as `new` leads, notify owner. Approved
+  leads → agent drafts outreach email (Resend) w/ capabilities one-pager + price sheet; owner
+  approves send. Track replies.
+- [x] Guardrail (data layer): scout inserts leads at `status=new`; the state machine forbids
+  jumping to `contacted`/`won` without passing `approved` — **no outreach without owner approval**.
+
+> **Progress (2026-05-30, commit 6e76593):** CRM foundation shipped — real lead/account/order tables,
+> tested scoring + pipeline state machine, public wholesale landing + scored inquiry API. Remaining:
+> admin Kanban portal (replace mock), and the Hermes scout cron + outreach drafting (both build on
+> the `b2b_leads` table this delivers).
 
 **Why it matters:** Wholesale is the highest-leverage revenue expansion for a small shop. Owner
 described exactly this scout→approve→showcase workflow.
