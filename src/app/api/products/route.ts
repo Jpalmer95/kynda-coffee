@@ -46,7 +46,15 @@ export async function GET(req: NextRequest) {
         .filter((product) => !category || product.category === category)
         .filter((product) => featured !== "true" || product.is_featured);
 
-      products = [...posProducts, ...products];
+      // Deduplicate: if a POS product has the same name as a legacy `products`
+      // row, prefer the POS version (it has fresh cached images from Supabase
+      // Storage; the legacy table often has stale signed URLs).
+      const posNames = new Set(posProducts.map((p) => p.name.toLowerCase()));
+      const legacyFiltered = products.filter(
+        (p: any) => !posNames.has((p.name || "").toLowerCase())
+      );
+
+      products = [...posProducts, ...legacyFiltered];
     } catch (error) {
       console.error("Failed to append POS catalog products", error);
       if (source === "pos") {
