@@ -45,13 +45,18 @@ export async function POST(
     const origin = requestOrigin(req);
     const session = await stripe().checkout.sessions.create({
       mode: "payment",
-      customer_email: order.email,
+      customer_email: order.email && !order.email.startsWith("pending@") ? order.email : undefined,
       line_items: buildStripeLineItemsForOrder(payableOrder),
       success_url: stripeSuccessUrl(origin, payableOrder),
       cancel_url: stripeCancelUrl(origin, payableOrder),
       // Apple Pay / Google Pay / Link / card are enabled automatically for
       // Checkout Sessions via the Stripe Dashboard. (automatic_payment_methods
       // is a PaymentIntent-only param and is rejected by checkout.sessions.)
+      // Collect the customer's name + phone at Stripe so wallet payments
+      // (Apple Pay / Google Pay) fill these in automatically — the webhook
+      // backfills them onto the order so staff can identify pickups.
+      billing_address_collection: "auto",
+      phone_number_collection: { enabled: true },
       metadata: buildStripeOrderMetadata(payableOrder),
     } as any);
 

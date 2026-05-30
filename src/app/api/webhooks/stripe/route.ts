@@ -68,10 +68,54 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const email = session.customer_email;
+  // Wallet payments (Apple Pay / Google Pay / Link) deliver the verified
+  // email/name/phone via customer_details rather than the top-level
+  // customer_email field, so prefer that.
+  const details = session.customer_details;
+  const email = session.customer_email || details?.email || null;
   if (!email) {
     console.error("No customer email in session", session.id);
     return;
+  }
+
+  // ── Mark the matching café / QR / menu order as PAID ──
+  // Online orders are created `unpaid` then sent to Stripe. On successful
+  // payment we flip the order to paid and backfill the customer's verified
+  // name + phone from Stripe (these arrive automatically with Apple/Google
+  // Pay, so the customer never had to type them up front).
+  try {
+    const db = supabaseAdmin();
+    const { data: pendingOrder } = await db
+      .from("orders")
+      .select("id, fulfillment_metadata")
+      .eq("stripe_checkout_session_id", session.id)
+      .maybeSingle();
+
+    if (pendingOrder) {
+      const fm = (pendingOrder.fulfillment_metadata as Record<string, unknown>) || {};
+      const verifiedName = details?.name?.trim();
+      const verifiedPhone = details?.phone?.trim();
+      await db
+        .from("orders")
+        .update({
+          payment_status: "paid",
+          payment_method: "stripe",
+          paid_at: new Date().toISOString(),
+          status: "confirmed",
+          email,
+          fulfillment_metadata: {
+            ...fm,
+            ...(verifiedName ? { customer_name: verifiedName } : {}),
+            ...(verifiedPhone ? { customer_phone: verifiedPhone } : {}),
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", pendingOrder.id);
+      console.log(`[Stripe Webhook] Marked order ${pendingOrder.id} paid (session ${session.id})`);
+    }
+  } catch (orderErr) {
+    console.error("[Stripe Webhook] Failed to mark order paid", orderErr);
+    // Non-fatal — payment succeeded; admin can reconcile manually.
   }
 
   const metadata = session.metadata ?? {};

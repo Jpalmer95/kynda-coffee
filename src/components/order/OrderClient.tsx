@@ -94,7 +94,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   const [fulfillmentLabel, setFulfillmentLabel] = useState(initialLabel || "");
   const [carDescription, setCarDescription] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
-  const [paymentPreference, setPaymentPreference] = useState<QrPaymentPreference>("pay_at_counter");
+  // Online orders are ALWAYS paid online (Stripe). Pay-at-counter is in-person
+  // only — we never create an unpaid online order in the system.
+  const paymentPreference: QrPaymentPreference = "stripe";
   const [splitBill, setSplitBill] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -196,12 +198,20 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
   async function submitOrder() {
     if (cart.length === 0) return;
-    if (!customerName.trim() || !customerPhone.trim()) {
-      setError("Please add your name and phone number so we can find you.");
-      return;
-    }
+    // Name/phone are NOT required up front for online orders — Apple Pay,
+    // Google Pay and Link return the customer's name + contact details from
+    // the wallet, so we let Stripe collect identity. We only enforce the
+    // fulfillment-specific detail staff need to physically locate the order.
     if (fulfillmentMode === "pickup" && !carDescription.trim()) {
       setError("Please describe your vehicle so we can bring your order out.");
+      return;
+    }
+    if (fulfillmentMode === "table" && !fulfillmentLabel.trim()) {
+      setError("Please enter your table number or name.");
+      return;
+    }
+    if (fulfillmentMode === "parking" && !fulfillmentLabel.trim()) {
+      setError("Please enter your parking spot number.");
       return;
     }
 
@@ -218,7 +228,15 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         quantity: line.quantity,
         modifierIds: line.modifierIds,
       })),
-      customer: { name: customerName.trim(), phone: customerPhone.trim(), email: customerEmail.trim() || undefined },
+      // For online (Stripe) orders the customer's real name + contact arrive
+      // from the wallet / Stripe Checkout, so these may be blank here. Send
+      // safe placeholders that satisfy validation; the Stripe webhook backfills
+      // the verified billing name/email/phone onto the order on payment.
+      customer: {
+        name: customerName.trim() || "Online order (paid via Stripe)",
+        phone: customerPhone.trim() || undefined,
+        email: customerEmail.trim() || "pending@kyndacoffee.com",
+      },
       fulfillment: { mode: fulfillmentMode, label },
       notes: orderNotes.trim() || undefined,
       paymentPreference,
@@ -511,19 +529,21 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                   <div className="font-mono text-[forest] break-keep">{formatPrice(subtotalCents)}</div>
                 </div>
 
-                {/* Customer Info Form Area */}
+                {/* Customer Info Form Area — all optional. Apple Pay / Google
+                    Pay / Link supply the real name + contact at Stripe, so we
+                    only show these as a convenience for card-typers. */}
                 <div className="space-y-4 mt-8">
+                  <div className="text-[11px] font-bold tracking-widest text-[mocha] uppercase">Contact (optional)</div>
                   <label className="block">
                     <span className="sr-only">Name</span>
                     <input 
                       type="text" 
                       autoComplete="name" 
                       name="name"
-                      placeholder="Your name" 
+                      placeholder="Your name (optional)" 
                       value={customerName} 
                       onChange={(e) => setCustomerName(e.target.value)} 
                       className="input w-full bg-surface-deep border border-[latte] px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
-                      required 
                     />
                   </label>
                   
@@ -533,11 +553,10 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       type="tel" 
                       autoComplete="tel" 
                       name="phone"
-                      placeholder="Phone number" 
+                      placeholder="Phone number (optional)" 
                       value={customerPhone} 
                       onChange={(e) => setCustomerPhone(e.target.value)} 
                       className="input w-full bg-surface-deep border border-[latte] px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
-                      required 
                     />
                   </label>
                   
@@ -567,11 +586,16 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                 </div>
 
                 <div className="mt-8 mb-8 border-t border-[latte] pt-6">
-                  <div className="font-bold text-[11px] mb-2 tracking-widest text-[mocha] uppercase">HOW WOULD YOU LIKE TO PAY?</div>
-                  <select value={paymentPreference} onChange={(e) => setPaymentPreference(e.target.value as QrPaymentPreference)} className="input w-full bg-surface-deep border border-[latte] px-4 py-3 rounded-[4px] mt-2 block appearance-none outline-none focus:ring-1 focus:border-forest focus:ring-forest text-sand cursor-pointer text-base">
-                    <option value="pay_at_counter">Pay at Counter (Cash, Card)</option>
-                    <option value="stripe">Pay Online (Card, Apple Pay, Google Pay)</option>
-                  </select>
+                  <div className="font-bold text-[11px] mb-3 tracking-widest text-[mocha] uppercase">Secure online payment</div>
+                  <div className="rounded-[8px] border border-[forest]/30 bg-surface-deep px-4 py-4">
+                    <div className="flex items-center gap-3 text-sand">
+                      <svg className="size-5 text-[forest]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                      <span className="text-sm font-medium">Apple&nbsp;Pay, Google&nbsp;Pay, Link &amp; card</span>
+                    </div>
+                    <p className="mt-2 text-xs text-[mocha] leading-relaxed">
+                      Pay with your phone&apos;s wallet — your name and contact details come through automatically, no typing required. To pay with cash or card in person, please order at the counter.
+                    </p>
+                  </div>
                 </div>
                 
                 {error && <div className="mt-4 text-red-500 text-sm border-l-2 border-red-500 pl-3">{error}</div>}
@@ -581,13 +605,11 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                   disabled={submitting || cart.length === 0}
                   className="mt-8 w-full btn-accent flex items-center justify-center gap-2 disabled:opacity-70 py-4 text-base tracking-widest font-bold uppercase transition-transform shadow-[0_0_20px_rgba(74,222,128,0.15)] hover:shadow-[0_0_25px_rgba(74,222,128,0.3)] hover:-translate-y-1 hover:border-[forest-300]"
                 >
-                  {submitting ? <Loader2 className="animate-spin h-5 w-5" /> : paymentPreference === "stripe" ? "PAY & PLACE ORDER" : "SUBMIT ORDER"}
+                  {submitting ? <Loader2 className="animate-spin h-5 w-5" /> : `PAY ${formatPrice(subtotalCents)} & PLACE ORDER`}
                 </button>
 
                 <div className="mt-4 text-center text-xs tracking-wide text-[mocha]">
-                  {paymentPreference === "stripe"
-                    ? "You'll be redirected to our secure Stripe checkout (Cards, Apple Pay, Google Pay)."
-                    : "You'll see a confirmation number on screen after you submit."}
+                  You&apos;ll be redirected to our secure Stripe checkout to finish paying.
                 </div>
               </>
             )}

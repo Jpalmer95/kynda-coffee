@@ -317,7 +317,7 @@ export function CartDrawer() {
                       : "btn-accent mt-3 border border-[forest-300]/30"
                   }`}
                 >
-                  Place Menu Order
+                  Review &amp; Pay
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               )}
