@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getPosCatalog } from "@/lib/pos/catalog";
 import { buildQrOrderDraft, type QrOrderDraft, type QrOrderRequest } from "@/lib/orders/qr-order";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email/send";
+import { pickupConfirmationHtml, pickupConfirmationSubject } from "@/lib/email/templates/pickup-confirmation";
 
 export const runtime = "nodejs";
 
@@ -66,6 +68,34 @@ export async function POST(request: Request) {
     if (error) {
       console.error("QR order insert failed", error);
       return NextResponse.json({ error: "Failed to submit order." }, { status: 500 });
+    }
+
+    // Best-effort pickup confirmation email — never block the order response.
+    // Skip the walk-up placeholder address (no real customer email).
+    const draft = draftResult.value;
+    const fm = draft.fulfillment_metadata as { label?: string; payment_preference?: string; customer_name?: string } | undefined;
+    const isRealEmail = draft.email && !draft.email.endsWith("@kyndacoffee.local");
+    if (isRealEmail) {
+      const pref = fm?.payment_preference ?? "pay_at_counter";
+      const payAtCounter = pref !== "stripe" && pref !== "online";
+      const html = pickupConfirmationHtml({
+        name: fm?.customer_name,
+        orderNumber: draft.order_number,
+        items: (draft.items || []).map((i) => ({
+          name: i.product_name,
+          quantity: i.quantity,
+          total_cents: i.total_cents,
+        })),
+        totalCents: draft.total_cents,
+        fulfillmentLabel: fm?.label,
+        payAtCounter,
+        notes: draft.notes || undefined,
+      });
+      sendEmail({
+        to: draft.email,
+        subject: pickupConfirmationSubject(draft.order_number),
+        html,
+      }).catch((e) => console.error("Pickup confirmation email failed:", e));
     }
 
     return NextResponse.json({
