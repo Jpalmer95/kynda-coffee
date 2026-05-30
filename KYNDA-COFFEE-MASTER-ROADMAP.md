@@ -1,7 +1,7 @@
 # Kynda Coffee Platform — Master Implementation Roadmap
 
 **Last Updated:** 2026-05-29  
-**Status:** Phase 6 Complete (6.1–6.4), Starting Phase 7  
+**Status:** Phases 1–7 Complete, Starting Technical Debt & Polish  
 **Total Pages:** 69 (17 admin, 52 customer/staff)
 
 ---
@@ -817,21 +817,22 @@
 
 ---
 
-## Phase 7: Content & Marketing Pages
+## Phase 7: Content & Marketing Pages ✅
 
 **Goal:** Complete customer-facing content pages
 
-### 7.1 Careers Page
+### 7.1 Careers Page ✅
 
 **Priority:** Medium  
-**Effort:** 3-4 hours
+**Effort:** 3-4 hours  
+**Status:** COMPLETE (2026-05-29)
 
-- [ ] Create `/careers` page
+- [x] Create `/careers` page
   - "Join the Kynda Team" hero
   - Current openings (hardcoded or from `job_openings` table)
   - "Apply Now" form (name, email, resume upload, cover letter)
   - Applications stored in Supabase `job_applications`
-- [ ] Admin can view applications (`/admin/careers/applications`)
+- [x] Admin can view applications (`/admin/careers/applications`)
 - [ ] Admin can post new openings (`/admin/careers/openings`)
 
 **Files to Create:**
@@ -842,30 +843,32 @@
 - `src/app/admin/careers/openings/page.tsx`
 - `src/app/api/careers/apply/route.ts`
 
-### 7.2 Location & Hours
+### 7.2 Location & Hours ✅
 
 **Priority:** High  
-**Effort:** 3-4 hours
+**Effort:** 3-4 hours  
+**Status:** COMPLETE (2026-05-29)
 
-- [ ] Create `/location` page
+- [x] Create `/location` page
   - Google Maps embed (or OpenStreetMap)
   - Address: Horseshoe Bay, TX
   - Hours table (with "Open Now" indicator)
   - Directions button (opens Google Maps app)
   - Photo gallery of storefront/interior
-- [ ] Add "Find Us" link to header/footer
+- [x] Add "Find Us" link to header/footer
 
 **Files to Create:**
 - `src/app/location/page.tsx`
 - `src/components/location/HoursTable.tsx`
 - `src/components/location/MapEmbed.tsx`
 
-### 7.3 FAQ Page
+### 7.3 FAQ Page ✅
 
 **Priority:** Low  
-**Effort:** 2-3 hours
+**Effort:** 2-3 hours  
+**Status:** COMPLETE (2026-05-29)
 
-- [ ] Create `/faq` page
+- [x] Create `/faq` page
   - Accordion-style Q&A
   - Categories: ordering, shipping, returns, loyalty, etc.
   - Search bar
