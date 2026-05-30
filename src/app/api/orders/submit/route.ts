@@ -10,6 +10,17 @@ function orderChannelForMode(mode: string) {
   return "pickup";
 }
 
+// The `orders.payment_preference` column has a CHECK constraint that predates
+// the `stripe` preference value (migration 010 allows only 'online' |
+// 'pay_at_counter' | 'online_later'). Map our app-level preference to a
+// constraint-safe column value; the exact preference is still preserved in
+// fulfillment_metadata.payment_preference + payment_metadata.initial_preference.
+function paymentPreferenceColumnValue(pref: string): string {
+  if (pref === "stripe" || pref === "online") return "online";
+  if (pref === "online_later") return "online_later";
+  return "pay_at_counter";
+}
+
 function serializeOrder(draft: QrOrderDraft) {
   return {
     order_number: draft.order_number,
@@ -25,7 +36,7 @@ function serializeOrder(draft: QrOrderDraft) {
     shipping_address: draft.shipping_address,
     notes: draft.notes,
     fulfillment_metadata: draft.fulfillment_metadata,
-    payment_preference: draft.fulfillment_metadata.payment_preference,
+    payment_preference: paymentPreferenceColumnValue(draft.fulfillment_metadata.payment_preference),
     order_channel: orderChannelForMode(draft.fulfillment_metadata.mode),
     payment_status: draft.payment_status,
     payment_method: draft.payment_method,

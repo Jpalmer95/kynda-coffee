@@ -162,13 +162,13 @@ export default function AdminPage() {
               <CardWrapper
                 key={stat.label}
                 href={stat.href || ""}
-                className={`rounded-[12px] border border-[latte] bg-[url("/noise.png")] bg-[surface-card] p-4 sm:p-5 ${stat.href ? "transition-all hover:-translate-y-1 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:border-forest/40 cursor-pointer" : ""}`}
+                className={`rounded-[12px] border border-latte bg-[url("/noise.png")] bg-surface-card p-4 sm:p-5 ${stat.href ? "transition-all hover:-translate-y-1 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:border-forest/40 cursor-pointer" : ""}`}
               >
                 <div className="flex items-center justify-between">
                   <stat.icon className="h-4 w-4 text-mocha-400" aria-hidden="true" />
-                  {!stat.loading && <ArrowUpRight className="h-3.5 w-3.5 text-[forest]" aria-hidden="true" />}
+                  {!stat.loading && <ArrowUpRight className="h-3.5 w-3.5 text-forest" aria-hidden="true" />}
                 </div>
-                <p className="mt-4 text-xs sm:text-sm font-medium tracking-[0.05em] text-[mocha] uppercase">{stat.label}</p>
+                <p className="mt-4 text-xs sm:text-sm font-medium tracking-[0.05em] text-mocha uppercase">{stat.label}</p>
                 <p className={`mt-1 font-heading text-2xl sm:text-3xl font-bold text-sand`}>
                   {stat.loading ? (
                     <span className="inline-block h-6 w-16 animate-pulse rounded bg-latte/20" />
@@ -190,10 +190,10 @@ export default function AdminPage() {
             <Link
               key={section.href}
               href={section.href}
-              className="group flex flex-col items-start rounded-[12px] border border-[latte] bg-[surface-card] bg-[url('/noise.png')] p-6 transition-all hover:border-forest/50 hover:-translate-y-1 dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
+              className="group flex flex-col items-start rounded-[12px] border border-latte bg-surface-card bg-[url('/noise.png')] p-6 transition-all hover:border-forest/50 hover:-translate-y-1 dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
             >
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[4px] bg-[cream-200] border border-[latte] transition-colors group-hover:bg-forest/10 group-hover:border-forest/30">
-                <section.icon className="h-5 w-5 text-[latte-500] transition-colors group-hover:text-forest dark:text-[latte-500] dark:group-hover:text-[forest]" aria-hidden="true" />
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[4px] bg-[cream-200] border border-latte transition-colors group-hover:bg-forest/10 group-hover:border-forest/30">
+                <section.icon className="h-5 w-5 text-latte-500 transition-colors group-hover:text-forest dark:text-latte-500 dark:group-hover:text-forest" aria-hidden="true" />
               </div>
               <div className="mt-5">
                 <h2 className="font-heading text-lg font-bold text-sand group-hover:text-white transition-colors">

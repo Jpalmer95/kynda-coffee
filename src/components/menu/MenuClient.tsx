@@ -309,7 +309,7 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                 <button
                   key={item.providerItemId}
                   onClick={() => setSelectedItem(item)}
-                  className="group relative flex flex-col h-full overflow-hidden rounded-[12px] border border-latte/70 bg-card text-left shadow-sm transition-transform duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 focus:outline-none focus:ring-1 focus:border-forest focus:ring-forest dark:border-[latte] dark:bg-[surface-sidebar] dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
+                  className="group relative flex flex-col h-full overflow-hidden rounded-[12px] border border-latte/70 bg-card text-left shadow-sm transition-transform duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 focus:outline-none focus:ring-1 focus:border-forest focus:ring-forest dark:border-latte dark:bg-surface-sidebar dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
                 >
                   {item.imageUrls.length > 0 ? (
                     <div className="relative aspect-square overflow-hidden bg-surface-deep">
@@ -336,7 +336,7 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
 
                   <div className="flex flex-col flex-1 p-4 sm:p-5 h-full">
                     <div className="flex-1">
-                      <h3 className="font-heading text-xl font-bold text-espresso transition-colors group-hover:text-forest dark:group-hover:text-[forest] line-clamp-1">
+                      <h3 className="font-heading text-xl font-bold text-espresso transition-colors group-hover:text-forest dark:group-hover:text-forest line-clamp-1">
                         {item.name}
                       </h3>
                       {item.description && (
@@ -354,7 +354,7 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                         <div className="mt-auto pt-4 border-t border-latte/30">
                           <div className="flex items-center justify-between">
                              {item.variations.length > 1 ? (
-                              <span className="text-[11px] font-body uppercase tracking-[0.05em] text-[latte-500]">Customizable</span>
+                              <span className="text-[11px] font-body uppercase tracking-[0.05em] text-latte-500">Customizable</span>
                              ) : <span className="text-[11px] font-body uppercase tracking-[0.05em] text-transparent select-none">Fixed</span>}
                              
                              <span className="rounded-[4px] border border-forest/80 px-4 py-1.5 text-sm font-bold text-forest transition-colors group-hover:bg-forest/10 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.2)]">
@@ -393,7 +393,7 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
       {item_count > 0 && (
         <button
           onClick={() => setShowCart(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-[8px] border border-[forest-300]/30 bg-forest-300/10 text-forest-300 px-5 py-4 font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(74,222,128,0.15)] transition-transform hover:scale-105 active:scale-95"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-[8px] border border-forest-300/30 bg-forest-300/10 text-forest-300 px-5 py-4 font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(74,222,128,0.15)] transition-transform hover:scale-105 active:scale-95"
         >
           <ShoppingCart className="h-5 w-5" />
           <span>
@@ -410,15 +410,15 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex h-full w-full max-w-md flex-col overflow-auto bg-[surface-sidebar] shadow-[0_0_40px_rgba(0,0,0,0.5)] animate-fade-in border-l border-[latte]"
+            className="flex h-full w-full max-w-md flex-col overflow-auto bg-surface-sidebar shadow-[0_0_40px_rgba(0,0,0,0.5)] animate-fade-in border-l border-latte"
           >
-            <div className="flex items-center justify-between border-b border-[latte] bg-surface-deep px-5 py-6">
+            <div className="flex items-center justify-between border-b border-latte bg-surface-deep px-5 py-6">
               <h2 className="font-heading text-2xl font-bold text-sand tracking-tight">
                 Current Order
               </h2>
               <button
                 onClick={() => setShowCart(false)}
-                className="rounded-[4px] border border-[latte] bg-[surface-sidebar] p-2 text-sand-50 hover:bg-[latte] hover:text-sand"
+                className="rounded-[4px] border border-latte bg-surface-sidebar p-2 text-sand-50 hover:bg-latte hover:text-sand"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -435,25 +435,25 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                   {items.map((line) => (
                     <div
                       key={line.id}
-                      className="flex gap-4 rounded-[8px] border border-[latte] bg-[surface-card] p-4 shadow-sm"
+                      className="flex gap-4 rounded-[8px] border border-latte bg-surface-card p-4 shadow-sm"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="font-heading text-lg font-bold text-espresso dark:text-[sand]">
+                        <div className="font-heading text-lg font-bold text-espresso dark:text-sand">
                           {line.itemName}
                           {line.variationName && line.variationName !== "Regular" && (
-                            <span className="text-[latte-500] font-body text-sm font-medium"> — {line.variationName}</span>
+                            <span className="text-latte-500 font-body text-sm font-medium"> — {line.variationName}</span>
                           )}
                         </div>
                         {line.modifierNames.length > 0 && (
-                          <div className="mt-2 text-[11px] text-[forest] font-bold tracking-widest uppercase opacity-90 line-clamp-2">
+                          <div className="mt-2 text-[11px] text-forest font-bold tracking-widest uppercase opacity-90 line-clamp-2">
                             {line.modifierNames.join(" • ")}
                           </div>
                         )}
                         <div className="mt-4 flex items-center justify-between">
-                          <div className="flex items-center rounded-[4px] border border-[latte] bg-surface-deep p-0.5">
+                          <div className="flex items-center rounded-[4px] border border-latte bg-surface-deep p-0.5">
                             <button
                               onClick={() => updateQuantity(line.id, line.quantity - 1)}
-                              className="flex h-8 w-8 items-center justify-center rounded-sm text-sand-50 hover:bg-[latte] hover:text-white"
+                              className="flex h-8 w-8 items-center justify-center rounded-sm text-sand-50 hover:bg-latte hover:text-white"
                             >
                               <Minus className="h-4 w-4" />
                             </button>
@@ -462,14 +462,14 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                             </span>
                             <button
                               onClick={() => updateQuantity(line.id, line.quantity + 1)}
-                              className="flex h-8 w-8 items-center justify-center rounded-sm text-sand-50 hover:bg-[latte] hover:text-white"
+                              className="flex h-8 w-8 items-center justify-center rounded-sm text-sand-50 hover:bg-latte hover:text-white"
                             >
                               <Plus className="h-4 w-4" />
                             </button>
                           </div>
                           <button
                             onClick={() => removeItem(line.id)}
-                            className="text-sm font-bold text-[latte-500] transition-colors hover:text-red-500 underline decoration-[latte] underline-offset-4"
+                            className="text-sm font-bold text-latte-500 transition-colors hover:text-red-500 underline decoration-latte underline-offset-4"
                           >
                             Remove
                           </button>
@@ -487,16 +487,16 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
             </div>
 
             {items.length > 0 && (
-              <div className="border-t border-[latte] bg-[cream] px-5 py-6 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)]">
+              <div className="border-t border-latte bg-[cream] px-5 py-6 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)]">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-base text-[mocha] font-body tracking-[0.05em] uppercase">Subtotal</span>
-                  <span className="text-2xl font-bold font-mono tracking-tight text-[forest]">
+                  <span className="text-base text-mocha font-body tracking-[0.05em] uppercase">Subtotal</span>
+                  <span className="text-2xl font-bold font-mono tracking-tight text-forest">
                     {formatMoney(subtotal_cents)}
                   </span>
                 </div>
                 <a
                   href="/order"
-                  className="btn-accent mt-4 flex w-full items-center justify-center py-4 text-sm font-bold tracking-[0.05em] uppercase border border-[forest-300]/30"
+                  className="btn-accent mt-4 flex w-full items-center justify-center py-4 text-sm font-bold tracking-[0.05em] uppercase border border-forest-300/30"
                 >
                   PROCEED TO CHECKOUT &rarr;
                 </a>

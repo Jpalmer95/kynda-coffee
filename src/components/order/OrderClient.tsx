@@ -280,7 +280,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             onClick={() => setFulfillmentMode(mode)}
             className={`rounded-[4px] px-5 py-3 text-sm font-medium transition cursor-pointer ${
               fulfillmentMode === mode
-                ? "bg-surface-800 text-sand border border-[forest]/30 shadow-[0_0_15px_rgba(74,222,128,0.1)]"
+                ? "bg-surface-800 text-sand border border-forest/30 shadow-[0_0_15px_rgba(74,222,128,0.1)]"
                 : "bg-surface-800 text-sand-50 border border-latte hover:bg-cream-200 hover:border-forest"
             }`}
           >
@@ -292,7 +292,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       {/* Fulfillment label for table/parking */}
       {fulfillmentMode !== "lobby" && fulfillmentMode !== "pickup" && (
         <div className="mb-0 mt-8 max-w-sm">
-          <label className="block text-sm font-medium text-[mocha] mb-1">
+          <label className="block text-sm font-medium text-mocha mb-1">
             {fulfillmentMode === "table" ? "Table number or name" : "Parking spot number"}
           </label>
           <input
@@ -300,7 +300,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             value={fulfillmentLabel}
             onChange={(e) => setFulfillmentLabel(e.target.value)}
             placeholder={fulfillmentMode === "table" ? "Table 7" : "Spot A14"}
-            className="w-full rounded-[4px] border border-[latte] bg-surface-deep px-4 py-3 text-lg text-sand focus:border-forest focus:ring-1 focus:ring-forest outline-none"
+            className="w-full rounded-[4px] border border-latte bg-surface-deep px-4 py-3 text-lg text-sand focus:border-forest focus:ring-1 focus:ring-forest outline-none"
           />
         </div>
       )}
@@ -308,10 +308,10 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       {/* Car description for curbside pickup */}
       {fulfillmentMode === "pickup" && (
         <div className="mb-0 mt-8 max-w-md">
-          <label className="block text-sm font-medium text-[mocha] mb-1">
+          <label className="block text-sm font-medium text-mocha mb-1">
             Vehicle description <span className="text-red-500">*</span>
           </label>
-          <p className="text-xs text-[latte-500] mb-2">
+          <p className="text-xs text-latte-500 mb-2">
             So we can find you easily when we bring your order out.
           </p>
           <input
@@ -319,14 +319,14 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             value={carDescription}
             onChange={(e) => setCarDescription(e.target.value)}
             placeholder="e.g. Blue Honda Civic, TX plate ABC-123"
-            className="w-full rounded-[4px] border border-[latte] bg-background px-4 py-3 text-lg text-foreground placeholder:text-muted-foreground focus:border-forest focus:ring-1 focus:ring-forest outline-none"
+            className="w-full rounded-[4px] border border-latte bg-background px-4 py-3 text-lg text-foreground placeholder:text-muted-foreground focus:border-forest focus:ring-1 focus:ring-forest outline-none"
             required
           />
         </div>
       )}
 
       {/* Split bill option */}
-      <label className="mb-8 mt-8 flex items-center gap-3 text-sm text-[mocha] cursor-pointer max-w-fit hover:text-white transition-colors">
+      <label className="mb-8 mt-8 flex items-center gap-3 text-sm text-mocha cursor-pointer max-w-fit hover:text-white transition-colors">
         <input
           type="checkbox"
           checked={splitBill}
@@ -334,17 +334,17 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
           className="accent-forest size-4 cursor-pointer"
         />
         <span className="flex items-center gap-2 select-none">
-          <Users className="size-4 text-[forest]" /> This is a group order — split the bill later
+          <Users className="size-4 text-forest" /> This is a group order — split the bill later
         </span>
       </label>
 
       {/* Carried-over order summary — shown when items exist so the customer
           can review and pay without scrolling past the whole menu. */}
       {itemCount > 0 && (
-        <div className="mb-10 rounded-[12px] border border-[forest]/40 bg-card p-6 shadow-[0_0_20px_rgba(74,222,128,0.08)]">
+        <div className="mb-10 rounded-[12px] border border-forest/40 bg-card p-6 shadow-[0_0_20px_rgba(74,222,128,0.08)]">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-widest text-[forest]">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-forest">
                 Your order is ready
               </div>
               <div className="mt-1 font-heading text-2xl font-bold tracking-tight text-foreground">
@@ -369,15 +369,15 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       <button
         type="button"
         onClick={() => setShowMenu((v) => !v)}
-        className="mb-6 flex w-full items-center justify-between rounded-[8px] border border-[latte] bg-card px-5 py-4 text-left transition-colors hover:border-[forest]/40"
+        className="mb-6 flex w-full items-center justify-between rounded-[8px] border border-latte bg-card px-5 py-4 text-left transition-colors hover:border-forest/40"
       >
         <span className="font-heading text-xl font-bold tracking-tight text-foreground">
           {itemCount > 0 ? "Add more items" : "Browse the menu"}
         </span>
         {showMenu ? (
-          <ChevronUp className="size-5 text-[forest]" />
+          <ChevronUp className="size-5 text-forest" />
         ) : (
-          <ChevronDown className="size-5 text-[forest]" />
+          <ChevronDown className="size-5 text-forest" />
         )}
       </button>
 
@@ -389,13 +389,13 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
             </h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {category.items.map((item) => (
-                <div key={item.providerItemId} className="flex flex-col h-full rounded-[12px] border border-[latte] bg-card p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-transform hover:-translate-y-1 hover:border-[forest]/30 hover:shadow-[0_0_20px_rgba(74,222,128,0.1)]">
+                <div key={item.providerItemId} className="flex flex-col h-full rounded-[12px] border border-latte bg-card p-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-transform hover:-translate-y-1 hover:border-forest/30 hover:shadow-[0_0_20px_rgba(74,222,128,0.1)]">
                   <div className="flex flex-col justify-between mb-4">
                     <div>
                       <h3 className="font-heading text-xl font-bold tracking-tight text-foreground">{item.name}</h3>
                       {item.description && <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{item.description}</p>}
                     </div>
-                    <div className="font-mono text-base font-bold text-[forest] mt-3">
+                    <div className="font-mono text-base font-bold text-forest mt-3">
                       from {formatMoney(item.variations[0]?.priceCents ?? 0)}
                     </div>
                   </div>
@@ -409,7 +409,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                           {item.variations.map((v) => (
                             <label key={v.providerVariationId} className="cursor-pointer">
                               <input type="radio" name={`variation:${item.providerItemId}`} value={v.providerVariationId} defaultChecked={v === item.variations[0]} className="peer hidden" />
-                              <div className="rounded-[4px] border border-[latte] bg-background px-3 py-1.5 text-sm peer-checked:border-forest peer-checked:bg-forest/10 peer-checked:text-forest-600">
+                              <div className="rounded-[4px] border border-latte bg-background px-3 py-1.5 text-sm peer-checked:border-forest peer-checked:bg-forest/10 peer-checked:text-forest-600">
                                 {v.name} &nbsp; {formatMoney(v.priceCents)}
                               </div>
                             </label>
@@ -436,8 +436,8 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                                   const inputName = `modifier:${item.providerItemId}:${list.providerModifierListId}`;
                                   return (
                                     <label key={mod.providerModifierId} className="flex items-center gap-2 cursor-pointer">
-                                      <input type={inputType} name={inputName} value={mod.providerModifierId} className="accent-forest border-[latte] bg-background size-4" />
-                                      <span className="text-foreground">{mod.name}</span> {mod.priceCents > 0 && <span className="text-[latte-500] font-mono text-xs">+{formatMoney(mod.priceCents)}</span>}
+                                      <input type={inputType} name={inputName} value={mod.providerModifierId} className="accent-forest border-latte bg-background size-4" />
+                                      <span className="text-foreground">{mod.name}</span> {mod.priceCents > 0 && <span className="text-latte-500 font-mono text-xs">+{formatMoney(mod.priceCents)}</span>}
                                     </label>
                                   );
                                 })}
@@ -446,7 +446,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                                   <button
                                    type="button"
                                    onClick={() => toggleModifierList(item.providerItemId, list.providerModifierListId)}
-                                   className="mt-3 flex items-center gap-1 text-[11px] font-bold tracking-widest text-[forest] uppercase hover:text-forest-300 transition-colors"
+                                   className="mt-3 flex items-center gap-1 text-[11px] font-bold tracking-widest text-forest uppercase hover:text-forest-300 transition-colors"
                                  >
                                   {isExpanded ? (
                                     <>
@@ -465,8 +465,8 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-4 pt-4 mt-auto border-t border-[latte]">
-                      <input type="number" name={`quantity:${item.providerItemId}`} defaultValue={1} min="1" max="20" className="w-20 rounded-[4px] border border-[latte] bg-background text-foreground px-4 py-2.5 font-mono text-center outline-none focus:ring-1 focus:border-forest focus:ring-forest" />
+                    <div className="flex items-center gap-4 pt-4 mt-auto border-t border-latte">
+                      <input type="number" name={`quantity:${item.providerItemId}`} defaultValue={1} min="1" max="20" className="w-20 rounded-[4px] border border-latte bg-background text-foreground px-4 py-2.5 font-mono text-center outline-none focus:ring-1 focus:border-forest focus:ring-forest" />
                       <button type="submit" className="btn-accent shrink-0 tracking-widest text-xs uppercase font-bold py-3 shadow-[0_0_15px_rgba(74,222,128,0.1)] hover:shadow-[0_0_20px_rgba(74,222,128,0.2)]">ADD TO ORDER</button>
                     </div>
                   </form>
@@ -481,7 +481,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       {itemCount > 0 && (
         <button
           onClick={() => setShowCart(true)}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-[4px] bg-[forest] border border-[forest] px-6 py-4 font-bold tracking-widest text-surface-deep shadow-[0_0_20px_rgba(74,222,128,0.3)] md:bottom-8 md:right-8 uppercase hover:bg-forest-300 hover:shadow-[0_0_30px_rgba(74,222,128,0.5)] transition-all dark:text-foreground dark:hover:bg-forest-400"
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-[4px] bg-forest border border-forest px-6 py-4 font-bold tracking-widest text-surface-deep shadow-[0_0_20px_rgba(74,222,128,0.3)] md:bottom-8 md:right-8 uppercase hover:bg-forest-300 hover:shadow-[0_0_30px_rgba(74,222,128,0.5)] transition-all dark:text-foreground dark:hover:bg-forest-400"
         >
         <ShoppingCart className="size-5" /> {itemCount} item{itemCount !== 1 ? "s" : ""} • {formatMoney(subtotalCents)}
       </button>
@@ -492,48 +492,48 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         <div className="fixed inset-0 z-[60] flex justify-end bg-black/60" onClick={() => setShowCart(false)}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md h-full overflow-auto bg-[surface-sidebar] p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)] border-l border-[latte]"
+            className="w-full max-w-md h-full overflow-auto bg-surface-sidebar p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)] border-l border-latte"
           >
             <div className="flex justify-between items-center mb-6">
               <div>
                 <div className="font-heading text-3xl tracking-tight text-sand">Your Order</div>
-                {splitBill && <div className="text-[11px] uppercase tracking-widest text-[forest] font-bold mt-1">Group order (split later)</div>}
+                {splitBill && <div className="text-[11px] uppercase tracking-widest text-forest font-bold mt-1">Group order (split later)</div>}
               </div>
-              <button onClick={() => setShowCart(false)} className="text-xl text-[mocha] hover:text-white">×</button>
+              <button onClick={() => setShowCart(false)} className="text-xl text-mocha hover:text-white">×</button>
             </div>
 
             {cart.length === 0 ? (
               <p className="text-mocha">Your cart is empty.</p>
             ) : (
               <>
-                <div className="divide-y divide-[latte]">
+                <div className="divide-y divide-latte">
                   {cart.map((line) => (
                     <div key={line.id} className="py-4 flex gap-3 text-sand">
                       <div className="flex-1">
-                        <div className="font-heading font-bold text-lg">{line.itemName} {line.variationName && line.variationName !== "Regular" && <span className="text-[latte-500] font-body text-sm font-medium">— {line.variationName}</span>}</div>
-                        {line.modifierNames.length > 0 && <div className="text-[11px] uppercase tracking-widest font-bold text-[forest] opacity-90 mt-1">{line.modifierNames.join(" • ")}</div>}
+                        <div className="font-heading font-bold text-lg">{line.itemName} {line.variationName && line.variationName !== "Regular" && <span className="text-latte-500 font-body text-sm font-medium">— {line.variationName}</span>}</div>
+                        {line.modifierNames.length > 0 && <div className="text-[11px] uppercase tracking-widest font-bold text-forest opacity-90 mt-1">{line.modifierNames.join(" • ")}</div>}
                       </div>
-                      <div className="text-right font-mono font-bold w-20 tabular-nums text-[forest] mt-1">{formatPrice(line.unitPriceCents)}</div>
-                      <div className="flex items-center gap-2 pl-3 border-l border-[latte]">
-                        <button onClick={() => updateQuantity(line.id, line.quantity - 1)} className="hover:text-white text-[mocha]" aria-label="Decrease quantity"><Minus size={15} aria-hidden="true" /></button>
+                      <div className="text-right font-mono font-bold w-20 tabular-nums text-forest mt-1">{formatPrice(line.unitPriceCents)}</div>
+                      <div className="flex items-center gap-2 pl-3 border-l border-latte">
+                        <button onClick={() => updateQuantity(line.id, line.quantity - 1)} className="hover:text-white text-mocha" aria-label="Decrease quantity"><Minus size={15} aria-hidden="true" /></button>
                         <div className="w-7 text-center font-mono tabular-nums tracking-widest font-bold">{line.quantity}</div>
-                        <button onClick={() => updateQuantity(line.id, line.quantity + 1)} className="hover:text-white text-[mocha]" aria-label="Increase quantity"><Plus size={15} aria-hidden="true" /></button>
+                        <button onClick={() => updateQuantity(line.id, line.quantity + 1)} className="hover:text-white text-mocha" aria-label="Increase quantity"><Plus size={15} aria-hidden="true" /></button>
                       </div>
-                      <button onClick={() => removeLine(line.id)} className="text-[latte-500] hover:text-red-500 ml-1 transition-colors" aria-label="Remove item"><Trash2 size={15} aria-hidden="true" /></button>
+                      <button onClick={() => removeLine(line.id)} className="text-latte-500 hover:text-red-500 ml-1 transition-colors" aria-label="Remove item"><Trash2 size={15} aria-hidden="true" /></button>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t border-[latte] pt-4 mt-6 flex justify-between text-2xl font-bold font-heading text-sand">
+                <div className="border-t border-latte pt-4 mt-6 flex justify-between text-2xl font-bold font-heading text-sand">
                   <div>Total</div>
-                  <div className="font-mono text-[forest] break-keep">{formatPrice(subtotalCents)}</div>
+                  <div className="font-mono text-forest break-keep">{formatPrice(subtotalCents)}</div>
                 </div>
 
                 {/* Customer Info Form Area — all optional. Apple Pay / Google
                     Pay / Link supply the real name + contact at Stripe, so we
                     only show these as a convenience for card-typers. */}
                 <div className="space-y-4 mt-8">
-                  <div className="text-[11px] font-bold tracking-widest text-[mocha] uppercase">Contact (optional)</div>
+                  <div className="text-[11px] font-bold tracking-widest text-mocha uppercase">Contact (optional)</div>
                   <label className="block">
                     <span className="sr-only">Name</span>
                     <input 
@@ -543,7 +543,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       placeholder="Your name (optional)" 
                       value={customerName} 
                       onChange={(e) => setCustomerName(e.target.value)} 
-                      className="input w-full bg-surface-deep border border-[latte] px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
+                      className="input w-full bg-surface-deep border border-latte px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
                     />
                   </label>
                   
@@ -556,7 +556,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       placeholder="Phone number (optional)" 
                       value={customerPhone} 
                       onChange={(e) => setCustomerPhone(e.target.value)} 
-                      className="input w-full bg-surface-deep border border-[latte] px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
+                      className="input w-full bg-surface-deep border border-latte px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
                     />
                   </label>
                   
@@ -569,7 +569,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       placeholder="Email (optional)" 
                       value={customerEmail} 
                       onChange={(e) => setCustomerEmail(e.target.value)} 
-                      className="input w-full bg-surface-deep border border-[latte] px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
+                      className="input w-full bg-surface-deep border border-latte px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
                     />
                   </label>
                   
@@ -580,19 +580,19 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       value={orderNotes} 
                       name="notes"
                       onChange={(e) => setOrderNotes(e.target.value)} 
-                      className="input w-full resize-y bg-surface-deep border border-[latte] px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
+                      className="input w-full resize-y bg-surface-deep border border-latte px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
                     />
                   </label>
                 </div>
 
-                <div className="mt-8 mb-8 border-t border-[latte] pt-6">
-                  <div className="font-bold text-[11px] mb-3 tracking-widest text-[mocha] uppercase">Secure online payment</div>
-                  <div className="rounded-[8px] border border-[forest]/30 bg-surface-deep px-4 py-4">
+                <div className="mt-8 mb-8 border-t border-latte pt-6">
+                  <div className="font-bold text-[11px] mb-3 tracking-widest text-mocha uppercase">Secure online payment</div>
+                  <div className="rounded-[8px] border border-forest/30 bg-surface-deep px-4 py-4">
                     <div className="flex items-center gap-3 text-sand">
-                      <svg className="size-5 text-[forest]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                      <svg className="size-5 text-forest" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                       <span className="text-sm font-medium">Apple&nbsp;Pay, Google&nbsp;Pay, Link &amp; card</span>
                     </div>
-                    <p className="mt-2 text-xs text-[mocha] leading-relaxed">
+                    <p className="mt-2 text-xs text-mocha leading-relaxed">
                       Pay with your phone&apos;s wallet — your name and contact details come through automatically, no typing required. To pay with cash or card in person, please order at the counter.
                     </p>
                   </div>
@@ -603,12 +603,12 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                 <button
                   onClick={submitOrder}
                   disabled={submitting || cart.length === 0}
-                  className="mt-8 w-full btn-accent flex items-center justify-center gap-2 disabled:opacity-70 py-4 text-base tracking-widest font-bold uppercase transition-transform shadow-[0_0_20px_rgba(74,222,128,0.15)] hover:shadow-[0_0_25px_rgba(74,222,128,0.3)] hover:-translate-y-1 hover:border-[forest-300]"
+                  className="mt-8 w-full btn-accent flex items-center justify-center gap-2 disabled:opacity-70 py-4 text-base tracking-widest font-bold uppercase transition-transform shadow-[0_0_20px_rgba(74,222,128,0.15)] hover:shadow-[0_0_25px_rgba(74,222,128,0.3)] hover:-translate-y-1 hover:border-forest-300"
                 >
                   {submitting ? <Loader2 className="animate-spin h-5 w-5" /> : `PAY ${formatPrice(subtotalCents)} & PLACE ORDER`}
                 </button>
 
-                <div className="mt-4 text-center text-xs tracking-wide text-[mocha]">
+                <div className="mt-4 text-center text-xs tracking-wide text-mocha">
                   You&apos;ll be redirected to our secure Stripe checkout to finish paying.
                 </div>
               </>
@@ -620,11 +620,11 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       {/* Success State */}
       {success && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 p-6 backdrop-blur-[12px]">
-          <div className="max-w-md text-center bg-[surface-card] border border-[latte] rounded-[12px] p-9 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-            <div className="mx-auto mb-4 h-12 w-12 rounded-[4px] bg-[forest] text-surface-deep flex items-center justify-center font-bold text-lg">✓</div>
+          <div className="max-w-md text-center bg-surface-card border border-latte rounded-[12px] p-9 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-[4px] bg-forest text-surface-deep flex items-center justify-center font-bold text-lg">✓</div>
             <div className="font-heading text-4xl font-bold tracking-tight text-sand">Order received</div>
-            <div className="mx-auto mt-3 max-w-xs text-sm text-[mocha]">
-              We got order <strong className="text-[forest]">#{success.order?.order_number ?? success.order_number}</strong>. We'll start crafting it right away.
+            <div className="mx-auto mt-3 max-w-xs text-sm text-mocha">
+              We got order <strong className="text-forest">#{success.order?.order_number ?? success.order_number}</strong>. We'll start crafting it right away.
             </div>
             {paymentPreference === "stripe" ? (
               <button disabled={submitting} onClick={() => { if (success.order?.id) payOnline(success.order.id); }} className="mt-8 btn-accent w-full flex items-center justify-center gap-2 uppercase tracking-widest font-bold py-4">
