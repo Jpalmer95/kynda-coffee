@@ -134,6 +134,32 @@ export interface DraftPost {
 }
 
 /**
+ * Build just the post body for one platform (caption + hashtags, trimmed).
+ * Shared by the content-drop pipeline and the marketing-loop cron so both
+ * compose copy identically. Falls back to the brand template on any caption error.
+ */
+export async function buildDraftText(
+  platform: DropPlatform,
+  input: ContentDropInput,
+  captionFn?: CaptionFn
+): Promise<string> {
+  const rules = PLATFORM_COPY_RULES[platform];
+  let caption: string;
+  try {
+    caption = captionFn
+      ? await captionFn({ platform, rules, input })
+      : fallbackCaption({ platform, rules, input });
+    if (!caption || !caption.trim()) {
+      caption = fallbackCaption({ platform, rules, input });
+    }
+  } catch {
+    caption = fallbackCaption({ platform, rules, input });
+  }
+  const hashtags = buildHashtags(input.hashtags, rules.maxHashtags);
+  return composePostText(caption, hashtags, rules.maxChars);
+}
+
+/**
  * Turn one content drop into N platform-specific draft posts, ready to persist
  * via publisher.createPost(). Every draft is pending_approval + source=content_drop
  * so the approval gate is honored. `captionFn` is awaited per platform; on any
@@ -150,21 +176,7 @@ export async function buildDraftsFromDrop(
   const drafts: DraftPost[] = [];
 
   for (const platform of platforms) {
-    const rules = PLATFORM_COPY_RULES[platform];
-    let caption: string;
-    try {
-      caption = captionFn
-        ? await captionFn({ platform, rules, input })
-        : fallbackCaption({ platform, rules, input });
-      if (!caption || !caption.trim()) {
-        caption = fallbackCaption({ platform, rules, input });
-      }
-    } catch {
-      caption = fallbackCaption({ platform, rules, input });
-    }
-
-    const hashtags = buildHashtags(input.hashtags, rules.maxHashtags);
-    const text = composePostText(caption, hashtags, rules.maxChars);
+    const text = await buildDraftText(platform, input, captionFn);
 
     drafts.push({
       platform,
