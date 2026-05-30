@@ -365,22 +365,33 @@ monthly **vendor "better-price" finder**. Ingredient/recipe cost down to the gra
 and densities (already solved inside MenuMetrics — we automate *using* it).
 
 **Work:**
-- [ ] **Integration contract**: define the MenuMetrics API surface we need (recipe cost by ID,
-  ingredient list w/ qty+unit+cost, current vendor prices, stock levels). Document in
-  `docs/menumetrics-integration.md`. Add `MENU_METRICS_URL` + token to env.
-- [ ] `src/lib/menumetrics/client.ts` — typed client; nightly sync of recipe costs → cache in
-  Supabase so the platform shows live cost/margin per menu item even if MenuMetrics is briefly down.
-- [ ] **Recipe import flow**: from `/admin/catalog`, link a Square item to a MenuMetrics recipe;
-  pull its cost → feed Pricing Engine (advisory margin warning if menu price < cost + target).
-- [ ] **Live inventory metrics** on `/admin/inventory`: current stock, days-of-cover, value on hand;
-  reconcile with waste log (Epic 4) and sales (Square orders).
-- [ ] **Low-stock alerts**: cron checks stock vs reorder thresholds → admin alert + (optional) Hermes
-  notification to owner. Trending items get reorder suggestions.
-- [ ] **Vendor price-trend tracking**: `vendor_prices` table (item, vendor, price, captured_at);
-  monthly **Hermes cron "Better-Price Finder"** checks valid vendors, records trends, flags cheaper
-  sources, and surfaces a savings report for owner approval before switching.
-- [ ] **Trending menu recommendations**: from sales data, recommend new/retire items with
-  recipe+ingredients+cost+projected margin mapped out (agent-generated, owner-approved).
+- [x] **Integration contract**: `docs/menumetrics-integration.md` defines the resources Kynda needs
+  (recipe cost by ID, ingredient/vendor prices, stock levels), auth/config (`MENU_METRICS_URL` +
+  `MENU_METRICS_TOKEN`), sync cadence, and build order. REST paths marked ‹verify› against the
+  running instance, centralized in the client for a one-file flip (commit 33bd4c5).
+- [x] `src/lib/menumetrics/client.ts` — typed, configurable client; no-ops gracefully when unset
+  (falls back to cache). Cache tables in migration 023 (recipe costs, vendor prices, stock, alerts).
+- [x] `/api/admin/menumetrics/sync` — cron-safe (CRON_SECRET) nightly sync: pulls linked recipe costs
+  + vendor prices + inventory into the cache; raises dedup'd low-stock alerts. Read-only on MenuMetrics.
+- [x] **Autonomous inventory brain** (`src/lib/menumetrics/inventory.ts`, 13 tests): stockStatus,
+  detectLowStock, daysOfCover, priceTrend, and the monthly `findBetterPrices` (cheapest valid vendor,
+  savings-sorted, advisory only).
+- [x] **Cost-source bridge** (`cost-source.ts`): cached recipe/ingredient cost → Pricing Engine
+  (Epic 2 advisory margin) + waste-log auto-fill (Epic 4).
+- [ ] Confirm ‹verify› REST paths against the running MenuMetrics instance; flip client to live.
+- [ ] **Recipe link UI** in `/admin/catalog` already stores `menu_metrics_recipe_id`; add the
+  live-margin display column once sync runs.
+- [ ] **Live inventory metrics** on `/admin/inventory`: surface cached stock, days-of-cover, value
+  on hand, and open `inventory_alerts`; reconcile with waste log + Square sales.
+- [ ] **Hermes crons**: nightly cost/stock sync + low-stock notify; monthly Better-Price Finder
+  report (owner approves any vendor switch).
+- [ ] **Trending menu recommendations**: agent joins cached recipe cost w/ Square sales → new/retire
+  suggestions w/ margin mapped out (owner-approved).
+
+> **Progress (2026-05-30, commit 33bd4c5):** Integration foundation shipped — contract doc, cache
+> schema, typed client, the tested autonomous-inventory brain (low-stock / price-trend / better-price
+> finder), the cost-source bridge to the Pricing Engine, and the cron-safe sync endpoint. Remaining:
+> verify live REST paths, the admin inventory/margin UI surfaces, and the Hermes sync/finder crons.
 
 **Why it matters:** Owner already built the hard part (gram-level costing). The win is **automating
 its use** — live margins, alerts, vendor optimization, and growth recommendations feeding the rest
