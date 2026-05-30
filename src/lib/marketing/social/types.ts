@@ -2,6 +2,17 @@
 
 export type Platform = "instagram" | "twitter" | "facebook" | "tiktok";
 
+export type SocialPostStatus =
+  | "draft"
+  | "pending_approval"
+  | "approved"
+  | "rejected"
+  | "scheduled"
+  | "published"
+  | "failed";
+
+export type SocialPostSource = "manual" | "agent" | "content_drop" | "special" | "newsletter";
+
 export interface SocialPost {
   id: string;
   platform: Platform;
@@ -10,7 +21,12 @@ export interface SocialPost {
   scheduled_at?: string; // ISO timestamp
   published_at?: string; // ISO timestamp
   external_id?: string; // platform's post ID
-  status: "draft" | "scheduled" | "published" | "failed";
+  status: SocialPostStatus;
+  source?: SocialPostSource;
+  approved_by?: string;
+  approved_at?: string;
+  rejection_reason?: string;
+  special_id?: string;
   error_message?: string;
   created_by?: string;
   created_at: string;

@@ -158,12 +158,20 @@ export async function createSocialPost(input: {
   text: string;
   image_urls?: string[];
   scheduled_at?: string;
-  status?: "draft" | "scheduled";
+  status?: "draft" | "scheduled" | "pending_approval";
+  source?: "manual" | "agent" | "content_drop" | "special" | "newsletter";
+  special_id?: string;
   created_by?: string;
 }): Promise<{ id: string } | { error: string }> {
   const supabase = getSupabaseAdmin();
 
-  const status = input.status || (input.scheduled_at ? "scheduled" : "draft");
+  const source = input.source || "manual";
+  // Agent-generated content must be reviewed: never auto-schedule it. Manual
+  // owner posts keep their requested status.
+  let status = input.status || (input.scheduled_at ? "scheduled" : "draft");
+  if (source !== "manual" && status === "scheduled") {
+    status = "pending_approval";
+  }
 
   const { data, error } = await supabase
     .from("social_posts")
@@ -173,6 +181,8 @@ export async function createSocialPost(input: {
       image_urls: input.image_urls || [],
       scheduled_at: input.scheduled_at || null,
       status,
+      source,
+      special_id: input.special_id || null,
       created_by: input.created_by || null,
     })
     .select("id")
@@ -183,6 +193,64 @@ export async function createSocialPost(input: {
   }
 
   return { id: data.id };
+}
+
+// ─── Approval gate ───────────────────────────────────────────────────────────
+// Owner approves a pending post. If a scheduled_at is set it becomes 'scheduled'
+// (the cron publishes it when due); otherwise 'approved' and ready to publish now.
+export async function approvePost(
+  postId: string,
+  approverId: string
+): Promise<{ ok: true; status: string } | { ok: false; error: string }> {
+  const supabase = getSupabaseAdmin();
+
+  const { data: post, error: fetchErr } = await supabase
+    .from("social_posts")
+    .select("id, status, scheduled_at")
+    .eq("id", postId)
+    .single();
+
+  if (fetchErr || !post) return { ok: false, error: "Post not found" };
+  if (!["draft", "pending_approval", "rejected"].includes(post.status as string)) {
+    return { ok: false, error: `Cannot approve a post in status '${post.status}'` };
+  }
+
+  const nextStatus = post.scheduled_at ? "scheduled" : "approved";
+
+  const { error } = await supabase
+    .from("social_posts")
+    .update({
+      status: nextStatus,
+      approved_by: approverId,
+      approved_at: new Date().toISOString(),
+      rejection_reason: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", postId);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, status: nextStatus };
+}
+
+export async function rejectPost(
+  postId: string,
+  approverId: string,
+  reason?: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from("social_posts")
+    .update({
+      status: "rejected",
+      approved_by: approverId,
+      approved_at: new Date().toISOString(),
+      rejection_reason: reason || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", postId);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
 }
 
 // ─── List posts with filters ─────────────────────────────────────────────────
