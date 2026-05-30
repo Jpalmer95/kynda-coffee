@@ -479,8 +479,9 @@ delightful account/loyalty.
 - [x] **Contact Us** completeness: hours, map (location page exists), phone/email, contact form
   (`/api/contact`) → **owner email notification + admin inbox** at `/admin/inbox` (commit e3278f7).
   "minimal phone-ordering friction" → push QR/site ordering.
-- [ ] Fulfillment selector polish (pickup/curbside/to-go/delivery/QR) — confirm vehicle desc flows
-  to KDS (Epic 3) + confirmation email/SMS.
+- [~] Fulfillment selector polish (pickup/curbside/to-go/delivery/QR) — vehicle/mode desc flows to
+  KDS (Epic 3); **pickup/café confirmation email now sent** on `/api/orders/submit` (commit d372f39).
+  Remaining: SMS confirmation (Twilio).
 - [ ] Shop checkout trust: shipping rates, clear taxes/fees, order tracking (`/track-order` exists).
 - [ ] Loyalty/rewards + subscriptions UX review; referral/affiliate surfaces (tables exist).
 - [ ] Accessibility + performance pass (WCAG 2.2 AA already targeted): keyboard nav, ARIA, contrast,
