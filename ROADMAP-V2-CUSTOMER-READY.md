@@ -538,7 +538,11 @@ business data at any time.
 **Target:** Production-grade trust for real customer traffic and money.
 
 **Work:**
-- [ ] Rate limiting on all POST routes; CSRF; input sanitization; CSP + HSTS headers.
+- [~] Rate limiting on all POST routes; CSRF; input sanitization; CSP + HSTS headers.
+  *(Rate-limit/auth audit done, commit 5c581ea: audited all 50 POST routes; hardened the exposed
+  abuse vectors — designs/generate (FAL cost), gift-cards create/redeem (financial + code
+  brute-force), reviews (spam), referrals/generate (junk rows), and locked square/sync-catalog
+  behind CRON_SECRET/X-Agent-Key. Remaining: CSRF tokens, CSP+HSTS headers.)*
 - [ ] **RLS audit** — test every table with each role (anon, customer, staff, admin); the
   `/account` public + private-subroute rule (from memory) must be verified.
 - [ ] Cron-secret review on all autonomous endpoints (publish-due, scout, price-finder, low-stock).
