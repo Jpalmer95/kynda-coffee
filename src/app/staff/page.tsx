@@ -123,6 +123,13 @@ export default async function StaffDashboard() {
       desc: "Courses and modules",
       color: "bg-blue-600 text-white",
     },
+    {
+      href: "/staff/onboarding",
+      icon: FileText,
+      title: "Onboarding Hub",
+      desc: "New-hire forms (I-9, W-4), handbook & training packet",
+      color: "bg-amber-600 text-white",
+    },
   ];
 
   return (
