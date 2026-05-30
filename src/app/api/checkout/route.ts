@@ -3,6 +3,7 @@ import { stripe, STORE_CONFIG } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { getPosCatalog, mapPosCatalogItemToProduct } from "@/lib/pos/catalog";
+import { computeOrderTotals } from "@/lib/checkout/totals";
 import { z } from "zod";
 
 // Force dynamic — don't try to build statically (needs env vars at runtime)
@@ -144,8 +145,23 @@ export async function POST(req: NextRequest) {
       return sum + (product ? product.price_cents * item.quantity : 0);
     }, 0);
 
-    const discount_cents = parsed.discount_cents ?? 0;
-    const adjustedSubtotal = Math.max(0, subtotal - discount_cents);
+    // Money path: clamp discount + loyalty so the order can never go negative or
+    // over-redeem (validated pure module — see src/lib/checkout/totals.ts).
+    const totals = computeOrderTotals({
+      lines: parsed.items
+        .map((item) => {
+          const product = resolved.get(item.product_id);
+          return product ? { unitPriceCents: product.price_cents, quantity: item.quantity } : null;
+        })
+        .filter((l): l is { unitPriceCents: number; quantity: number } => l !== null),
+      discountCents: parsed.discount_cents ?? 0,
+      loyaltyValueCents: parsed.loyalty_points_value_cents ?? 0,
+      freeShippingThresholdCents: STORE_CONFIG.free_shipping_threshold_cents,
+      flatShippingCents: STORE_CONFIG.flat_shipping_cents,
+    });
+
+    const discount_cents = totals.appliedDiscountCents;
+    const adjustedSubtotal = totals.discountedSubtotalCents;
 
     // Prepare line items — add discount and loyalty as negative line items
     const finalLineItems = [...lineItems];
@@ -164,7 +180,8 @@ export async function POST(req: NextRequest) {
     }
 
     const loyaltyPointsRedeemed = parsed.loyalty_points_redeemed ?? 0;
-    const loyaltyValueCents = parsed.loyalty_points_value_cents ?? 0;
+    // Use the CLAMPED loyalty value so discount + loyalty can't exceed subtotal.
+    const loyaltyValueCents = totals.appliedLoyaltyCents;
     if (loyaltyValueCents > 0) {
       finalLineItems.push({
         price_data: {
