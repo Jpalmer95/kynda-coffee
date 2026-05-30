@@ -66,7 +66,7 @@ export function Header() {
         )}
         role="banner"
       >
-        <div className="container-max flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        <div className="container-max flex items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link
             href="/"
@@ -78,7 +78,7 @@ export function Header() {
               alt="Kynda Coffee"
               width={120}
               height={93}
-              className="h-8 sm:h-10 w-auto dark:invert"
+              className="h-12 sm:h-14 w-auto dark:invert"
               priority
             />
           </Link>
@@ -174,7 +174,7 @@ export function Header() {
           "fixed inset-0 z-40 bg-cream transition-transform duration-300 lg:hidden",
           mobileOpen ? "translate-x-0" : "translate-x-full"
         )}
-        style={{ top: "57px" }}
+        style={{ top: "85px" }}
         aria-hidden={!mobileOpen}
       >
         <nav className="flex h-full flex-col gap-1 overflow-y-auto px-4 py-6" aria-label="Mobile navigation">
@@ -242,7 +242,7 @@ export function Header() {
       </div>
 
       {/* Spacer for fixed header */}
-      <div className="h-[57px] sm:h-[65px]" aria-hidden="true" />
+      <div className="h-[85px] sm:h-[95px]" aria-hidden="true" />
     </>
   );
 }
