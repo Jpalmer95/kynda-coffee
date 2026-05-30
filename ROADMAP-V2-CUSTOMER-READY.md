@@ -129,17 +129,22 @@ items; the cost/margin intelligence lives entirely in the admin portal.
   side. (`shipping` still serves merch; `shop` unchanged.) Unit-tested (62/62 pass).
 - [x] Admin **Catalog Classifier** control (`/admin/catalog`): per-item "Show on (Menu vs Shop)"
   selector wired to the overrides API (with enum validation).
-- [ ] Bulk actions + "needs classification" filter for new Square imports (single-screen triage).
-- [ ] Default classifier heuristic on import (so new items aren't invisible): `menu`/`retail food`
-  → Menu; `merch`/`gift_card`/shippable goods → Shop; flag ambiguous for review.
-- [ ] Seed new Shop-only sourced categories (placeholders + sourcing hooks): Brew Gear (Chemex,
-  filters, kettles), Bulk Tea (loose-leaf), Apothecary (candles), Design-Studio Merch.
+- [x] Bulk triage filter + "needs classification" view for new Square imports: `/admin/catalog`
+  now has an effective-routing badge per item (Menu/Shop/Both/Hidden/Unclassified) and a routing
+  filter dropdown; "Unclassified ⚠" surfaces items needing an explicit decision (commit 0d96561).
+- [x] Default classifier heuristic on import: `categoryForPosItem` routes synced items into the new
+  categories by name/category text, so new Square items land sensibly under `auto` visibility.
+- [x] Seed new Shop-only sourced categories: Brew Gear (Chemex, filters, kettles, grinders),
+  Bulk Tea (loose-leaf), Apothecary (candles/balms), Custom Designs (Design Studio). Added to the
+  ProductCategory type, shop nav, dynamic category pages, and admin product create/edit.
 - [ ] Verify on real synced catalog: load `/menu` → zero merch; load `/shop` → zero made-to-order
-  drinks; "both" items appear in both with correct fulfillment options.
+  drinks; "both" items appear in both with correct fulfillment options. *(Requires deploy of
+  migration 018 + Coolify redeploy — see deploy task below.)*
 
-> **Progress (2026-05-30, commit 38edf97):** Core separation engine + owner control shipped. Merch
-> can no longer leak onto the Menu; owner can explicitly route any item to Menu/Shop/Both/Hidden.
-> Remaining: bulk triage UX, import-time default heuristic, and seeding the new Shop categories.
+> **Progress (2026-05-30, commits 38edf97 + 0d96561):** Epic 1 code-complete. Separation engine,
+> owner control (Show on Menu/Shop selector), classification triage UI, import-time auto-sort, and
+> the new Shop categories are all shipped and tested (62/62, tsc clean). Only remaining: deploy
+> migration 018 to Supabase + redeploy, then verify against the live synced catalog.
 
 **Why it matters:** This is the #1 customer-facing confusion and blocks adaptive pricing + sourcing.
 Everything downstream (KDS routing, shipping logic, B2B) depends on knowing what a thing *is*.
