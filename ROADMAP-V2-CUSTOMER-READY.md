@@ -309,8 +309,9 @@ scheduled/posted. Automated newsletters and monthly-specials campaigns. Growth i
 > **Progress (2026-05-30, commit 33d7800):** Two load-bearing pieces shipped — the Monthly Specials
 > single-source-of-truth (now live at the top of the Menu) and the marketing approval gate (agents
 > draft, owner approves, enforced at the data layer). The **admin Specials manager** (`/admin/specials`,
-> commit 295a228) is now live so the owner curates the SSOT directly. Remaining: the approval-queue
-> UI, content-drop pipeline, Hermes marketing-loop cron, newsletter automation, insights dashboard.
+> commit 295a228) is now live so the owner curates the SSOT directly. The **approval-queue UI**
+> (`/admin/marketing/approvals`, commit ea71f29) is live too — agent drafts surface there for
+> approve/reject. Remaining: content-drop pipeline, Hermes marketing-loop cron, newsletter automation, insights dashboard.
 
 **Why it matters:** This is the owner's headline ask — agents that drive growth and post on Kynda's
 behalf, with the owner dropping in assets and chatting with marketing agents. Approval-gated keeps
