@@ -132,15 +132,10 @@ export default function HomePage() {
             loading="eager"
             fetchPriority="high"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/70 to-surface/40" />
+          {/* Overlay: neutral black in light mode (no green cast);
+              deep surface green in dark mode for brand continuity */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/15 dark:from-surface/90 dark:via-surface/70 dark:to-surface/40" />
         </div>
-        {/* Subtle texture */}
-        <div
-          className="absolute inset-0 opacity-[0.04] mix-blend-overlay"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 py-16 text-center sm:py-24">
           <div className="animate-fade-in">
@@ -279,7 +274,10 @@ export default function HomePage() {
                     <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
                     Open Design Studio
                   </Link>
-                  <Link href="/shop" className="btn-secondary border-cream text-sand hover:bg-cream hover:text-espresso text-base px-6 sm:px-8 py-3.5 sm:py-4">
+                  <Link
+                    href="/shop"
+                    className="inline-flex items-center justify-center rounded-md border-2 border-sand bg-transparent px-6 sm:px-8 py-3.5 sm:py-4 text-base font-semibold text-sand transition-colors duration-200 hover:bg-sand hover:text-surface focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 focus:ring-offset-surface active:scale-[0.98]"
+                  >
                     Shop Core Collection
                   </Link>
                 </div>

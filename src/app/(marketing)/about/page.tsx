@@ -159,7 +159,10 @@ export default function AboutPage() {
               >
                 Get Directions
               </a>
-              <Link href="/contact" className="btn-secondary bg-card/10 text-sand border-white/20 hover:bg-card/20">
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-md border-2 border-sand/70 bg-white/5 px-6 py-3 text-sm font-semibold text-sand transition-colors duration-200 hover:bg-sand hover:text-surface focus:outline-none focus:ring-2 focus:ring-sand focus:ring-offset-2 focus:ring-offset-surface"
+              >
                 Contact Us
               </Link>
             </div>

@@ -463,6 +463,14 @@ a.inline, button.inline { min-height: auto; min-width: auto; }
   font-size: 16px;
 }
 
+/* Ensure placeholders inherit left padding for inputs with icons */
+.input-field.pl-8::placeholder { padding-left: 2rem; }
+.input-field.pl-9::placeholder { padding-left: 2.25rem; }
+.input-field.pl-10::placeholder { padding-left: 2.5rem; }
+.input-field.pl-11::placeholder { padding-left: 2.75rem; }
+.input-field.pl-12::placeholder { padding-left: 3rem; }
+.input-field.pl-14::placeholder { padding-left: 3.5rem; }
+
 .select-field {
   @apply w-full rounded-md border border-latte-600 bg-card px-4 py-3 text-espresso shadow-sm transition-all duration-200 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2;
   min-height: 44px;
