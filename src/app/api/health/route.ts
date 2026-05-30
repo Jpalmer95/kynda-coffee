@@ -1,15 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
+/**
+ * GET/HEAD /api/health
+ *
+ * Ultralight connectivity probe used by the client OfflineBanner.
+ * navigator.onLine is unreliable under some browsers/VPNs, so the
+ * client does a HEAD request here to verify the server is reachable
+ * before showing the "you're offline" banner.
+ *
+ * Must NOT touch any database or external service — it's just a
+ * "Next.js server is alive" ping.
+ */
 export async function GET() {
-  // Basic health check
-  // You can expand this later to check DB, external services, etc.
-  return NextResponse.json(
-    {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: process.env.NODE_ENV,
-    },
-    { status: 200 }
-  );
+  return NextResponse.json({ ok: true, ts: Date.now() }, { status: 200 });
+}
+
+export async function HEAD() {
+  return new NextResponse(null, { status: 200 });
 }

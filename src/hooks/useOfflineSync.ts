@@ -22,6 +22,26 @@ export function useOfflineSync() {
   const [syncing, setSyncing] = useState(false);
   const syncLockRef = useRef(false);
 
+  // Connectivity probe — navigator.onLine can false-report offline
+  // on some browsers/VPNs even when HTTP requests succeed. Double-check
+  // with an actual fetch before declaring us offline.
+  const probeConnectivity = useCallback(async (): Promise<boolean> => {
+    if (typeof navigator === "undefined") return true;
+    if (navigator.onLine) return true;
+    // Browser says offline — verify with a tiny HEAD request
+    try {
+      const res = await fetch("/api/health", {
+        method: "HEAD",
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      });
+      return res.ok;
+    } catch {
+      // Truly unreachable
+      return false;
+    }
+  }, []);
+
   // Keep pending count fresh
   const refreshPendingCount = useCallback(async () => {
     try {
@@ -98,23 +118,32 @@ export function useOfflineSync() {
       setIsOnline(true);
       syncQueue(); // Auto-sync when back online
     };
-    const handleOffline = () => setIsOnline(false);
+    const handleOffline = async () => {
+      // Probe before believing the offline event — navigator.onLine is
+      // unreliable under Brave shields, some VPNs, and NetworkManager quirks.
+      const actuallyOnline = await probeConnectivity();
+      setIsOnline(actuallyOnline ? true : false);
+    };
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
     // Initial count + sync if online
     refreshPendingCount();
-    if (navigator.onLine) {
-      // Defer to avoid blocking hydration
-      setTimeout(() => syncQueue(), 2000);
-    }
+    // Also probe on mount in case navigator.onLine is lying from the start
+    probeConnectivity().then((ok) => {
+      if (ok) setIsOnline(true);
+      if (ok) {
+        // Defer to avoid blocking hydration
+        setTimeout(() => syncQueue(), 2000);
+      }
+    });
 
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [syncQueue, refreshPendingCount]);
+  }, [syncQueue, refreshPendingCount, probeConnectivity]);
 
   return { isOnline, pendingCount, syncing, syncQueue };
 }
