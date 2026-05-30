@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import Link from "next/link";
-import { X, ShoppingBag, Heart } from "lucide-react";
+import { X, ShoppingBag, Heart, Minus, Plus } from "lucide-react";
 import { useCartStore } from "@/hooks/useCart";
 import { useFavoritesStore } from "@/hooks/useFavorites";
 import { useToast } from "@/components/ui/Toast";
@@ -21,6 +21,12 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
   const { toggle, isFavorite } = useFavoritesStore();
   const { toast } = useToast();
   const trapRef = useFocusTrap(!!product);
+  const [quantity, setQuantity] = useState(1);
+
+  // Reset quantity each time a new product is opened.
+  useEffect(() => {
+    setQuantity(1);
+  }, [product?.id]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -86,17 +92,43 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
             </p>
 
             {/* Actions */}
-            <div className="mt-auto pt-5 flex flex-col gap-2">
+            <div className="mt-auto pt-5 flex flex-col gap-3">
+              {/* Quantity stepper */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-espresso">Quantity</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso transition-colors hover:bg-latte/20 disabled:opacity-40"
+                    aria-label="Decrease quantity"
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                  <span className="w-8 text-center text-base font-semibold text-espresso">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity((q) => Math.min(99, q + 1))}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-latte bg-card text-espresso transition-colors hover:bg-latte/20"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
               <button
                 onClick={() => {
-                  addItem(product, 1);
-                  toast(`Added ${product.name} to cart`, "cart");
+                  addItem(product, quantity);
+                  toast(
+                    `Added ${quantity} × ${product.name} to cart`,
+                    "cart"
+                  );
                   onClose();
                 }}
                 className="btn-primary w-full"
               >
                 <ShoppingBag className="mr-2 h-4 w-4" />
-                Add to Cart
+                Add {quantity > 1 ? `${quantity} ` : ""}to Cart — {formatPrice(product.price_cents * quantity)}
               </button>
               <div className="flex gap-2">
                 <button

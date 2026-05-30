@@ -90,7 +90,9 @@ function ToastItem({ toast: t, onRemove }: { toast: Toast; onRemove: (id: string
       role="alert"
     >
       <div className="mt-0.5 flex-shrink-0">{ICONS[t.type]}</div>
-      <p className="flex-1 text-sm font-medium text-espresso">{t.message}</p>
+      <p className="flex-1 text-sm font-medium text-espresso">
+        {typeof t.message === "string" ? t.message : String(t.message)}
+      </p>
       <button
         onClick={() => {
           setExiting(true);

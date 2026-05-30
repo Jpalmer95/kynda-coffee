@@ -85,7 +85,14 @@ export default function CartPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        toast(data.error || "Checkout failed. Please try again.", "error");
+        // Guard: data.error may be a string or, from older API paths, an array
+        // of validation objects. Never pass a non-string to toast (rendering an
+        // object/array as a React child throws minified error #31).
+        const message =
+          typeof data.error === "string"
+            ? data.error
+            : "Checkout failed. Please try again.";
+        toast(message, "error");
       }
     } catch (err) {
       toast("Checkout failed. Please check your connection.", "error");

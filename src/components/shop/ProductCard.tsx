@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import type { MouseEvent } from "react";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/types";
@@ -28,12 +29,26 @@ function getCategoryLabel(category: string): string {
 export const ProductCard = memo(function ProductCard({ product, onQuickView }: ProductCardProps) {
   const categoryLabel = getCategoryLabel(product.category);
 
+  // When a quick-view handler is provided (shop grid), the whole card opens the
+  // modal — this is the primary, reliable add-to-cart path. The detail page is
+  // still reachable via "Full Details" inside the modal. When no handler is
+  // provided (e.g. category pages), fall back to navigating to the detail page.
+  const handleCardActivate = (e: MouseEvent) => {
+    if (onQuickView) {
+      e.preventDefault();
+      onQuickView(product);
+    }
+  };
+
+  const linkHref = `/shop/product/${product.slug}`;
+
   return (
     <div className="group relative block overflow-hidden rounded-lg border border-latte/20 bg-card transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-hover dark:border-white/10 dark:ring-1 dark:ring-forest/30">
       {/* Product Image */}
       <Link
-        href={`/shop/product/${product.slug}`}
-        className="block"
+        href={linkHref}
+        onClick={handleCardActivate}
+        className="block cursor-pointer"
         aria-label={`${product.name}, ${categoryLabel}, ${formatPrice(product.price_cents)}`}
       >
         <div className="relative aspect-square overflow-hidden">
@@ -77,7 +92,7 @@ export const ProductCard = memo(function ProductCard({ product, onQuickView }: P
       )}
 
       {/* Product Info */}
-      <Link href={`/shop/product/${product.slug}`} className="block p-4 sm:p-5">
+      <Link href={linkHref} onClick={handleCardActivate} className="block p-4 sm:p-5 cursor-pointer">
         {/* Category tag */}
         <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-mocha/60">
           {categoryLabel}

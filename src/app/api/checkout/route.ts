@@ -2,15 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe, STORE_CONFIG } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { getPosCatalog, mapPosCatalogItemToProduct } from "@/lib/pos/catalog";
 import { z } from "zod";
 
 // Force dynamic — don't try to build statically (needs env vars at runtime)
 export const dynamic = "force-dynamic";
 
+// Product IDs come from two sources:
+//   - legacy `products` table → bare UUID
+//   - normalized POS catalog  → "pos:<uuid>" (see mapPosCatalogItemToProduct)
+// Accept either shape; the lookup below resolves both.
 const checkoutSchema = z.object({
   items: z.array(
     z.object({
-      product_id: z.string().uuid(),
+      product_id: z.string().min(1),
       quantity: z.number().int().positive(),
       variant: z
         .object({
@@ -25,12 +30,20 @@ const checkoutSchema = z.object({
   success_url: z.string().url(),
   cancel_url: z.string().url(),
   promo_code: z.string().optional(),
-  gift_card_id: z.string().uuid().optional(),
+  gift_card_id: z.string().optional(),
   discount_cents: z.number().int().min(0).optional(),
   // Loyalty redemption
   loyalty_points_redeemed: z.number().int().min(0).optional(),
   loyalty_points_value_cents: z.number().int().min(0).optional(),
 });
+
+interface ResolvedProduct {
+  id: string;
+  name: string;
+  description?: string | null;
+  images?: string[] | null;
+  price_cents: number;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,41 +56,92 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = checkoutSchema.parse(body);
 
-    // Fetch products from Supabase
-    const productIds = parsed.items.map((i) => i.product_id);
-    const { data: products, error } = await supabaseAdmin()
-      .from("products")
-      .select("*")
-      .in("id", productIds)
-      .eq("is_active", true);
+    // Resolve every requested product. Items may be legacy `products` rows
+    // (bare UUID) or POS catalog items ("pos:<uuid>").
+    const resolved = new Map<string, ResolvedProduct>();
 
-    if (error || !products || products.length === 0) {
-      return NextResponse.json({ error: "Products not found" }, { status: 404 });
+    // 1) Legacy products table — query the bare UUIDs only.
+    const legacyIds = parsed.items
+      .map((i) => i.product_id)
+      .filter((id) => !id.startsWith("pos:"));
+
+    if (legacyIds.length > 0) {
+      const { data: products } = await supabaseAdmin()
+        .from("products")
+        .select("*")
+        .in("id", legacyIds)
+        .eq("is_active", true);
+
+      for (const p of products ?? []) {
+        resolved.set((p as any).id, {
+          id: (p as any).id,
+          name: (p as any).name,
+          description: (p as any).description,
+          images: (p as any).images,
+          price_cents: (p as any).price_cents,
+        });
+      }
     }
 
-    // Build Stripe line items
-    const lineItems = parsed.items.map((item) => {
-      const product = products.find((p: any) => p.id === item.product_id);
-      if (!product) throw new Error(`Product ${item.product_id} not found`);
+    // 2) POS catalog — needed for any "pos:" ids OR any legacy id we couldn't
+    //    find above (the shop merges POS items into the products list, so most
+    //    shop items resolve here).
+    const needsPos = parsed.items.some(
+      (i) => i.product_id.startsWith("pos:") || !resolved.has(i.product_id)
+    );
 
-      return {
+    if (needsPos) {
+      try {
+        const catalog = await getPosCatalog({ channel: "shop", includeModifiers: false, limit: 500 });
+        for (const item of catalog.items) {
+          const mapped = mapPosCatalogItemToProduct(item);
+          resolved.set(mapped.id, {
+            id: mapped.id,
+            name: mapped.name,
+            description: mapped.description,
+            images: mapped.images,
+            price_cents: mapped.price_cents,
+          });
+        }
+      } catch (posErr) {
+        console.error("Checkout: failed to load POS catalog", posErr);
+      }
+    }
+
+    // Build Stripe line items, validating each item resolves.
+    const lineItems: any[] = [];
+    const missing: string[] = [];
+    for (const item of parsed.items) {
+      const product = resolved.get(item.product_id);
+      if (!product) {
+        missing.push(item.product_id);
+        continue;
+      }
+      lineItems.push({
         price_data: {
           currency: STORE_CONFIG.currency,
           product_data: {
-            name: (product as any).name,
-            description: (product as any).description ?? "",
-            images: ((product as any).images ?? []).slice(0, 1),
+            name: product.name,
+            description: product.description || undefined,
+            images: (product.images ?? []).filter(Boolean).slice(0, 1),
           },
-          unit_amount: (product as any).price_cents,
+          unit_amount: product.price_cents,
         },
         quantity: item.quantity,
-      };
-    });
+      });
+    }
 
-    // Calculate totals for order record
+    if (lineItems.length === 0 || missing.length > 0) {
+      return NextResponse.json(
+        { error: "Some items are no longer available. Please refresh your cart and try again." },
+        { status: 400 }
+      );
+    }
+
+    // Calculate totals for shipping logic.
     const subtotal = parsed.items.reduce((sum, item) => {
-      const product = products.find((p: any) => p.id === item.product_id)!;
-      return sum + (product as any).price_cents * item.quantity;
+      const product = resolved.get(item.product_id);
+      return sum + (product ? product.price_cents * item.quantity : 0);
     }, 0);
 
     const discount_cents = parsed.discount_cents ?? 0;
@@ -92,7 +156,6 @@ export async function POST(req: NextRequest) {
           product_data: {
             name: parsed.promo_code ? `Promo: ${parsed.promo_code}` : "Discount",
             description: "Applied at checkout",
-            images: [],
           },
           unit_amount: -discount_cents,
         },
@@ -109,7 +172,6 @@ export async function POST(req: NextRequest) {
           product_data: {
             name: "Loyalty Points Redemption",
             description: `${loyaltyPointsRedeemed} points redeemed`,
-            images: [],
           },
           unit_amount: -loyaltyValueCents,
         },
@@ -166,8 +228,13 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Checkout error:", err);
     if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: err.errors }, { status: 400 });
+      // Never leak the raw Zod error array to the client — rendering an array
+      // of error objects as a React child throws minified error #31.
+      return NextResponse.json(
+        { error: "Invalid checkout request. Please refresh your cart and try again." },
+        { status: 400 }
+      );
     }
-    return NextResponse.json({ error: "Checkout failed" }, { status: 500 });
+    return NextResponse.json({ error: "Checkout failed. Please try again." }, { status: 500 });
   }
 }

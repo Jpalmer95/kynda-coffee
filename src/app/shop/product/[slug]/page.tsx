@@ -53,7 +53,7 @@ export default function ProductDetailPage() {
   }, []);
 
   useEffect(() => {
-    fetch(`/api/products`)
+    fetch(`/api/products?limit=500`)
       .then((res) => res.json())
       .then((data) => {
         const all = data.products ?? [];

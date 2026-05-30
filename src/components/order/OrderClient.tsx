@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Loader2, Minus, Plus, ShoppingCart, Trash2, Users, ChevronDown, ChevronUp } from "lucide-react";
 import type {
   PosCatalogCategoryGroup,
@@ -10,6 +10,7 @@ import type {
 import { formatMoney } from "@/lib/pos/catalog";
 import { formatPrice } from "@/lib/utils";
 import type { QrFulfillmentMode, QrPaymentPreference } from "@/lib/orders/qr-order";
+import { useMenuCartStore } from "@/hooks/useMenuCart";
 
 interface CartLine {
   id: string;
@@ -50,7 +51,37 @@ function lineKey(itemId: string, varId: string, mods: string[]): string {
 }
 
 export function OrderClient({ categories, initialMode, initialLabel }: Props) {
+  // Items the customer already added on the /menu page live in the persisted
+  // menu cart store. Seed this page's working cart from it so they don't have
+  // to re-add everything just to choose pickup + pay.
+  const menuStoreItems = useMenuCartStore((s) => s.items);
+  const clearMenuStore = useMenuCartStore((s) => s.clearCart);
+
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate once from the persisted menu store on mount.
+  useEffect(() => {
+    if (hydrated) return;
+    if (menuStoreItems.length > 0) {
+      setCart(
+        menuStoreItems.map((i) => ({
+          id: i.id,
+          providerItemId: i.providerItemId,
+          providerVariationId: i.providerVariationId,
+          itemName: i.itemName,
+          variationName: i.variationName,
+          quantity: i.quantity,
+          modifierIds: i.modifierIds,
+          modifierNames: i.modifierNames,
+          unitPriceCents: i.unitPriceCents,
+        }))
+      );
+    }
+    setHydrated(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -69,6 +100,22 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<any>(null);
   const [showCart, setShowCart] = useState(false);
+  // The full menu browse is optional — collapsed by default when the customer
+  // already brought items over from /menu (they just want to pick up & pay).
+  const [showMenu, setShowMenu] = useState(false);
+
+  // When the cart was seeded from the menu store, surface the order drawer
+  // immediately and keep the big menu collapsed.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (cart.length > 0) {
+      setShowCart(true);
+      setShowMenu(false);
+    } else {
+      setShowMenu(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
 
   // Track expanded modifier lists per item
   const [expandedModifiers, setExpandedModifiers] = useState<Record<string, boolean>>({});
@@ -197,6 +244,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
 
       setSuccess(json);
       setCart([]);
+      clearMenuStore();
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -272,7 +320,50 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         </span>
       </label>
 
-      <div className="space-y-12">
+      {/* Carried-over order summary — shown when items exist so the customer
+          can review and pay without scrolling past the whole menu. */}
+      {itemCount > 0 && (
+        <div className="mb-10 rounded-[12px] border border-[forest]/40 bg-surface-card p-6 shadow-[0_0_20px_rgba(74,222,128,0.08)]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-[forest]">
+                Your order is ready
+              </div>
+              <div className="mt-1 font-heading text-2xl font-bold tracking-tight text-sand">
+                {itemCount} item{itemCount !== 1 ? "s" : ""} • {formatPrice(subtotalCents)}
+              </div>
+              <p className="mt-1 text-sm text-[mocha]">
+                Choose your pickup option above, then review &amp; pay.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCart(true)}
+              className="btn-accent shrink-0 px-8 py-4 text-sm font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(74,222,128,0.15)] hover:shadow-[0_0_25px_rgba(74,222,128,0.3)]"
+            >
+              Review &amp; Pay
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Menu browse — optional. Collapsed by default when the cart already has
+          items (the customer just wants to pick up & pay). */}
+      <button
+        type="button"
+        onClick={() => setShowMenu((v) => !v)}
+        className="mb-6 flex w-full items-center justify-between rounded-[8px] border border-[latte] bg-surface-card px-5 py-4 text-left transition-colors hover:border-[forest]/40"
+      >
+        <span className="font-heading text-xl font-bold tracking-tight text-sand">
+          {itemCount > 0 ? "Add more items" : "Browse the menu"}
+        </span>
+        {showMenu ? (
+          <ChevronUp className="size-5 text-[forest]" />
+        ) : (
+          <ChevronDown className="size-5 text-[forest]" />
+        )}
+      </button>
+
+      <div className={`space-y-12 ${showMenu ? "" : "hidden"}`}>
         {categories.map((category, idx) => (
           <div key={idx}>
             <h2 className="mb-6 font-heading text-3xl font-bold tracking-tight text-sand border-b border-latte/20 pb-4">
