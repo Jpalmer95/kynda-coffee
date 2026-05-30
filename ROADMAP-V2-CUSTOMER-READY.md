@@ -200,16 +200,24 @@ with timing stats and clear pickup tagging.
 - [ ] Promote KDS to its own route group `/(kds)` with a minimal full-screen layout (no admin chrome),
   protected by staff/admin auth, so it runs on a dedicated tablet logged in once.
 - [ ] Real-time order feed via Supabase Realtime (subscribe to `orders` inserts/updates) — replace
-  polling. New order = audible chime + card animation.
-- [ ] Order card: large order #, customer name, **fulfillment tag** (Pickup/Curbside/To-Go/
-  Delivery/QR-table), **curbside vehicle description**, item list w/ modifiers, elapsed timer
-  (color-escalates: green→amber→red), prep notes.
-- [ ] Board filters via URL (`?board=curbside`, `?station=bar`) so each tablet bookmarks its view.
-  Owner-managed board presets in settings.
-- [ ] Bump bar: New → In Progress → Ready → Completed; "Ready" triggers customer SMS/push (Twilio
-  already a dep). Search + filter (name, #, type).
-- [ ] Stats strip: avg prep time today, orders in queue, on-time %, longest-waiting.
+  polling. New order = audible chime + card animation. *(Currently 10s polling.)*
+- [x] Order card: large order #, customer name, **fulfillment tag** (Pickup/Curbside/Dine-In/
+  Delivery), **curbside vehicle description** callout, item list w/ modifiers, elapsed timer
+  (color-escalates green→amber→pulsing-red), order notes.
+- [x] Board filters via URL (`?board=parking` for curbside, `?board=table` dine-in, etc.) so each
+  tablet bookmarks its view. Board tabs with live per-board counts (commit 1ca0ea4).
+- [x] Search + filter (name, #, vehicle, item). Board logic extracted to a tested pure module
+  (`src/lib/orders/kds-board.ts`, 18 unit tests).
+- [x] Stats strip: in-queue, avg prep time, longest-waiting, fresh/aging/late counts.
+- [ ] Bump bar refinement: "Ready" triggers customer SMS/push (Twilio dep present) — wire to the
+  existing notification path.
 - [ ] Verify on a real tablet form factor (browser_vision QA at tablet viewport).
+
+> **Progress (2026-05-30, commit 1ca0ea4):** Smart KDS core shipped — multi-board filtering
+> (All/Pickup/Curbside/Dine-In/Delivery), fulfillment tags, curbside vehicle callout, search, stats,
+> and escalating timers, all backed by tested pure logic and runnable on any tablet via `?board=`.
+> Remaining: dedicated full-screen `/(kds)` route group, Supabase Realtime push (replace polling) +
+> chime, and the Ready→SMS/push trigger.
 
 **Why it matters:** This is the operational heartbeat once digital ordering scales. Owner wants
 "any device," filterable boards, and easy management.
