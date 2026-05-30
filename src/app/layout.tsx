@@ -10,6 +10,7 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { BackToTop } from "@/components/ui/BackToTop";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
+import { SWUpdater } from "@/components/ui/SWUpdater";
 import { ThemeProvider } from "@/lib/theme/context";
 import { PostHogProvider } from "@/lib/posthog/PostHogProvider";
 // TODO: Re-enable Sentry once client config import path is fixed for SSR
@@ -129,18 +130,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CartDrawer />
             <BackToTop />
             <InstallPrompt />
+            <SWUpdater />
             <div id="cart-announcer" aria-live="polite" aria-atomic="true" className="sr-only" />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  if ('serviceWorker' in navigator) {
-                    window.addEventListener('load', () => {
-                      navigator.serviceWorker.register('/sw.js').catch(() => {});
-                    });
-                  }
-                `,
-              }}
-            />
           </ToastProvider>
           </PostHogProvider>
         </ThemeProvider>

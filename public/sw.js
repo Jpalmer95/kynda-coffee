@@ -1,7 +1,7 @@
 // Kynda Coffee PWA Service Worker v3
 // Caches app shell, pages, images, and menu data for offline access
 
-const CACHE_NAME = "kynda-v3";
+const CACHE_NAME = "kynda-v4";
 const DATA_CACHE = "kynda-data-v1";
 const IMAGE_CACHE = "kynda-images-v1";
 
@@ -24,23 +24,23 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate — clean old caches, then claim all clients so new SW takes
+// control immediately without needing users to close all tabs.
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
         keys
           .filter(
             (key) =>
-              key !== CACHE_NAME &&
-              key !== IMAGE_CACHE &&
-              key !== DATA_CACHE
+              key !== CACHE_NAME && key !== IMAGE_CACHE && key !== DATA_CACHE
           )
           .map((key) => caches.delete(key))
-      )
-    )
+      );
+      await self.clients.claim();
+    })()
   );
-  self.clients.claim();
 });
 
 // Fetch — strategy routing
