@@ -297,7 +297,9 @@ scheduled/posted. Automated newsletters and monthly-specials campaigns. Growth i
   `src/lib/marketing/specials.ts` (12 tests) provides date-window logic + `marketingSeedForSpecial`.
   The **Specials section now renders at the top of the Menu ordering page** (`CuratedSpecials`,
   owner-curated, falls back to the heuristic carousel when empty). The same record seeds marketing
-  campaigns (commit 33d7800). *Admin specials-management UI + auto-campaign generation still to build.*
+  campaigns (commit 33d7800). The **admin Specials manager is now live** at `/admin/specials`
+  (CRUD page + `/api/admin/specials`, commit 295a228) — owner curates the SSOT from the dashboard.
+  *Auto-campaign generation from a special still to build.*
 - [ ] **Growth Insights dashboard** (`/admin/marketing/analytics` + `/admin/analytics`): pull
   platform insights (IG/FB/X), surface AI recommendations ("post Tue 2pm," "video outperforms,"
   "loyalty churn rising"), tie to sales lift where measurable.
@@ -306,7 +308,8 @@ scheduled/posted. Automated newsletters and monthly-specials campaigns. Growth i
 
 > **Progress (2026-05-30, commit 33d7800):** Two load-bearing pieces shipped — the Monthly Specials
 > single-source-of-truth (now live at the top of the Menu) and the marketing approval gate (agents
-> draft, owner approves, enforced at the data layer). Remaining: admin specials UI, the approval-queue
+> draft, owner approves, enforced at the data layer). The **admin Specials manager** (`/admin/specials`,
+> commit 295a228) is now live so the owner curates the SSOT directly. Remaining: the approval-queue
 > UI, content-drop pipeline, Hermes marketing-loop cron, newsletter automation, insights dashboard.
 
 **Why it matters:** This is the owner's headline ask — agents that drive growth and post on Kynda's
