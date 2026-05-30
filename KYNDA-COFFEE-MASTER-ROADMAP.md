@@ -1049,14 +1049,26 @@
 
 **Total Estimated Effort:** 120-150 hours
 
-**Priority Order:**
-1. **Phase 3** (Customer Ordering) — Most customer-facing impact
-2. **Phase 2** (Design Studio) — Revenue-generating feature
-3. **Phase 4** (Staff Portal) — Operational efficiency
-4. **Phase 6** (PWA) — Mobile experience
-5. **Phase 7** (Content Pages) — Complete website
-6. **Phase 5** (Marketing AI) — Nice-to-have automation
-7. **Technical Debt** — Ongoing maintenance
+**Completed (2026-05-29):**
+- Phases 1–7: Design System, Design Studio, Ordering, Staff Portal, AI Marketing, PWA, Content Pages
+- Technical Debt Sprint:
+  - ✅ TypeScript strict mode (already on)
+  - ✅ ESLint v9 flat config + Husky pre-commit hooks
+  - ✅ Vitest: 60 unit tests across 9 files (pricing, rate-limit, orders, POS, Square)
+  - ✅ Playwright E2E scaffold (smoke tests)
+  - ✅ GitHub CI: type-check + lint + test + build jobs with proper env vars
+  - ✅ Hermes Agent API bridge (6 actions: status, marketing, scheduling, insights)
+  - ✅ POS abstraction layer (adapter pattern: Square ✅, Toast stub)
+  - ✅ Sentry error tracking (v10, client/server/edge)
+  - ✅ PostHog analytics (client provider + server events)
+  - ✅ Payment flow documentation (docs/agent-api-bridge.md)
+
+**Remaining (lower priority):**
+- Prettier formatting (optional)
+- React Compiler warnings (4 rules-of-hooks, gradual adoption)
+- API docs (OpenAPI spec)
+- Lighthouse performance audit
+- RLS policy audit
 
 **Next Steps:**
 1. Review this roadmap with user
