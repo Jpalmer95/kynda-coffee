@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Coffee, Instagram, Facebook, MapPin, Phone, Mail, ArrowRight, CheckCircle } from "lucide-react";
+import Image from "next/image";
+import { Instagram, Facebook, MapPin, Phone, Mail, ArrowRight, CheckCircle } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 export function Footer() {
@@ -46,8 +47,14 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-4">
             <Link href="/" className="inline-flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-forest" aria-label="Kynda Coffee Home">
-              <Coffee className="h-8 w-8 text-forest" aria-hidden="true" />
-              <span className="font-heading text-2xl font-bold">Kynda</span>
+              <Image
+                src="/images/logos/kynda-logo-black.png"
+                alt="Kynda Coffee"
+                width={120}
+                height={93}
+                className="h-12 w-auto dark:invert"
+                aria-hidden="true"
+              />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-sand/70">
               Organic specialty coffee, locally roasted in the Texas Hill Country.
