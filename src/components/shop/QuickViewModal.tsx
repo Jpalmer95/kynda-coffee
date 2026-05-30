@@ -63,7 +63,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
       <div ref={trapRef} className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-card shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute right-3 top-3 z-10 rounded-full bg-card/90 p-2 text-mocha shadow-sm hover:text-espresso focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2"
+          className="absolute right-3 top-3 z-10 flex items-center justify-center rounded-full bg-card/90 p-2 text-mocha shadow-sm hover:text-espresso focus:outline-none focus:ring-2 focus:ring-forest focus:ring-offset-2"
           aria-label="Close quick view"
         >
           <X className="h-5 w-5" />

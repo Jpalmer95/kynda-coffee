@@ -418,7 +418,7 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
               </h2>
               <button
                 onClick={() => setShowCart(false)}
-                className="rounded-[4px] border border-latte bg-surface-sidebar p-2 text-sand-50 hover:bg-latte hover:text-sand"
+                className="flex items-center justify-center rounded-[4px] border border-latte bg-surface-sidebar p-2 text-sand-50 hover:bg-latte hover:text-sand"
               >
                 <X className="h-5 w-5" />
               </button>

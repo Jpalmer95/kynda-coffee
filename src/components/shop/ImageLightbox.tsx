@@ -48,7 +48,7 @@ export function ImageLightbox({ images, currentIndex, isOpen, onClose, onNavigat
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute right-4 top-4 z-10 rounded-full bg-card/10 p-2 text-white hover:bg-card/20"
+        className="absolute right-4 top-4 z-10 flex items-center justify-center rounded-full bg-card/10 p-2 text-white hover:bg-card/20"
         aria-label="Close image viewer"
       >
         <X className="h-6 w-6" />
