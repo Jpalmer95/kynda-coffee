@@ -21,6 +21,7 @@ import {
   QrCode,
   BotMessageSquare,
   ImageIcon,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +43,7 @@ const ADMIN_LINKS = [
   { href: "/admin/marketing/social", label: "Social", icon: Share2 },
   { href: "/admin/square", label: "Square", icon: CreditCard },
   { href: "/admin/qr-tables", label: "QR Tables", icon: QrCode },
+  { href: "/admin/careers", label: "Careers", icon: Briefcase },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
