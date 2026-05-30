@@ -122,19 +122,24 @@ items; the cost/margin intelligence lives entirely in the admin portal.
   grab-and-go on menu AND shipped in shop) — explicit, never accidental.
 
 **Work:**
-- [ ] Add a first-class `channel_visibility` concept to catalog overrides
-  (`menu` | `shop` | `both` | `hidden`), migration extends `catalog_overrides`.
-- [ ] Change `shouldIncludeItemForChannel` (`catalog.ts:220`): `menu` channel **excludes** `merch`
-  and any item flagged `shop`-only; `shop` channel **excludes** pure `menu` food/drink unless
-  `available_shipping`. Drive from the explicit override, not text-guessing.
-- [ ] Admin **Catalog Classifier** UI (`/admin/catalog`): per-item toggle Menu/Shop/Both/Hidden,
-  bulk actions, "needs classification" filter for new Square imports. One screen, owner sets truth.
+- [x] Add a first-class `channel_visibility` concept to catalog overrides
+  (`auto` | `menu` | `shop` | `both` | `hidden`), migration `018_catalog_channel_visibility.sql`.
+- [x] Change `shouldIncludeItemForChannel` (`catalog.ts`): `menu`/`qr`/`pickup` channels **exclude**
+  `merch`; explicit `channel_visibility` overrides the heuristic and forces an item onto the correct
+  side. (`shipping` still serves merch; `shop` unchanged.) Unit-tested (62/62 pass).
+- [x] Admin **Catalog Classifier** control (`/admin/catalog`): per-item "Show on (Menu vs Shop)"
+  selector wired to the overrides API (with enum validation).
+- [ ] Bulk actions + "needs classification" filter for new Square imports (single-screen triage).
 - [ ] Default classifier heuristic on import (so new items aren't invisible): `menu`/`retail food`
   → Menu; `merch`/`gift_card`/shippable goods → Shop; flag ambiguous for review.
 - [ ] Seed new Shop-only sourced categories (placeholders + sourcing hooks): Brew Gear (Chemex,
   filters, kettles), Bulk Tea (loose-leaf), Apothecary (candles), Design-Studio Merch.
-- [ ] Verify: load `/menu` → zero merch; load `/shop` → zero made-to-order drinks; "both" items
-  appear in both with correct fulfillment options.
+- [ ] Verify on real synced catalog: load `/menu` → zero merch; load `/shop` → zero made-to-order
+  drinks; "both" items appear in both with correct fulfillment options.
+
+> **Progress (2026-05-30, commit 38edf97):** Core separation engine + owner control shipped. Merch
+> can no longer leak onto the Menu; owner can explicitly route any item to Menu/Shop/Both/Hidden.
+> Remaining: bulk triage UX, import-time default heuristic, and seeding the new Shop categories.
 
 **Why it matters:** This is the #1 customer-facing confusion and blocks adaptive pricing + sourcing.
 Everything downstream (KDS routing, shipping logic, B2B) depends on knowing what a thing *is*.
