@@ -8,6 +8,16 @@ coffee shop platform that is **POS-agnostic, data-owned, and AI-operated**, wher
 order food/drinks, buy shipped goods + merch, apply for work, and find our info; and the owner
 runs the entire business (metrics, marketing, sales, inventory, costs, B2B, staff) from one portal.
 
+> **Deployment status (2026-05-30):** Migrations **018–023 are APPLIED to production Supabase**
+> (`svfuuvaaynmcofyrkwus`) via the `:6543` transaction pooler — verified: `catalog_overrides.channel_visibility`,
+> `specials`, `onboarding_documents`+`onboarding_progress` (6 docs seeded), `social_posts` approval columns
+> (source/approved_by/approved_at/rejection_reason/special_id), `b2b_leads`/`b2b_accounts`/`b2b_orders`,
+> and the MenuMetrics cache tables (`menumetrics_recipe_costs`, `vendor_prices`, `menumetrics_stock`,
+> `inventory_alerts`) — all present with RLS enabled. Re-runnable via `scripts/apply-migrations-018-023.sh`
+> (idempotent). **Still pending deploy:** Coolify redeploy of the app build + env vars
+> (`MENU_METRICS_URL`/`MENU_METRICS_TOKEN`, `FAL_KEY`, `OPENAI_API_KEY`, `CRON_SECRET`) so the new
+> UIs/endpoints go live against this schema.
+
 ---
 
 ## How to Read This Document
