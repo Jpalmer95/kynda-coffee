@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "vitest";
 import type { PosCatalogItem } from "@/lib/pos/catalog";
 import {
   buildQrOrderDraft,
@@ -141,13 +140,14 @@ describe("QR order request validation", () => {
   it("normalizes a valid request", () => {
     const result = validateQrOrderRequest(validRequest);
 
-    assert.equal(result.ok, true);
-    assert.equal(result.value.customer.name, "Jonathan");
-    assert.equal(result.value.customer.phone, "512-555-0100");
-    assert.equal(result.value.customer.email, "jonathan@example.com");
-    assert.equal(result.value.fulfillment.mode, "table");
-    assert.equal(result.value.fulfillment.label, "12");
-    assert.equal(result.value.items[0].quantity, 2);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.customer.name).toBe("Jonathan");
+    expect(result.value.customer.phone).toBe("512-555-0100");
+    expect(result.value.customer.email).toBe("jonathan@example.com");
+    expect(result.value.fulfillment.mode).toBe("table");
+    expect(result.value.fulfillment.label).toBe("12");
+    expect(result.value.items[0].quantity).toBe(2);
   });
 
   it("rejects missing customer contact and empty carts", () => {
@@ -157,8 +157,10 @@ describe("QR order request validation", () => {
       items: [],
     });
 
-    assert.equal(result.ok, false);
-    assert.match(result.error, /customer name/i);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/customer name/i);
+    }
   });
 
   it("requires table and parking labels for context-specific modes", () => {
@@ -171,10 +173,10 @@ describe("QR order request validation", () => {
       fulfillment: { mode: "parking", label: "" },
     });
 
-    assert.equal(table.ok, false);
-    assert.match(table.error, /table/i);
-    assert.equal(parking.ok, false);
-    assert.match(parking.error, /parking/i);
+    expect(table.ok).toBe(false);
+    if (!table.ok) expect(table.error).toMatch(/table/i);
+    expect(parking.ok).toBe(false);
+    if (!parking.ok) expect(parking.error).toMatch(/parking/i);
   });
 });
 
@@ -182,16 +184,17 @@ describe("QR order draft builder", () => {
   it("prices variations, modifiers, quantity, and metadata into an order draft", () => {
     const result = buildQrOrderDraft(validRequest, [catalogItem()], new Date("2026-05-05T12:34:56.000Z"));
 
-    assert.equal(result.ok, true);
-    assert.equal(result.value.order_number, "QR-20260505-123456");
-    assert.equal(result.value.email, "jonathan@example.com");
-    assert.equal(result.value.status, "pending");
-    assert.equal(result.value.source, "qr");
-    assert.equal(result.value.subtotal_cents, 1550);
-    assert.equal(result.value.tax_cents, 0);
-    assert.equal(result.value.shipping_cents, 0);
-    assert.equal(result.value.total_cents, 1550);
-    assert.deepEqual(result.value.items[0], {
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.order_number).toBe("QR-20260505-123456");
+    expect(result.value.email).toBe("jonathan@example.com");
+    expect(result.value.status).toBe("pending");
+    expect(result.value.source).toBe("qr");
+    expect(result.value.subtotal_cents).toBe(1550);
+    expect(result.value.tax_cents).toBe(0);
+    expect(result.value.shipping_cents).toBe(0);
+    expect(result.value.total_cents).toBe(1550);
+    expect(result.value.items[0]).toEqual({
       product_id: "pos:item-latte",
       product_name: "Latte",
       variant_name: "Large",
@@ -217,17 +220,17 @@ describe("QR order draft builder", () => {
       ],
       notes: "Light ice",
     });
-    assert.deepEqual(result.value.fulfillment_metadata, {
+    expect(result.value.fulfillment_metadata).toEqual({
       mode: "table",
       label: "12",
       customer_name: "Jonathan",
       customer_phone: "512-555-0100",
       payment_preference: "pay_at_counter",
     });
-    assert.equal(result.value.payment_status, "unpaid");
-    assert.equal(result.value.payment_method, "pay_at_counter");
-    assert.equal(result.value.paid_at, null);
-    assert.deepEqual(result.value.payment_metadata, { initial_preference: "pay_at_counter" });
+    expect(result.value.payment_status).toBe("unpaid");
+    expect(result.value.payment_method).toBe("pay_at_counter");
+    expect(result.value.paid_at).toBe(null);
+    expect(result.value.payment_metadata).toEqual({ initial_preference: "pay_at_counter" });
   });
 
   it("rejects unavailable items, invalid variations, invalid modifiers, and excessive modifier counts", () => {
@@ -244,11 +247,11 @@ describe("QR order draft builder", () => {
       })]
     );
 
-    assert.equal(unavailable.ok, false);
-    assert.match(unavailable.error, /not available/i);
-    assert.equal(badVariation.ok, false);
-    assert.match(badVariation.error, /variation/i);
-    assert.equal(tooManyModifiers.ok, false);
-    assert.match(tooManyModifiers.error, /modifier/i);
+    expect(unavailable.ok).toBe(false);
+    if (!unavailable.ok) expect(unavailable.error).toMatch(/not available/i);
+    expect(badVariation.ok).toBe(false);
+    if (!badVariation.ok) expect(badVariation.error).toMatch(/variation/i);
+    expect(tooManyModifiers.ok).toBe(false);
+    if (!tooManyModifiers.ok) expect(tooManyModifiers.error).toMatch(/modifier/i);
   });
 });

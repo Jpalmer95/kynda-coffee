@@ -1,10 +1,10 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "vitest";
 import {
   buildStripeLineItemsForOrder,
   buildStripeOrderMetadata,
   canCreateStripePaymentForOrder,
   stripeSuccessUrl,
+  stripeCancelUrl,
   type StripePayableOrder,
 } from "./stripe-payment";
 
@@ -33,20 +33,20 @@ const order: StripePayableOrder = {
 
 describe("Stripe payment helpers for existing QR orders", () => {
   it("allows payment sessions only for unpaid positive-total QR/pickup orders", () => {
-    assert.equal(canCreateStripePaymentForOrder(order).ok, true);
+    expect(canCreateStripePaymentForOrder(order).ok).toBe(true);
 
     const unpaidResult = canCreateStripePaymentForOrder({ ...order, payment_status: "paid" });
-    assert.equal(unpaidResult.ok, false);
-    assert.match((unpaidResult as { ok: false; error: string }).error, /already paid/i);
+    expect(unpaidResult.ok).toBe(false);
+    if (!unpaidResult.ok) expect(unpaidResult.error).toMatch(/already paid/i);
 
-    assert.equal(canCreateStripePaymentForOrder({ ...order, total_cents: 0 }).ok, false);
-    assert.equal(canCreateStripePaymentForOrder({ ...order, source: "website", order_channel: "shipping" }).ok, false);
+    expect(canCreateStripePaymentForOrder({ ...order, total_cents: 0 }).ok).toBe(false);
+    expect(canCreateStripePaymentForOrder({ ...order, source: "website", order_channel: "shipping" }).ok).toBe(false);
   });
 
   it("builds Stripe line items from server-side priced order lines", () => {
     const lineItems = buildStripeLineItemsForOrder(order);
 
-    assert.deepEqual(lineItems, [
+    expect(lineItems).toEqual([
       {
         price_data: {
           currency: "usd",
@@ -62,7 +62,7 @@ describe("Stripe payment helpers for existing QR orders", () => {
   });
 
   it("builds metadata that lets Stripe webhooks update the existing order instead of creating a duplicate", () => {
-    assert.deepEqual(buildStripeOrderMetadata(order), {
+    expect(buildStripeOrderMetadata(order)).toEqual({
       source: "kynda-qr-order",
       order_id: "order-123",
       order_number: "QR-20260505-120000",
@@ -70,9 +70,14 @@ describe("Stripe payment helpers for existing QR orders", () => {
   });
 
   it("builds stable success URLs for returning from Stripe", () => {
-    assert.equal(
-      stripeSuccessUrl("https://kynda.example", order),
+    expect(stripeSuccessUrl("https://kynda.example", order)).toBe(
       "https://kynda.example/qr-order?payment=success&order_id=order-123&session_id={CHECKOUT_SESSION_ID}"
+    );
+  });
+
+  it("builds stable cancel URLs for returning from Stripe", () => {
+    expect(stripeCancelUrl("https://kynda.example", order)).toBe(
+      "https://kynda.example/qr-order?payment=cancelled&order_id=order-123"
     );
   });
 });

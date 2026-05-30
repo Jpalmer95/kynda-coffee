@@ -1,8 +1,8 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "vitest";
 import {
   detectNewKdsOrders,
   shouldPlayKdsNotificationSound,
+  kdsNewOrderMessage,
   type KdsNotificationOrder,
 } from "./kds-notifications";
 
@@ -17,8 +17,8 @@ describe("KDS new-order notifications", () => {
   it("does not announce orders on the initial KDS load", () => {
     const result = detectNewKdsOrders({ previousOrders: null, nextOrders: [baseOrder] });
 
-    assert.deepEqual(result.newOrders, []);
-    assert.deepEqual(result.knownOrderIds, new Set(["order-1"]));
+    expect(result.newOrders).toEqual([]);
+    expect(result.knownOrderIds).toEqual(new Set(["order-1"]));
   });
 
   it("detects newly-arrived active orders after the initial load", () => {
@@ -30,8 +30,8 @@ describe("KDS new-order notifications", () => {
       ],
     });
 
-    assert.deepEqual(result.newOrders.map((order) => order.id), ["order-2"]);
-    assert.deepEqual(result.knownOrderIds, new Set(["order-1", "order-2"]));
+    expect(result.newOrders.map((order) => order.id)).toEqual(["order-2"]);
+    expect(result.knownOrderIds).toEqual(new Set(["order-1", "order-2"]));
   });
 
   it("ignores delivered/cancelled/refunded orders and keeps known active ids stable", () => {
@@ -44,13 +44,21 @@ describe("KDS new-order notifications", () => {
       ],
     });
 
-    assert.deepEqual(result.newOrders, []);
-    assert.deepEqual(result.knownOrderIds, new Set(["order-1"]));
+    expect(result.newOrders).toEqual([]);
+    expect(result.knownOrderIds).toEqual(new Set(["order-1"]));
   });
 
   it("plays a sound only when alerts are enabled and new orders exist", () => {
-    assert.equal(shouldPlayKdsNotificationSound({ alertsEnabled: true, newOrderCount: 1 }), true);
-    assert.equal(shouldPlayKdsNotificationSound({ alertsEnabled: false, newOrderCount: 1 }), false);
-    assert.equal(shouldPlayKdsNotificationSound({ alertsEnabled: true, newOrderCount: 0 }), false);
+    expect(shouldPlayKdsNotificationSound({ alertsEnabled: true, newOrderCount: 1 })).toBe(true);
+    expect(shouldPlayKdsNotificationSound({ alertsEnabled: false, newOrderCount: 1 })).toBe(false);
+    expect(shouldPlayKdsNotificationSound({ alertsEnabled: true, newOrderCount: 0 })).toBe(false);
+  });
+
+  it("formats new order messages correctly", () => {
+    expect(kdsNewOrderMessage([])).toBe("No new orders.");
+    expect(kdsNewOrderMessage([{ order_number: "QR-1001" }])).toBe("New KDS order QR-1001.");
+    expect(kdsNewOrderMessage([{ order_number: "QR-1001" }, { order_number: "QR-1002" }])).toBe(
+      "2 new KDS orders: QR-1001, QR-1002."
+    );
   });
 });

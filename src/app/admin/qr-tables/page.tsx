@@ -260,7 +260,6 @@ export default function AdminQrTablesPage() {
                 {/* QR Image */}
                 <div className="mb-4 flex items-center justify-center">
                   {qrDataUrls[table.id] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={qrDataUrls[table.id]}
                       alt={`QR code for ${table.label}`}

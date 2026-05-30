@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "vitest";
 import {
   ACTIVE_KDS_STATUSES,
   KDS_STATUS_TRANSITIONS,
@@ -30,12 +29,12 @@ const baseOrder: KdsOrderLike = {
 
 describe("KDS order filtering", () => {
   it("treats pending, confirmed, and processing QR/table/lobby/parking/pickup orders as active", () => {
-    assert.deepEqual(ACTIVE_KDS_STATUSES, ["pending", "confirmed", "processing"]);
-    assert.equal(isActiveKdsOrder(baseOrder), true);
-    assert.equal(isActiveKdsOrder({ ...baseOrder, status: "confirmed" }), true);
-    assert.equal(isActiveKdsOrder({ ...baseOrder, status: "processing" }), true);
-    assert.equal(isActiveKdsOrder({ ...baseOrder, status: "delivered" }), false);
-    assert.equal(isActiveKdsOrder({ ...baseOrder, source: "website", order_channel: "shipping" }), false);
+    expect(ACTIVE_KDS_STATUSES).toEqual(["pending", "confirmed", "processing"]);
+    expect(isActiveKdsOrder(baseOrder)).toBe(true);
+    expect(isActiveKdsOrder({ ...baseOrder, status: "confirmed" })).toBe(true);
+    expect(isActiveKdsOrder({ ...baseOrder, status: "processing" })).toBe(true);
+    expect(isActiveKdsOrder({ ...baseOrder, status: "delivered" })).toBe(false);
+    expect(isActiveKdsOrder({ ...baseOrder, source: "website", order_channel: "shipping" })).toBe(false);
   });
 
   it("sorts active KDS orders oldest first so staff sees the queue in prep order", () => {
@@ -45,28 +44,28 @@ describe("KDS order filtering", () => {
       { ...baseOrder, id: "done", status: "delivered", created_at: "2026-05-05T11:00:00.000Z" },
     ]);
 
-    assert.deepEqual(sorted.map((order) => order.id), ["old", "new"]);
+    expect(sorted.map((order) => order.id)).toEqual(["old", "new"]);
   });
 });
 
 describe("KDS status transitions", () => {
   it("allows only safe staff workflow transitions", () => {
-    assert.deepEqual(KDS_STATUS_TRANSITIONS.pending, ["confirmed", "processing", "cancelled"]);
-    assert.deepEqual(getKdsNextActions("pending").map((action) => action.status), ["confirmed", "processing", "cancelled"]);
-    assert.deepEqual(getKdsNextActions("processing").map((action) => action.status), ["delivered", "cancelled"]);
-    assert.equal(getKdsNextActions("delivered").length, 0);
+    expect(KDS_STATUS_TRANSITIONS.pending).toEqual(["confirmed", "processing", "cancelled"]);
+    expect(getKdsNextActions("pending").map((action) => action.status)).toEqual(["confirmed", "processing", "cancelled"]);
+    expect(getKdsNextActions("processing").map((action) => action.status)).toEqual(["ready", "cancelled"]);
+    expect(getKdsNextActions("delivered").length).toBe(0);
   });
 
   it("rejects invalid or backwards transitions", () => {
-    assert.equal(assertKdsTransition("pending", "processing").ok, true);
-    assert.equal(assertKdsTransition("processing", "delivered").ok, true);
+    expect(assertKdsTransition("pending", "processing").ok).toBe(true);
+    expect(assertKdsTransition("processing", "ready").ok).toBe(true);
 
     const backwards = assertKdsTransition("processing", "pending");
     const invalid = assertKdsTransition("delivered", "processing");
 
-    assert.equal(backwards.ok, false);
-    assert.match(backwards.error, /cannot move/i);
-    assert.equal(invalid.ok, false);
-    assert.match(invalid.error, /cannot move/i);
+    expect(backwards.ok).toBe(false);
+    if (!backwards.ok) expect(backwards.error).toMatch(/cannot move/i);
+    expect(invalid.ok).toBe(false);
+    if (!invalid.ok) expect(invalid.error).toMatch(/cannot move/i);
   });
 });

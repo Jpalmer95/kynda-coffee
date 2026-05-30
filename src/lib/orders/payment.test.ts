@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "vitest";
 import {
   PAYMENT_STATUS_TRANSITIONS,
   buildPaymentUpdate,
@@ -19,27 +18,27 @@ const unpaidOrder: PaymentOrderLike = {
 
 describe("order payment state", () => {
   it("identifies paid orders from explicit payment_status", () => {
-    assert.equal(isPaid(unpaidOrder), false);
-    assert.equal(isPaid({ ...unpaidOrder, payment_status: "paid" }), true);
-    assert.equal(isPaid({ ...unpaidOrder, payment_status: "partially_refunded" }), true);
-    assert.equal(isPaid({ ...unpaidOrder, payment_status: "refunded" }), false);
+    expect(isPaid(unpaidOrder)).toBe(false);
+    expect(isPaid({ ...unpaidOrder, payment_status: "paid" })).toBe(true);
+    expect(isPaid({ ...unpaidOrder, payment_status: "partially_refunded" })).toBe(true);
+    expect(isPaid({ ...unpaidOrder, payment_status: "refunded" })).toBe(false);
   });
 
   it("returns user-facing payment badges", () => {
-    assert.deepEqual(getPaymentBadge(unpaidOrder), {
+    expect(getPaymentBadge(unpaidOrder)).toEqual({
       label: "Unpaid",
       tone: "warning",
     });
-    assert.deepEqual(getPaymentBadge({ ...unpaidOrder, payment_status: "paid", payment_method: "cash" }), {
+    expect(getPaymentBadge({ ...unpaidOrder, payment_status: "paid", payment_method: "cash" })).toEqual({
       label: "Paid · cash",
       tone: "success",
     });
   });
 
   it("allows only safe payment state transitions", () => {
-    assert.deepEqual(PAYMENT_STATUS_TRANSITIONS.unpaid, ["paid", "void"]);
-    assert.deepEqual(PAYMENT_STATUS_TRANSITIONS.paid, ["refunded", "partially_refunded"]);
-    assert.deepEqual(PAYMENT_STATUS_TRANSITIONS.refunded, []);
+    expect(PAYMENT_STATUS_TRANSITIONS.unpaid).toEqual(["paid", "void"]);
+    expect(PAYMENT_STATUS_TRANSITIONS.paid).toEqual(["refunded", "partially_refunded"]);
+    expect(PAYMENT_STATUS_TRANSITIONS.refunded).toEqual([]);
   });
 
   it("builds an audited pay-at-counter update", () => {
@@ -52,8 +51,9 @@ describe("order payment state", () => {
       now: new Date("2026-05-05T12:00:00.000Z"),
     });
 
-    assert.equal(result.ok, true);
-    assert.deepEqual(result.value, {
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value).toEqual({
       payment_status: "paid",
       payment_method: "cash",
       paid_at: "2026-05-05T12:00:00.000Z",
@@ -86,7 +86,9 @@ describe("order payment state", () => {
       actor: "admin",
     });
 
-    assert.equal(paid.ok, false);
-    assert.match(paid.error, /cannot move payment/i);
+    expect(paid.ok).toBe(false);
+    if (!paid.ok) {
+      expect(paid.error).toMatch(/cannot move payment/i);
+    }
   });
 });

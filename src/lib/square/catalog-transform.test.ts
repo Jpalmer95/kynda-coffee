@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "vitest";
 import {
   buildCategoryLookup,
   buildImageLookup,
@@ -62,44 +61,44 @@ describe("Square catalog transforms", () => {
     const categories = buildCategoryLookup([category, image]);
     const images = buildImageLookup([category, image]);
 
-    assert.equal(categories.CAT_DRINKS.name, "Coffee Drinks");
-    assert.equal(categories.CAT_DRINKS.ordinal, 1);
-    assert.equal(images.IMG_LATTE, "https://example.com/latte.jpg");
+    expect(categories.CAT_DRINKS.name).toBe("Coffee Drinks");
+    expect(categories.CAT_DRINKS.ordinal).toBe(1);
+    expect(images.IMG_LATTE).toBe("https://example.com/latte.jpg");
   });
 
   it("resolves category IDs on Square items into category names", () => {
     const categories = buildCategoryLookup([category]);
     const resolved = getCategoryForItem(latte, categories);
 
-    assert.deepEqual(resolved, { id: "CAT_DRINKS", name: "Coffee Drinks" });
+    expect(resolved).toEqual({ id: "CAT_DRINKS", name: "Coffee Drinks" });
   });
 
   it("normalizes all item variations without losing metadata", () => {
     const normalized = normalizeSquareItems([category, image, latte]);
 
-    assert.equal(normalized.length, 2);
-    assert.equal(normalized[0].squareItemId, "ITEM_LATTE");
-    assert.equal(normalized[0].squareVariationId, "VAR_SMALL");
-    assert.equal(normalized[0].category, "Coffee Drinks");
-    assert.equal(normalized[0].itemType, "menu");
-    assert.equal(normalized[0].cafeOrRetail, "cafe");
-    assert.equal(normalized[0].imageUrl, "https://example.com/latte.jpg");
-    assert.deepEqual(normalized[0].imageUrls, ["https://example.com/latte.jpg"]);
-    assert.deepEqual(normalized[0].modifierListIds, ["MOD_MILK"]);
-    assert.deepEqual(normalized[0].taxIds, ["TAX_SALES"]);
-    assert.equal(normalized[1].squareVariationId, "VAR_LARGE");
-    assert.equal(normalized[1].priceCents, 650);
+    expect(normalized.length).toBe(2);
+    expect(normalized[0].squareItemId).toBe("ITEM_LATTE");
+    expect(normalized[0].squareVariationId).toBe("VAR_SMALL");
+    expect(normalized[0].category).toBe("Coffee Drinks");
+    expect(normalized[0].itemType).toBe("menu");
+    expect(normalized[0].cafeOrRetail).toBe("cafe");
+    expect(normalized[0].imageUrl).toBe("https://example.com/latte.jpg");
+    expect(normalized[0].imageUrls).toEqual(["https://example.com/latte.jpg"]);
+    expect(normalized[0].modifierListIds).toEqual(["MOD_MILK"]);
+    expect(normalized[0].taxIds).toEqual(["TAX_SALES"]);
+    expect(normalized[1].squareVariationId).toBe("VAR_LARGE");
+    expect(normalized[1].priceCents).toBe(650);
   });
 
   it("classifies Kynda catalog items into portable item types", () => {
-    assert.equal(classifySquareItem("Kynda Hoodie", "Merch"), "merch");
-    assert.equal(classifySquareItem("Gift Card", "Retail"), "gift_card");
-    assert.equal(classifySquareItem("Extra Espresso Shot", "Modifiers"), "modifier");
-    assert.equal(classifySquareItem("Caprese Panini", "Food"), "menu");
+    expect(classifySquareItem("Kynda Hoodie", "Merch")).toBe("merch");
+    expect(classifySquareItem("Gift Card", "Retail")).toBe("gift_card");
+    expect(classifySquareItem("Extra Espresso Shot", "Modifiers")).toBe("modifier");
+    expect(classifySquareItem("Caprese Panini", "Food")).toBe("menu");
   });
 
   it("serializes BigInt values before JSONB persistence", () => {
-    assert.deepEqual(serializeSquareRaw({ version: BigInt(123), nested: [BigInt(1)] }), {
+    expect(serializeSquareRaw({ version: BigInt(123), nested: [BigInt(1)] })).toEqual({
       version: "123",
       nested: ["1"],
     });

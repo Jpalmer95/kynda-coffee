@@ -11,7 +11,7 @@ const ADMIN_EMAILS = [
   .filter(Boolean);
 
 export async function getAdminUser(req: NextRequest) {
-  let response = NextResponse.next();
+  const response = NextResponse.next();
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {

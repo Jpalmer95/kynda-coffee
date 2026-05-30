@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, expect } from "vitest";
 import {
   formatMoney,
   groupCatalogByCategory,
@@ -171,37 +170,37 @@ const rows: PosCatalogRow[] = [
 
 describe("POS catalog formatting", () => {
   it("formats fixed-money cents as display prices", () => {
-    assert.equal(formatMoney(0), "$0.00");
-    assert.equal(formatMoney(450), "$4.50");
-    assert.equal(formatMoney(4200), "$42.00");
+    expect(formatMoney(0)).toBe("$0.00");
+    expect(formatMoney(450)).toBe("$4.50");
+    expect(formatMoney(4200)).toBe("$42.00");
   });
 
   it("filters items by channel flags and item type", () => {
-    assert.equal(shouldIncludeItemForChannel(rows[0], "qr"), true);
-    assert.equal(shouldIncludeItemForChannel(rows[1], "qr"), false);
-    assert.equal(shouldIncludeItemForChannel(rows[1], "shop"), true);
-    assert.equal(shouldIncludeItemForChannel(rows[0], "shop"), false);
-    assert.equal(shouldIncludeItemForChannel(rows[0], "menu"), true);
+    expect(shouldIncludeItemForChannel(rows[0], "qr")).toBe(true);
+    expect(shouldIncludeItemForChannel(rows[1], "qr")).toBe(false);
+    expect(shouldIncludeItemForChannel(rows[1], "shop")).toBe(true);
+    expect(shouldIncludeItemForChannel(rows[0], "shop")).toBe(false);
+    expect(shouldIncludeItemForChannel(rows[0], "menu")).toBe(true);
   });
 
   it("maps raw POS rows into stable API items with sorted variations and modifiers", () => {
     const [item] = mapPosCatalogRows(rows, { channel: "qr", includeModifiers: true });
 
-    assert.equal(item.id, "item-latte");
-    assert.equal(item.providerItemId, "SQ_ITEM_LATTE");
-    assert.equal(item.priceCents, 450);
-    assert.equal(item.priceLabel, "from $4.50");
-    assert.deepEqual(item.variationLabels, ["Small • $4.50", "Large • $6.50"]);
-    assert.deepEqual(item.imageUrls, ["https://example.com/latte.jpg"]);
-    assert.equal(item.modifierLists.length, 1);
-    assert.equal(item.modifierLists[0].modifiers[0].name, "Oat Milk");
+    expect(item.id).toBe("item-latte");
+    expect(item.providerItemId).toBe("SQ_ITEM_LATTE");
+    expect(item.priceCents).toBe(450);
+    expect(item.priceLabel).toBe("from $4.50");
+    expect(item.variationLabels).toEqual(["Small • $4.50", "Large • $6.50"]);
+    expect(item.imageUrls).toEqual(["https://example.com/latte.jpg"]);
+    expect(item.modifierLists.length).toBe(1);
+    expect(item.modifierLists[0].modifiers[0].name).toBe("Oat Milk");
   });
 
   it("groups mapped catalog items by category preserving category counts", () => {
     const items = mapPosCatalogRows(rows, { channel: "all", includeModifiers: false });
     const groups = groupCatalogByCategory(items);
 
-    assert.deepEqual(groups.map((group) => [group.name, group.items.length]), [
+    expect(groups.map((group) => [group.name, group.items.length])).toEqual([
       ["Coffee Drinks", 1],
       ["Merchandise", 1],
     ]);
@@ -211,14 +210,14 @@ describe("POS catalog formatting", () => {
     const [, hoodie] = mapPosCatalogRows(rows, { channel: "all", includeModifiers: false });
     const product = mapPosCatalogItemToProduct(hoodie);
 
-    assert.equal(product.id, "pos:item-hoodie");
-    assert.equal(product.slug, "pos-kynda-hoodie-sq-item-hoodie");
-    assert.equal(product.category, "merch-apparel");
-    assert.equal(product.source, "square");
-    assert.equal(product.square_item_id, "SQ_ITEM_HOODIE");
-    assert.equal(product.square_variation_id, "SQ_VAR_HOODIE");
-    assert.equal(product.price_cents, 4200);
-    assert.equal(product.track_inventory, true);
+    expect(product.id).toBe("pos:item-hoodie");
+    expect(product.slug).toBe("pos-kynda-hoodie-sq-item-hoodie");
+    expect(product.category).toBe("merch-apparel");
+    expect(product.source).toBe("square");
+    expect(product.square_item_id).toBe("SQ_ITEM_HOODIE");
+    expect(product.square_variation_id).toBe("SQ_VAR_HOODIE");
+    expect(product.price_cents).toBe(4200);
+    expect(product.track_inventory).toBe(true);
   });
 
   it("applies owner catalog overrides before channel filtering", () => {
@@ -226,11 +225,11 @@ describe("POS catalog formatting", () => {
     const qrItems = mapPosCatalogRows(overriddenRows, { channel: "qr", includeModifiers: false });
     const allItems = mapPosCatalogRows(overriddenRows, { channel: "all", includeModifiers: false });
 
-    assert.equal(allItems[0].name, "Kynda Signature Latte");
-    assert.equal(allItems[0].description, "Owner-approved public description");
-    assert.equal(allItems[0].categoryName, "Signature Drinks");
-    assert.deepEqual(allItems[0].imageUrls, ["https://example.com/override-latte.jpg"]);
-    assert.equal(qrItems.some((item) => item.providerItemId === "SQ_ITEM_LATTE"), false);
-    assert.equal(allItems.some((item) => item.providerItemId === "SQ_ITEM_HOODIE"), false);
+    expect(allItems[0].name).toBe("Kynda Signature Latte");
+    expect(allItems[0].description).toBe("Owner-approved public description");
+    expect(allItems[0].categoryName).toBe("Signature Drinks");
+    expect(allItems[0].imageUrls).toEqual(["https://example.com/override-latte.jpg"]);
+    expect(qrItems.some((item) => item.providerItemId === "SQ_ITEM_LATTE")).toBe(false);
+    expect(allItems.some((item) => item.providerItemId === "SQ_ITEM_HOODIE")).toBe(false);
   });
 });

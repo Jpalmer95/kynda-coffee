@@ -239,7 +239,7 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
       if (initialDesignUrl && layers.length === 0) {
         addLayerFromUrl(initialDesignUrl, "generated", "AI Design");
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [initialDesignUrl]);
 
     // Parent callback on changes

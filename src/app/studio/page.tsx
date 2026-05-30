@@ -118,7 +118,7 @@ export default function DesignStudioPage() {
     return () => {
       if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [currentLayers, saveStatus]);
 
   // ── Save design to Supabase ──
