@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   PRINTFUL_CATALOG,
-  calculateRetailPrice,
   PRODUCT_MARKUP,
 } from "@/lib/printful/catalog";
+import { calculatePrice, getPricingProfile } from "@/lib/pricing/engine";
+
+/** Map a Printful catalog category to a Kynda pricing profile key. */
+const PRINTFUL_TO_PRICING_PROFILE: Record<string, string> = {
+  apparel: "merch-apparel",
+  drinkware: "merch-mugs",
+  accessories: "merch-accessories",
+  "wall-art": "design-studio",
+  "home-living": "design-studio",
+};
 
 /**
  * POST /api/printful/estimate
@@ -44,13 +53,9 @@ export async function POST(req: NextRequest) {
       ? product.variants.find((v) => v.id === variant_id)
       : undefined;
 
-    const retailCents = calculateRetailPrice(product, variant);
-    const markup = PRODUCT_MARKUP[product.category];
     const baseCost =
       product.basePriceCents + (variant?.additionalPriceCents || 0);
-
-    // Estimate shipping buffer as a percentage of the markup margin
-    const profitCents = retailCents - baseCost - markup.shippingBufferCents;
+    const markup = PRODUCT_MARKUP[product.category];
 
     // If recipient provided AND Printful API key exists, fetch live rates
     let shippingOptions: any[] = [];
@@ -100,6 +105,26 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Profit-guaranteed pricing (Epic 2). Use the cheapest live shipping rate
+    // when we have one; otherwise fall back to the category profile's buffer.
+    const profileKey = PRINTFUL_TO_PRICING_PROFILE[product.category] ?? "design-studio";
+    const profile = getPricingProfile(profileKey);
+    const liveShippingCents =
+      shippingOptions.length > 0
+        ? Math.min(...shippingOptions.map((o) => o.rate_cents))
+        : undefined;
+
+    const pricing = calculatePrice({
+      costCents: baseCost,
+      shippingCents: liveShippingCents ?? profile.shippingBufferCents,
+      targetMarginPct: profile.targetMarginPct,
+      minProfitCents: profile.minProfitCents,
+      rounding: profile.rounding,
+    });
+
+    const retailCents = pricing.retailCents;
+    const profitCents = pricing.profitCents;
+
     return NextResponse.json({
       product_id: product.id,
       product_name: product.name,
@@ -107,11 +132,21 @@ export async function POST(req: NextRequest) {
         ? { id: variant.id, size: variant.size, color: variant.colorName }
         : null,
       product_base_cents: baseCost,
-      shipping_buffer_cents: markup.shippingBufferCents,
+      shipping_buffer_cents: liveShippingCents ?? profile.shippingBufferCents,
       retail_cents: retailCents,
       estimated_markup: markup.multiplier,
       estimated_profit_cents: Math.max(0, profitCents),
       shipping_options: shippingOptions,
+      // Epic 2 — transparent, profit-guaranteed pricing detail
+      pricing: {
+        target_margin_pct: profile.targetMarginPct,
+        realized_margin_pct: Number(pricing.marginPct.toFixed(4)),
+        unit_cost_cents: pricing.unitCostCents,
+        payment_fee_cents: pricing.paymentFeeCents,
+        meets_target: pricing.meetsTarget,
+        profitable: pricing.profitable,
+        breakdown: pricing.breakdown,
+      },
     });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
