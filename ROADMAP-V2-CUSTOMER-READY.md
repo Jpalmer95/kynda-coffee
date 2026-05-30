@@ -475,9 +475,10 @@ frictionless multi-mode ordering, trustworthy shop checkout, complete contact/in
 delightful account/loyalty.
 
 **Work:**
-- [ ] **Specials at top of Menu** (driven by Epic 5 `specials`): highlighted, quick-add.
-- [ ] **Contact Us** completeness: hours, map (location page exists), phone/email, contact form
-  (`/api/contact` exists) → admin inbox; "minimal phone-ordering friction" → push QR/site ordering.
+- [x] **Specials at top of Menu** (driven by Epic 5 `specials`): highlighted, quick-add. *(CuratedSpecials live; Epic 5.)*
+- [x] **Contact Us** completeness: hours, map (location page exists), phone/email, contact form
+  (`/api/contact`) → **owner email notification + admin inbox** at `/admin/inbox` (commit e3278f7).
+  "minimal phone-ordering friction" → push QR/site ordering.
 - [ ] Fulfillment selector polish (pickup/curbside/to-go/delivery/QR) — confirm vehicle desc flows
   to KDS (Epic 3) + confirmation email/SMS.
 - [ ] Shop checkout trust: shipping rates, clear taxes/fees, order tracking (`/track-order` exists).
