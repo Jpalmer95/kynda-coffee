@@ -487,8 +487,11 @@ delightful account/loyalty.
   *(Review done, commit 20a231e: fixed /account/rewards tier thresholds to match the loyalty
   API, fixed /refer wrong-domain share link → window.location.origin + copy-to-clipboard;
   verified redemption-rate copy + referral 10%/self-referral/expiry are coherent.)*
-- [ ] Accessibility + performance pass (WCAG 2.2 AA already targeted): keyboard nav, ARIA, contrast,
-  Lighthouse ≥ 90, Core Web Vitals.
+- [~] Accessibility + performance pass (WCAG 2.2 AA already targeted): keyboard nav, ARIA, contrast,
+  Lighthouse ≥ 90, Core Web Vitals. *(A11y review done, commit b2385cb: verified skip link,
+  lang, focusable main landmark, ARIA live-region, labeled forms + icon controls, reduced-motion,
+  focus-visible — all already present; added 8 static regression guards. Remaining: live
+  Lighthouse/axe run + Core Web Vitals — needs the deployed build.)*
 - [x] **SEO structured data**: `LocalBusiness` + `Organization` schemas (were defined-but-unused) now
   render on `/location` and `/menu`; new `Menu` schema (schema.org/Menu) on `/menu` for the Google
   menu rich result; fixed a JsonLd `id` collision so multiple schemas coexist (commit ee008e2).
