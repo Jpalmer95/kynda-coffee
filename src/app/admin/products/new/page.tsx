@@ -12,6 +12,10 @@ const CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: "merch-mugs", label: "Mugs" },
   { value: "merch-glassware", label: "Glassware" },
   { value: "merch-accessories", label: "Accessories" },
+  { value: "brew-gear", label: "Brew Gear" },
+  { value: "bulk-tea", label: "Loose-Leaf Tea" },
+  { value: "apothecary", label: "Apothecary" },
+  { value: "design-studio", label: "Custom Designs" },
   { value: "subscription", label: "Subscription" },
   { value: "gift-card", label: "Gift Card" },
 ];

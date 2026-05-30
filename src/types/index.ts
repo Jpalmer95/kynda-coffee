@@ -12,6 +12,10 @@ export type ProductCategory =
   | "merch-mugs"
   | "merch-glassware"
   | "merch-accessories"
+  | "brew-gear"
+  | "bulk-tea"
+  | "apothecary"
+  | "design-studio"
   | "subscription"
   | "gift-card"
   | "catering";

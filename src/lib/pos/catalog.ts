@@ -452,6 +452,30 @@ export function categoryForPosItem(item: Pick<PosCatalogItem, "itemType" | "cate
   if (text.includes("gift")) return "gift-card";
   if (text.includes("catering")) return "catering";
   if (text.includes("subscription") || text.includes("club")) return "subscription";
+  // Shop-only sourced categories (Epic 1)
+  if (
+    text.includes("chemex") || text.includes("hario") || text.includes("v60") ||
+    text.includes("kettle") || text.includes("grinder") || text.includes("french press") ||
+    text.includes("aeropress") || text.includes("filter") || text.includes("dripper") ||
+    text.includes("scale") || text.includes("brew")
+  ) {
+    return "brew-gear";
+  }
+  if (
+    (text.includes("tea") && (text.includes("loose") || text.includes("leaf") || text.includes("bulk"))) ||
+    text.includes("loose-leaf") || text.includes("loose leaf")
+  ) {
+    return "bulk-tea";
+  }
+  if (
+    text.includes("candle") || text.includes("apothecary") || text.includes("soap") ||
+    text.includes("balm") || text.includes("incense") || text.includes("essential oil")
+  ) {
+    return "apothecary";
+  }
+  if (text.includes("custom") || text.includes("design studio") || text.includes("printful")) {
+    return "design-studio";
+  }
   if (text.includes("mug")) return "merch-mugs";
   if (text.includes("glass")) return "merch-glassware";
   if (text.includes("shirt") || text.includes("tee") || text.includes("hoodie") || text.includes("apparel")) {

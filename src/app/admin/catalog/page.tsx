@@ -107,6 +107,39 @@ function nullableText(value: string) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+/**
+ * Compute where an item effectively appears for the owner-facing badge/filter
+ * (Epic 1). Mirrors src/lib/pos/catalog.ts:shouldIncludeItemForChannel so the
+ * admin preview matches what customers actually see.
+ *  - explicit channel_visibility wins
+ *  - otherwise fall back to the item_type heuristic (auto)
+ * Returns one of: "menu" | "shop" | "both" | "hidden" | "unclassified".
+ */
+function effectiveRouting(
+  item: CatalogItem,
+  override: Override
+): "menu" | "shop" | "both" | "hidden" | "unclassified" {
+  const cv = override.channel_visibility;
+  if (cv === "hidden" || override.is_hidden) return "hidden";
+  if (cv === "menu") return "menu";
+  if (cv === "shop") return "shop";
+  if (cv === "both") return "both";
+  // auto / null: derive from effective item type
+  const type = override.item_type || item.itemType;
+  if (["menu"].includes(type)) return "menu";
+  if (["merch", "gift_card"].includes(type)) return "shop";
+  if (type === "retail") return "both"; // retail food/drink can live on both sides
+  return "unclassified"; // service/modifier/unknown — owner should decide
+}
+
+const ROUTING_BADGE: Record<string, { label: string; className: string }> = {
+  menu: { label: "Menu", className: "bg-forest/15 text-forest" },
+  shop: { label: "Shop", className: "bg-sky-100 text-sky-700" },
+  both: { label: "Menu + Shop", className: "bg-violet-100 text-violet-700" },
+  hidden: { label: "Hidden", className: "bg-red-50 text-red-600" },
+  unclassified: { label: "Unclassified", className: "bg-amber-100 text-amber-800" },
+};
+
 export default function AdminCatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [overrides, setOverrides] = useState<Record<string, Override>>({});
@@ -115,6 +148,7 @@ export default function AdminCatalogPage() {
   const [search, setSearch] = useState("");
   const [channel, setChannel] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [routingFilter, setRoutingFilter] = useState("all");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   async function loadCatalog() {
@@ -138,8 +172,15 @@ export default function AdminCatalogPage() {
   }, [search, channel]);
 
   const filteredItems = useMemo(() => {
-    return items.filter((item) => typeFilter === "all" || item.itemType === typeFilter);
-  }, [items, typeFilter]);
+    return items.filter((item) => {
+      if (typeFilter !== "all" && item.itemType !== typeFilter) return false;
+      if (routingFilter !== "all") {
+        const ov = overrides[overrideKey(item.provider, item.providerItemId)] ?? defaultOverride(item);
+        if (effectiveRouting(item, ov) !== routingFilter) return false;
+      }
+      return true;
+    });
+  }, [items, typeFilter, routingFilter, overrides]);
 
   function getOverride(item: CatalogItem) {
     return overrides[overrideKey(item.provider, item.providerItemId)] ?? defaultOverride(item);
@@ -192,7 +233,7 @@ export default function AdminCatalogPage() {
         </div>
 
         <div className="mb-6 rounded-2xl border border-latte/20 bg-card p-4">
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto]">
+          <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto_auto]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mocha" aria-hidden="true" />
               <input
@@ -202,6 +243,14 @@ export default function AdminCatalogPage() {
                 className="input-field pl-9 text-sm"
               />
             </div>
+            <select value={routingFilter} onChange={(e) => setRoutingFilter(e.target.value)} className="select-field text-sm">
+              <option value="all">All routing</option>
+              <option value="menu">Menu only</option>
+              <option value="shop">Shop only</option>
+              <option value="both">Menu + Shop</option>
+              <option value="unclassified">Unclassified ⚠</option>
+              <option value="hidden">Hidden</option>
+            </select>
             <select value={channel} onChange={(e) => setChannel(e.target.value)} className="select-field text-sm">
               <option value="all">All channels</option>
               <option value="menu">Public menu</option>
@@ -239,6 +288,11 @@ export default function AdminCatalogPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="font-heading text-lg font-bold text-espresso">{override.display_name || item.name}</h2>
+                        {(() => {
+                          const r = effectiveRouting(item, override);
+                          const badge = ROUTING_BADGE[r];
+                          return <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`} title="Where this item appears (Menu = food/drink ordering, Shop = shipped/retail)">{badge.label}</span>;
+                        })()}
                         <span className="rounded-full bg-latte/20 px-2 py-0.5 text-xs text-mocha">{override.item_type || item.itemType}</span>
                         <span className="rounded-full bg-cream px-2 py-0.5 text-xs text-mocha">{override.category_name || item.categoryName}</span>
                         {hidden ? <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-600">Hidden</span> : null}

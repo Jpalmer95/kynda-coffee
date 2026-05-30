@@ -12,10 +12,14 @@ import type { Product, ProductCategory } from "@/types";
 const CATEGORIES: { slug: ProductCategory | "all"; name: string }[] = [
   { slug: "all", name: "All" },
   { slug: "coffee-beans", name: "Coffee" },
+  { slug: "bulk-tea", name: "Loose-Leaf Tea" },
+  { slug: "brew-gear", name: "Brew Gear" },
   { slug: "merch-apparel", name: "Apparel" },
   { slug: "merch-mugs", name: "Mugs" },
   { slug: "merch-glassware", name: "Glassware" },
   { slug: "merch-accessories", name: "Accessories" },
+  { slug: "apothecary", name: "Apothecary" },
+  { slug: "design-studio", name: "Custom Designs" },
   { slug: "subscription", name: "Club" },
   { slug: "gift-card", name: "Gifts" },
 ];

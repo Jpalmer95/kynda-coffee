@@ -13,6 +13,10 @@ const CATEGORY_NAMES: Record<string, string> = {
   "merch-mugs": "Mugs",
   "merch-glassware": "Glassware",
   "merch-accessories": "Accessories",
+  "brew-gear": "Brew Gear",
+  "bulk-tea": "Loose-Leaf Tea",
+  "apothecary": "Apothecary",
+  "design-studio": "Custom Designs",
   "subscription": "Coffee Club",
   "gift-card": "Gift Cards",
 };
@@ -23,6 +27,10 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "merch-mugs": "Ceramic and glassware for your daily coffee ritual.",
   "merch-glassware": "Elegant glassware for coffee and beyond.",
   "merch-accessories": "Bags, stickers, and accessories for coffee lovers.",
+  "brew-gear": "Chemex, pour-over kits, kettles, grinders, and filters to brew like a pro at home.",
+  "bulk-tea": "Loose-leaf and bulk teas, sourced and sold by weight.",
+  "apothecary": "Candles, balms, and small-batch apothecary goods for your space.",
+  "design-studio": "Custom, made-to-order designs from our AI Design Studio — printed and shipped to you.",
   "subscription": "Never run out of great coffee. Delivered on your schedule.",
   "gift-card": "The perfect gift for any coffee enthusiast.",
 };
