@@ -457,7 +457,15 @@ delightful account/loyalty.
 - [ ] Loyalty/rewards + subscriptions UX review; referral/affiliate surfaces (tables exist).
 - [ ] Accessibility + performance pass (WCAG 2.2 AA already targeted): keyboard nav, ARIA, contrast,
   Lighthouse ≥ 90, Core Web Vitals.
-- [ ] SEO + social cards for all public pages; sitemap; structured data (LocalBusiness, Menu).
+- [x] **SEO structured data**: `LocalBusiness` + `Organization` schemas (were defined-but-unused) now
+  render on `/location` and `/menu`; new `Menu` schema (schema.org/Menu) on `/menu` for the Google
+  menu rich result; fixed a JsonLd `id` collision so multiple schemas coexist (commit ee008e2).
+  Sitemap/robots/openGraph/twitter cards already present.
+
+> **Progress (2026-05-30, commit ee008e2):** Highest-SEO-value gap closed — LocalBusiness/Org/Menu
+> structured data now actually emitted (Google rich results + local map presence). Remaining Epic 9
+> work: specials-at-top already live (Epic 5), contact-form→inbox, loyalty/referral UX review, and
+> the a11y/Lighthouse pass.
 
 **Why it matters:** "Something beautiful for anyone who visits." Conversion + trust + repeat visits.
 
