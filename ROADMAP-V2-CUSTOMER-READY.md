@@ -281,22 +281,33 @@ scheduled/posted. Automated newsletters and monthly-specials campaigns. Growth i
 - [ ] **Content Drop pipeline**: `/admin/marketing/drop` — upload images/video; on upload, auto:
   generate per-platform crops (exists), alt-text/captions (Claude Vision exists), hashtag sets,
   and create **draft** `social_posts` for IG/FB/X/TikTok. Owner reviews in one queue.
-- [ ] **Approval queue** UI: pending drafts → edit → approve → schedule/publish. Nothing posts
-  publicly without approval.
+- [x] **Approval gate** (data layer): `social_posts` gained `pending_approval`/`approved`/`rejected`
+  states + `source` (manual|agent|content_drop|special|newsletter) + audit columns (migration 021).
+  `createSocialPost` forces agent-sourced posts to `pending_approval` (can't auto-schedule);
+  `approvePost`/`rejectPost` helpers; `publishDuePosts` only publishes `scheduled` — so nothing
+  agent-generated posts without owner sign-off (commit 33d7800). *Approval queue UI still to build.*
+- [ ] **Approval queue** UI: pending drafts → edit → approve → schedule/publish.
 - [ ] **Hermes cron — Marketing Loop** (`kynda-coffee-agent` skill + new cron): weekly, the agent
-  proposes a content calendar from upcoming specials/events, drafts posts, drops them in the approval
-  queue, and notifies owner. Uses the platform Agent API; no auto-publish.
+  proposes a content calendar from upcoming specials/events, drafts posts (source=`agent` → lands in
+  the approval queue), and notifies owner. Uses the platform Agent API; no auto-publish.
 - [ ] **Newsletter automation**: Resend integration (dep present) — `newsletters` table, segment
   by loyalty/subscription, monthly + event-triggered (new specials, seasonal). Agent drafts copy;
   owner approves; cron sends. Double opt-in + unsubscribe (already have `/api/newsletter/subscribe`).
-- [ ] **Monthly Specials pipeline**: a `specials` record drives BOTH (a) the **Specials section at
-  the top of the Menu ordering page** (highlight + quick-add) and (b) a marketing campaign (social
-  drafts + newsletter). Single source of truth → menu + marketing stay in sync.
+- [x] **Monthly Specials pipeline**: `specials` table (migration 020) is the single source of truth.
+  `src/lib/marketing/specials.ts` (12 tests) provides date-window logic + `marketingSeedForSpecial`.
+  The **Specials section now renders at the top of the Menu ordering page** (`CuratedSpecials`,
+  owner-curated, falls back to the heuristic carousel when empty). The same record seeds marketing
+  campaigns (commit 33d7800). *Admin specials-management UI + auto-campaign generation still to build.*
 - [ ] **Growth Insights dashboard** (`/admin/marketing/analytics` + `/admin/analytics`): pull
   platform insights (IG/FB/X), surface AI recommendations ("post Tue 2pm," "video outperforms,"
   "loyalty churn rising"), tie to sales lift where measurable.
 - [ ] **Content library / asset drop**: Supabase Storage `marketing-assets/` bucket browsable in
   admin; agents pull from it for scheduled posts.
+
+> **Progress (2026-05-30, commit 33d7800):** Two load-bearing pieces shipped — the Monthly Specials
+> single-source-of-truth (now live at the top of the Menu) and the marketing approval gate (agents
+> draft, owner approves, enforced at the data layer). Remaining: admin specials UI, the approval-queue
+> UI, content-drop pipeline, Hermes marketing-loop cron, newsletter automation, insights dashboard.
 
 **Why it matters:** This is the owner's headline ask — agents that drive growth and post on Kynda's
 behalf, with the owner dropping in assets and chatting with marketing agents. Approval-gated keeps
