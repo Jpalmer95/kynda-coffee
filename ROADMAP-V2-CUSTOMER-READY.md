@@ -8,7 +8,7 @@ coffee shop platform that is **POS-agnostic, data-owned, and AI-operated**, wher
 order food/drinks, buy shipped goods + merch, apply for work, and find our info; and the owner
 runs the entire business (metrics, marketing, sales, inventory, costs, B2B, staff) from one portal.
 
-> **Deployment status (2026-05-30):** Migrations **018–023 are APPLIED to production Supabase**
+> **Deployment status (2026-05-30):** Migrations **018–024 are APPLIED to production Supabase**
 > (`svfuuvaaynmcofyrkwus`) via the `:6543` transaction pooler — verified: `catalog_overrides.channel_visibility`,
 > `specials`, `onboarding_documents`+`onboarding_progress` (6 docs seeded), `social_posts` approval columns
 > (source/approved_by/approved_at/rejection_reason/special_id), `b2b_leads`/`b2b_accounts`/`b2b_orders`,
@@ -328,7 +328,10 @@ scheduled/posted. Automated newsletters and monthly-specials campaigns. Growth i
 > `src/lib/marketing/loop.ts` (weekly planner, 11 tests) + `/api/marketing/loop/run`
 > (CRON_SECRET or X-Agent-Key) (commits e9a05bb, 3d9246e), wired to a Hermes weekly cron
 > (Mon 8am, job d3627c96b629) that drafts campaigns for live/upcoming specials into the
-> approval queue. Remaining: newsletter automation, insights dashboard.
+> approval queue. The **Newsletter automation** is live too — migration 024 (newsletters table +
+> subscriber unsubscribe tokens), `src/lib/marketing/newsletter.ts` (branded HTML from specials, 11
+> tests) + `newsletter-sender.ts` (Resend, RFC-8058 one-click unsubscribe), `/admin/newsletters`
+> (generate→approve→schedule/send) and `/api/newsletter/send-due` cron (commit 6dc3f21). Remaining: insights dashboard.
 
 **Why it matters:** This is the owner's headline ask — agents that drive growth and post on Kynda's
 behalf, with the owner dropping in assets and chatting with marketing agents. Approval-gated keeps
