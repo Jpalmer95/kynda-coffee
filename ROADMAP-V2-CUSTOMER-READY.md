@@ -515,9 +515,10 @@ Data in self-hosted Supabase. Good foundation; needs to be made real and switcha
 business data at any time.
 
 **Work:**
-- [ ] Finish **POS abstraction**: ensure all order/catalog/inventory paths go through
-  `getPOSAdapter()`; complete a second adapter (Toast or Clover) at least to read-catalog parity to
-  prove portability. Admin "POS Provider" selector.
+- [~] Finish **POS abstraction**: all order/catalog paths go through `getPOSAdapter()` (factory live,
+  POS_PROVIDER env). **Toast read-catalog adapter now real** (`toast-mapping.ts` 14 tests +
+  `toast-adapter.ts` syncs Toast /menus/v2 → identical normalized `products` rows, commit f6654e7) —
+  portability proven. Remaining: admin "POS Provider" selector UI; Toast order/inventory write paths.
 - [ ] **Payment abstraction**: `src/lib/payments/` factory (Stripe + Square adapters) behind one
   `createCheckoutSession()` / `handleWebhook()`.
 - [~] **Data export & ownership**: admin one-click export (orders, customers, products, B2B,
