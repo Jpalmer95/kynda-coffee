@@ -66,7 +66,8 @@ jobs:
       SQUARE_ACCESS_TOKEN: dummy
       SQUARE_APPLICATION_ID: dummy
       SQUARE_LOCATION_ID: dummy
-      SQUARE_WEBHOOK_SIGNATURE_KEY: dummy
+      SQUARE_WEBHOOK_SIGNATURE_KEY: ${{ secrets.SQUARE_WEBHOOK_SIGNATURE_KEY || 'dummy' }}
+      AGENT_API_KEY: ${{ secrets.AGENT_API_KEY || 'dummy-agent-key' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
