@@ -22,7 +22,7 @@ export async function fetchSquareCatalogObjects(cursor?: string): Promise<{
   objects: SquareObjectLike[];
   nextCursor?: string;
 }> {
-  const response = await squareCatalog().listCatalog(cursor, undefined);
+  const response = await squareCatalog().listCatalog(cursor, "ITEM,IMAGE");
   return {
     objects: (response.result?.objects || []) as unknown as SquareObjectLike[],
     nextCursor: response.result.cursor || undefined,
