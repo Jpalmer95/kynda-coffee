@@ -481,7 +481,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       {itemCount > 0 && (
         <button
           onClick={() => setShowCart(true)}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-[4px] bg-[forest] border border-[forest] px-6 py-4 font-bold tracking-widest text-surface-deep shadow-[0_0_20px_rgba(74,222,128,0.3)] md:bottom-8 md:right-8 uppercase hover:bg-forest-300 hover:shadow-[0_0_30px_rgba(74,222,128,0.5)] transition-all"
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-[4px] bg-[forest] border border-[forest] px-6 py-4 font-bold tracking-widest text-surface-deep shadow-[0_0_20px_rgba(74,222,128,0.3)] md:bottom-8 md:right-8 uppercase hover:bg-forest-300 hover:shadow-[0_0_30px_rgba(74,222,128,0.5)] transition-all dark:text-foreground dark:hover:bg-forest-400"
         >
         <ShoppingCart className="size-5" /> {itemCount} item{itemCount !== 1 ? "s" : ""} • {formatMoney(subtotalCents)}
       </button>
