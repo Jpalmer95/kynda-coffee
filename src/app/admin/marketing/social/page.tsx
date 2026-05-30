@@ -82,6 +82,11 @@ export default function MarketingSocialPage() {
         setPlatforms(data.platforms || []);
         setPosts(data.posts || []);
         setTotal(data.total || 0);
+        if (data.degraded) {
+          // Soft-degraded (e.g. table missing) — don't show an error toast,
+          // just let the UI render empty state silently.
+          console.debug("[social] posts endpoint degraded:", data.error_hint);
+        }
       })
       .catch((err) => {
         toast(err instanceof Error ? err.message : "Load failed", "error");

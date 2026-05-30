@@ -95,7 +95,53 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="format-detection" content="telephone-no" />
+        <meta name="format-detection" content="telephone=no" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // SW update safety net — runs before React hydrates.
+              // Ensures the NEW service worker activates even if the old
+              // cached JS bundle doesn't contain our useSWUpdater hook.
+              (function() {
+                try {
+                  var reloadedFlag = 'kynda-sw-reload-flag';
+                  if (sessionStorage.getItem(reloadedFlag)) {
+                    sessionStorage.removeItem(reloadedFlag);
+                    return;
+                  }
+                  if (!('serviceWorker' in navigator)) return;
+                  var reloadOnce = function() {
+                    sessionStorage.setItem(reloadedFlag, '1');
+                    window.location.reload();
+                  };
+                  navigator.serviceWorker.getRegistration('/').then(function(reg) {
+                    if (!reg) return;
+                    if (reg.waiting) {
+                      // A new SW is already waiting — activate it now
+                      sessionStorage.setItem(reloadedFlag, '1');
+                      reg.waiting.postMessage('SKIP_WAITING');
+                    }
+                    reg.addEventListener('updatefound', function() {
+                      var installing = reg.installing;
+                      if (!installing) return;
+                      installing.addEventListener('statechange', function() {
+                        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                          // New SW ready — activate it and reload
+                          sessionStorage.setItem(reloadedFlag, '1');
+                          installing.postMessage('SKIP_WAITING');
+                        }
+                      });
+                    });
+                    // Force an immediate update check on every page load
+                    reg.update().catch(function() {});
+                    // Reload when the new SW takes over via clients.claim()
+                    navigator.serviceWorker.addEventListener('controllerchange', reloadOnce);
+                  }).catch(function() {});
+                } catch (_) {}
+              })();
+            `,
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

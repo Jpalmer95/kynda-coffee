@@ -1,7 +1,7 @@
 // Kynda Coffee PWA Service Worker v3
 // Caches app shell, pages, images, and menu data for offline access
 
-const CACHE_NAME = "kynda-v4";
+const CACHE_NAME = "kynda-v5";
 const DATA_CACHE = "kynda-data-v1";
 const IMAGE_CACHE = "kynda-images-v1";
 
@@ -49,8 +49,12 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(event.request.url);
 
-  // Skip API mutations, auth, admin, and external requests
+  // Skip self, manifest, API mutations, auth, admin, and external requests.
+  // /sw.js MUST always go to network so the browser can detect new versions.
   if (
+    url.pathname === "/sw.js" ||
+    url.pathname === "/manifest.json" ||
+    url.pathname === "/manifest.webmanifest" ||
     url.pathname.startsWith("/api/") ||
     url.pathname.startsWith("/auth/") ||
     url.pathname.startsWith("/admin/") ||

@@ -48,25 +48,52 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    const [postsResult, platforms] = await Promise.all([
-      listSocialPosts({ status, platform, limit, offset }),
-      Promise.resolve(getPlatforms()),
-    ]);
+    let postsResult;
+    try {
+      postsResult = await listSocialPosts({ status, platform, limit, offset });
+    } catch (dbError) {
+      // Graceful degradation: if the social_posts table doesn't exist or
+      // query fails for any reason, return empty data instead of 500.
+      // Admin sees "No posts yet" and can configure social features later.
+      console.warn(
+        "[social-posts] query failed, returning empty set:",
+        dbError instanceof Error ? dbError.message : String(dbError)
+      );
+      return NextResponse.json({
+        posts: [],
+        total: 0,
+        platforms: getPlatforms(),
+        degraded: true,
+      });
+    }
 
     if (postsResult.error) {
-      return NextResponse.json({ error: postsResult.error }, { status: 500 });
+      // Soft error (e.g., table not found) — return empty rather than 500
+      console.warn("[social-posts] listSocialPosts error:", postsResult.error);
+      return NextResponse.json({
+        posts: [],
+        total: 0,
+        platforms: getPlatforms(),
+        degraded: true,
+        error_hint: postsResult.error,
+      });
     }
 
     return NextResponse.json({
       posts: postsResult.posts,
       total: postsResult.total,
-      platforms,
+      platforms: getPlatforms(),
     });
   } catch (error) {
+    // Catch-all: return empty set rather than 500 to prevent client re-render loops
     console.error("Error listing posts:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      posts: [],
+      total: 0,
+      platforms: [],
+      degraded: true,
+      error_hint: error instanceof Error ? error.message : "unknown",
+    });
   }
 }
+
