@@ -519,8 +519,10 @@ business data at any time.
   POS_PROVIDER env). **Toast read-catalog adapter now real** (`toast-mapping.ts` 14 tests +
   `toast-adapter.ts` syncs Toast /menus/v2 → identical normalized `products` rows, commit f6654e7) —
   portability proven. Remaining: admin "POS Provider" selector UI; Toast order/inventory write paths.
-- [ ] **Payment abstraction**: `src/lib/payments/` factory (Stripe + Square adapters) behind one
-  `createCheckoutSession()` / `handleWebhook()`.
+- [x] **Payment abstraction**: `src/lib/payments/` factory (Stripe + Square adapters) behind one
+  `createCheckoutSession()` / `verifyAndParseWebhook()` interface, keyed on `PAYMENT_PROVIDER` env
+  (`types.ts` + `stripe-provider.ts` + `square-provider.ts` + factory, 7 tests, commit 5a5fef7).
+  *Remaining: migrate the live `/api/checkout` + Stripe webhook routes to call through the factory.*
 - [~] **Data export & ownership**: admin one-click export (orders, customers, products, B2B,
   subscribers, specials, social, loyalty — 14 tables) as RFC-4180 CSV or a full portable JSON
   bundle, via `/api/admin/export` + `/admin/data-export` (`src/lib/export/csv.ts`, 12 tests,
