@@ -23,14 +23,21 @@ export const dynamic = "force-dynamic";
  *   curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://kyndacoffee.com/api/marketing/loop/run
  */
 export async function POST(req: NextRequest) {
+  // Accept EITHER a CRON_SECRET bearer (Coolify/scheduler) OR the X-Agent-Key
+  // (Hermes cron, same key the daily-sync job already uses). Either is sufficient.
   const cronSecret = process.env.CRON_SECRET;
+  const agentKey = process.env.AGENT_API_KEY;
   const authHeader = req.headers.get("authorization");
-  if (cronSecret) {
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const headerAgentKey = req.headers.get("x-agent-key");
+
+  const cronOk = cronSecret ? authHeader === `Bearer ${cronSecret}` : false;
+  const agentOk = agentKey ? headerAgentKey === agentKey : false;
+
+  if (!cronOk && !agentOk) {
+    if (!cronSecret && !agentKey) {
+      console.warn("[marketing/loop] neither CRON_SECRET nor AGENT_API_KEY set — refusing. Set one in production.");
     }
-  } else {
-    console.warn("[marketing/loop] CRON_SECRET not set — endpoint is unauthenticated. Set it in production.");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Optional overrides via body (lookaheadDays/cooldownDays/maxCampaigns/platforms/dryRun).
