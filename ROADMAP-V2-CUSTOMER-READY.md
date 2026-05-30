@@ -520,8 +520,10 @@ business data at any time.
   prove portability. Admin "POS Provider" selector.
 - [ ] **Payment abstraction**: `src/lib/payments/` factory (Stripe + Square adapters) behind one
   `createCheckoutSession()` / `handleWebhook()`.
-- [ ] **Data export & ownership**: admin one-click export (orders, customers, products, inventory,
-  designs) — CSV/JSON (export routes partly exist); scheduled Supabase backups off the droplet.
+- [~] **Data export & ownership**: admin one-click export (orders, customers, products, B2B,
+  subscribers, specials, social, loyalty — 14 tables) as RFC-4180 CSV or a full portable JSON
+  bundle, via `/api/admin/export` + `/admin/data-export` (`src/lib/export/csv.ts`, 12 tests,
+  commit 8142f87). Remaining: scheduled Supabase backups off the droplet.
 - [ ] **Migration playbook** doc: how to point the platform at a new POS/payment/host.
 
 **Why it matters:** Core owner requirement — never locked in, always owns the data.
