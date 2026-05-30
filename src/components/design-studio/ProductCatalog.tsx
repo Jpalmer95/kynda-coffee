@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   PRINTFUL_CATALOG,
   type PrintfulProduct,
   type ProductCategory,
   calculateRetailPrice,
+  getHostedMockupUrl,
+  getProductPlaceholderSvg,
 } from "@/lib/printful/catalog";
 import { formatPrice } from "@/lib/utils";
 
@@ -16,6 +18,7 @@ interface ProductCatalogProps {
 
 export function ProductCatalog({ selectedProduct, onSelectProduct }: ProductCatalogProps) {
   const [categoryFilter, setCategoryFilter] = useState<ProductCategory | "all">("all");
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const categories: { id: ProductCategory | "all"; label: string }[] = [
     { id: "all", label: "All Products" },
@@ -30,6 +33,35 @@ export function ProductCatalog({ selectedProduct, onSelectProduct }: ProductCata
     categoryFilter === "all"
       ? PRINTFUL_CATALOG
       : PRINTFUL_CATALOG.filter((p) => p.category === categoryFilter);
+
+  const handleImageError = useCallback((productId: string, product: PrintfulProduct) => {
+    setFailedImages((prev) => {
+      const next = new Set(prev);
+      next.add(productId);
+      return next;
+    });
+  }, []);
+
+  const getImageSrc = (product: PrintfulProduct): string => {
+    if (failedImages.has(`${product.id}-supabase`)) {
+      // Supabase mockup failed — try Printful CDN
+      if (failedImages.has(`${product.id}-printful`)) {
+        return getProductPlaceholderSvg(product);
+      }
+      // Mark supabase as failed, try printful next
+      setFailedImages((prev) => new Set(prev).add(`${product.id}-supabase`));
+      return product.imageUrl;
+    }
+    return getHostedMockupUrl(product.id, "front");
+  };
+
+  const handleImgError = (product: PrintfulProduct) => {
+    if (!failedImages.has(`${product.id}-supabase`)) {
+      setFailedImages((prev) => new Set(prev).add(`${product.id}-supabase`));
+    } else if (!failedImages.has(`${product.id}-printful`)) {
+      setFailedImages((prev) => new Set(prev).add(`${product.id}-printful`));
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -55,6 +87,7 @@ export function ProductCatalog({ selectedProduct, onSelectProduct }: ProductCata
         {filteredProducts.map((product) => {
           const isSelected = selectedProduct?.id === product.id;
           const basePrice = calculateRetailPrice(product);
+          const imgSrc = getImageSrc(product);
 
           return (
             <button
@@ -69,9 +102,11 @@ export function ProductCatalog({ selectedProduct, onSelectProduct }: ProductCata
               {/* Product Image */}
               <div className="aspect-square bg-card relative overflow-hidden">
                 <img
-                  src={product.imageUrl}
+                  key={`img-${product.id}-${imgSrc.slice(0, 30)}`}
+                  src={imgSrc}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={() => handleImgError(product)}
                 />
                 {isSelected && (
                   <div className="absolute inset-0 bg-forest/10 flex items-center justify-center">

@@ -32,6 +32,7 @@ import {
   type DefaultDesign,
   KYND_LOGO,
   calculateRetailPrice,
+  getHostedMockupUrl,
 } from "@/lib/printful/catalog";
 
 type StudioTab = "products" | "presets" | "generate" | "saved";
@@ -429,9 +430,16 @@ export default function DesignStudioPage() {
           <div className="bg-card rounded-xl p-4 mb-6 border border-latte/20">
             <div className="flex items-start gap-3">
               <img
-                src={selectedProduct.imageUrl}
+                src={getHostedMockupUrl(selectedProduct.id, "front")}
                 alt={selectedProduct.name}
-                className="w-14 h-14 rounded-lg object-cover"
+                className="w-14 h-14 rounded-lg object-cover bg-surface-deep"
+                onError={(e) => {
+                  // Fall back to Printful CDN, then hide on second failure
+                  const img = e.currentTarget;
+                  if (img.src === getHostedMockupUrl(selectedProduct.id, "front")) {
+                    img.src = selectedProduct.imageUrl;
+                  }
+                }}
               />
               <div className="flex-1 min-w-0">
                 <h2 className="font-semibold text-lg">{selectedProduct.name}</h2>

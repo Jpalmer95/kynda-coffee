@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
 import Image from "next/image";
@@ -21,6 +22,7 @@ const NAV_LINKS = [
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
   const shopItemCount = useCartStore((s) => s.item_count);
   const menuItemCount = useMenuCartStore((s) => s.item_count);
   const itemCount = shopItemCount + menuItemCount;
@@ -83,15 +85,31 @@ export function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden items-center gap-6 xl:gap-8 lg:flex" aria-label="Main navigation">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="relative rounded-md px-1 py-2 text-sm font-medium text-mocha transition-colors hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "relative rounded-md px-1 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-forest",
+                    isActive
+                      ? "text-espresso"
+                      : "text-mocha hover:text-espresso"
+                  )}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {link.label}
+                  {/* Active indicator — thick bar underneath */}
+                  {isActive && (
+                    <span
+                      className="absolute bottom-0 left-0 right-0 h-[3px] rounded-full bg-forest"
+                      aria-hidden="true"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Actions */}
@@ -160,16 +178,28 @@ export function Header() {
         aria-hidden={!mobileOpen}
       >
         <nav className="flex h-full flex-col gap-1 overflow-y-auto px-4 py-6" aria-label="Mobile navigation">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="rounded-xl px-4 py-3.5 text-base font-medium text-mocha transition-colors hover:bg-latte/20 hover:text-espresso focus-visible:ring-2 focus-visible:ring-forest"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-medium transition-colors focus-visible:ring-2 focus-visible:ring-forest",
+                  isActive
+                    ? "bg-forest/10 text-espresso"
+                    : "text-mocha hover:bg-latte/20 hover:text-espresso"
+                )}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {isActive && (
+                  <span className="h-5 w-[3px] rounded-full bg-forest shrink-0" aria-hidden="true" />
+                )}
+                {link.label}
+              </Link>
+            );
+          })}
           <div className="my-3 border-t border-latte/20" />
           <Link
             href="/search"

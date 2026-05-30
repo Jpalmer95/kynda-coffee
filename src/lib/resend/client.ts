@@ -3,7 +3,15 @@
 
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) throw new Error("RESEND_API_KEY is not set");
+    _resend = new Resend(key);
+  }
+  return _resend;
+}
 
 const FROM_EMAIL = "Kynda Coffee <hello@kyndacoffee.com>";
 
@@ -14,7 +22,7 @@ export async function sendOrderConfirmation(params: {
   items: { name: string; quantity: number; price: string }[];
   total: string;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM_EMAIL,
     to: params.to,
     subject: `Order Confirmed — ${params.orderNumber}`,
@@ -33,7 +41,7 @@ export async function sendOrderConfirmation(params: {
 
 /** Send welcome email (first newsletter signup) */
 export async function sendWelcomeEmail(to: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM_EMAIL,
     to,
     subject: "Welcome to Kynda Coffee Mail ☕",
@@ -52,7 +60,7 @@ export async function sendShippingNotification(params: {
   orderNumber: string;
   trackingUrl: string;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM_EMAIL,
     to: params.to,
     subject: `Your Kynda order is on its way! — ${params.orderNumber}`,
@@ -71,7 +79,7 @@ export async function sendAbandonedCartEmail(params: {
   items: { name: string; price: string }[];
   cartUrl: string;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM_EMAIL,
     to: params.to,
     subject: "You left something behind ☕",

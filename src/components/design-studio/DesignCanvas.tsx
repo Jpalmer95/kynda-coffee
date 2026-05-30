@@ -10,8 +10,8 @@ import React, {
 } from "react";
 import { Stage, Layer, Image as KonvaImage, Text, Rect, Transformer } from "react-konva";
 import Konva from "konva";
-import { Trash2, Upload, Type, Eye, EyeOff, RotateCcw } from "lucide-react";
-import type { PrintfulProduct } from "@/lib/printful/catalog";
+import { Trash2, Upload, Type, Eye, EyeOff, RotateCcw, Package } from "lucide-react";
+import { type PrintfulProduct, getHostedMockupUrl } from "@/lib/printful/catalog";
 
 // ============================================================
 // Types
@@ -230,9 +230,9 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
     const stageRef = useRef<Konva.Stage>(null);
     const transformerRef = useRef<Konva.Transformer>(null);
 
-    // Mockup image
-    const currentMockupUrl = view === "front" ? product.mockupImages.front : product.mockupImages.back;
-    const mockupImage = useImageWithFallback(currentMockupUrl || undefined, product.imageUrl);
+    // Mockup image — try Supabase-hosted (from admin sync), fall back to product imageUrl
+  const supabaseMockupUrl = getHostedMockupUrl(product.id, view);
+    const mockupImage = useImageWithFallback(supabaseMockupUrl, product.imageUrl);
 
     // Auto-add initial design
     useEffect(() => {
@@ -451,8 +451,10 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
 
           {/* Empty state */}
           {layers.length === 0 && !mockupImage && (
-            <div className="absolute inset-0 flex items-center justify-center text-mocha text-sm pointer-events-none">
-              Loading product mockup…
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-mocha pointer-events-none gap-3">
+              <Package size={48} className="text-latte/50" />
+              <p className="text-sm font-medium">{product.name}</p>
+              <p className="text-xs text-mocha/60">Upload or generate a design to preview on this product</p>
             </div>
           )}
           {layers.length === 0 && mockupImage && (

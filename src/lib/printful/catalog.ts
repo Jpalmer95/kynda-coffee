@@ -409,3 +409,55 @@ export const KYND_LOGO = {
   url: "/images/logos/kynda-logo-black.png",
   type: "sticker" as const,
 };
+
+// ============================================================================
+// SUPABASE-HOSTED MOCKUP URLS (populated by /api/admin/mockups/sync)
+// These replace the broken Printful CDN mockup-generator URLs.
+// ============================================================================
+
+const SUPABASE_STORAGE_BASE = "https://svfuuvaaynmcofyrkwus.supabase.co/storage/v1/object/public/mockups";
+
+/**
+ * Returns the Supabase-hosted mockup URL for a product.
+ * Falls back to the product's own imageUrl if the mockup hasn't been synced yet.
+ */
+export function getHostedMockupUrl(productId: string, view: "front" | "back" = "front"): string {
+  return `${SUPABASE_STORAGE_BASE}/${productId}-${view}.jpg`;
+}
+
+/**
+ * Build a product-scoped placeholder data-URI when no real image is available.
+ * Generates a minimal SVG with the product type icon on a neutral background.
+ */
+export function getProductPlaceholderSvg(product: PrintfulProduct): string {
+  const colors: Record<ProductCategory, { bg: string; accent: string }> = {
+    apparel: { bg: "%232D3436", accent: "%23B4CDB8" },
+    drinkware: { bg: "%231A1A2E", accent: "%23B4CDB8" },
+    accessories: { bg: "%23353B48", accent: "%23B4CDB8" },
+    "wall-art": { bg: "%232C3A47", accent: "%23B4CDB8" },
+    "home-living": { bg: "%232F3542", accent: "%23B4CDB8" },
+  };
+  const c = colors[product.category];
+
+  const icons: Record<ProductCategory, string> = {
+    apparel: `<path d="M15 6l-3 3-3-3M9 6V3h6v3M6 9l3-3v15H6V9zm12 0l-3-3v15h3V9z" fill="none" stroke="${c.accent}" stroke-width="1.5"/>`,
+    drinkware: `<rect x="7" y="5" width="10" height="14" rx="1" fill="none" stroke="${c.accent}" stroke-width="1.5"/><path d="M17 8h2a2 2 0 010 4h-2" fill="none" stroke="${c.accent}" stroke-width="1.5"/>`,
+    accessories: `<path d="M6 8h12l-1 12H7L6 8z" fill="none" stroke="${c.accent}" stroke-width="1.5"/><path d="M9 8V5a3 3 0 016 0v3" fill="none" stroke="${c.accent}" stroke-width="1.5"/>`,
+    "wall-art": `<rect x="4" y="4" width="16" height="16" rx="1" fill="none" stroke="${c.accent}" stroke-width="1.5"/><path d="M4 15l4-4 3 3 4-4 5 5" fill="none" stroke="${c.accent}" stroke-width="1.2"/>`,
+    "home-living": `<rect x="4" y="8" width="16" height="10" rx="2" fill="none" stroke="${c.accent}" stroke-width="1.5"/><path d="M8 8V5M16 8V5" fill="none" stroke="${c.accent}" stroke-width="1.5"/>`,
+  };
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 24 24"><rect width="24" height="24" fill="${c.bg}"/>${icons[product.category]}</svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg.replace(/%25/g, "%").replace(/%23/g, "#").replace(/#/g, "%23"))}`;
+}
+
+/**
+ * Returns the best available image URL for a product, in priority order:
+ * 1. Supabase-hosted mockup (if admin has run sync)
+ * 2. Product imageUrl (Printful CDN)
+ * 3. SVG placeholder data URI
+ */
+export function getBestProductImage(product: PrintfulProduct, view: "front" | "back" = "front"): string {
+  // Always try Supabase-hosted mockup first
+  return getHostedMockupUrl(product.id, view);
+}
