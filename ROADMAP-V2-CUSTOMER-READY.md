@@ -161,16 +161,27 @@ of goods, Printful/POD cost, shipping, payment fees, and a configurable target m
 Shop goods, custom merch, and (read-only advisory) menu items via MenuMetrics costs.
 
 **Work:**
-- [ ] `src/lib/pricing/engine.ts` — pure function: `price(costBasis, {targetMarginPct, shipping,
-  paymentFeePct, podCost, rounding}) → retailPrice` with floor enforcement (never sell below cost +
-  min margin). Unit-tested.
-- [ ] Source cost basis from: MenuMetrics (menu items, Epic 7), Printful catalog cost (merch),
-  vendor cost (Shop goods, Epic 7 vendor table).
-- [ ] Admin **Pricing Rules** page (`/admin/settings` → Pricing): target margin per category,
-  rounding (e.g. .49/.99 endings), shipping buffer strategy.
-- [ ] Wire Design Studio + Shop product creation to call the engine (replace ad-hoc markup).
-- [ ] Nightly cron (Hermes): re-price Shop goods whose vendor/POD cost changed; surface a "prices
-  updated / margin at risk" digest in admin for approval before publishing.
+- [x] `src/lib/pricing/engine.ts` — pure function: `calculatePrice({costCents, shippingCents,
+  paymentFeePct, paymentFeeFixedCents, targetMarginPct, minProfitCents, rounding})` →
+  profit-guaranteed retail with a cost-plus floor so we never sell at a loss. Charm rounding
+  (charm_99/charm_49_99/nearest_5/nearest_25) always rounds up. 19 unit tests incl. a property
+  sweep asserting profitability never breaks (commit 3ffcf44).
+- [x] Per-category pricing profiles (design-studio, merch-*, brew-gear, bulk-tea, apothecary,
+  coffee-beans, wholesale) with `getPricingProfile()` + `priceForCategory()` convenience.
+- [x] Wire Design Studio pricing to the engine: `/api/printful/estimate` now prices via
+  `calculatePrice` using the cheapest live Printful shipping rate (else profile buffer), covers
+  Stripe fees, enforces the floor, and returns a transparent `pricing` breakdown.
+- [ ] Source cost basis from MenuMetrics (menu items, Epic 7) and vendor cost (Shop goods, Epic 7).
+- [ ] Admin **Pricing Rules** page (`/admin/settings` → Pricing): per-category target margin,
+  rounding, shipping-buffer strategy (persist overrides of the default profiles).
+- [ ] Wire Shop product creation/`mapPosCatalogItemToProduct` to call the engine for retail.
+- [ ] Nightly cron (Hermes): re-price Shop goods on vendor/POD cost change; "margin at risk" digest
+  for owner approval before publishing.
+
+> **Progress (2026-05-30, commit 3ffcf44):** Engine shipped + Design Studio integrated. The
+> money-safety rail exists and is proven by a property test (profit never < min across a cost×margin
+> sweep). Remaining: admin Pricing Rules UI, Shop-goods + MenuMetrics cost wiring, and the nightly
+> re-price cron (the cost sources land in Epic 7).
 
 **Why it matters:** Owner explicitly wants "smart adaptive pricing to always ensure profit on all
 items including shipping." This is the money-safety rail.
