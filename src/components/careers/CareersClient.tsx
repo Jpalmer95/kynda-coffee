@@ -28,10 +28,10 @@ interface JobOpening {
 }
 
 const PERKS = [
-  { icon: Coffee, title: "Free Coffee", desc: "Unlimited drinks on shift" },
+  { icon: Coffee, title: "Free Coffee", desc: "Free shift drink" },
   { icon: Heart, title: "Flexible Schedule", desc: "We work around your life" },
   { icon: Users, title: "Great Team", desc: "Small crew, big energy" },
-  { icon: Sparkles, title: "Growth", desc: "Learn latte art, roasting, operations" },
+  { icon: Sparkles, title: "Growth", desc: "Learn latte art, baking, operations" },
 ];
 
 const FALLBACK_OPENINGS: JobOpening[] = [
@@ -77,7 +77,7 @@ const FALLBACK_OPENINGS: JobOpening[] = [
     location: "Horseshoe Bay, TX",
     type: "Part-time",
     description:
-      "Help tell the Kynda story online. Create content for Instagram, TikTok, and our blog. Photograph new drinks and events. Collaborate on seasonal campaigns.",
+      "Help tell the Kynda story online. Create content for Instagram, TikTok, and more. Photograph new drinks and events. Collaborate on seasonal campaigns.",
     requirements: [
       "Experience with social media management",
       "Photography and video skills",
