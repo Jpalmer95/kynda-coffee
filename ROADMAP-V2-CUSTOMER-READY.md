@@ -324,7 +324,11 @@ scheduled/posted. Automated newsletters and monthly-specials campaigns. Growth i
 > approve/reject. The **content-drop pipeline** is live too — `/admin/marketing/content-drop`
 > + `/api/marketing/content-drop` (commit f27f503): drop a feature image, get moderated,
 > platform-specific drafts (`src/lib/marketing/content-drop.ts`, OpenAI captions w/ brand
-> fallback) landed in the approval queue. Remaining: Hermes marketing-loop cron, newsletter automation, insights dashboard.
+> fallback) landed in the approval queue. The **autonomous Marketing Loop** is live too —
+> `src/lib/marketing/loop.ts` (weekly planner, 11 tests) + `/api/marketing/loop/run`
+> (CRON_SECRET or X-Agent-Key) (commits e9a05bb, 3d9246e), wired to a Hermes weekly cron
+> (Mon 8am, job d3627c96b629) that drafts campaigns for live/upcoming specials into the
+> approval queue. Remaining: newsletter automation, insights dashboard.
 
 **Why it matters:** This is the owner's headline ask — agents that drive growth and post on Kynda's
 behalf, with the owner dropping in assets and chatting with marketing agents. Approval-gated keeps
