@@ -321,7 +321,10 @@ scheduled/posted. Automated newsletters and monthly-specials campaigns. Growth i
 > draft, owner approves, enforced at the data layer). The **admin Specials manager** (`/admin/specials`,
 > commit 295a228) is now live so the owner curates the SSOT directly. The **approval-queue UI**
 > (`/admin/marketing/approvals`, commit ea71f29) is live too — agent drafts surface there for
-> approve/reject. Remaining: content-drop pipeline, Hermes marketing-loop cron, newsletter automation, insights dashboard.
+> approve/reject. The **content-drop pipeline** is live too — `/admin/marketing/content-drop`
+> + `/api/marketing/content-drop` (commit f27f503): drop a feature image, get moderated,
+> platform-specific drafts (`src/lib/marketing/content-drop.ts`, OpenAI captions w/ brand
+> fallback) landed in the approval queue. Remaining: Hermes marketing-loop cron, newsletter automation, insights dashboard.
 
 **Why it matters:** This is the owner's headline ask — agents that drive growth and post on Kynda's
 behalf, with the owner dropping in assets and chatting with marketing agents. Approval-gated keeps
