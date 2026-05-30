@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Offline — Kynda Coffee",
-  description: "You appear to be offline. Reconnect to browse our menu, place orders, and shop merch.",
-  robots: { index: false, follow: false },
-};
+import Link from "next/link";
 
 export default function OfflinePage() {
   return (
