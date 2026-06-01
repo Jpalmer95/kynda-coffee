@@ -14,8 +14,55 @@ import { buildImageLookup } from "@/lib/square/catalog-transform";
 import { cacheAllSquareImages } from "@/lib/square/image-cache";
 
 // ---- Catalog Sync (Square → Supabase) ----
-
+//
+// IMPORTANT: the legacy `products` table is NO LONGER the catalog source of
+// truth. The live storefront reads `pos_items` (channel-routed) populated by
+// /api/square/sync-catalog. Writing the flat `products` table here used to
+// dump the entire café menu in as fake `coffee-beans`, flooding the Shop.
+// This function now delegates to the POS catalog sync so the admin "Full Sync"
+// button can never re-pollute. We do NOT touch the `products` table anymore.
 export async function syncCatalog(): Promise<SyncResult> {
+  const result: SyncResult = {
+    success: true,
+    synced: 0,
+    errors: [],
+    timestamp: new Date().toISOString(),
+  };
+
+  try {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "http://localhost:3000";
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (process.env.CRON_SECRET) headers["Authorization"] = `Bearer ${process.env.CRON_SECRET}`;
+    if (process.env.AGENT_API_KEY) headers["X-Agent-Key"] = process.env.AGENT_API_KEY;
+
+    const res = await fetch(`${baseUrl}/api/square/sync-catalog`, {
+      method: "POST",
+      headers,
+      body: "{}",
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      result.success = false;
+      result.errors.push(data?.error || data?.details || `sync-catalog HTTP ${res.status}`);
+    } else {
+      result.synced = Number(data?.synced ?? 0);
+      if (Array.isArray(data?.errors)) result.errors.push(...data.errors);
+    }
+  } catch (err) {
+    result.success = false;
+    result.errors.push(`Catalog delegate failed: ${String(err)}`);
+  }
+
+  return result;
+}
+
+// ---- (legacy products-table writer, retained for reference, no longer used) ----
+async function _legacySyncCatalogToProductsTable(): Promise<SyncResult> {
   const result: SyncResult = {
     success: true,
     synced: 0,
