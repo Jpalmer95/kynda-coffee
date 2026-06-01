@@ -147,9 +147,43 @@ export function getCategoryForItem(item: SquareObjectLike, categories: CategoryL
   return { id: categoryId, name: categoryName || "Uncategorized" };
 }
 
+/**
+ * Authoritative Square-Category → item_type map (the clean, owner-controlled
+ * source of truth). Match is case-insensitive and substring-based on the Square
+ * Category NAME, checked BEFORE the name-keyword heuristic. To route an item,
+ * just put it in a Square category whose name contains one of these tokens —
+ * e.g. category "Coffee Beans (Retail Bags)" → retail → Shop, even though the
+ * name "Kynda Coffee ..." would otherwise keyword-match to "menu".
+ *
+ * Order matters: first matching token wins. Keep more-specific tokens first.
+ */
+const CATEGORY_ITEM_TYPE_RULES: Array<[RegExp, NormalizedSquareItem["itemType"]]> = [
+  [/gift\s*card/, "gift_card"],
+  [/add[-\s]?on|modifier/, "modifier"],
+  [/catering|service|rental|dispenser/, "service"],
+  // "beans"/"bag"/"whole bean"/"ground" before any coffee→menu inference:
+  // bagged retail coffee is a shippable Shop good, not a made-to-order drink.
+  [/bean|bag|whole bean|ground|retail|wellness|supplement/, "retail"],
+  [/apparel|merch|drinkware|mug|glass|tee|shirt|hoodie|hat|tote/, "merch"],
+  [/drink|espresso|coffee|tea|beverage|bakery|food|breakfast|lunch|pastry/, "menu"],
+];
+
 export function classifySquareItem(name: string, category: string): NormalizedSquareItem["itemType"] {
+  const nm = (name || "").toLowerCase();
+  // Gift cards are unmistakable by name and must win regardless of category.
+  if (/gift\s*card/.test(nm)) return "gift_card";
+
+  // 1) Authoritative: the Square category name decides, if it matches a rule.
+  const cat = (category || "").toLowerCase();
+  for (const [token, type] of CATEGORY_ITEM_TYPE_RULES) {
+    if (token.test(cat)) return type;
+  }
+
+  // 2) Fallback heuristic on name + category (for unmapped/legacy categories).
   const haystack = `${name} ${category}`.toLowerCase();
   if (/gift\s*card/.test(haystack)) return "gift_card";
+  // Bagged/retail coffee beans before the generic coffee→menu rule.
+  if (/whole bean|bagged|coffee beans|\bbeans\b|\b\d+\s*oz\s*bag\b|\bbag\b/.test(haystack)) return "retail";
   if (/shirt|tee|hoodie|hat|mug|tumbler|glass|cup|sticker|tote|merch|apparel/.test(haystack)) return "merch";
   if (/syrup|extra shot|add |substitute|modifier|milk|sauce|flavor/.test(haystack)) return "modifier";
   if (/coffee|espresso|latte|cappuccino|mocha|americano|tea|matcha|chai|smoothie|energy|breakfast|lunch|panini|bagel|bread|food|pastry|drink|beverage|lemonade|palmer/.test(haystack)) return "menu";

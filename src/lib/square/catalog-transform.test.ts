@@ -97,6 +97,27 @@ describe("Square catalog transforms", () => {
     expect(classifySquareItem("Caprese Panini", "Food")).toBe("menu");
   });
 
+  it("lets the Square CATEGORY name authoritatively drive item_type", () => {
+    // The single most important fix: bagged coffee belongs on the Shop (retail),
+    // even though its name contains "coffee" which would otherwise mean "menu".
+    expect(classifySquareItem("Kynda Coffee - 12 oz Bag", "Coffee Beans (Retail Bags)")).toBe("retail");
+    expect(classifySquareItem("Ethiopia Whole Bean", "Coffee Beans")).toBe("retail");
+    // Category routing for the rest of the storefront taxonomy:
+    expect(classifySquareItem("Latte", "Coffee & Espresso Drinks")).toBe("menu");
+    expect(classifySquareItem("Cold Brew", "Bottled & Canned Drinks")).toBe("menu");
+    expect(classifySquareItem("Whey Protein", "Wellness & Retail Goods")).toBe("retail");
+    expect(classifySquareItem("Coffee Mug", "Drinkware & Merch")).toBe("merch");
+    expect(classifySquareItem("Catering Tray", "Catering & Services")).toBe("service");
+    expect(classifySquareItem("Extra Marinara", "Add-Ons & Modifiers")).toBe("modifier");
+  });
+
+  it("falls back to name keywords for unmapped/legacy categories", () => {
+    // Bagged coffee still routes to retail via the name even with no category.
+    expect(classifySquareItem("Kynda Coffee 2.5oz Bag", "Uncategorized")).toBe("retail");
+    // A drink with a legacy category still classifies as menu.
+    expect(classifySquareItem("Cappuccino", "Uncategorized")).toBe("menu");
+  });
+
   it("serializes BigInt values before JSONB persistence", () => {
     expect(serializeSquareRaw({ version: BigInt(123), nested: [BigInt(1)] })).toEqual({
       version: "123",
