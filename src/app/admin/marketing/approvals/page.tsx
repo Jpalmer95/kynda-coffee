@@ -188,7 +188,6 @@ export default function ApprovalsPage() {
                 {p.image_urls && p.image_urls.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {p.image_urls.map((url, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img key={i} src={url} alt="" className="h-20 w-20 rounded-lg object-cover" />
                     ))}
                   </div>

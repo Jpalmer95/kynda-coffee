@@ -62,7 +62,6 @@ export default function AdminNotificationsPage() {
     loadNotifications();
     const interval = window.setInterval(loadNotifications, 30000);
     return () => window.clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const mergedNotifications = useMemo(() => {

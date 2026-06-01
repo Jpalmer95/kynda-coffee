@@ -16,8 +16,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const type = body.type ?? "all";
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+    let result;
 
     switch (type) {
       case "catalog":

@@ -92,7 +92,7 @@ export default function MarketingSocialPage() {
         toast(err instanceof Error ? err.message : "Load failed", "error");
       })
       .finally(() => setLoading(false));
-  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filter]);
 
   async function refreshData() {
     setLoading(true);

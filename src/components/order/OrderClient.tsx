@@ -79,7 +79,6 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       );
     }
     setHydrated(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [customerName, setCustomerName] = useState("");
@@ -116,7 +115,6 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
     } else {
       setShowMenu(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
 
   // Track expanded modifier lists per item

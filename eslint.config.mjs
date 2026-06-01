@@ -1,26 +1,31 @@
-import nextTypescript from "eslint-config-next/typescript";
-import reactHooks from "eslint-plugin-react-hooks";
+import next from "eslint-config-next";
 
-const eslintConfig = [
-  ...(Array.isArray(nextTypescript) ? nextTypescript : [nextTypescript]),
-  {
-    plugins: {
-      "react-hooks": reactHooks,
-    },
-    rules: {
-      // React hooks — turn off noisy rules
-      "react-hooks/exhaustive-deps": "off",
-      "react-hooks/rules-of-hooks": "warn",
-    },
-  },
+export default [
+  ...next,
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     rules: {
-      // TypeScript rules — relax for existing codebase
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-empty-object-type": "off",
-      "@typescript-eslint/no-unused-expressions": "off",
+      // Next.js
+      "@next/next/no-img-element": "off",
+      // React
+      "react/no-unescaped-entities": "off",
+      // React hooks — relax Next.js defaults
+      "react-hooks/exhaustive-deps": "off",
+      "react-hooks/rules-of-hooks": "warn",
+      "react-hooks/static-components": "off",
+      "react-hooks/use-memo": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/globals": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/error-boundaries": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/set-state-in-render": "off",
+      "react-hooks/config": "off",
+      "react-hooks/gating": "off",
+      "react-hooks/incompatible-library": "off",
+      "react-hooks/unsupported-syntax": "off",
       // Core JS
       "prefer-const": "warn",
     },
@@ -30,13 +35,8 @@ const eslintConfig = [
       ".next/",
       "node_modules/",
       "public/",
-      "*.config.js",
-      "*.config.mjs",
-      "*.config.ts",
       "supabase/",
       ".hermes/",
     ],
   },
 ];
-
-export default eslintConfig;

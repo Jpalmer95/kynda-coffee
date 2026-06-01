@@ -136,7 +136,6 @@ export default function ContentDropPage() {
 
         <div className="space-y-4">
           {imageUrl.trim() ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt="Preview" className="aspect-square w-full rounded-2xl border border-latte/20 object-cover" onError={(e) => ((e.target as HTMLImageElement).style.opacity = "0.3")} />
           ) : (
             <div className="flex aspect-square w-full items-center justify-center rounded-2xl border border-dashed border-latte/30 bg-card text-mocha">
