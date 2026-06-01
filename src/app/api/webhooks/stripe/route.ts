@@ -95,6 +95,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       const fm = (pendingOrder.fulfillment_metadata as Record<string, unknown>) || {};
       const verifiedName = details?.name?.trim();
       const verifiedPhone = details?.phone?.trim();
+      const verifiedShipping = (session as any).shipping_details?.address
+        ? {
+            name: (session as any).shipping_details?.name ?? verifiedName ?? null,
+            ...(session as any).shipping_details.address,
+          }
+        : null;
       await db
         .from("orders")
         .update({
@@ -107,6 +113,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
             ...fm,
             ...(verifiedName ? { customer_name: verifiedName } : {}),
             ...(verifiedPhone ? { customer_phone: verifiedPhone } : {}),
+            ...(verifiedShipping ? { verified_shipping_address: verifiedShipping } : {}),
           },
           updated_at: new Date().toISOString(),
         })
@@ -129,7 +136,39 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const printfulDraftId = metadata.printful_draft_id;
   if (printfulDraftId) {
     try {
-      const { confirmOrder } = await import("@/lib/printful/client");
+      const { confirmOrder, updateOrderRecipient } = await import("@/lib/printful/client");
+
+      // ── Reconcile shipping address with what Stripe actually verified ──
+      // The Printful draft was created from the address typed into our own
+      // checkout form. With wallet payments (Apple Pay / Google Pay / Link)
+      // Stripe collects the address from the customer's wallet, which can
+      // differ. session.shipping_details is the authoritative, customer-
+      // confirmed address — push it to Printful BEFORE confirming so we never
+      // ship to a stale/wrong address. Non-fatal: if the patch fails we still
+      // confirm against the original draft address rather than block fulfillment.
+      const shipping = (session as any).shipping_details || (session as any).shipping;
+      const addr = shipping?.address;
+      if (addr?.line1 && addr?.city && addr?.postal_code) {
+        try {
+          await updateOrderRecipient(Number(printfulDraftId), {
+            name: shipping.name || details?.name || email.split("@")[0],
+            address1: addr.line1,
+            address2: addr.line2 || undefined,
+            city: addr.city,
+            state_code: addr.state || "",
+            zip: addr.postal_code,
+            country_code: addr.country || "US",
+            email,
+            phone: details?.phone || undefined,
+          } as any);
+          console.log(`[Stripe Webhook] Synced Stripe-verified shipping address to Printful order ${printfulDraftId}`);
+        } catch (addrErr: any) {
+          console.error(`[Stripe Webhook] Failed to sync shipping address to Printful ${printfulDraftId}:`, addrErr?.message);
+        }
+      } else {
+        console.warn(`[Stripe Webhook] No Stripe shipping_details on session ${session.id}; confirming Printful order with original draft address.`);
+      }
+
       await confirmOrder(Number(printfulDraftId));
       console.log(`[Stripe Webhook] Confirmed Printful order ${printfulDraftId}`);
 

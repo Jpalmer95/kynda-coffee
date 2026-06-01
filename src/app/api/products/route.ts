@@ -40,8 +40,15 @@ export async function GET(req: NextRequest) {
     try {
       const channelLabel = source === "menu" ? "menu" : "shop";
       const catalog = await getPosCatalog({ channel: channelLabel, includeModifiers: false, limit });
+      // getPosCatalog already applies the canonical channel routing
+      // (shouldIncludeItemForChannel) — for the Shop that means only
+      // available_online goods that are shippable/retail/merch/gift_card, and
+      // for the Menu only food/drink. As a defense-in-depth guard against
+      // sloppy Square flags, additionally drop any item still typed as raw
+      // made-to-order "menu" food when serving the Shop surface.
+      const isMenuSurface = channelLabel === "menu";
       const posProducts = catalog.items
-        .filter((item) => item.itemType !== "menu")
+        .filter((item) => (isMenuSurface ? true : item.itemType !== "menu"))
         .map(mapPosCatalogItemToProduct)
         .filter((product) => !category || product.category === category)
         .filter((product) => featured !== "true" || product.is_featured);

@@ -52,3 +52,22 @@ export async function estimateShipping(
 export async function confirmOrder(orderId: number) {
   return pfFetch(`/orders/${orderId}/confirm`, { method: "POST" });
 }
+
+/**
+ * Update the recipient (shipping) address on a draft Printful order.
+ *
+ * Used to reconcile the address Stripe actually collected/verified at
+ * checkout — which for wallet payments (Apple Pay / Google Pay / Link) comes
+ * from the customer's wallet and can differ from whatever was typed into our
+ * own form when the draft was created. Must be called BEFORE confirmOrder()
+ * so the order ships to the authoritative Stripe-verified address.
+ */
+export async function updateOrderRecipient(
+  orderId: number,
+  recipient: PrintfulCreateOrderPayload["recipient"]
+) {
+  return pfFetch<{ result: PrintfulOrderResponse }>(`/orders/${orderId}`, {
+    method: "PUT",
+    body: JSON.stringify({ recipient }),
+  });
+}
