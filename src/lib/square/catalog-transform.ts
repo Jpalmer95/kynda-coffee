@@ -140,11 +140,27 @@ export function buildImageLookup(objects: SquareObjectLike[]): ImageLookup {
 }
 
 export function getCategoryForItem(item: SquareObjectLike, categories: CategoryLookup): { id?: string; name: string } {
-  const itemData = item.itemData;
-  const categoryRef = itemData?.categories?.[0];
-  const categoryId = categoryRef?.id ?? itemData?.categoryId;
-  const categoryName = categoryRef?.name ?? (categoryId ? categories[categoryId]?.name : undefined);
-  return { id: categoryId, name: categoryName || "Uncategorized" };
+  const itemData = item.itemData as any;
+  // Square can attach the category several ways: an inline name, a `categories[]`
+  // array of {id} refs (often a reporting category + the real one), a legacy
+  // top-level `categoryId`, or a `reportingCategory`. Collect every candidate id
+  // and pick the FIRST that resolves to a real category name in the lookup.
+  const candidateIds: string[] = [];
+  const inlineName = itemData?.categories?.[0]?.name as string | undefined;
+  for (const ref of itemData?.categories ?? []) {
+    if (ref?.id) candidateIds.push(ref.id);
+  }
+  if (itemData?.reportingCategory?.id) candidateIds.push(itemData.reportingCategory.id);
+  if (itemData?.categoryId) candidateIds.push(itemData.categoryId);
+
+  if (inlineName) {
+    return { id: candidateIds[0], name: inlineName };
+  }
+  for (const id of candidateIds) {
+    const resolved = categories[id]?.name;
+    if (resolved) return { id, name: resolved };
+  }
+  return { id: candidateIds[0], name: "Uncategorized" };
 }
 
 /**

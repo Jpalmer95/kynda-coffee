@@ -22,7 +22,10 @@ export async function fetchSquareCatalogObjects(cursor?: string): Promise<{
   objects: SquareObjectLike[];
   nextCursor?: string;
 }> {
-  const response = await squareCatalog().listCatalog(cursor, "ITEM,IMAGE");
+  // Must include CATEGORY so item category IDs resolve to names downstream
+  // (getCategoryForItem → classifySquareItem). Without it every item falls back
+  // to "Uncategorized" and the category-driven item_type routing can't work.
+  const response = await squareCatalog().listCatalog(cursor, "ITEM,IMAGE,CATEGORY");
   return {
     objects: (response.result?.objects || []) as unknown as SquareObjectLike[],
     nextCursor: response.result.cursor || undefined,
