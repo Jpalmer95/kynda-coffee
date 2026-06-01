@@ -234,16 +234,39 @@ export function shouldIncludeItemForChannel(
 ): boolean {
   if (!item.is_active) return false;
 
-  // Owner-controlled channel routing takes precedence over heuristics (Epic 1).
-  // The customer Menu is strictly food/drink ordering; the Shop is strictly
-  // shipped/retail goods. Explicit decisions are never second-guessed.
+  // Owner-controlled channel routing takes precedence over the item_type
+  // heuristic (Epic 1). The customer Menu is strictly food/drink ordering; the
+  // Shop is strictly shipped/retail goods. An explicit decision (menu|shop|both)
+  // excludes the item from the OTHER surface; sub-channel availability flags
+  // (qr/pickup/delivery/shipping) still gate WHERE within a surface it shows.
+  // Only "auto" defers entirely to the item_type heuristic below.
   if (visibility && visibility !== "auto") {
     if (visibility === "hidden") return false;
     const isMenuChannel = MENU_CHANNELS.includes(channel);
     const isShopChannel = SHOP_CHANNELS.includes(channel);
     if (visibility === "menu" && isShopChannel) return false;
     if (visibility === "shop" && isMenuChannel) return false;
-    // "both" (or a matching side) passes through to the availability check below.
+    // On the MATCHING surface, an explicit decision overrides the item_type
+    // restriction (e.g. bagged coffee Square mistyped as "menu" still belongs
+    // on the Shop) but availability still applies per channel.
+    if (visibility === "menu" && isMenuChannel) {
+      return channel === "menu"
+        ? (item.available_pickup || item.available_qr || item.available_online)
+        : channel === "qr"
+        ? item.available_qr
+        : channel === "pickup"
+        ? item.available_pickup
+        : channel === "delivery"
+        ? item.available_delivery
+        : true;
+    }
+    if (visibility === "shop" && isShopChannel) {
+      // Shop/shipping: require online availability (shipping channel needs the
+      // shipping flag); item_type no longer matters since the owner decided.
+      return channel === "shipping" ? item.available_shipping : item.available_online;
+    }
+    // "both" falls through to the availability + item_type heuristic below,
+    // which already admits retail/merch on shop and menu/retail on menu.
   }
 
   switch (channel) {

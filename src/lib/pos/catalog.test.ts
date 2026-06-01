@@ -214,6 +214,16 @@ describe("POS catalog formatting", () => {
     // "both" allows an item through on either side (subject to availability).
     expect(shouldIncludeItemForChannel(hoodie, "shop", "both")).toBe(true);
 
+    // Explicit visibility overrides the item_type restriction on the matching
+    // surface, even when Square mistyped the item — but sub-channel availability
+    // flags still gate WHERE it shows. Real case: bagged coffee Square typed as
+    // "menu" but routed to the Shop must appear on the Shop (online-available).
+    expect(shouldIncludeItemForChannel(latte, "shop", "shop")).toBe(true); // latte is online
+    // A merch item routed to the Menu shows on the menu surface (pickup/online),
+    // but only on the QR sub-channel if it's actually QR-available (it isn't).
+    expect(shouldIncludeItemForChannel(hoodie, "menu", "menu")).toBe(true); // pickup+online
+    expect(shouldIncludeItemForChannel(hoodie, "qr", "menu")).toBe(false); // not QR-available
+
     // "auto" / null keeps the heuristic behavior.
     expect(shouldIncludeItemForChannel(latte, "menu", "auto")).toBe(true);
     expect(shouldIncludeItemForChannel(latte, "menu", null)).toBe(true);
