@@ -3,7 +3,8 @@ import {
   PRINTFUL_CATALOG,
   PRODUCT_MARKUP,
 } from "@/lib/printful/catalog";
-import { calculatePrice, getPricingProfile } from "@/lib/pricing/engine";
+import { calculatePrice } from "@/lib/pricing/engine";
+import { getEffectivePricingProfile } from "@/lib/pricing/rules";
 
 /** Map a Printful catalog category to a Kynda pricing profile key. */
 const PRINTFUL_TO_PRICING_PROFILE: Record<string, string> = {
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
     // Profit-guaranteed pricing (Epic 2). Use the cheapest live shipping rate
     // when we have one; otherwise fall back to the category profile's buffer.
     const profileKey = PRINTFUL_TO_PRICING_PROFILE[product.category] ?? "design-studio";
-    const profile = getPricingProfile(profileKey);
+    const profile = await getEffectivePricingProfile(profileKey);
     const liveShippingCents =
       shippingOptions.length > 0
         ? Math.min(...shippingOptions.map((o) => o.rate_cents))

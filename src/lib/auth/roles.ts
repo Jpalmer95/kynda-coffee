@@ -77,6 +77,7 @@ const OWNER_ONLY_ADMIN = [
   "/admin/insights",
   "/admin/analytics",
   "/admin/accounting",
+  "/admin/pricing",
 ];
 
 export function isOwnerOnlyAdminPath(pathname: string): boolean {

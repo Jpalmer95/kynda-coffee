@@ -78,6 +78,7 @@ describe("isOwnerOnlyAdminPath", () => {
     expect(isOwnerOnlyAdminPath("/admin/insights")).toBe(true);
     expect(isOwnerOnlyAdminPath("/admin/analytics")).toBe(true);
     expect(isOwnerOnlyAdminPath("/admin/accounting")).toBe(true);
+    expect(isOwnerOnlyAdminPath("/admin/pricing")).toBe(true);
   });
 
   it("does not flag manager-accessible admin pages", () => {
