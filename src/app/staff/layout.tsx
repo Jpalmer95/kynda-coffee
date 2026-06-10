@@ -6,6 +6,9 @@ import {
   BookOpen,
   GraduationCap,
   ClipboardList,
+  ClipboardCheck,
+  CalendarDays,
+  MessageCircle,
   Trash2,
   FileText,
   ArrowLeft,
@@ -24,10 +27,14 @@ export const dynamic = "force-dynamic";
 const STAFF_NAV = [
   { href: "/staff", label: "Dashboard", icon: LayoutDashboard },
   { href: "/kds", label: "Kitchen Display", icon: MonitorCheck },
+  { href: "/staff/schedule", label: "Schedule", icon: CalendarDays },
+  { href: "/staff/chat", label: "Team Chat", icon: MessageCircle },
+  { href: "/staff/par-counts", label: "Par Counts", icon: ClipboardCheck },
   { href: "/staff/recipes", label: "Recipes", icon: Coffee },
   { href: "/staff/checklists", label: "Checklists", icon: ClipboardList },
   { href: "/staff/waste-log", label: "Waste Log", icon: Trash2 },
   { href: "/staff/handbook", label: "Handbook", icon: FileText },
+  { href: "/staff/onboarding", label: "Onboarding", icon: BookOpen },
   { href: "/training", label: "Training", icon: GraduationCap },
 ];
 
