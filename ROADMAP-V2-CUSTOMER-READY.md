@@ -232,6 +232,26 @@ with timing stats and clear pickup tagging.
   (curbside/table/counter), fired best-effort from the KDS PATCH route. (commit 753fd17)
 - [ ] Verify on a real tablet form factor (browser_vision QA at tablet viewport).
 
+> **Progress (2026-06-10 late): KDS STAFF-READY + PREPAID-ONLY (commits 653c603, 38a9a62, migration 032 APPLIED to prod).**
+> - **"[object Object]" modifiers FIXED**: `normalizeKdsItems`/`formatModifiers` render every
+>   historical item shape (QR/agent modifier objects, POS strings) as clean ticket text
+>   (`+ Oat milk`); Square webhook now carries POS modifiers/variants/notes onto KDS tickets.
+> - **"Failed to update order" FIXED**: root cause was prod `orders_status_check` missing
+>   'ready'/'complete'/'fulfilled' (constraint predated the KDS state machine). Migration 032
+>   applied to prod; KDS PATCH now also surfaces the underlying DB error.
+> - **3-tap lifecycle**: Start Preparing → Mark Ready (auto-SMS) → Picked Up. Ready orders stay
+>   on the board until handoff + "Back to Preparing" undo.
+> - **Richer cards**: time placed, customer phone, channel badge (QR/ONLINE/AGENT/POS),
+>   PAID vs PAY AT REGISTER chip, variants, highlighted notes, item count + total.
+> - **PREPAID-ONLY rule enforced** (owner directive): unpaid remote orders never reach the KDS
+>   (`isHeldForPayment`); agent API forces Stripe; agent.json manifest updated. Cash = physical
+>   POS only; staff-attended kiosk exempt.
+> - **Staff guide**: `docs/kds-staff-guide.md` (print-ready; 3-tap flow, chip decoder,
+>   opening/closing checklist, troubleshooting).
+> - **MenuMetrics seeded with real data**: 166 ingredients imported from the owner's xlsx export
+>   via the agent bridge (categories: Drink/Food Supplies, Packaging, Cleaning; 53 with densities;
+>   HEB/vendor + pack size + cost). Admin sync verified: 166 ingredients cached in Kynda.
+
 > **Progress (2026-06-10 PM): CROSS-PLATFORM ORDER UNIFICATION shipped.** The KDS is now the
 > single pane of glass for ALL order channels:
 > - **Online → Square upstream push** (`src/lib/square/orders.ts`): every Menu/QR/agent order is
