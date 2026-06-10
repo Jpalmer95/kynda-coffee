@@ -8,15 +8,14 @@ coffee shop platform that is **POS-agnostic, data-owned, and AI-operated**, wher
 order food/drinks, buy shipped goods + merch, apply for work, and find our info; and the owner
 runs the entire business (metrics, marketing, sales, inventory, costs, B2B, staff) from one portal.
 
-> **Deployment status (2026-05-30):** Migrations **018–026 are APPLIED to production Supabase**
-> (`svfuuvaaynmcofyrkwus`) via the `:6543` transaction pooler — verified: `catalog_overrides.channel_visibility`,
-> `specials`, `onboarding_documents`+`onboarding_progress` (6 docs seeded), `social_posts` approval columns
-> (source/approved_by/approved_at/rejection_reason/special_id), `b2b_leads`/`b2b_accounts`/`b2b_orders`,
-> and the MenuMetrics cache tables (`menumetrics_recipe_costs`, `vendor_prices`, `menumetrics_stock`,
-> `inventory_alerts`) — all present with RLS enabled. Re-runnable via `scripts/apply-migrations-018-023.sh`
-> (idempotent). **Still pending deploy:** Coolify redeploy of the app build + env vars
-> (`MENU_METRICS_URL`/`MENU_METRICS_TOKEN`, `FAL_KEY`, `OPENAI_API_KEY`, `CRON_SECRET`) so the new
-> UIs/endpoints go live against this schema.
+> **Deployment status (2026-06-10):** Migrations **018–026 APPLIED to production Supabase**
+> (verified 2026-05-30). Migrations **027 (KDS realtime + team roles) and 028 (team operations:
+> shifts/requests/chat/par-counts) are NEW and pending production apply** — use
+> `scripts/apply-migrations-018-023.sh` pattern with PGPASSFILE on the droplet (DB URL lives at
+> `/root/kynda-supabase-db.env`; the stored password failed auth on 2026-06-10 — likely rotated
+> after the temp-password cleanup; owner should refresh that file). Coolify auto-deploys on push.
+> **Env still pending:** `MENU_METRICS_URL`/`MENU_METRICS_TOKEN`, `FAL_KEY`, `OPENAI_API_KEY`,
+> `CRON_SECRET`, `TWILIO_*` (for KDS Ready→SMS).
 
 ---
 
@@ -207,10 +206,13 @@ plus filterable boards (curbside-only, delivery-only, station: bar/kitchen). Rea
 with timing stats and clear pickup tagging.
 
 **Work:**
-- [ ] Promote KDS to its own route group `/(kds)` with a minimal full-screen layout (no admin chrome),
-  protected by staff/admin auth, so it runs on a dedicated tablet logged in once.
-- [ ] Real-time order feed via Supabase Realtime (subscribe to `orders` inserts/updates) — replace
-  polling. New order = audible chime + card animation. *(Currently 10s polling.)*
+- [x] Promote KDS to its own route `/kds` with a minimal full-screen layout (no site chrome),
+  protected by staff auth in middleware, so it runs on a dedicated kitchen iPad logged in once.
+  Shared `KdsClient` also powers `/admin/kds`. (commit 753fd17)
+- [x] Real-time order feed via Supabase Realtime (`orders` publication, migration 027) with a 30s
+  polling fallback + LIVE/POLLING indicator. New order = audible WebAudio chime (sound toggle
+  doubles as the iPad audio unlock; per-device persisted) + on-screen banner + aria-live
+  announcement. (commit 753fd17)
 - [x] Order card: large order #, customer name, **fulfillment tag** (Pickup/Curbside/Dine-In/
   Delivery), **curbside vehicle description** callout, item list w/ modifiers, elapsed timer
   (color-escalates green→amber→pulsing-red), order notes.
@@ -219,8 +221,8 @@ with timing stats and clear pickup tagging.
 - [x] Search + filter (name, #, vehicle, item). Board logic extracted to a tested pure module
   (`src/lib/orders/kds-board.ts`, 18 unit tests).
 - [x] Stats strip: in-queue, avg prep time, longest-waiting, fresh/aging/late counts.
-- [ ] Bump bar refinement: "Ready" triggers customer SMS/push (Twilio dep present) — wire to the
-  existing notification path.
+- [x] Bump bar refinement: "Ready" triggers a customer SMS (Twilio) tailored to fulfillment mode
+  (curbside/table/counter), fired best-effort from the KDS PATCH route. (commit 753fd17)
 - [ ] Verify on a real tablet form factor (browser_vision QA at tablet viewport).
 
 > **Progress (2026-05-30, commit 1ca0ea4):** Smart KDS core shipped — multi-board filtering
@@ -228,6 +230,12 @@ with timing stats and clear pickup tagging.
 > and escalating timers, all backed by tested pure logic and runnable on any tablet via `?board=`.
 > Remaining: dedicated full-screen `/(kds)` route group, Supabase Realtime push (replace polling) +
 > chime, and the Ready→SMS/push trigger.
+>
+> **Progress (2026-06-10, commits 753fd17 + 9916c38): Epic 3 is CODE-COMPLETE.** Dedicated `/kds`
+> full-screen surface (kitchen iPads bookmark `/kds?board=...`), Supabase Realtime push + chime +
+> new-order banner, Ready→customer SMS, and barista access (KDS API now accepts any team member via
+> the new role tiers — staff no longer need the admin allowlist). Requires migration 027 on prod +
+> redeploy. Remaining: live tablet QA after deploy.
 
 **Why it matters:** This is the operational heartbeat once digital ordering scales. Owner wants
 "any device," filterable boards, and easy management.
@@ -268,6 +276,14 @@ checklist — one place to expedite onboarding).
 - [ ] **Waste Log**: auto cost (from MenuMetrics/vendor cost), photo; analytics page (waste by
   reason/product, trend, $ lost/month) feeding inventory reconciliation in Epic 7.
 - [ ] Staff auth hardening: `is_staff`/role flag, invite flow, `/staff/*` middleware (audit current).
+- [x] **(2026-06-10, commits 753fd17 + 9916c38) Three-tier access + team ops shipped:**
+  canonical role tiers (owner / manager=team lead / staff) in `src/lib/auth/roles.ts` with legacy
+  role mapping, middleware enforcement on `/kds`+`/staff`+`/training`+`/admin` (owner-only admin
+  sections walled off), `/admin/team` management page (owner assigns any tier; leads manage staff;
+  self-demotion blocked). **Real scheduling** (migration 028): `/admin/schedule` rewritten from the
+  hardcoded mock to real shifts CRUD + publish + schedule-request review; `/staff/schedule` shows
+  published shifts + submits time-off/swap/availability requests. **Team chat** (`/staff/chat`,
+  realtime). **Par counts** (`/staff/par-counts`, under-par "Order" flags feeding inventory).
 
 > **Progress (2026-05-30, commit a95b2a5):** Onboarding Hub shipped (the one fully-missing piece);
 > Academy + quiz/progress infrastructure confirmed already in place. Remaining Epic 4 work is polish
@@ -449,10 +465,15 @@ shipping + margin, via Epic 2); order → dropship → tracked.
 - [x] **Real AI generation**: `/api/designs/generate` rewired from a picsum stub to FAL flux/dev with
   a moderated, brand-aware, print-ready prompt; graceful placeholder only when FAL_KEY unset.
 - [ ] Canvas polish: undo/redo, snapping, true product-image underlay (real mockups in Storage).
-  *(Layered stickers + drag/resize/rotate + front/back already in DesignCanvas.)*
+  *(Layered stickers + drag/resize/rotate + front/back already in DesignCanvas. **Undo/redo shipped
+  2026-06-10, commit 753fd17** — 50-step history on all canvas mutations. Remaining: snapping +
+  mockup sync run.)*
 - [ ] **Catalog expansion + smart sourcing**: broaden Printful product set; auto-pull cost/variants;
   sourcing hook for trending non-merch Shop goods (Chemex, filters, candles) w/ adaptive pricing.
-- [ ] Surface the recommendation packs + one-tap seed prompts in the studio UI (`presets` tab).
+- [x] Surface the recommendation packs + one-tap seed prompts in the studio UI: **Idea Packs**
+  row in the AI Create tab (commit 753fd17) — Kynda Brand / Local / Trending / **Memes** /
+  **Seasonal** / Funny / Cool / Sporty, each with tap-to-fill seed prompts wired to brand-aware
+  generation (`theme` + `brand_aware` now sent to `/api/designs/generate`).
 - [ ] My Designs (save/load, exists) + share + reorder.
 
 > **Progress (2026-05-30, commit bb28e7a):** Generation is now real (FAL + moderation + brand-aware
