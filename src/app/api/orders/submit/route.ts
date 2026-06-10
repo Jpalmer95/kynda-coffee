@@ -4,6 +4,7 @@ import { buildQrOrderDraft, type QrOrderDraft, type QrOrderRequest } from "@/lib
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { pickupConfirmationHtml, pickupConfirmationSubject } from "@/lib/email/templates/pickup-confirmation";
+import { pushOrderToSquare, isSquareOrderPushEnabled } from "@/lib/square/orders";
 
 export const runtime = "nodejs";
 
@@ -68,6 +69,33 @@ export async function POST(request: Request) {
     if (error) {
       console.error("QR order insert failed", error);
       return NextResponse.json({ error: "Failed to submit order." }, { status: 500 });
+    }
+
+    // Best-effort upstream mirror into Square (team sees the order in Square
+    // Dashboard/POS alongside walk-up sales). Never blocks the response; the
+    // resulting square_order_id is stamped back for echo-loop protection.
+    if (isSquareOrderPushEnabled() && order) {
+      pushOrderToSquare({
+        id: order.id,
+        order_number: draftResult.value.order_number,
+        items: draftResult.value.items,
+        subtotal_cents: draftResult.value.subtotal_cents,
+        tax_cents: draftResult.value.tax_cents,
+        total_cents: draftResult.value.total_cents,
+        notes: draftResult.value.notes,
+        fulfillment_metadata: draftResult.value.fulfillment_metadata,
+      })
+        .then(async (res) => {
+          if (res.ok && res.squareOrderId) {
+            await supabaseAdmin()
+              .from("orders")
+              .update({ square_order_id: res.squareOrderId })
+              .eq("id", order.id);
+          } else if (res.error && res.error !== "square order push not configured") {
+            console.error("[orders/submit] Square push failed:", res.error);
+          }
+        })
+        .catch((e) => console.error("[orders/submit] Square push exception:", e));
     }
 
     // Best-effort pickup confirmation email — never block the order response.

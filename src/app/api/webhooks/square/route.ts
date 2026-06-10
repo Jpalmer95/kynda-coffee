@@ -32,10 +32,33 @@ export async function POST(req: NextRequest) {
         const order = data.order;
         if (!order) break;
 
+        // ── Echo-loop guard ───────────────────────────────────────────
+        // Orders we pushed upstream (Kynda online → Square) come back to
+        // us through this webhook. If we already own this square_order_id
+        // with a non-POS source, never overwrite the Kynda row — Supabase
+        // is the source of truth for online orders.
+        const { data: existing } = await supabaseAdmin()
+          .from("orders")
+          .select("id, source")
+          .eq("square_order_id", order.id)
+          .maybeSingle();
+
+        if (existing && existing.source !== "square-pos") {
+          break; // our own upstream mirror echoing back — ignore
+        }
+
+        // Heuristic: orders created by the Kynda app itself carry our
+        // source name even before the square_order_id write lands.
+        if (order.source?.name === "Kynda Online") break;
+
+        const isOpen = order.state === "OPEN";
         const orderData = {
           square_order_id: order.id,
           source: "square-pos" as const,
-          status: order.state === "OPEN" ? "confirmed" : "delivered",
+          status: isOpen ? "confirmed" : "delivered",
+          // Route genuine POS orders onto the shared KDS board so the team
+          // manages every channel (online + counter) from one screen.
+          order_channel: "pos",
           total_cents: order.total_money?.amount ?? 0,
           email: order.customer_id ? `square:${order.customer_id}` : "pos@kynda.local",
           items: (order.line_items ?? []).map((item: any) => ({

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, AlertTriangle, Loader2, Package, RefreshCw } from "lucide-react";
+import MenuMetricsPanel from "@/components/admin/MenuMetricsPanel";
 
 type InventoryItem = {
   id: string;
@@ -190,6 +191,9 @@ export default function AdminInventoryPage() {
       <div className="mt-6 text-center text-xs text-mocha">
         Inventory is read from normalized Square catalog variations and online product stock. Use Square as the source of truth for café items.
       </div>
+
+      {/* MenuMetrics: recipe costing, ingredient stock, vendor price watch (manager+) */}
+      <MenuMetricsPanel />
     </div>
   );
 }

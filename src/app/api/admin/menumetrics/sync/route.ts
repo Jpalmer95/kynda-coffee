@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { requireTier } from "@/lib/auth/team";
 import {
   isMenuMetricsConfigured,
-  fetchRecipeCost,
+  fetchRecipes,
   fetchIngredients,
   fetchStock,
 } from "@/lib/menumetrics/client";
@@ -11,22 +12,27 @@ import { detectLowStock, type StockLevel } from "@/lib/menumetrics/inventory";
 /**
  * POST /api/admin/menumetrics/sync  (Epic 7, admin-backend only)
  *
- * Cron-safe (CRON_SECRET) sync that pulls from MenuMetrics into Kynda's cache:
- *   - recipe costs for catalog items linked via catalog_overrides.menu_metrics_recipe_id
+ * Sync that pulls from MenuMetrics into Kynda's cache:
+ *   - all recipe costs -> menumetrics_recipe_costs
  *   - ingredient/vendor prices -> append to vendor_prices (trend history)
  *   - inventory levels -> menumetrics_stock + low-stock alerts
  *
- * Read-only against MenuMetrics. No-ops gracefully when MENU_METRICS_URL unset.
+ * Auth: EITHER Bearer CRON_SECRET (Hermes nightly cron) OR a logged-in
+ * manager+ session (the admin panel "Sync now" button).
+ * Read-only against MenuMetrics. No-ops gracefully when not configured.
  */
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    if (authHeader !== `Bearer ${cronSecret}`) {
+  const cronOk = Boolean(cronSecret) && authHeader === `Bearer ${cronSecret}`;
+  if (!cronOk) {
+    const team = await requireTier(req, "manager");
+    if (!team) {
+      if (!cronSecret) {
+        console.warn("[menumetrics/sync] CRON_SECRET not set and no admin session.");
+      }
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-  } else {
-    console.warn("[menumetrics/sync] CRON_SECRET not set — endpoint unauthenticated.");
   }
 
   if (!isMenuMetricsConfigured()) {
@@ -39,18 +45,11 @@ export async function POST(req: NextRequest) {
   const supabase = supabaseAdmin();
   const summary = { recipes: 0, ingredients: 0, stock: 0, alerts: 0, errors: [] as string[] };
 
-  // 1) Recipe costs — only for items the owner linked to a MenuMetrics recipe.
+  // 1) Recipe costs — sync ALL recipes from the bridge (one call), so the
+  // admin recipe-link picker and margin columns always have fresh costs.
   try {
-    const { data: links } = await supabase
-      .from("catalog_overrides")
-      .select("menu_metrics_recipe_id")
-      .not("menu_metrics_recipe_id", "is", null);
-    const recipeIds = Array.from(
-      new Set((links ?? []).map((r) => r.menu_metrics_recipe_id as string).filter(Boolean))
-    );
-    for (const recipeId of recipeIds) {
-      const cost = await fetchRecipeCost(recipeId);
-      if (!cost) continue;
+    const recipes = await fetchRecipes();
+    for (const cost of recipes) {
       const { error } = await supabase.from("menumetrics_recipe_costs").upsert(
         {
           recipe_id: cost.id,

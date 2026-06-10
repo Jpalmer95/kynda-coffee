@@ -232,6 +232,24 @@ with timing stats and clear pickup tagging.
   (curbside/table/counter), fired best-effort from the KDS PATCH route. (commit 753fd17)
 - [ ] Verify on a real tablet form factor (browser_vision QA at tablet viewport).
 
+> **Progress (2026-06-10 PM): CROSS-PLATFORM ORDER UNIFICATION shipped.** The KDS is now the
+> single pane of glass for ALL order channels:
+> - **Online → Square upstream push** (`src/lib/square/orders.ts`): every Menu/QR/agent order is
+>   mirrored into Square (PICKUP fulfillment, source "Kynda Online", customer name/phone, derived
+>   tax %) so the team also sees online orders in Square Dashboard/POS and reporting stays unified.
+>   Best-effort: Square downtime never blocks an order; square_order_id stamped back on success.
+> - **Square POS → KDS**: the Square webhook now sets `order_channel='pos'` so counter sales ride
+>   the same KDS board; echo-loop guard prevents our own pushed orders from boomeranging back.
+>   Migration 031 fixed two latent prod bugs (orders_source_check missing 'square-pos' = webhook
+>   ingestion silently failing; no unique index on square_order_id = upsert broken). APPLIED to prod.
+> - **Agent-native ordering** (public, rate-limited): `/.well-known/agent.json` discovery manifest,
+>   `GET /api/agent/menu` (IDs + modifiers + rules), `POST /api/agent/orders` (same validation
+>   pipeline as QR; source/channel 'agent', AG- order numbers, Square push, confirmation email,
+>   structured machine-first response w/ Stripe pay endpoint), `GET /api/agent/orders/[id]`
+>   (knowledge-based auth: email/phone match). Shipped goods: agents use /api/products +
+>   /api/checkout (Stripe collects address/payment from the human).
+> - Team guide: `docs/order-flow-team-guide.md` (where to watch, how each channel flows, FAQs).
+
 > **Progress (2026-05-30, commit 1ca0ea4):** Smart KDS core shipped — multi-board filtering
 > (All/Pickup/Curbside/Dine-In/Delivery), fulfillment tags, curbside vehicle callout, search, stats,
 > and escalating timers, all backed by tested pure logic and runnable on any tablet via `?board=`.
@@ -430,15 +448,33 @@ and densities (already solved inside MenuMetrics — we automate *using* it).
   savings-sorted, advisory only).
 - [x] **Cost-source bridge** (`cost-source.ts`): cached recipe/ingredient cost → Pricing Engine
   (Epic 2 advisory margin) + waste-log auto-fill (Epic 4).
-- [ ] Confirm ‹verify› REST paths against the running MenuMetrics instance; flip client to live.
+- [x] Confirm ‹verify› REST paths against the running MenuMetrics instance; flip client to live.
+  **(2026-06-10)** Verified + extended the token-protected Agent Bridge on the MenuMetrics side
+  (`server/agentBridge.ts`): reads (`/api/agent/{health,recipes,recipes/:id,ingredients,stock}`)
+  AND a create-only write surface (`POST /api/agent/{ingredients,recipes}`) with unit
+  normalization ("g"→"grams"), tolerant category mapping ("beverage"→"drink"), and a price
+  recommendation (cost + target margin → suggested price, food-cost %). Agent-created recipes are
+  tagged `[agent]` for owner review. Kynda client rewritten against these verified paths.
+- [x] **Live inventory metrics** on `/admin/inventory`: MenuMetricsPanel (recipe costs, ingredient
+  stock w/ low flags, open alerts w/ acknowledge, vendor price-watch trends) + manual "Sync from
+  MenuMetrics" button (sync route now accepts manager+ session OR CRON_SECRET).
+- [x] **Vendor price-watch** (`src/lib/menumetrics/price-watch.ts`, 10 tests): per-(ingredient,
+  vendor) trend classification (stable/creep/spike/decrease) over the append-only `vendor_prices`
+  history — catches slow vendor inflation. Report-only; switches need owner approval.
+- [x] **Hermes crons**: nightly MenuMetrics sync (2:30am, script-only watchdog) + monthly Vendor
+  Price Watch report (1st @ 9am via agent bridge `price_watch` action).
+- [x] **Agent bridge actions** on `/api/admin/agent`: `menu_costing`, `price_watch`,
+  `propose_recipe` (agent proposes recipe + new ingredients → MenuMetrics costs it and returns
+  suggested price; lands tagged for owner review, never touches the live menu).
 - [ ] **Recipe link UI** in `/admin/catalog` already stores `menu_metrics_recipe_id`; add the
   live-margin display column once sync runs.
-- [ ] **Live inventory metrics** on `/admin/inventory`: surface cached stock, days-of-cover, value
-  on hand, and open `inventory_alerts`; reconcile with waste log + Square sales.
-- [ ] **Hermes crons**: nightly cost/stock sync + low-stock notify; monthly Better-Price Finder
-  report (owner approves any vendor switch).
 - [ ] **Trending menu recommendations**: agent joins cached recipe cost w/ Square sales → new/retire
   suggestions w/ margin mapped out (owner-approved).
+
+> **Progress (2026-06-10 PM):** Epic 7 effectively LIVE — agent bridge verified on the running
+> instance end-to-end (ingredient create → recipe create → cost 31¢ → suggested price $1.25 at
+> 75% margin), MENU_METRICS_URL/TOKEN + CRON_SECRET set in Coolify, sync syncs all recipes (not
+> just linked), /admin/inventory has the full MenuMetrics panel, both crons scheduled.
 
 > **Progress (2026-05-30, commit 33bd4c5):** Integration foundation shipped — contract doc, cache
 > schema, typed client, the tested autonomous-inventory brain (low-stock / price-trend / better-price

@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import {
+  isMenuMetricsConfigured,
+  createRecipe,
+  createIngredient,
+  type CreateRecipeInput,
+  type CreateIngredientInput,
+} from "@/lib/menumetrics/client";
+import {
+  computePriceTrends,
+  formatPriceWatchSummary,
+  type VendorPriceSnapshot,
+} from "@/lib/menumetrics/price-watch";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +36,10 @@ type AgentAction =
   | "schedule_post"
   | "catalog_overview"
   | "recent_orders"
-  | "insights";
+  | "insights"
+  | "menu_costing"
+  | "price_watch"
+  | "propose_recipe";
 
 export async function POST(req: NextRequest) {
   if (!authenticate(req)) {
@@ -55,6 +70,12 @@ export async function POST(req: NextRequest) {
         return await handleRecentOrders(db, body.params ?? {});
       case "insights":
         return await handleInsights(db);
+      case "menu_costing":
+        return await handleMenuCosting(db);
+      case "price_watch":
+        return await handlePriceWatch(db, body.params ?? {});
+      case "propose_recipe":
+        return await handleProposeRecipe(body.params ?? {});
       default:
         return NextResponse.json(
           {
@@ -66,6 +87,9 @@ export async function POST(req: NextRequest) {
               "catalog_overview",
               "recent_orders",
               "insights",
+              "menu_costing",
+              "price_watch",
+              "propose_recipe",
             ],
           },
           { status: 400 }
@@ -371,5 +395,120 @@ async function handleInsights(db: ReturnType<typeof supabaseAdmin>) {
       new_customers_30d: newCustomers ?? 0,
       active_products: (allProducts ?? []).filter((p) => p.is_active).length,
     },
+  });
+}
+
+// ── Menu Costing (MenuMetrics) ──────────────────────────────────────
+// Recipe costs + margins joined against current menu prices where linked.
+async function handleMenuCosting(db: ReturnType<typeof supabaseAdmin>) {
+  const [{ data: recipes }, { data: stock }, { data: alerts }] = await Promise.all([
+    db
+      .from("menumetrics_recipe_costs")
+      .select("recipe_id, name, yield_servings, cost_per_serving_cents, ingredient_cost_cents, synced_at")
+      .order("name"),
+    db
+      .from("menumetrics_stock")
+      .select("ingredient_id, name, on_hand, unit, reorder_threshold, is_low")
+      .eq("is_low", true),
+    db
+      .from("inventory_alerts")
+      .select("ingredient_name, alert_type, message, created_at")
+      .eq("acknowledged", false)
+      .order("created_at", { ascending: false })
+      .limit(20),
+  ]);
+
+  const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+  return NextResponse.json({
+    configured: isMenuMetricsConfigured(),
+    recipes: (recipes ?? []).map((r) => ({
+      recipe_id: r.recipe_id,
+      name: r.name,
+      cost_per_serving: fmt(r.cost_per_serving_cents),
+      cost_per_serving_cents: r.cost_per_serving_cents,
+      synced_at: r.synced_at,
+    })),
+    low_stock: (stock ?? []).map((s) => ({
+      name: s.name,
+      on_hand: s.on_hand,
+      unit: s.unit,
+      reorder_threshold: s.reorder_threshold,
+    })),
+    open_alerts: alerts ?? [],
+  });
+}
+
+// ── Vendor Price Watch ──────────────────────────────────────────────
+// Trend analysis over vendor_prices history. Report-only: switching
+// vendors always requires owner approval.
+async function handlePriceWatch(
+  db: ReturnType<typeof supabaseAdmin>,
+  params: Record<string, unknown>
+) {
+  const windowDays = Math.min(Math.max(Number(params.window_days) || 90, 7), 365);
+  const since = new Date(Date.now() - windowDays * 864e5).toISOString();
+
+  const { data: snapshots } = await db
+    .from("vendor_prices")
+    .select("ingredient_id, ingredient_name, vendor, pack_size, unit, cost_cents, captured_at")
+    .gte("captured_at", since)
+    .order("captured_at", { ascending: true })
+    .limit(5000);
+
+  const report = computePriceTrends((snapshots ?? []) as VendorPriceSnapshot[], windowDays);
+  return NextResponse.json({
+    summary: formatPriceWatchSummary(report),
+    report,
+  });
+}
+
+// ── Propose Recipe (agent-native menu R&D) ──────────────────────────
+// Creates an agent-proposed recipe in MenuMetrics (optionally creating new
+// ingredients first) and returns the computed cost + suggested price.
+// The recipe lands tagged "[agent]" in MenuMetrics for owner review — it
+// never touches the live menu.
+async function handleProposeRecipe(params: Record<string, unknown>) {
+  if (!isMenuMetricsConfigured()) {
+    return NextResponse.json(
+      { error: "MenuMetrics is not configured (MENU_METRICS_URL / MENU_METRICS_TOKEN)." },
+      { status: 503 }
+    );
+  }
+
+  // 1) Optionally create new ingredients the recipe needs.
+  const newIngredients = Array.isArray(params.new_ingredients)
+    ? (params.new_ingredients as CreateIngredientInput[])
+    : [];
+  const createdIngredients: Array<{ id: string; name: string }> = [];
+  for (const input of newIngredients) {
+    const created = await createIngredient(input);
+    if (created) createdIngredients.push(created);
+  }
+
+  // 2) Create the recipe. Lines may reference existing ingredient ids or
+  //    the just-created ones by name (resolve client-side before calling).
+  const recipeInput = params.recipe as CreateRecipeInput | undefined;
+  if (!recipeInput?.name) {
+    return NextResponse.json(
+      {
+        error: "params.recipe.name is required",
+        expected_shape: {
+          new_ingredients: "[{ name, category?, store?, purchase_quantity, purchase_unit, purchase_cost_cents }] (optional)",
+          recipe: "{ name, description?, category?, servings?, target_margin_pct?, ingredients: [{ ingredient_id, quantity, unit }] }",
+        },
+      },
+      { status: 400 }
+    );
+  }
+
+  const recipe = await createRecipe(recipeInput);
+  if (!recipe) {
+    return NextResponse.json({ error: "MenuMetrics rejected the recipe (check ingredient ids/units)." }, { status: 502 });
+  }
+
+  return NextResponse.json({
+    created_ingredients: createdIngredients,
+    recipe,
+    note: "Recipe created in MenuMetrics tagged [agent]. Owner reviews there; nothing was added to the live menu.",
   });
 }

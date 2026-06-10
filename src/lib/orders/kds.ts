@@ -16,7 +16,7 @@ export const KDS_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   refunded: [],
 };
 
-const KDS_CHANNELS = new Set(["qr", "pickup", "table", "lobby", "parking", "delivery"]);
+const KDS_CHANNELS = new Set(["qr", "pickup", "table", "lobby", "parking", "delivery", "pos", "agent"]);
 
 export interface KdsOrderLike {
   id: string;

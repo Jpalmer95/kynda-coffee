@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
       .from("orders")
       .select(ORDER_SELECT)
       .in("status", ["pending", "confirmed", "processing"])
-      .or("source.eq.qr,order_channel.in.(qr,pickup,table,lobby,parking,delivery)")
+      .or("source.eq.qr,order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent)")
       .order("created_at", { ascending: true })
       .limit(100);
 
