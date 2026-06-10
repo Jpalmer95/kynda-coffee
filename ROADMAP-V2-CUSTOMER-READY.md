@@ -185,8 +185,11 @@ Shop goods, custom merch, and (read-only advisory) menu items via MenuMetrics co
   `calculatePrice` using the cheapest live Printful shipping rate (else profile buffer), covers
   Stripe fees, enforces the floor, and returns a transparent `pricing` breakdown.
 - [ ] Source cost basis from MenuMetrics (menu items, Epic 7) and vendor cost (Shop goods, Epic 7).
-- [ ] Admin **Pricing Rules** page (`/admin/settings` → Pricing): per-category target margin,
-  rounding, shipping-buffer strategy (persist overrides of the default profiles).
+- [x] Admin **Pricing Rules** page (`/admin/pricing`, owner-only): per-category target margin,
+  rounding, min-profit, shipping buffer — persisted in `pricing_rules` (migration 029) and consumed
+  live by the engine via `src/lib/pricing/rules.ts` (override > default, 60s cache). Live
+  "$10-cost sells at" preview per row. **Epic 2 functionally complete** (commit 42faee4); remaining
+  cost-source wiring lands with Epic 7's MenuMetrics live data.
 - [ ] Wire Shop product creation/`mapPosCatalogItemToProduct` to call the engine for retail.
 - [ ] Nightly cron (Hermes): re-price Shop goods on vendor/POD cost change; "margin at risk" digest
   for owner approval before publishing.
@@ -380,9 +383,11 @@ accounts, and supply other coffee shops. An agentic cron scouts opportunities; o
 - [x] **Lead scoring** (`src/lib/b2b/leads.ts`, 11 tests): deterministic 0–100 fit score (type,
   recurring value, local Hill Country boost, contactability, inbound signal), `isScoutWorthy`
   threshold, and a `canTransition` pipeline state machine.
-- [ ] **Admin B2B portal** (`/admin/b2b`): replace the hardcoded mock with a Kanban pipeline over
-  `b2b_leads` (PIPELINE_STAGES ready), account list, recurring order scheduler, wholesale price sheet
-  (uses Pricing Engine `wholesale` profile from Epic 2).
+- [x] **Admin B2B portal** (`/admin/b2b`): hardcoded mock replaced with a real Kanban pipeline over
+  `b2b_leads` (commit 42faee4) — 6 stage columns, state-machine-enforced moves (Approve gate
+  stamped with who/when; `contacted` stamps outreach_sent_at), fit-score badges, est. monthly value
+  rollups (active pipeline + won), and an auto-scored add-lead modal. Remaining: account list +
+  recurring order scheduler + wholesale price sheet (Pricing Engine `wholesale` profile).
 - [ ] **Hermes cron — B2B Scout** (skill + cron): search local grocers/offices/cafes/venues (web +
   maps), score via `scoreLead`, insert `isScoutWorthy` finds as `new` leads, notify owner. Approved
   leads → agent drafts outreach email (Resend) w/ capabilities one-pager + price sheet; owner
@@ -585,6 +590,33 @@ business data at any time.
   cases. Suite at 266 tests. Remaining: Playwright E2E against the deployed money paths.)*
 
 **Why it matters:** Real revenue + real customer data demand this before scaling marketing/B2B.
+
+---
+
+# EPIC 12 — Smart Accounting (Bank Feed → Categorization → P&L)
+
+**Added 2026-06-10 (owner ask: AI-assisted accounting where safe — clean bank integrations,
+automated transaction categorization, P&L/balance-sheet).**
+
+**Shipped (commit 42faee4, migration 030 APPLIED):**
+- Chart of accounts seeded for a coffee shop (23 categories: revenue/cogs/opex/payroll/tax/transfer).
+- `bank_accounts` (Plaid-ready columns; CSV-import works today) + `bank_transactions`
+  (dedupe on source+external_id — re-importing a file is a no-op) + `categorization_rules`.
+- Deterministic-first categorization (`src/lib/accounting/core.ts`, 16 tests): owner rules →
+  keyword heuristics; results land as **suggested**, never auto-confirmed. Confirming can
+  optionally **learn a rule** so the same counterparty auto-categorizes next import.
+- Robust bank-CSV parser (auto-detects date/description/amount or debit+credit columns,
+  handles $1,234.56 / (45.00) / quoted commas).
+- P&L builder: revenue → gross → net with margins; transfers excluded; uncategorized
+  surfaced with a "review them" link so the owner knows statement trustworthiness.
+- `/admin/accounting` (owner-only): Accounts & Import · Review (confirm suggestions) · P&L.
+
+**Next:**
+- [ ] AI suggestion layer for txns rules can't match (OpenAI, suggests only — owner confirms).
+- [ ] Plaid Link integration for automatic bank feeds (schema ready; needs PLAID_* env).
+- [ ] Square/Stripe payout auto-ingest (reconcile platform revenue against bank deposits).
+- [ ] Balance sheet + sales-tax report; CSV/PDF export for the accountant.
+- [ ] Monthly Hermes cron: P&L digest + uncategorized-txn nudge to owner.
 
 ---
 
