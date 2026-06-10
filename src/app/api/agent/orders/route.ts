@@ -23,10 +23,12 @@ export const dynamic = "force-dynamic";
  *   - request may carry agent metadata {agent: {name, platform}} for auditing
  *   - response is machine-first: structured order + status URL + payment info
  *
- * Security model: this is intentionally equivalent to the public QR menu page
- * — anyone (human or agent) can submit an unpaid pickup order; payment happens
- * at the counter or via the returned Stripe link. Rate-limited per IP. No
- * stored credentials, no PII beyond what the customer provides for pickup.
+ * Security model: agents can browse and place orders freely, but every agent
+ * order is PREPAID-ONLY — the order is held off the kitchen display until the
+ * customer completes Stripe Checkout (cash exists only at the physical POS).
+ * This kills the no-show/fraud vector entirely: an unpaid order is never
+ * prepared. Rate-limited per IP. No stored credentials, no PII beyond what
+ * the customer provides for pickup.
  */
 const ORDER_SELECT =
   "id, order_number, status, source, order_channel, total_cents, subtotal_cents, tax_cents, items, fulfillment_metadata, payment_status, created_at";
@@ -61,9 +63,13 @@ export async function POST(request: NextRequest) {
 
     const catalog = await getPosCatalog({ channel: "qr", includeModifiers: true, limit: 500 });
     // Agent orders default to counter pickup (the QR flow defaults to lobby).
+    // PREPAID-ONLY (owner rule): every remote order must be paid online before
+    // the kitchen sees it. Cash is physical-POS only — so the agent flow
+    // always forces Stripe regardless of what the caller requested.
     const orderBody: AgentOrderRequest = {
       ...body,
       fulfillment: body.fulfillment ?? { mode: "pickup" },
+      paymentPreference: "stripe",
     };
     const draftResult = buildQrOrderDraft(orderBody, catalog.items);
     if (!draftResult.ok) {
@@ -91,8 +97,7 @@ export async function POST(request: NextRequest) {
       shipping_address: null,
       notes: draft.notes,
       fulfillment_metadata: { ...draft.fulfillment_metadata, ...agentMeta },
-      payment_preference:
-        draft.fulfillment_metadata.payment_preference === "stripe" ? "online" : "pay_at_counter",
+      payment_preference: "online",
       order_channel: "agent",
       payment_status: draft.payment_status,
       payment_method: draft.payment_method,
@@ -138,7 +143,6 @@ export async function POST(request: NextRequest) {
     // Best-effort confirmation email when the agent gave us a real address.
     const isRealEmail = draft.email && !draft.email.endsWith("@kyndacoffee.local");
     if (isRealEmail) {
-      const pref = draft.fulfillment_metadata.payment_preference;
       const html = pickupConfirmationHtml({
         name: draft.fulfillment_metadata.customer_name,
         orderNumber: order.order_number,
@@ -149,7 +153,7 @@ export async function POST(request: NextRequest) {
         })),
         totalCents: draft.total_cents,
         fulfillmentLabel: draft.fulfillment_metadata.label,
-        payAtCounter: pref !== "stripe",
+        payAtCounter: false, // agent orders are always prepaid
         notes: draft.notes || undefined,
       });
       sendEmail({
@@ -160,7 +164,6 @@ export async function POST(request: NextRequest) {
     }
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
-    const wantsOnlinePayment = draft.fulfillment_metadata.payment_preference === "stripe";
 
     return NextResponse.json(
       {
@@ -179,21 +182,17 @@ export async function POST(request: NextRequest) {
             total_cents: i.total_cents,
           })),
         },
-        payment: wantsOnlinePayment
-          ? {
-              method: "stripe_checkout",
-              instructions: `POST ${origin}/api/orders/${order.id}/pay to create a Stripe Checkout link, then present checkout url to the customer.`,
-              pay_endpoint: `${origin}/api/orders/${order.id}/pay`,
-            }
-          : {
-              method: "pay_at_counter",
-              instructions: "Customer pays at the counter on pickup.",
-            },
+        payment: {
+          method: "stripe_checkout",
+          required: true,
+          instructions: `Payment is REQUIRED before the order is prepared. POST ${origin}/api/orders/${order.id}/pay to create a Stripe Checkout link, then present the checkout url to the customer. The kitchen only sees the order once payment completes.`,
+          pay_endpoint: `${origin}/api/orders/${order.id}/pay`,
+        },
         status_url: `${origin}/api/agent/orders/${order.id}?email=${encodeURIComponent(draft.email)}`,
         pickup: {
           location: "Kynda Coffee, Horseshoe Bay, TX",
           mode: draft.fulfillment_metadata.mode,
-          note: "Order appears on the kitchen display immediately. Typical prep time 5-10 minutes.",
+          note: "Order reaches the kitchen display as soon as payment completes. Typical prep time 5-10 minutes.",
         },
       },
       { status: 201 }

@@ -5,6 +5,7 @@ import {
   assertKdsTransition,
   getKdsNextActions,
   isActiveKdsOrder,
+  isHeldForPayment,
   sortKdsOrders,
   type KdsOrderLike,
 } from "./kds";
@@ -18,12 +19,13 @@ const baseOrder: KdsOrderLike = {
   created_at: "2026-05-05T12:00:00.000Z",
   total_cents: 650,
   items: [],
+  payment_status: "paid",
   fulfillment_metadata: {
     mode: "table",
     label: "4",
     customer_name: "Jonathan",
     customer_phone: "512-555-0100",
-    payment_preference: "pay_at_counter",
+    payment_preference: "stripe",
   },
 };
 
@@ -47,6 +49,32 @@ describe("KDS order filtering", () => {
     ]);
 
     expect(sorted.map((order) => order.id)).toEqual(["old", "new"]);
+  });
+});
+
+describe("prepaid-only rule (isHeldForPayment)", () => {
+  it("holds unpaid remote orders off the KDS until Stripe confirms payment", () => {
+    const unpaid = { ...baseOrder, payment_status: "unpaid" };
+    expect(isHeldForPayment(unpaid)).toBe(true);
+    expect(isActiveKdsOrder(unpaid)).toBe(false);
+  });
+  it("shows remote orders once paid", () => {
+    expect(isHeldForPayment(baseOrder)).toBe(false);
+    expect(isActiveKdsOrder(baseOrder)).toBe(true);
+  });
+  it("exempts Square POS orders (settled in Square)", () => {
+    const pos = { ...baseOrder, source: "square-pos", order_channel: "pos", payment_status: "unpaid" };
+    expect(isHeldForPayment(pos)).toBe(false);
+    expect(isActiveKdsOrder(pos)).toBe(true);
+  });
+  it("exempts the staff-attended in-store kiosk", () => {
+    const kiosk = {
+      ...baseOrder,
+      payment_status: "unpaid",
+      fulfillment_metadata: { ...baseOrder.fulfillment_metadata, mode: "pickup", label: "Kiosk" },
+    };
+    expect(isHeldForPayment(kiosk)).toBe(false);
+    expect(isActiveKdsOrder(kiosk)).toBe(true);
   });
 });
 

@@ -52,7 +52,7 @@ Each card shows, top to bottom:
 | Customer name (+ phone) | big bold line | call the name at handoff |
 | Channel badge | colored chip | **QR** / **ONLINE** / **AGENT** / **POS** — where it came from |
 | Fulfillment chip | colored chip | **Pickup**, **Table 12**, **Curbside**, **Lobby**, **Delivery** |
-| Payment chip | colored chip | **PAID** (green) = hand it over. **PAY AT REGISTER** (yellow) = collect before handoff! |
+| Payment chip | colored chip | **PAID** (green) = hand it over. **PAY AT REGISTER** (yellow, kiosk only) = collect before handoff! |
 | Timer | colored chip | minutes since ordered: green → amber (8m) → flashing red (15m). Work oldest/red first. |
 | Vehicle callout | amber box | curbside orders: the car description — what to look for in the lot |
 | The items | the list | every drink/food with **all modifiers** listed under it (`+ Oat milk`, `+ Iced`...) and any special-request note highlighted in yellow |
@@ -78,9 +78,15 @@ Jonathan — that's a bug, not your fault.
 
 **Payment chips:**
 - **PAID** (green) — money is collected. Make it, hand it over.
-- **PAY AT REGISTER** (yellow) — collect payment when the customer arrives,
-  *before* handing off the order. POS orders never show a chip (Square
-  already handled it).
+- **PAY AT REGISTER** (yellow) — only appears on staff-attended **kiosk**
+  orders. Collect payment when the customer steps up, *before* handing off.
+- POS orders never show a chip (Square already handled it).
+
+**Important: online orders are always prepaid.** If a customer orders from
+the website, a QR code, or an AI assistant and doesn't finish paying, the
+order **never appears on the KDS** — the kitchen only sees paid remote
+orders. Cash is for the physical register only. So with the exception of
+kiosk tickets, every card on your board is already paid for.
 
 ---
 

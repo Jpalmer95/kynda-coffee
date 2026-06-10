@@ -21,6 +21,21 @@ export const KDS_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 const KDS_CHANNELS = new Set(["qr", "pickup", "table", "lobby", "parking", "delivery", "pos", "agent"]);
 
+/**
+ * Prepaid-only rule (owner directive 2026-06-10): remote/online orders must be
+ * PAID before the kitchen sees them — no making drinks for no-shows, no fraud
+ * exposure. Cash/pay-at-counter exists ONLY for in-person surfaces:
+ *   - Square POS orders (settled inside Square)
+ *   - the staff-attended in-store kiosk (label "Kiosk")
+ * Everything else is held off the KDS until the Stripe webhook marks it paid.
+ */
+export function isHeldForPayment(order: KdsOrderLike): boolean {
+  // In-person surfaces are exempt.
+  if (order.source === "square-pos" || order.order_channel === "pos") return false;
+  if (order.fulfillment_metadata?.label === "Kiosk") return false;
+  return order.payment_status !== "paid";
+}
+
 export interface KdsOrderLike {
   id: string;
   order_number: string;
@@ -30,6 +45,8 @@ export interface KdsOrderLike {
   created_at: string;
   total_cents: number;
   items: unknown[];
+  payment_status?: string | null;
+  payment_preference?: string | null;
   fulfillment_metadata?: {
     mode?: string;
     label?: string;
@@ -54,6 +71,9 @@ function isActiveStatus(status: OrderStatus): status is ActiveKdsStatus {
 
 export function isActiveKdsOrder(order: KdsOrderLike): boolean {
   if (!isActiveStatus(order.status)) return false;
+  // Prepaid-only: unpaid remote orders are invisible to the kitchen until
+  // Stripe confirms payment (in-person POS/kiosk orders are exempt).
+  if (isHeldForPayment(order)) return false;
   if (order.source === "qr") return true;
   return KDS_CHANNELS.has(order.order_channel ?? "");
 }

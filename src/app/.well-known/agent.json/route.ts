@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
             request_example: {
               customer: { name: "Jane Doe", email: "jane@example.com", phone: "+15125550100" },
               fulfillment: { mode: "pickup" },
-              paymentPreference: "pay_at_counter",
+              paymentPreference: "stripe",
               notes: "extra hot please",
               items: [
                 {
@@ -51,9 +51,8 @@ export async function GET(req: NextRequest) {
               agent: { name: "my-assistant", platform: "openai" },
             },
             payment_options: {
-              pay_at_counter: "Customer pays on pickup (default).",
               stripe:
-                "Set paymentPreference='stripe'; the response includes a pay_endpoint that returns a Stripe Checkout link to present to the customer.",
+                "ALL agent orders are prepaid via Stripe. The response includes a pay_endpoint that returns a Stripe Checkout link to present to the customer. The order is only prepared once payment completes — pay-at-counter is not available for remote orders.",
             },
             constraints: {
               fulfillment_modes: ["pickup", "table", "parking", "lobby"],
@@ -92,7 +91,7 @@ export async function GET(req: NextRequest) {
       policies: {
         rate_limits: "Menu: 30 req/min/IP. Order placement: 10 req/min/IP.",
         payment:
-          "Agents never handle card data. Payment is at the counter or via Stripe-hosted checkout links presented to the human customer.",
+          "Agents never handle card data. All remote orders are PREPAID via Stripe-hosted checkout links presented to the human customer; cash/pay-at-counter exists only at the physical register.",
         pii: "Provide only the contact details needed for pickup/shipping. Data is used solely to fulfill the order.",
       },
       contact: { email: "hello@kyndacoffee.com" },
