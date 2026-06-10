@@ -89,7 +89,43 @@ export default function DesignStudioPage() {
   const [isLoadingDesigns, setIsLoadingDesigns] = useState(false);
 
   const addItem = useCartStore((s) => s.addItem);
-  const retailPrice = calculateRetailPrice(selectedProduct, selectedVariant || undefined);
+  // Pricing: live profit-guaranteed engine quote (Epic 2 via /api/printful/estimate),
+  // with the local tiered-markup calc as instant fallback while the quote loads.
+  const fallbackRetailPrice = calculateRetailPrice(selectedProduct, selectedVariant || undefined);
+  const [engineQuote, setEngineQuote] = useState<{
+    retail_cents: number;
+    estimated_profit_cents: number;
+    pricing?: { profitable: boolean };
+  } | null>(null);
+  const retailPrice = engineQuote?.retail_cents ?? fallbackRetailPrice;
+
+  // Re-quote whenever the product/variant changes.
+  useEffect(() => {
+    let cancelled = false;
+    setEngineQuote(null);
+    (async () => {
+      try {
+        const res = await fetch("/api/printful/estimate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: selectedProduct.id,
+            variant_id: selectedVariant?.id,
+          }),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && typeof data.retail_cents === "number") {
+          setEngineQuote(data);
+        }
+      } catch {
+        /* fallback price already shown */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedProduct.id, selectedVariant?.id]);
 
   const handleSelectProduct = useCallback(
     (product: PrintfulProduct) => {
@@ -339,15 +375,24 @@ export default function DesignStudioPage() {
       return;
     }
 
-    // Profitability guardrail — verify margin before proceeding
-    const markup = PRODUCT_MARKUP[selectedProduct.category];
-    const baseCost = selectedProduct.basePriceCents + (selectedVariant?.additionalPriceCents || 0);
-    const profitCents = retailPrice - baseCost - markup.shippingBufferCents;
+    // Profitability guardrail — prefer the live engine quote (covers Printful
+    // cost + shipping + payment fees + target margin); fall back to the local
+    // tiered-markup math when the quote hasn't loaded.
+    if (engineQuote) {
+      if (engineQuote.pricing && engineQuote.pricing.profitable === false) {
+        alert("This product configuration doesn't meet our pricing requirements. Please select a different variant or contact us.");
+        return;
+      }
+    } else {
+      const markup = PRODUCT_MARKUP[selectedProduct.category];
+      const baseCost = selectedProduct.basePriceCents + (selectedVariant?.additionalPriceCents || 0);
+      const profitCents = retailPrice - baseCost - markup.shippingBufferCents;
 
-    if (profitCents < 100) {
-      // Less than $1 profit — block the order
-      alert("This product configuration doesn't meet our pricing requirements. Please select a different variant or contact us.");
-      return;
+      if (profitCents < 100) {
+        // Less than $1 profit — block the order
+        alert("This product configuration doesn't meet our pricing requirements. Please select a different variant or contact us.");
+        return;
+      }
     }
 
     // Image moderation gate — check canvas thumbnail before adding to cart

@@ -29,6 +29,15 @@ interface AdminStats {
   total_customers: number;
   active_products: number;
   newsletter_subscribers: number;
+  revenue_7d_cents?: number;
+  revenue_prev_7d_cents?: number;
+  revenue_30d_cents?: number;
+  wow_growth_pct?: number | null;
+  pending_marketing_approvals?: number;
+  open_inventory_alerts?: number;
+  new_b2b_leads?: number;
+  pending_schedule_requests?: number;
+  upcoming_specials?: { id: string; title: string; starts_at: string | null; ends_at: string | null }[];
 }
 
 export default function AdminPage() {
@@ -158,6 +167,18 @@ export default function AdminPage() {
       color: "text-espresso",
     },
     {
+      label: "7-Day Revenue",
+      value: stats ? formatPrice(stats.revenue_7d_cents ?? 0) : "$—",
+      icon: TrendingUp,
+      loading,
+      color: "text-espresso",
+      sub:
+        stats?.wow_growth_pct != null
+          ? `${stats.wow_growth_pct >= 0 ? "▲" : "▼"} ${Math.abs(stats.wow_growth_pct)}% vs last wk`
+          : undefined,
+      subTone: stats?.wow_growth_pct != null && stats.wow_growth_pct < 0 ? "down" : "up",
+    },
+    {
       label: "Avg Order",
       value: stats && stats.today_orders > 0
         ? formatPrice(Math.round(stats.today_revenue_cents / stats.today_orders))
@@ -167,6 +188,32 @@ export default function AdminPage() {
       color: "text-espresso",
     },
   ];
+
+  // Needs-attention items: only render the ones with a non-zero count.
+  const attention = stats
+    ? ([
+        {
+          count: stats.pending_schedule_requests ?? 0,
+          label: "schedule request",
+          href: "/admin/schedule",
+        },
+        {
+          count: stats.pending_marketing_approvals ?? 0,
+          label: "marketing draft awaiting approval",
+          href: "/admin/marketing/approvals",
+        },
+        {
+          count: stats.open_inventory_alerts ?? 0,
+          label: "inventory alert",
+          href: "/admin/inventory",
+        },
+        {
+          count: stats.new_b2b_leads ?? 0,
+          label: "new wholesale lead",
+          href: "/admin/b2b",
+        },
+      ].filter((a) => a.count > 0))
+    : [];
 
   return (
     <section className="section-padding">
@@ -181,8 +228,39 @@ export default function AdminPage() {
           </div>
         </div>
 
+        {/* Needs Attention */}
+        {attention.length > 0 && (
+          <div className="mb-6 rounded-[12px] border border-bronze/40 bg-bronze/10 p-4">
+            <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-bronze">Needs Attention</h2>
+            <div className="flex flex-wrap gap-2">
+              {attention.map((a) => (
+                <Link
+                  key={a.href}
+                  href={a.href}
+                  className="rounded-full border border-bronze/40 bg-surface-card px-4 py-1.5 text-sm text-sand transition-colors hover:border-bronze"
+                >
+                  <span className="font-bold">{a.count}</span> {a.label}{a.count === 1 ? "" : "s"} →
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming specials reminder */}
+        {stats?.upcoming_specials && stats.upcoming_specials.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-sand-50/80">
+            <Sparkles className="h-4 w-4 text-forest" aria-hidden="true" />
+            <span className="font-medium text-sand">Live / upcoming specials:</span>
+            {stats.upcoming_specials.map((s) => (
+              <Link key={s.id} href="/admin/specials" className="rounded-full bg-surface-card border border-latte px-3 py-1 hover:border-forest/50">
+                {s.title}
+              </Link>
+            ))}
+          </div>
+        )}
+
         {/* Stats Grid */}
-        <div className="mb-8 sm:mb-10 grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="mb-8 sm:mb-10 grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-7">
           {statCards.map((stat) => {
             const CardWrapper = stat.href ? Link : "div";
             return (
@@ -203,6 +281,11 @@ export default function AdminPage() {
                     stat.value
                   )}
                 </p>
+                {"sub" in stat && stat.sub && !stat.loading && (
+                  <p className={`mt-1 text-xs font-medium ${stat.subTone === "down" ? "text-red-400" : "text-forest"}`}>
+                    {stat.sub}
+                  </p>
+                )}
               </CardWrapper>
             );
           })}
