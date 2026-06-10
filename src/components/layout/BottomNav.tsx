@@ -21,8 +21,8 @@ export function BottomNav() {
   const menuItemCount = useMenuCartStore((s) => s.item_count);
   const itemCount = shopItemCount + menuItemCount;
 
-  // Hide on admin routes and checkout
-  if (pathname.startsWith("/admin") || pathname.startsWith("/shop/checkout")) {
+  // Hide on admin routes, the full-screen KDS, and checkout
+  if (pathname.startsWith("/admin") || pathname.startsWith("/kds") || pathname.startsWith("/shop/checkout")) {
     return null;
   }
 

@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { assertKdsTransition, sortKdsOrders, type KdsOrderLike } from "@/lib/orders/kds";
+import { sendSms } from "@/lib/sms/twilio";
 import type { OrderStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
 
 const ORDER_SELECT = "id, order_number, email, status, source, items, subtotal_cents, tax_cents, shipping_cents, total_cents, notes, fulfillment_metadata, payment_preference, order_channel, payment_status, payment_method, paid_at, payment_metadata, created_at, updated_at";
 
+// Any team member (barista+) can run the KDS — not just the admin allowlist.
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "staff");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { data, error } = await supabaseAdmin()
@@ -33,9 +35,21 @@ export async function GET(req: NextRequest) {
   }
 }
 
+/** "Your order is ready" customer notification, fired on the KDS Ready bump. */
+function readySmsBody(orderNumber: string, mode?: string): string {
+  if (mode === "parking") {
+    return `Kynda Coffee: Order ${orderNumber} is ready — we're bringing it out to your vehicle now!`;
+  }
+  if (mode === "table") {
+    return `Kynda Coffee: Order ${orderNumber} is ready — we're bringing it to your table!`;
+  }
+  return `Kynda Coffee: Order ${orderNumber} is ready for pickup at the counter. See you in a sec!`;
+}
+
 export async function PATCH(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "staff");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const user = team.user;
 
   try {
     const body = await req.json();
@@ -82,6 +96,20 @@ export async function PATCH(req: NextRequest) {
     if (updateError || !order) {
       console.error("KDS update error", updateError);
       return NextResponse.json({ error: "Failed to update order." }, { status: 500 });
+    }
+
+    // Ready bump → best-effort customer SMS (never blocks the KDS response).
+    if (nextStatus === "ready") {
+      const fm = current.fulfillment_metadata as
+        | { customer_phone?: string; mode?: string }
+        | null;
+      const phone = fm?.customer_phone?.trim();
+      if (phone) {
+        sendSms({
+          to: phone,
+          body: readySmsBody(current.order_number as string, fm?.mode),
+        }).catch((e) => console.error("Ready SMS failed:", e));
+      }
     }
 
     return NextResponse.json({ order });

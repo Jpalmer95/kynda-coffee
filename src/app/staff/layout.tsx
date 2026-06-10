@@ -10,7 +10,9 @@ import {
   FileText,
   ArrowLeft,
   Coffee,
+  MonitorCheck,
 } from "lucide-react";
+import { normalizeRole, isTeamMember, TIER_LABELS } from "@/lib/auth/roles";
 
 /**
  * Staff portal layout
@@ -21,6 +23,7 @@ export const dynamic = "force-dynamic";
 
 const STAFF_NAV = [
   { href: "/staff", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/kds", label: "Kitchen Display", icon: MonitorCheck },
   { href: "/staff/recipes", label: "Recipes", icon: Coffee },
   { href: "/staff/checklists", label: "Checklists", icon: ClipboardList },
   { href: "/staff/waste-log", label: "Waste Log", icon: Trash2 },
@@ -46,8 +49,8 @@ export default async function StaffLayout({
     .eq("id", user.id)
     .single();
 
-  const role = (profile as any)?.role || "user";
-  if (role !== "admin" && role !== "employee") {
+  const role = normalizeRole((profile as { role?: string } | null)?.role);
+  if (!isTeamMember(role)) {
     redirect("/account");
   }
 
@@ -102,11 +105,13 @@ export default async function StaffLayout({
           </div>
           <div className="mt-1">
             <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-              role === "admin"
+              role === "owner"
                 ? "bg-purple-100 text-purple-700"
+                : role === "manager"
+                ? "bg-amber-100 text-amber-700"
                 : "bg-green-100 text-green-700"
             }`}>
-              {role}
+              {TIER_LABELS[role]}
             </span>
           </div>
         </div>

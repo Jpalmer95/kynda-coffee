@@ -34,6 +34,10 @@ import {
   calculateRetailPrice,
   getHostedMockupUrl,
 } from "@/lib/printful/catalog";
+import {
+  DESIGN_RECOMMENDATIONS,
+  type DesignTheme,
+} from "@/lib/designs/recommendations";
 
 type StudioTab = "products" | "presets" | "generate" | "saved";
 
@@ -66,6 +70,7 @@ export default function DesignStudioPage() {
   // AI Generation state
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState<string | null>(null);
+  const [recTheme, setRecTheme] = useState<DesignTheme | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPreview, setGeneratedPreview] = useState<{
     url: string;
@@ -300,6 +305,8 @@ export default function DesignStudioPage() {
           prompt: prompt.trim(),
           style_preset: style,
           product_type: selectedProduct.id,
+          theme: recTheme ?? undefined,
+          brand_aware: recTheme === "kynda-brand",
         }),
       });
 
@@ -605,6 +612,44 @@ export default function DesignStudioPage() {
 
             {activeTab === "generate" && (
               <div className="space-y-6">
+                {/* Recommended packs — one-tap seed prompts (Epic 8) */}
+                <div>
+                  <label className="block text-xs font-medium text-mocha mb-2 uppercase tracking-wider">
+                    Idea Packs — tap a vibe, then a starter idea
+                  </label>
+                  <div className="flex gap-2 flex-wrap mb-3">
+                    {DESIGN_RECOMMENDATIONS.map((rec) => (
+                      <button
+                        key={rec.theme}
+                        onClick={() => setRecTheme(recTheme === rec.theme ? null : rec.theme)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+                          recTheme === rec.theme
+                            ? "bg-forest text-sand border-forest"
+                            : "border-latte/30 text-espresso hover:border-forest/50"
+                        }`}
+                        title={rec.description}
+                      >
+                        {rec.label}
+                      </button>
+                    ))}
+                  </div>
+                  {recTheme && (
+                    <div className="space-y-2 rounded-xl border border-latte/20 bg-card/50 p-3">
+                      {DESIGN_RECOMMENDATIONS.find((r) => r.theme === recTheme)?.prompts.map(
+                        (seed) => (
+                          <button
+                            key={seed}
+                            onClick={() => setPrompt(seed)}
+                            className="block w-full rounded-lg border border-latte/20 bg-background px-3 py-2 text-left text-sm text-espresso transition hover:border-forest/50"
+                          >
+                            {seed}
+                          </button>
+                        )
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-xs font-medium text-mocha mb-2 uppercase tracking-wider">
                     Describe Your Vision

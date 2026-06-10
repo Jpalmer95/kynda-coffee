@@ -36,6 +36,9 @@ export function Header() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Full-screen KDS surface gets zero site chrome (kitchen iPads).
+  const hideChrome = pathname.startsWith("/kds");
+
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileOpen) {
@@ -54,6 +57,8 @@ export function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  if (hideChrome) return null;
 
   return (
     <>

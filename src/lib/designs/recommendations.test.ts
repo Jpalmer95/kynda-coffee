@@ -80,9 +80,9 @@ describe("recommendThemes", () => {
   it("adds vintage in fall/winter", () => {
     expect(recommendThemes({ season: "Fall" })).toContain("vintage");
   });
-  it("caps at 6 unique themes", () => {
+  it("caps at 8 unique themes (memes + seasonal added 2026-06-10)", () => {
     const t = recommendThemes({ brandFan: true, season: "winter" });
-    expect(t.length).toBeLessThanOrEqual(6);
+    expect(t.length).toBeLessThanOrEqual(8);
     expect(new Set(t).size).toBe(t.length);
   });
 });

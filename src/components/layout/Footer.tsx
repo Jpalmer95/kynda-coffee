@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Instagram, Facebook, MapPin, Phone, Mail, ArrowRight, CheckCircle } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
 export function Footer() {
+  const pathname = usePathname();
   const [email, setEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
@@ -39,6 +41,9 @@ export function Footer() {
       setSubscribing(false);
     }
   }
+
+  // Hide on the full-screen KDS surface (kitchen iPads).
+  if (pathname.startsWith("/kds")) return null;
 
   return (
     <footer className="border-t border-latte/30 bg-surface text-sand" role="contentinfo">

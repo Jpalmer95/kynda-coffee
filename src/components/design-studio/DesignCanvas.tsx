@@ -10,7 +10,7 @@ import React, {
 } from "react";
 import { Stage, Layer, Image as KonvaImage, Text, Rect, Transformer } from "react-konva";
 import Konva from "konva";
-import { Trash2, Upload, Type, Eye, EyeOff, RotateCcw, Package } from "lucide-react";
+import { Trash2, Upload, Type, Eye, EyeOff, RotateCcw, Package, Undo2, Redo2 } from "lucide-react";
 import { type PrintfulProduct, getHostedMockupUrl } from "@/lib/printful/catalog";
 
 // ============================================================
@@ -230,6 +230,49 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
     const stageRef = useRef<Konva.Stage>(null);
     const transformerRef = useRef<Konva.Transformer>(null);
 
+    // ── Undo / Redo history (Epic 8 canvas polish) ──
+    // Every tracked mutation snapshots the previous layer state; undo/redo swap
+    // between the stacks. Capped at 50 steps. `historyVersion` only exists to
+    // re-render the toolbar's disabled states (refs don't trigger renders).
+    const undoStackRef = useRef<DesignLayer[][]>([]);
+    const redoStackRef = useRef<DesignLayer[][]>([]);
+    const [, setHistoryVersion] = useState(0);
+
+    const setLayersTracked = useCallback(
+      (updater: (prev: DesignLayer[]) => DesignLayer[]) => {
+        setLayers((prev) => {
+          undoStackRef.current.push(prev);
+          if (undoStackRef.current.length > 50) undoStackRef.current.shift();
+          redoStackRef.current = [];
+          return updater(prev);
+        });
+        setHistoryVersion((v) => v + 1);
+      },
+      []
+    );
+
+    const undo = useCallback(() => {
+      setLayers((current) => {
+        const prev = undoStackRef.current.pop();
+        if (!prev) return current;
+        redoStackRef.current.push(current);
+        return prev;
+      });
+      setSelectedLayerId(null);
+      setHistoryVersion((v) => v + 1);
+    }, []);
+
+    const redo = useCallback(() => {
+      setLayers((current) => {
+        const next = redoStackRef.current.pop();
+        if (!next) return current;
+        undoStackRef.current.push(current);
+        return next;
+      });
+      setSelectedLayerId(null);
+      setHistoryVersion((v) => v + 1);
+    }, []);
+
     // Mockup image — try Supabase-hosted (from admin sync), fall back to product imageUrl
   const supabaseMockupUrl = getHostedMockupUrl(product.id, view);
     const mockupImage = useImageWithFallback(supabaseMockupUrl, product.imageUrl);
@@ -275,22 +318,26 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
           name: name || (type === "logo" ? "Kynda Logo" : "Design"),
           visible: true,
         };
-        setLayers((prev) => [...prev, newLayer]);
+        setLayersTracked((prev) => [...prev, newLayer]);
         setSelectedLayerId(newLayer.id);
       },
-      []
+      [setLayersTracked]
     );
 
     const clearLayers = useCallback(() => {
-      setLayers([]);
+      setLayersTracked(() => []);
       setSelectedLayerId(null);
-    }, []);
+    }, [setLayersTracked]);
 
     const getLayers = useCallback(() => layers, [layers]);
 
     const loadLayers = useCallback((newLayers: DesignLayer[]) => {
       setLayers(newLayers);
       setSelectedLayerId(null);
+      // Loading a saved design starts a fresh history.
+      undoStackRef.current = [];
+      redoStackRef.current = [];
+      setHistoryVersion((v) => v + 1);
     }, []);
 
     const exportThumbnail = useCallback((): string | null => {
@@ -309,7 +356,7 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
     );
 
     const updateLayer = (id: string, changes: Partial<DesignLayer>) => {
-      setLayers((prev) =>
+      setLayersTracked((prev) =>
         prev.map((l) => (l.id === id ? { ...l, ...changes } : l))
       );
     };
@@ -332,11 +379,11 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
         name: textValue.trim().slice(0, 20),
         visible: true,
       };
-      setLayers((prev) => [...prev, newLayer]);
+      setLayersTracked((prev) => [...prev, newLayer]);
       setSelectedLayerId(newLayer.id);
       setTextValue("");
       setShowTextDialog(false);
-    }, [textValue, textColor]);
+    }, [textValue, textColor, setLayersTracked]);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -351,7 +398,7 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
 
     const deleteSelected = () => {
       if (!selectedLayerId) return;
-      setLayers((prev) => prev.filter((l) => l.id !== selectedLayerId));
+      setLayersTracked((prev) => prev.filter((l) => l.id !== selectedLayerId));
       setSelectedLayerId(null);
     };
 
@@ -468,6 +515,25 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
 
         {/* Controls */}
         <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={undo}
+            disabled={undoStackRef.current.length === 0}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-card border border-latte/30 hover:border-forest/50 rounded-lg text-sm transition disabled:opacity-40 disabled:hover:border-latte/30"
+            title="Undo"
+            aria-label="Undo"
+          >
+            <Undo2 size={14} />
+          </button>
+          <button
+            onClick={redo}
+            disabled={redoStackRef.current.length === 0}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-card border border-latte/30 hover:border-forest/50 rounded-lg text-sm transition disabled:opacity-40 disabled:hover:border-latte/30"
+            title="Redo"
+            aria-label="Redo"
+          >
+            <Redo2 size={14} />
+          </button>
+
           <label className="cursor-pointer">
             <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
             <div className="inline-flex items-center gap-2 px-3 py-2 bg-card border border-latte/30 hover:border-forest/50 rounded-lg text-sm transition">

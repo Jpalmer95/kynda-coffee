@@ -1,5 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/middleware";
+import {
+  normalizeRole,
+  hasTier,
+  minTierForPath,
+  isOwnerOnlyAdminPath,
+  type RoleTier,
+} from "@/lib/auth/roles";
 
 const ADMIN_EMAILS = [
   ...(process.env.ADMIN_EMAILS?.split(",") ?? []),
@@ -22,17 +29,36 @@ export async function middleware(request: NextRequest) {
   // Refresh auth session if expired
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Protect admin routes (pages only, not API)
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/api/")) {
+  // ── Tiered team access: /kds, /staff, /training, /admin (pages only) ──
+  const minTier = pathname.startsWith("/api/") ? null : minTierForPath(pathname);
+  if (minTier) {
     if (!user) {
       const redirectUrl = new URL("/account", request.url);
       redirectUrl.searchParams.set("redirectTo", pathname);
       return NextResponse.redirect(redirectUrl);
     }
 
-    const isAdmin = ADMIN_EMAILS.includes(user.email?.toLowerCase() ?? "");
-    if (!isAdmin) {
+    let role: RoleTier;
+    if (ADMIN_EMAILS.includes(user.email?.toLowerCase() ?? "")) {
+      // Env allowlist = owner override; the owner can never be locked out.
+      role = "owner";
+    } else {
+      // RLS allows users to read their own profile row.
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      role = normalizeRole((profile as { role?: string } | null)?.role);
+    }
+
+    if (!hasTier(role, minTier)) {
       return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    // Owner-only admin sections stay closed to managers.
+    if (pathname.startsWith("/admin") && isOwnerOnlyAdminPath(pathname) && role !== "owner") {
+      return NextResponse.redirect(new URL("/admin", request.url));
     }
   }
 

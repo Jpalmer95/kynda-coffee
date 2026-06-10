@@ -11,6 +11,8 @@ export type DesignTheme =
   | "kynda-brand"
   | "local"
   | "trending"
+  | "memes"
+  | "seasonal"
   | "funny"
   | "cool"
   | "sporty"
@@ -60,6 +62,28 @@ export const DESIGN_RECOMMENDATIONS: DesignRecommendation[] = [
       "Retro 70s groovy coffee lettering, earthy palette, sticker style",
       "Y2K chrome coffee cup, glossy 3D render, playful",
       "Cottagecore coffee morning, soft pastel hand-drawn illustration",
+    ],
+  },
+  {
+    theme: "memes",
+    label: "Memes",
+    description: "Internet-famous coffee energy — meme-style sticker graphics.",
+    prompts: [
+      "‘This is Fine’ style cartoon dog sipping coffee in a cozy café, meme sticker",
+      "Distracted-boyfriend style meme: person ignoring ‘sleep’ to look at ‘one more espresso’, flat cartoon",
+      "Grumpy cat face with ‘Mondays Need a Double Shot’ bold meme text, sticker style",
+      "Doge-style shiba inu with coffee cup, ‘much caffeine, very wow’ comic sans energy, meme sticker",
+    ],
+  },
+  {
+    theme: "seasonal",
+    label: "Seasonal",
+    description: "Rotating seasonal designs — refreshed for the current season.",
+    prompts: [
+      "Iced coffee in golden summer light, lake day vibes, retro summer badge",
+      "Pumpkin spice latte with autumn leaves, cozy fall illustration",
+      "Hot cocoa-style winter coffee mug with snowflakes, festive knit pattern border",
+      "Spring bluebonnets wreathing a coffee cup, fresh pastel watercolor",
     ],
   },
   {
@@ -135,11 +159,11 @@ export function buildGenerationPrompt(opts: BuildPromptOptions): string {
 export function recommendThemes(signals?: { brandFan?: boolean; season?: string }): DesignTheme[] {
   const themes: DesignTheme[] = [];
   if (signals?.brandFan) themes.push("kynda-brand");
-  themes.push("trending", "local");
+  themes.push("seasonal", "trending", "memes", "local");
   // seasonal nudge
   const season = (signals?.season ?? "").toLowerCase();
   if (season.includes("fall") || season.includes("winter")) themes.push("vintage");
   themes.push("funny", "cool", "sporty");
-  // unique, capped at 6
-  return Array.from(new Set(themes)).slice(0, 6);
+  // unique, capped at 8
+  return Array.from(new Set(themes)).slice(0, 8);
 }

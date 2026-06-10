@@ -32,6 +32,7 @@ const ADMIN_LINKS = [
   { href: "/admin/kds", label: "KDS", icon: MonitorCheck },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/customers", label: "Customers", icon: Users },
+  { href: "/admin/team", label: "Team & Access", icon: Users },
   { href: "/admin/promo-codes", label: "Promo Codes", icon: Tag },
   { href: "/admin/gift-cards", label: "Gift Cards", icon: Gift },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
