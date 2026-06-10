@@ -187,3 +187,114 @@ export function kdsStatusLabel(status: OrderStatus): string {
   if (status === "ready") return "Ready";
   return status;
 }
+
+// ── Line-item presentation ──────────────────────────────────────────────────
+//
+// Orders arrive from four different writers (QR flow, agent API, Square POS
+// webhook, legacy web checkout) and their `items` JSON differs subtly:
+//   * modifiers may be strings OR objects ({ name, price_cents, ... })
+//   * the display name may be product_name or name
+//   * variants may be variant_name or variation_name
+// The KDS must never show "[object Object]" — these normalizers make every
+// shape render as clean kitchen-readable text.
+
+type RawModifier = string | { name?: unknown; price_cents?: unknown } | null | undefined;
+
+/** Render a single modifier of any historical shape as display text. */
+export function formatModifier(mod: RawModifier): string | null {
+  if (!mod) return null;
+  if (typeof mod === "string") return mod.trim() || null;
+  if (typeof mod === "object" && typeof mod.name === "string" && mod.name.trim()) {
+    return mod.name.trim();
+  }
+  return null;
+}
+
+/** Normalize an item's modifiers array (any shape) to display strings. */
+export function formatModifiers(mods: unknown): string[] {
+  if (!Array.isArray(mods)) return [];
+  return mods.map((m) => formatModifier(m as RawModifier)).filter((m): m is string => Boolean(m));
+}
+
+/** A line item normalized for display on a KDS card. */
+export interface KdsLineItemView {
+  name: string;
+  variant?: string;
+  quantity: number;
+  modifiers: string[];
+  notes?: string;
+}
+
+/** Normalize raw order items JSON (any writer's shape) into KDS card views. */
+export function normalizeKdsItems(items: unknown): KdsLineItemView[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((raw) => {
+    const it = (raw ?? {}) as Record<string, unknown>;
+    const name =
+      (typeof it.product_name === "string" && it.product_name.trim()) ||
+      (typeof it.name === "string" && it.name.trim()) ||
+      "Item";
+    const variantRaw =
+      (typeof it.variant_name === "string" && it.variant_name.trim()) ||
+      (typeof it.variation_name === "string" && it.variation_name.trim()) ||
+      "";
+    // "Regular" is the default variation everywhere — noise on a kitchen ticket.
+    const variant = variantRaw && variantRaw.toLowerCase() !== "regular" ? variantRaw : undefined;
+    const qtyRaw = it.quantity ?? it.qty;
+    const quantity =
+      typeof qtyRaw === "number" && Number.isFinite(qtyRaw) && qtyRaw >= 1 ? Math.floor(qtyRaw) : 1;
+    const notes = typeof it.notes === "string" && it.notes.trim() ? it.notes.trim() : undefined;
+    return { name, variant, quantity, modifiers: formatModifiers(it.modifiers), notes };
+  });
+}
+
+// ── Channel + payment chips ─────────────────────────────────────────────────
+
+/** Where the order came from — staff see this at a glance on every card. */
+export interface KdsSourceBadge {
+  label: string;
+  className: string;
+}
+
+export function sourceBadge(order: KdsOrderLike): KdsSourceBadge {
+  if (order.source === "agent" || order.order_channel === "agent") {
+    return { label: "AGENT", className: "bg-fuchsia-600 text-white" };
+  }
+  if (order.source === "square-pos" || order.order_channel === "pos") {
+    return { label: "POS", className: "bg-slate-700 text-white" };
+  }
+  if (order.source === "qr") {
+    return { label: "QR", className: "bg-sky-700 text-white" };
+  }
+  return { label: "ONLINE", className: "bg-slate-600 text-white" };
+}
+
+/**
+ * Payment call-to-action chip. The single most important non-drink fact for
+ * staff: do we still need to collect money from this customer at handoff?
+ * POS orders are settled inside Square, so they never show a chip.
+ */
+export interface KdsPaymentChip {
+  label: string;
+  className: string;
+  /** true when staff must collect payment at handoff */
+  collect: boolean;
+}
+
+export function paymentChip(order: KdsOrderLike & {
+  payment_status?: string | null;
+  payment_method?: string | null;
+}): KdsPaymentChip | null {
+  if (order.source === "square-pos" || order.order_channel === "pos") return null;
+  if (order.payment_status === "paid") {
+    return { label: "PAID", className: "bg-emerald-600 text-white", collect: false };
+  }
+  return { label: "PAY AT REGISTER", className: "bg-amber-500 text-black", collect: true };
+}
+
+/** "2:41 PM" — when the order was placed, for the card header. */
+export function placedAtLabel(createdAt: string): string {
+  const d = new Date(createdAt);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}

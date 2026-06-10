@@ -1,6 +1,8 @@
 import type { OrderStatus } from "@/types";
 
-export const ACTIVE_KDS_STATUSES = ["pending", "confirmed", "processing"] as const satisfies OrderStatus[];
+// "ready" stays on the board until handoff (Picked Up) so staff always see
+// what's waiting at the counter — it only disappears once marked complete.
+export const ACTIVE_KDS_STATUSES = ["pending", "confirmed", "processing", "ready"] as const satisfies OrderStatus[];
 export type ActiveKdsStatus = (typeof ACTIVE_KDS_STATUSES)[number];
 
 export const KDS_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -8,7 +10,8 @@ export const KDS_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   confirmed: ["processing", "cancelled"],
   processing: ["ready", "cancelled"],
   shipped: ["delivered"],
-  ready: ["complete", "fulfilled", "cancelled"],
+  // "processing" is the undo path for an accidental Ready bump.
+  ready: ["complete", "fulfilled", "processing", "cancelled"],
   complete: ["fulfilled", "delivered", "shipped"],
   fulfilled: [],
   delivered: [],

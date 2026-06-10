@@ -28,12 +28,14 @@ const baseOrder: KdsOrderLike = {
 };
 
 describe("KDS order filtering", () => {
-  it("treats pending, confirmed, and processing QR/table/lobby/parking/pickup orders as active", () => {
-    expect(ACTIVE_KDS_STATUSES).toEqual(["pending", "confirmed", "processing"]);
+  it("treats pending, confirmed, processing, and ready orders as active on the board", () => {
+    expect(ACTIVE_KDS_STATUSES).toEqual(["pending", "confirmed", "processing", "ready"]);
     expect(isActiveKdsOrder(baseOrder)).toBe(true);
     expect(isActiveKdsOrder({ ...baseOrder, status: "confirmed" })).toBe(true);
     expect(isActiveKdsOrder({ ...baseOrder, status: "processing" })).toBe(true);
+    expect(isActiveKdsOrder({ ...baseOrder, status: "ready" })).toBe(true);
     expect(isActiveKdsOrder({ ...baseOrder, status: "delivered" })).toBe(false);
+    expect(isActiveKdsOrder({ ...baseOrder, status: "complete" })).toBe(false);
     expect(isActiveKdsOrder({ ...baseOrder, source: "website", order_channel: "shipping" })).toBe(false);
   });
 
@@ -59,6 +61,10 @@ describe("KDS status transitions", () => {
   it("rejects invalid or backwards transitions", () => {
     expect(assertKdsTransition("pending", "processing").ok).toBe(true);
     expect(assertKdsTransition("processing", "ready").ok).toBe(true);
+    // undo path: an accidental Ready bump can go back to preparing
+    expect(assertKdsTransition("ready", "processing").ok).toBe(true);
+    // handoff: ready -> complete clears the board
+    expect(assertKdsTransition("ready", "complete").ok).toBe(true);
 
     const backwards = assertKdsTransition("processing", "pending");
     const invalid = assertKdsTransition("delivered", "processing");

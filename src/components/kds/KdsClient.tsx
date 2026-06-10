@@ -24,7 +24,9 @@ import {
   Check,
   Clock,
   Loader2,
+  Phone,
   RefreshCw,
+  RotateCcw,
   Search,
   User,
   Car,
@@ -46,6 +48,10 @@ import {
   minutesSince,
   computeKdsStats,
   kdsStatusLabel,
+  normalizeKdsItems,
+  sourceBadge,
+  paymentChip,
+  placedAtLabel,
 } from "@/lib/orders/kds-board";
 import {
   detectNewKdsOrders,
@@ -53,25 +59,24 @@ import {
   kdsNewOrderMessage,
 } from "@/lib/orders/kds-notifications";
 
-type KdsLineItem = {
-  product_name?: string;
-  name?: string;
-  quantity?: number;
-  qty?: number;
-  notes?: string;
-  modifiers?: string[];
-};
-
 /** KDS orders carry the canonical Order fields plus the KDS-specific metadata. */
 type KdsOrder = Order & KdsOrderLike;
 
 const SOUND_PREF_KEY = "kynda-kds-sound";
 const POLL_FALLBACK_MS = 30_000;
 
+/** The forward "bump" action for each active status. */
 function nextStatus(status: OrderStatus): OrderStatus | null {
   if (status === "pending" || status === "confirmed") return "processing";
   if (status === "processing") return "ready";
+  if (status === "ready") return "complete"; // handoff: Picked Up / Delivered
   return null;
+}
+
+function nextActionLabel(status: OrderStatus): string {
+  if (status === "pending" || status === "confirmed") return "Start Preparing";
+  if (status === "processing") return "Mark Ready";
+  return "Picked Up";
 }
 
 function statusColor(status: OrderStatus) {
@@ -382,34 +387,55 @@ export function KdsClient({ backHref }: { backHref?: string }) {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visibleOrders.map((order) => {
               const next = nextStatus(order.status);
-              const items = ((order.items ?? []) as KdsLineItem[]);
+              const items = normalizeKdsItems(order.items);
               const tag = fulfillmentTag(order);
+              const badge = sourceBadge(order);
+              const pay = paymentChip(order);
               const mins = minutesSince(order.created_at, now.getTime());
               const tier = timerTier(mins);
+              const placedAt = placedAtLabel(order.created_at);
               const customerName =
                 order.fulfillment_metadata?.customer_name ||
                 order.email?.split("@")[0] ||
                 "Guest";
+              const customerPhone = order.fulfillment_metadata?.customer_phone;
+              const itemCount = items.reduce((sum, it) => sum + it.quantity, 0);
 
               return (
                 <article key={order.id} className="flex h-full flex-col rounded-3xl border-4 border-sand bg-card p-5 text-espresso shadow-xl">
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-xs tracking-[2px] text-mocha">ORDER {order.order_number}</div>
+                      <div className="text-xs tracking-[2px] text-mocha">
+                        ORDER {order.order_number}
+                        {placedAt ? <span className="ml-2 normal-case tracking-normal">• {placedAt}</span> : null}
+                      </div>
                       <div className="mt-1 flex items-center gap-2 text-2xl font-bold">
                         <User className="h-6 w-6 shrink-0" /> <span className="truncate">{String(customerName)}</span>
                       </div>
+                      {typeof customerPhone === "string" && customerPhone.trim() ? (
+                        <div className="mt-0.5 flex items-center gap-1.5 text-sm text-mocha">
+                          <Phone className="h-3.5 w-3.5 shrink-0" /> {customerPhone}
+                        </div>
+                      ) : null}
                     </div>
                     <div className={`${statusColor(order.status)} self-start rounded-full px-3 py-1 text-xs font-medium`}>
                       {kdsStatusLabel(order.status)}
                     </div>
                   </div>
 
-                  {/* Fulfillment tag + timer */}
+                  {/* Channel + fulfillment + payment + timer chips */}
                   <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${badge.className}`}>
+                      {badge.label}
+                    </span>
                     <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${tag.className}`}>
                       {tag.label}
                     </span>
+                    {pay ? (
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${pay.className}`}>
+                        {pay.label}
+                      </span>
+                    ) : null}
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${TIMER_TIER_CLASS[tier]}`}>
                       <Clock className="mr-1 inline h-3 w-3" />{mins}m
                     </span>
@@ -426,17 +452,31 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                     {items.map((item, index) => (
                       <div key={index} className="rounded-xl border border-latte/30 px-3 py-2.5">
                         <div className="flex justify-between gap-3 text-lg font-semibold">
-                          <span>{item.product_name || item.name || "Item"}</span>
-                          <span>x{item.quantity ?? item.qty ?? 1}</span>
+                          <span>
+                            {item.name}
+                            {item.variant ? <span className="ml-1.5 text-base font-medium text-mocha">({item.variant})</span> : null}
+                          </span>
+                          <span className={item.quantity > 1 ? "rounded-lg bg-espresso px-2 text-cream" : ""}>x{item.quantity}</span>
                         </div>
-                        {item.modifiers?.length ? <div className="mt-1 text-sm text-mocha">{item.modifiers.join(" • ")}</div> : null}
-                        {item.notes ? <div className="mt-1 text-sm text-mocha">— {item.notes}</div> : null}
+                        {item.modifiers.length > 0 && (
+                          <ul className="mt-1 space-y-0.5">
+                            {item.modifiers.map((mod, mi) => (
+                              <li key={mi} className="text-sm font-medium text-espresso/90">+ {mod}</li>
+                            ))}
+                          </ul>
+                        )}
+                        {item.notes ? <div className="mt-1 rounded-lg bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-900">✎ {item.notes}</div> : null}
                       </div>
                     ))}
-                    {order.notes && <div className="rounded-xl bg-cream p-3 text-sm text-mocha">Note: {order.notes}</div>}
+                    {order.notes && <div className="rounded-xl bg-cream p-3 text-sm font-semibold text-mocha">Note: {order.notes}</div>}
                   </div>
 
-                  <div className="mt-auto flex flex-col gap-2.5 border-t border-latte/20 pt-5">
+                  <div className="mt-3 flex items-center justify-between text-xs text-mocha">
+                    <span>{itemCount} item{itemCount === 1 ? "" : "s"}</span>
+                    <span className="font-semibold">${(order.total_cents / 100).toFixed(2)}</span>
+                  </div>
+
+                  <div className="mt-auto flex flex-col gap-2.5 border-t border-latte/20 pt-4">
                     {next ? (
                       <button
                         onClick={() => updateStatus(order.id, next)}
@@ -445,14 +485,24 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                       >
                         {updatingId === order.id ? (
                           <Loader2 className="mx-auto h-5 w-5 animate-spin" />
-                        ) : next === "ready" ? (
-                          <span className="flex items-center justify-center gap-2"><Check className="h-5 w-5" /> Mark Ready</span>
+                        ) : next === "ready" || next === "complete" ? (
+                          <span className="flex items-center justify-center gap-2"><Check className="h-5 w-5" /> {nextActionLabel(order.status)}</span>
                         ) : (
-                          "Start Preparing"
+                          nextActionLabel(order.status)
                         )}
                       </button>
                     ) : (
                       <div className="py-2 text-center text-lg font-semibold text-sage">Ready for handoff ✓</div>
+                    )}
+                    {/* Undo an accidental Ready bump */}
+                    {order.status === "ready" && (
+                      <button
+                        onClick={() => updateStatus(order.id, "processing")}
+                        disabled={updatingId === order.id}
+                        className="w-full rounded-2xl border border-latte/40 py-2 text-sm font-medium text-mocha active:scale-[0.985] disabled:opacity-60"
+                      >
+                        <RotateCcw className="mr-1.5 inline h-4 w-4" /> Back to Preparing
+                      </button>
                     )}
                   </div>
                 </article>

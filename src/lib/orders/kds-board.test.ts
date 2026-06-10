@@ -8,6 +8,12 @@ import {
   minutesSince,
   computeKdsStats,
   KDS_BOARDS,
+  formatModifier,
+  formatModifiers,
+  normalizeKdsItems,
+  sourceBadge,
+  paymentChip,
+  placedAtLabel,
 } from "./kds-board";
 import type { KdsOrderLike } from "./kds";
 
@@ -145,5 +151,104 @@ describe("KDS_BOARDS", () => {
     expect(keys).toContain("parking");
     expect(keys).toContain("table");
     expect(keys).toContain("delivery");
+  });
+});
+
+describe("formatModifier / formatModifiers — the '[object Object]' fix", () => {
+  it("renders object-shaped modifiers (QR/agent orders) by name", () => {
+    expect(
+      formatModifier({ name: "Oat milk", price_cents: 100, provider_modifier_id: "X" } as never)
+    ).toBe("Oat milk");
+  });
+  it("renders plain-string modifiers (legacy shape)", () => {
+    expect(formatModifier("Extra shot")).toBe("Extra shot");
+  });
+  it("drops null/empty/unknown shapes instead of stringifying them", () => {
+    expect(formatModifier(null)).toBeNull();
+    expect(formatModifier("")).toBeNull();
+    expect(formatModifier({} as never)).toBeNull();
+    expect(formatModifier({ name: 42 } as never)).toBeNull();
+  });
+  it("normalizes a mixed array and never yields '[object Object]'", () => {
+    const out = formatModifiers([
+      { name: "Iced", price_cents: 0 },
+      "Half-sweet",
+      null,
+      {},
+      { name: "House Made Vanilla Syrup", price_cents: 125 },
+    ]);
+    expect(out).toEqual(["Iced", "Half-sweet", "House Made Vanilla Syrup"]);
+    expect(out.join(" ")).not.toContain("object");
+  });
+  it("handles non-array input", () => {
+    expect(formatModifiers(undefined)).toEqual([]);
+    expect(formatModifiers("nope")).toEqual([]);
+  });
+});
+
+describe("normalizeKdsItems", () => {
+  it("normalizes the real QR/agent order item shape", () => {
+    const items = normalizeKdsItems([
+      {
+        product_name: "Latte",
+        variant_name: "Large",
+        quantity: 3,
+        modifiers: [
+          { name: "Iced", price_cents: 0 },
+          { name: "Oat milk", price_cents: 100 },
+        ],
+      },
+    ]);
+    expect(items).toEqual([
+      { name: "Latte", variant: "Large", quantity: 3, modifiers: ["Iced", "Oat milk"], notes: undefined },
+    ]);
+  });
+  it("hides the noise 'Regular' default variant", () => {
+    expect(normalizeKdsItems([{ product_name: "Mocha", variant_name: "Regular", quantity: 1 }])[0].variant).toBeUndefined();
+  });
+  it("falls back across name/qty field aliases and bad data", () => {
+    const items = normalizeKdsItems([
+      { name: "POS Item", qty: 2 },
+      { product_name: "  ", name: "", quantity: -1 },
+      null,
+    ]);
+    expect(items[0]).toMatchObject({ name: "POS Item", quantity: 2 });
+    expect(items[1]).toMatchObject({ name: "Item", quantity: 1 });
+    expect(items[2]).toMatchObject({ name: "Item", quantity: 1 });
+  });
+  it("returns [] for non-array items", () => {
+    expect(normalizeKdsItems(null)).toEqual([]);
+  });
+});
+
+describe("sourceBadge", () => {
+  it("labels agent, POS, QR, and online orders", () => {
+    expect(sourceBadge(makeOrder({ source: "agent", order_channel: "agent" })).label).toBe("AGENT");
+    expect(sourceBadge(makeOrder({ source: "square-pos", order_channel: "pos" })).label).toBe("POS");
+    expect(sourceBadge(makeOrder({ source: "qr" })).label).toBe("QR");
+    expect(sourceBadge(makeOrder({ source: "website", order_channel: "web" })).label).toBe("ONLINE");
+  });
+});
+
+describe("paymentChip", () => {
+  it("shows PAID for settled online orders", () => {
+    const chip = paymentChip({ ...makeOrder(), payment_status: "paid" });
+    expect(chip?.label).toBe("PAID");
+    expect(chip?.collect).toBe(false);
+  });
+  it("flags unpaid pay-at-counter orders so staff collect at handoff", () => {
+    const chip = paymentChip({ ...makeOrder(), payment_status: "unpaid" });
+    expect(chip?.label).toBe("PAY AT REGISTER");
+    expect(chip?.collect).toBe(true);
+  });
+  it("hides the chip for Square POS orders (settled in Square)", () => {
+    expect(paymentChip({ ...makeOrder({ source: "square-pos", order_channel: "pos" }), payment_status: "unpaid" })).toBeNull();
+  });
+});
+
+describe("placedAtLabel", () => {
+  it("formats a time and tolerates garbage", () => {
+    expect(placedAtLabel(new Date().toISOString())).toMatch(/\d/);
+    expect(placedAtLabel("not-a-date")).toBe("");
   });
 });

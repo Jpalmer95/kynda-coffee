@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { assertKdsTransition, sortKdsOrders, type KdsOrderLike } from "@/lib/orders/kds";
+import { assertKdsTransition, sortKdsOrders, ACTIVE_KDS_STATUSES, type KdsOrderLike } from "@/lib/orders/kds";
 import { sendSms } from "@/lib/sms/twilio";
 import type { OrderStatus } from "@/types";
 
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const { data, error } = await supabaseAdmin()
       .from("orders")
       .select(ORDER_SELECT)
-      .in("status", ["pending", "confirmed", "processing"])
+      .in("status", [...ACTIVE_KDS_STATUSES])
       .or("source.eq.qr,order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent)")
       .order("created_at", { ascending: true })
       .limit(100);
@@ -95,7 +95,10 @@ export async function PATCH(req: NextRequest) {
 
     if (updateError || !order) {
       console.error("KDS update error", updateError);
-      return NextResponse.json({ error: "Failed to update order." }, { status: 500 });
+      // Surface the real reason (e.g. a CHECK constraint) instead of an
+      // opaque 500 — staff/owner can actually report something actionable.
+      const detail = updateError?.message ? ` (${updateError.message})` : "";
+      return NextResponse.json({ error: `Failed to update order.${detail}` }, { status: 500 });
     }
 
     // Ready bump → best-effort customer SMS (never blocks the KDS response).

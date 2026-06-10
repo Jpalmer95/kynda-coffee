@@ -63,9 +63,16 @@ export async function POST(req: NextRequest) {
           email: order.customer_id ? `square:${order.customer_id}` : "pos@kynda.local",
           items: (order.line_items ?? []).map((item: any) => ({
             product_name: item.name || "POS Item",
+            variant_name: item.variation_name || undefined,
             quantity: parseInt(item.quantity || "1", 10),
             unit_price_cents: item.base_price_money?.amount ?? 0,
             total_cents: (item.base_price_money?.amount ?? 0) * parseInt(item.quantity || "1", 10),
+            // Carry POS modifiers onto the KDS ticket (e.g. "Oat milk", "Iced")
+            modifiers: (item.modifiers ?? []).map((m: any) => ({
+              name: m.name || "",
+              price_cents: m.base_price_money?.amount ?? 0,
+            })).filter((m: any) => m.name),
+            notes: item.note || undefined,
           })),
           metadata: { square_location_id: order.location_id },
         };
