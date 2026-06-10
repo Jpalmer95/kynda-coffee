@@ -8,14 +8,18 @@ coffee shop platform that is **POS-agnostic, data-owned, and AI-operated**, wher
 order food/drinks, buy shipped goods + merch, apply for work, and find our info; and the owner
 runs the entire business (metrics, marketing, sales, inventory, costs, B2B, staff) from one portal.
 
-> **Deployment status (2026-06-10):** Migrations **018–026 APPLIED to production Supabase**
-> (verified 2026-05-30). Migrations **027 (KDS realtime + team roles) and 028 (team operations:
-> shifts/requests/chat/par-counts) are NEW and pending production apply** — use
-> `scripts/apply-migrations-018-023.sh` pattern with PGPASSFILE on the droplet (DB URL lives at
-> `/root/kynda-supabase-db.env`; the stored password failed auth on 2026-06-10 — likely rotated
-> after the temp-password cleanup; owner should refresh that file). Coolify auto-deploys on push.
-> **Env still pending:** `MENU_METRICS_URL`/`MENU_METRICS_TOKEN`, `FAL_KEY`, `OPENAI_API_KEY`,
-> `CRON_SECRET`, `TWILIO_*` (for KDS Ready→SMS).
+> **Deployment status (2026-06-10):** Migrations **018–028 APPLIED to production Supabase** —
+> 027 (KDS realtime + team roles) and 028 (team operations) verified live: `is_team_member()`,
+> shifts/schedule_requests/team_messages/par_counts tables, orders+team_messages in the
+> `supabase_realtime` publication, "Team reads orders" policy. Connection path: AWS pooler
+> `aws-1-us-west-2.pooler.supabase.com:5432`, user `postgres.svfuuvaaynmcofyrkwus`, password in
+> `/root/kynda-supabase-db.env` on the droplet (refreshed 2026-06-10; rotate again when convenient).
+> Coolify auto-deploys on push (commit 878ea2e live). **Fixed:** a recurring 502 — the static
+> traefik route (`/data/coolify/proxy/dynamic/kynda-coffee.yaml`) pins the app container IP, which
+> changes every deploy; a cron (`/usr/local/bin/kynda-proxy-sync.sh`, every minute) now re-syncs it.
+> **Env still pending:** `MENU_METRICS_URL`/`MENU_METRICS_TOKEN`, `CRON_SECRET`, `OPENAI_API_KEY`,
+> `TWILIO_*` (for KDS Ready→SMS). Set `REPLICA IDENTITY FULL` note: orders updates currently use
+> default replica identity (KDS refetches on any event, so this is fine).
 
 ---
 
