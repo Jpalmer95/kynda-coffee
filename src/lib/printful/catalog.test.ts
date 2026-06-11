@@ -19,6 +19,7 @@ function makeProduct(category: PrintfulProduct["category"], basePriceCents: numb
     mockupImages: { front: "https://example.com/front.jpg" },
     variants: [],
     printAreas: { front: { width: 10, height: 10, x: 50, y: 50 } },
+    canvasPrintArea: { x: 250, y: 250, w: 500, h: 500 },
   };
 }
 

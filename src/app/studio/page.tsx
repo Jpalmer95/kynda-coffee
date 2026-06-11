@@ -32,7 +32,8 @@ import {
   type DefaultDesign,
   KYND_LOGO,
   calculateRetailPrice,
-  getHostedMockupUrl,
+  getBestProductImage,
+  resolveVariant,
 } from "@/lib/printful/catalog";
 import {
   DESIGN_RECOMMENDATIONS,
@@ -53,10 +54,45 @@ interface SavedDesign {
   prompt: string | null;
   created_at: string;
   updated_at: string;
+  /** "cloud" = saved to profile (Supabase) · "session" = this browser only */
+  source?: "cloud" | "session";
 }
 
 const DEFAULT_PRODUCT = PRINTFUL_CATALOG[0]; // Unisex Tee
 const AUTOSAVE_DELAY_MS = 30_000; // 30 seconds of inactivity
+const SESSION_DESIGNS_KEY = "kynda_session_designs_v1";
+
+// ── Session (anonymous) design persistence — localStorage ──
+function readSessionDesigns(): SavedDesign[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(SESSION_DESIGNS_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeSessionDesigns(designs: SavedDesign[]) {
+  if (typeof window === "undefined") return;
+  try {
+    // Keep the most recent 12; drop bulky thumbnails beyond the first few
+    const trimmed = designs.slice(0, 12).map((d, i) => ({
+      ...d,
+      thumbnail_url: i < 6 ? d.thumbnail_url : null,
+    }));
+    window.localStorage.setItem(SESSION_DESIGNS_KEY, JSON.stringify(trimmed));
+  } catch {
+    // Quota exceeded — retry without any thumbnails
+    try {
+      const slim = designs.slice(0, 12).map((d) => ({ ...d, thumbnail_url: null }));
+      window.localStorage.setItem(SESSION_DESIGNS_KEY, JSON.stringify(slim));
+    } catch {
+      /* give up silently */
+    }
+  }
+}
 
 export default function DesignStudioPage() {
   const canvasRef = useRef<DesignCanvasHandle>(null);
@@ -64,7 +100,9 @@ export default function DesignStudioPage() {
 
   const [activeTab, setActiveTab] = useState<StudioTab>("products");
   const [selectedProduct, setSelectedProduct] = useState<PrintfulProduct>(DEFAULT_PRODUCT);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
+    () => resolveVariant(DEFAULT_PRODUCT) ?? null
+  );
   const [view, setView] = useState<"front" | "back">("front");
 
   // AI Generation state
@@ -84,7 +122,9 @@ export default function DesignStudioPage() {
   // Design persistence state
   const [currentDesignId, setCurrentDesignId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "unsaved" | "saving" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saved" | "saved-local" | "unsaved" | "saving" | "error"
+  >("idle");
   const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
   const [isLoadingDesigns, setIsLoadingDesigns] = useState(false);
 
@@ -130,7 +170,9 @@ export default function DesignStudioPage() {
   const handleSelectProduct = useCallback(
     (product: PrintfulProduct) => {
       setSelectedProduct(product);
-      setSelectedVariant(null);
+      // Default to the first real variant so pricing + the color-matched
+      // mockup photo are correct immediately.
+      setSelectedVariant(resolveVariant(product) ?? null);
       setView("front");
       // Clear the canvas on product change
       canvasRef.current?.clearLayers();
@@ -163,19 +205,52 @@ export default function DesignStudioPage() {
 
   }, [currentLayers, saveStatus]);
 
-  // ── Save design to Supabase ──
+  // ── Save design: profile (Supabase) when signed in, else this browser ──
   async function handleSaveDesign(isAutosave = false) {
     if (currentLayers.length === 0) return;
     setIsSaving(true);
     setSaveStatus("saving");
 
+    // Generate thumbnail from canvas
+    const thumbnail = canvasRef.current?.exportThumbnail() || null;
+    const baseName = `${selectedProduct.name} Design`;
+
+    // Local/session fallback used when the user isn't signed in (or the
+    // network fails) — the design is never lost.
+    const saveToSession = () => {
+      const now = new Date().toISOString();
+      const id =
+        currentDesignId && currentDesignId.startsWith("session-")
+          ? currentDesignId
+          : `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const entry: SavedDesign = {
+        id,
+        name: baseName,
+        product_id: selectedProduct.id,
+        variant_id: selectedVariant?.id ?? null,
+        product_type: selectedProduct.id,
+        layers: currentLayers,
+        view,
+        thumbnail_url: thumbnail,
+        prompt: prompt || null,
+        created_at: now,
+        updated_at: now,
+        source: "session",
+      };
+      const existing = readSessionDesigns().filter((d) => d.id !== id);
+      writeSessionDesigns([entry, ...existing]);
+      setCurrentDesignId(id);
+      setSaveStatus("saved-local");
+    };
+
     try {
-      // Generate thumbnail from canvas
-      const thumbnail = canvasRef.current?.exportThumbnail() || null;
+      // Session-only designs always stay local until the user signs in;
+      // trying to "update" them server-side would 404.
+      const isSessionDesign = currentDesignId?.startsWith("session-");
 
       const payload = {
-        id: currentDesignId || undefined,
-        name: currentDesignId ? undefined : `${selectedProduct.name} Design`,
+        id: isSessionDesign ? undefined : currentDesignId || undefined,
+        name: baseName,
         product_id: selectedProduct.id,
         variant_id: selectedVariant?.id || null,
         product_type: selectedProduct.id,
@@ -194,15 +269,23 @@ export default function DesignStudioPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        // Likely not authenticated — silently skip autosave errors
-        if (!isAutosave) console.error("Save failed:", data.error);
-        setSaveStatus("error");
+        if (res.status === 401) {
+          // Not signed in — save to this browser instead of failing.
+          saveToSession();
+        } else {
+          if (!isAutosave) console.error("Save failed:", data.error);
+          setSaveStatus("error");
+        }
         return;
       }
 
       // Track the design ID so future saves update instead of creating duplicates
       if (data.design?.id) {
         setCurrentDesignId(data.design.id);
+        // If this design previously lived in session storage, retire the local copy.
+        if (isSessionDesign && currentDesignId) {
+          writeSessionDesigns(readSessionDesigns().filter((d) => d.id !== currentDesignId));
+        }
       }
       setSaveStatus("saved");
 
@@ -211,26 +294,36 @@ export default function DesignStudioPage() {
         fetchSavedDesigns();
       }
     } catch {
-      setSaveStatus("error");
-      if (!isAutosave) alert("Failed to save design. Please try again.");
+      // Network failure — still preserve the work locally.
+      try {
+        saveToSession();
+      } catch {
+        setSaveStatus("error");
+        if (!isAutosave) alert("Failed to save design. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }
   }
 
-  // ── Load saved designs from Supabase ──
+  // ── Load saved designs: Supabase (when signed in) + this browser ──
   async function fetchSavedDesigns() {
     setIsLoadingDesigns(true);
+    const session = readSessionDesigns().map((d) => ({ ...d, source: "session" as const }));
     try {
       const res = await fetch("/api/designs/save");
       if (!res.ok) {
-        setSavedDesigns([]);
+        setSavedDesigns(session);
         return;
       }
       const data = await res.json();
-      setSavedDesigns(data.designs ?? []);
+      const cloud: SavedDesign[] = (data.designs ?? []).map((d: SavedDesign) => ({
+        ...d,
+        source: "cloud" as const,
+      }));
+      setSavedDesigns([...cloud, ...session]);
     } catch {
-      setSavedDesigns([]);
+      setSavedDesigns(session);
     } finally {
       setIsLoadingDesigns(false);
     }
@@ -244,11 +337,11 @@ export default function DesignStudioPage() {
     );
     if (product) {
       setSelectedProduct(product);
-      // Restore variant if available
-      if (design.variant_id) {
-        const variant = product.variants.find((v) => v.id === design.variant_id);
-        if (variant) setSelectedVariant(variant);
-      }
+      // Restore variant if available, else default to the first
+      const variant = design.variant_id
+        ? product.variants.find((v) => v.id === design.variant_id)
+        : undefined;
+      setSelectedVariant(variant ?? resolveVariant(product) ?? null);
     }
 
     // Restore view
@@ -260,13 +353,23 @@ export default function DesignStudioPage() {
     canvasRef.current?.loadLayers(design.layers);
     setCurrentLayers(design.layers);
     setCurrentDesignId(design.id);
-    setSaveStatus("saved");
+    setSaveStatus(design.source === "session" ? "saved-local" : "saved");
     setActiveTab("products");
   }
 
   // ── Delete a saved design ──
   async function handleDeleteDesign(designId: string) {
     if (!confirm("Delete this design?")) return;
+
+    if (designId.startsWith("session-")) {
+      writeSessionDesigns(readSessionDesigns().filter((d) => d.id !== designId));
+      setSavedDesigns((prev) => prev.filter((d) => d.id !== designId));
+      if (currentDesignId === designId) {
+        setCurrentDesignId(null);
+        setSaveStatus("idle");
+      }
+      return;
+    }
 
     try {
       await fetch(`/api/designs/${designId}`, { method: "DELETE" });
@@ -482,13 +585,13 @@ export default function DesignStudioPage() {
           <div className="bg-card rounded-xl p-4 mb-6 border border-latte/20">
             <div className="flex items-start gap-3">
               <img
-                src={getHostedMockupUrl(selectedProduct.id, "front")}
+                src={getBestProductImage(selectedProduct, selectedVariant)}
                 alt={selectedProduct.name}
-                className="w-14 h-14 rounded-lg object-cover bg-surface-deep"
+                className="w-14 h-14 rounded-lg object-cover bg-white"
                 onError={(e) => {
-                  // Fall back to Printful CDN, then hide on second failure
+                  // Fall back to the catalog photo on failure
                   const img = e.currentTarget;
-                  if (img.src === getHostedMockupUrl(selectedProduct.id, "front")) {
+                  if (img.src !== selectedProduct.imageUrl) {
                     img.src = selectedProduct.imageUrl;
                   }
                 }}
@@ -562,7 +665,7 @@ export default function DesignStudioPage() {
                 />
                 <div className="border-t border-latte/20 pt-6">
                   <VariantSelector
-                    variants={selectedProduct.variants}
+                    product={selectedProduct}
                     selectedVariant={selectedVariant}
                     onSelectVariant={setSelectedVariant}
                   />
@@ -623,6 +726,13 @@ export default function DesignStudioPage() {
                             </div>
                           )}
                         </div>
+
+                        {/* Source badge */}
+                        {design.source === "session" && (
+                          <div className="absolute top-2 left-2 bg-background/85 backdrop-blur px-2 py-0.5 rounded-full text-[10px] font-medium text-mocha border border-latte/30">
+                            This device
+                          </div>
+                        )}
 
                         {/* Info */}
                         <div className="p-2.5">
@@ -785,6 +895,7 @@ export default function DesignStudioPage() {
             <DesignCanvas
               ref={canvasRef}
               product={selectedProduct}
+              variant={selectedVariant}
               view={view}
               onViewChange={setView}
               onSave={() => handleSaveDesign(false)}
@@ -797,7 +908,15 @@ export default function DesignStudioPage() {
               <div className="flex items-center gap-2 text-sm">
                 {saveStatus === "saved" && (
                   <span className="flex items-center gap-1 text-green-600">
-                    <Check size={14} /> Saved
+                    <Check size={14} /> Saved to your profile
+                  </span>
+                )}
+                {saveStatus === "saved-local" && (
+                  <span className="flex items-center gap-1 text-green-600">
+                    <Check size={14} /> Saved on this device
+                    <span className="text-mocha/70 hidden sm:inline">
+                      — sign in to keep it on your profile
+                    </span>
                   </span>
                 )}
                 {saveStatus === "unsaved" && (

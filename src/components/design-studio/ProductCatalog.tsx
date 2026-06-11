@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import {
   PRINTFUL_CATALOG,
   type PrintfulProduct,
   type ProductCategory,
   calculateRetailPrice,
-  getHostedMockupUrl,
   getProductPlaceholderSvg,
 } from "@/lib/printful/catalog";
 import { formatPrice } from "@/lib/utils";
@@ -34,32 +33,24 @@ export function ProductCatalog({ selectedProduct, onSelectProduct }: ProductCata
       ? PRINTFUL_CATALOG
       : PRINTFUL_CATALOG.filter((p) => p.category === categoryFilter);
 
-  const handleImageError = useCallback((productId: string, product: PrintfulProduct) => {
-    setFailedImages((prev) => {
-      const next = new Set(prev);
-      next.add(productId);
-      return next;
-    });
-  }, []);
-
+  // Image priority: product mockup photo → catalog photo → SVG placeholder.
   const getImageSrc = (product: PrintfulProduct): string => {
-    if (failedImages.has(`${product.id}-supabase`)) {
-      // Supabase mockup failed — try Printful CDN
-      if (failedImages.has(`${product.id}-printful`)) {
+    if (failedImages.has(`${product.id}-primary`)) {
+      if (failedImages.has(`${product.id}-fallback`)) {
         return getProductPlaceholderSvg(product);
       }
-      // Supabase failed, Printful hasn't failed yet — show it; onError handles next fallback
       return product.imageUrl;
     }
-    return getHostedMockupUrl(product.id, "front");
+    return product.mockupImages.front;
   };
 
   const handleImgError = (product: PrintfulProduct) => {
-    if (!failedImages.has(`${product.id}-supabase`)) {
-      setFailedImages((prev) => new Set(prev).add(`${product.id}-supabase`));
-    } else if (!failedImages.has(`${product.id}-printful`)) {
-      setFailedImages((prev) => new Set(prev).add(`${product.id}-printful`));
-    }
+    setFailedImages((prev) => {
+      const next = new Set(prev);
+      if (!next.has(`${product.id}-primary`)) next.add(`${product.id}-primary`);
+      else next.add(`${product.id}-fallback`);
+      return next;
+    });
   };
 
   return (
@@ -99,11 +90,12 @@ export function ProductCatalog({ selectedProduct, onSelectProduct }: ProductCata
               }`}
             >
               {/* Product Image */}
-              <div className="aspect-square bg-card relative overflow-hidden">
+              <div className="aspect-square bg-white relative overflow-hidden">
                 <img
                   key={`img-${product.id}-${imgSrc.slice(0, 30)}`}
                   src={imgSrc}
                   alt={product.name}
+                  loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   onError={() => handleImgError(product)}
                 />

@@ -1,12 +1,21 @@
 // Printful Product Catalog
-// Real Printful product IDs, pricing, and variants for Kynda Coffee merch
+// Real Printful catalog product IDs, variant IDs, wholesale pricing, and
+// per-color product photos — verified against the live Printful API
+// (GET https://api.printful.com/products/{id}, public, June 2026).
+//
+// IMPORTANT: imageUrl / variant image URLs are Printful CDN catalog photos
+// (files.cdn.printful.com) which serve `access-control-allow-origin: *`,
+// so they are safe to draw onto the design canvas and export (no taint).
 
-export type ProductCategory = 
-  | "apparel" 
-  | "drinkware" 
-  | "accessories" 
-  | "wall-art" 
+export type ProductCategory =
+  | "apparel"
+  | "drinkware"
+  | "accessories"
+  | "wall-art"
   | "home-living";
+
+/** Print-area rectangle in the canvas's virtual 1000x1000 coordinate space. */
+export type CanvasPrintArea = { x: number; y: number; w: number; h: number };
 
 export type PrintfulProduct = {
   id: string;
@@ -14,7 +23,7 @@ export type PrintfulProduct = {
   name: string;
   category: ProductCategory;
   description: string;
-  basePriceCents: number; // Printful wholesale cost
+  basePriceCents: number; // Printful wholesale (cheapest variant)
   imageUrl: string;
   mockupImages: {
     front: string;
@@ -25,15 +34,19 @@ export type PrintfulProduct = {
     front: { width: number; height: number; x: number; y: number };
     back?: { width: number; height: number; x: number; y: number };
   };
+  /** Where the design sits on the mockup photo, virtual 1000x1000 coords. */
+  canvasPrintArea: CanvasPrintArea;
 };
 
 export type ProductVariant = {
-  id: number;
+  id: number; // REAL Printful variant_id — used for order placement
   name: string;
   color?: string;
   colorName?: string;
   size?: string;
   additionalPriceCents?: number;
+  /** Color-specific product photo (Printful CDN, CORS-safe). */
+  image?: string;
 };
 
 // Markup tiers by product type
@@ -57,239 +70,272 @@ export function calculateProfit(basePriceCents: number, retailPriceCents: number
 }
 
 // ============================================================================
-// PRODUCT CATALOG
-// Real Printful product IDs (as of 2026-05)
+// PRODUCT CATALOG — verified live against Printful API 2026-06
 // ============================================================================
+
+const CDN = "https://files.cdn.printful.com";
 
 export const PRINTFUL_CATALOG: PrintfulProduct[] = [
   // ===== APPAREL =====
   {
     id: "unisex-tee",
-    printfulId: 586, // Bella + Canvas 3001
+    printfulId: 71, // Bella + Canvas 3001 — Unisex Staple T-Shirt
     name: "Unisex Jersey Tee",
     category: "apparel",
-    description: "Soft, premium cotton tee. Perfect for everyday wear.",
-    basePriceCents: 1280,
-    imageUrl: "https://files.cdn.printful.com/products/586/product_1713344858.jpg",
+    description: "Soft, premium Bella+Canvas 3001 cotton tee. Perfect for everyday wear.",
+    basePriceCents: 1169,
+    imageUrl: `${CDN}/o/upload/product-catalog-img/20/2079a3ee4cc472ad952fe16654f274cd_l`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/586/white-front.png",
-      back: "https://files.cdn.printful.com/mockup-generator-cdn/586/white-back.png",
+      front: `${CDN}/products/71/4011_1752236284.jpg`,
     },
     variants: [
-      // Sizes
-      { id: 4012, name: "S", size: "S" },
-      { id: 4013, name: "M", size: "M" },
-      { id: 4014, name: "L", size: "L" },
-      { id: 4015, name: "XL", size: "XL" },
-      { id: 4016, name: "2XL", size: "2XL" },
-      // Colors
-      { id: 4012, name: "White", color: "#FFFFFF", colorName: "White" },
-      { id: 4017, name: "Black", color: "#000000", colorName: "Black" },
-      { id: 4018, name: "Heather Grey", color: "#B8B8B8", colorName: "Heather Grey" },
-      { id: 4019, name: "Navy", color: "#1E2A3A", colorName: "Navy" },
+      // White
+      { id: 4011, name: "White / S", colorName: "White", color: "#FFFFFF", size: "S", image: `${CDN}/products/71/4011_1752236284.jpg` },
+      { id: 4012, name: "White / M", colorName: "White", color: "#FFFFFF", size: "M", image: `${CDN}/products/71/4011_1752236284.jpg` },
+      { id: 4013, name: "White / L", colorName: "White", color: "#FFFFFF", size: "L", image: `${CDN}/products/71/4011_1752236284.jpg` },
+      { id: 4014, name: "White / XL", colorName: "White", color: "#FFFFFF", size: "XL", image: `${CDN}/products/71/4011_1752236284.jpg` },
+      { id: 4015, name: "White / 2XL", colorName: "White", color: "#FFFFFF", size: "2XL", additionalPriceCents: 200, image: `${CDN}/products/71/4011_1752236284.jpg` },
+      // Black
+      { id: 4016, name: "Black / S", colorName: "Black", color: "#0c0c0c", size: "S", image: `${CDN}/products/71/4016_1752236278.jpg` },
+      { id: 4017, name: "Black / M", colorName: "Black", color: "#0c0c0c", size: "M", image: `${CDN}/products/71/4016_1752236278.jpg` },
+      { id: 4018, name: "Black / L", colorName: "Black", color: "#0c0c0c", size: "L", image: `${CDN}/products/71/4016_1752236278.jpg` },
+      { id: 4019, name: "Black / XL", colorName: "Black", color: "#0c0c0c", size: "XL", image: `${CDN}/products/71/4016_1752236278.jpg` },
+      { id: 4020, name: "Black / 2XL", colorName: "Black", color: "#0c0c0c", size: "2XL", additionalPriceCents: 200, image: `${CDN}/products/71/4016_1752236278.jpg` },
+      // Navy
+      { id: 4111, name: "Navy / S", colorName: "Navy", color: "#212642", size: "S", image: `${CDN}/products/71/4111_1752236282.jpg` },
+      { id: 4112, name: "Navy / M", colorName: "Navy", color: "#212642", size: "M", image: `${CDN}/products/71/4111_1752236282.jpg` },
+      { id: 4113, name: "Navy / L", colorName: "Navy", color: "#212642", size: "L", image: `${CDN}/products/71/4111_1752236282.jpg` },
+      { id: 4114, name: "Navy / XL", colorName: "Navy", color: "#212642", size: "XL", image: `${CDN}/products/71/4111_1752236282.jpg` },
+      { id: 4115, name: "Navy / 2XL", colorName: "Navy", color: "#212642", size: "2XL", additionalPriceCents: 200, image: `${CDN}/products/71/4111_1752236282.jpg` },
+      // Athletic Heather
+      { id: 6948, name: "Athletic Heather / S", colorName: "Athletic Heather", color: "#cececc", size: "S", image: `${CDN}/products/71/6948_1752236278.jpg` },
+      { id: 6949, name: "Athletic Heather / M", colorName: "Athletic Heather", color: "#cececc", size: "M", image: `${CDN}/products/71/6948_1752236278.jpg` },
+      { id: 6950, name: "Athletic Heather / L", colorName: "Athletic Heather", color: "#cececc", size: "L", image: `${CDN}/products/71/6948_1752236278.jpg` },
+      { id: 6951, name: "Athletic Heather / XL", colorName: "Athletic Heather", color: "#cececc", size: "XL", image: `${CDN}/products/71/6948_1752236278.jpg` },
+      { id: 6952, name: "Athletic Heather / 2XL", colorName: "Athletic Heather", color: "#cececc", size: "2XL", additionalPriceCents: 200, image: `${CDN}/products/71/6948_1752236278.jpg` },
     ],
     printAreas: {
       front: { width: 12, height: 16, x: 50, y: 30 },
       back: { width: 12, height: 16, x: 50, y: 30 },
     },
+    canvasPrintArea: { x: 330, y: 250, w: 340, h: 440 },
   },
   {
     id: "hoodie",
-    printfulId: 380, // Gildan 18500
+    printfulId: 380, // Cotton Heritage M2580 — Unisex Premium Pullover Hoodie
     name: "Unisex Hoodie",
     category: "apparel",
-    description: "Cozy fleece hoodie. Warm, comfortable, classic fit.",
-    basePriceCents: 2850,
-    imageUrl: "https://files.cdn.printful.com/products/380/product_1713262884.jpg",
+    description: "Cozy premium fleece pullover hoodie. Warm, comfortable, classic fit.",
+    basePriceCents: 2729,
+    imageUrl: `${CDN}/o/upload/product-catalog-img/0e/0e62ae87da7d32dfb60d6dadc3744346_l`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/380/black-front.png",
-      back: "https://files.cdn.printful.com/mockup-generator-cdn/380/black-back.png",
+      front: `${CDN}/products/380/10779_1759916354.jpg`,
     },
     variants: [
-      { id: 6330, name: "S", size: "S" },
-      { id: 6332, name: "M", size: "M" },
-      { id: 6334, name: "L", size: "L" },
-      { id: 6335, name: "XL", size: "XL" },
-      { id: 6336, name: "2XL", size: "2XL" },
-      { id: 6332, name: "Black", color: "#000000", colorName: "Black" },
-      { id: 6333, name: "Navy", color: "#1E2A3A", colorName: "Navy" },
-      { id: 6337, name: "Heather Grey", color: "#B8B8B8", colorName: "Heather Grey" },
+      // Black
+      { id: 10779, name: "Black / S", colorName: "Black", color: "#080808", size: "S", image: `${CDN}/products/380/10779_1759916354.jpg` },
+      { id: 10780, name: "Black / M", colorName: "Black", color: "#080808", size: "M", image: `${CDN}/products/380/10779_1759916354.jpg` },
+      { id: 10781, name: "Black / L", colorName: "Black", color: "#080808", size: "L", image: `${CDN}/products/380/10779_1759916354.jpg` },
+      { id: 10782, name: "Black / XL", colorName: "Black", color: "#080808", size: "XL", image: `${CDN}/products/380/10779_1759916354.jpg` },
+      { id: 10783, name: "Black / 2XL", colorName: "Black", color: "#080808", size: "2XL", additionalPriceCents: 200, image: `${CDN}/products/380/10779_1759916354.jpg` },
+      // Charcoal Heather
+      { id: 11481, name: "Charcoal Heather / S", colorName: "Charcoal Heather", color: "#463e3d", size: "S", image: `${CDN}/products/380/11481_1759916354.jpg` },
+      { id: 11482, name: "Charcoal Heather / M", colorName: "Charcoal Heather", color: "#463e3d", size: "M", image: `${CDN}/products/380/11481_1759916354.jpg` },
+      { id: 11483, name: "Charcoal Heather / L", colorName: "Charcoal Heather", color: "#463e3d", size: "L", image: `${CDN}/products/380/11481_1759916354.jpg` },
+      { id: 11484, name: "Charcoal Heather / XL", colorName: "Charcoal Heather", color: "#463e3d", size: "XL", image: `${CDN}/products/380/11481_1759916354.jpg` },
+      { id: 11485, name: "Charcoal Heather / 2XL", colorName: "Charcoal Heather", color: "#463e3d", size: "2XL", additionalPriceCents: 200, image: `${CDN}/products/380/11481_1759916354.jpg` },
+      // Bone
+      { id: 20284, name: "Bone / S", colorName: "Bone", color: "#f5e8ce", size: "S", image: `${CDN}/products/380/20284_1759916354.jpg` },
+      { id: 20285, name: "Bone / M", colorName: "Bone", color: "#f5e8ce", size: "M", image: `${CDN}/products/380/20284_1759916354.jpg` },
+      { id: 20286, name: "Bone / L", colorName: "Bone", color: "#f5e8ce", size: "L", image: `${CDN}/products/380/20284_1759916354.jpg` },
+      { id: 20287, name: "Bone / XL", colorName: "Bone", color: "#f5e8ce", size: "XL", image: `${CDN}/products/380/20284_1759916354.jpg` },
+      { id: 20288, name: "Bone / 2XL", colorName: "Bone", color: "#f5e8ce", size: "2XL", additionalPriceCents: 200, image: `${CDN}/products/380/20284_1759916354.jpg` },
     ],
     printAreas: {
       front: { width: 14, height: 18, x: 50, y: 35 },
       back: { width: 14, height: 18, x: 50, y: 35 },
     },
+    canvasPrintArea: { x: 350, y: 300, w: 300, h: 340 },
   },
   {
     id: "snapback-hat",
-    printfulId: 505, // Yupoong 6089M
+    printfulId: 99, // Yupoong 6089M — Classic Snapback (embroidery)
     name: "Classic Snapback",
     category: "apparel",
-    description: "Structured snapback hat with flat brim. Adjustable fit.",
-    basePriceCents: 1450,
-    imageUrl: "https://files.cdn.printful.com/products/505/product_1713263226.jpg",
+    description: "Structured snapback hat with flat brim. Adjustable fit. Embroidered design.",
+    basePriceCents: 1689,
+    imageUrl: `${CDN}/products/99/4792_1586154802.jpg`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/505/black-front.png",
+      front: `${CDN}/products/99/4792_1586154802.jpg`,
     },
     variants: [
-      { id: 13574, name: "One Size", size: "One Size" },
-      { id: 13574, name: "Black", color: "#000000", colorName: "Black" },
-      { id: 13575, name: "Navy", color: "#1E2A3A", colorName: "Navy" },
-      { id: 13576, name: "White", color: "#FFFFFF", colorName: "White" },
+      { id: 4792, name: "Black", colorName: "Black", color: "#2a2a2a", size: "One Size", image: `${CDN}/products/99/4792_1586154802.jpg` },
+      { id: 4797, name: "Dark Grey", colorName: "Dark Grey", color: "#666061", size: "One Size", image: `${CDN}/products/99/4797_1586154846.jpg` },
+      { id: 4798, name: "Dark Navy", colorName: "Dark Navy", color: "#15293a", size: "One Size", image: `${CDN}/products/99/4798_1586154944.jpg` },
+      { id: 7836, name: "Heather Grey", colorName: "Heather Grey", color: "#A8A59E", size: "One Size", image: `${CDN}/products/99/7836_1586155081.jpg` },
     ],
     printAreas: {
       front: { width: 3, height: 2.5, x: 50, y: 40 },
     },
+    canvasPrintArea: { x: 370, y: 330, w: 260, h: 190 },
   },
 
   // ===== DRINKWARE =====
   {
     id: "ceramic-mug",
-    printfulId: 19, // 11oz Ceramic Mug
+    printfulId: 19, // White Glossy Mug
     name: "Classic Ceramic Mug",
     category: "drinkware",
-    description: "11oz glossy ceramic mug. Dishwasher and microwave safe.",
-    basePriceCents: 820,
-    imageUrl: "https://files.cdn.printful.com/products/19/product_1713258927.jpg",
+    description: "Glossy white ceramic mug. Dishwasher and microwave safe.",
+    basePriceCents: 595,
+    imageUrl: `${CDN}/o/upload/product-catalog-img/8c/8c4ac4a450b8485bc8a6e041a5a23666_l`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/19/white-front.png",
+      front: `${CDN}/products/19/1320_1663762583.jpg`,
     },
     variants: [
-      { id: 13354, name: "11oz", size: "11oz" },
-      { id: 13354, name: "White", color: "#FFFFFF", colorName: "White" },
-      { id: 13355, name: "Black", color: "#000000", colorName: "Black" },
+      { id: 1320, name: "11 oz", colorName: "White", color: "#FFFFFF", size: "11 oz", image: `${CDN}/products/19/1320_1663762583.jpg` },
+      { id: 4830, name: "15 oz", colorName: "White", color: "#FFFFFF", size: "15 oz", additionalPriceCents: 200, image: `${CDN}/products/19/1320_1663762583.jpg` },
+      { id: 16586, name: "20 oz", colorName: "White", color: "#FFFFFF", size: "20 oz", additionalPriceCents: 355, image: `${CDN}/products/19/1320_1663762583.jpg` },
     ],
     printAreas: {
       front: { width: 3.5, height: 3.5, x: 50, y: 50 },
     },
+    canvasPrintArea: { x: 300, y: 330, w: 400, h: 340 },
   },
   {
     id: "travel-mug",
-    printfulId: 657, // 20oz Stainless Steel Tumbler
+    printfulId: 585, // Stainless Steel Tumbler 20oz
     name: "Stainless Steel Tumbler",
     category: "drinkware",
     description: "20oz double-wall vacuum insulated tumbler. Keeps drinks hot/cold for hours.",
-    basePriceCents: 1850,
-    imageUrl: "https://files.cdn.printful.com/products/657/product_1713264012.jpg",
+    basePriceCents: 2137,
+    imageUrl: `${CDN}/o/upload/product-catalog-img/cf/cf742bc2278471fa6e9a74aeb76192d9_l`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/657/silver-front.png",
+      front: `${CDN}/products/585/15004_1651745397.jpg`,
     },
     variants: [
-      { id: 17330, name: "20oz", size: "20oz" },
-      { id: 17330, name: "Silver", color: "#C0C0C0", colorName: "Silver" },
-      { id: 17331, name: "Black", color: "#000000", colorName: "Black" },
+      { id: 15004, name: "Black / 20 oz", colorName: "Black", color: "#121214", size: "20 oz", image: `${CDN}/products/585/15004_1651745397.jpg` },
+      { id: 15005, name: "White / 20 oz", colorName: "White", color: "#FFFFFF", size: "20 oz", image: `${CDN}/products/585/15005_1651745409.jpg` },
     ],
     printAreas: {
       front: { width: 4, height: 6, x: 50, y: 50 },
     },
+    canvasPrintArea: { x: 340, y: 280, w: 320, h: 430 },
   },
 
   // ===== ACCESSORIES =====
   {
     id: "tote-bag",
-    printfulId: 69, // Spun-Poly Tote
-    name: "Canvas Tote Bag",
+    printfulId: 367, // Econscious EC8000 — Eco Tote Bag
+    name: "Eco Tote Bag",
     category: "accessories",
-    description: "Durable spun-polyester tote. Perfect for groceries, books, gym gear.",
-    basePriceCents: 1250,
-    imageUrl: "https://files.cdn.printful.com/products/69/product_1713266092.jpg",
+    description: "Durable organic cotton tote. Perfect for groceries, books, gym gear.",
+    basePriceCents: 1556,
+    imageUrl: `${CDN}/o/upload/product-catalog-img/96/965d2ac3d059e6ec8e9a040ba30e97e4_l`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/69/white-front.png",
+      front: `${CDN}/products/367/10458_1642499411.jpg`,
     },
     variants: [
-      { id: 4750, name: "One Size", size: "One Size" },
-      { id: 4750, name: "White", color: "#FFFFFF", colorName: "White" },
-      { id: 4751, name: "Black", color: "#000000", colorName: "Black" },
+      { id: 10458, name: "Oyster", colorName: "Oyster", color: "#edcea5", size: "One Size", image: `${CDN}/products/367/10458_1642499411.jpg` },
+      { id: 10457, name: "Black", colorName: "Black", color: "#101010", size: "One Size", image: `${CDN}/products/367/10457_1582200790.jpg` },
     ],
     printAreas: {
       front: { width: 14, height: 16, x: 50, y: 50 },
     },
+    canvasPrintArea: { x: 310, y: 330, w: 380, h: 400 },
   },
   {
     id: "phone-case",
-    printfulId: 191, // Tough Phone Case
+    printfulId: 601, // Tough Case for iPhone (matte)
     name: "Tough Phone Case",
     category: "accessories",
-    description: "Impact-resistant polycarbonate case with TPU inner shell.",
-    basePriceCents: 1050,
-    imageUrl: "https://files.cdn.printful.com/products/191/product_1713266234.jpg",
+    description: "Impact-resistant dual-layer case with matte finish. iPhone models.",
+    basePriceCents: 1395,
+    imageUrl: `${CDN}/o/upload/product-catalog-img/e8/e8137cb9510f23d9b446cfce126c2f58_l`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/191/iphone-15-pro-front.png",
+      front: `${CDN}/o/upload/product-catalog-img/e8/e8137cb9510f23d9b446cfce126c2f58_l`,
     },
     variants: [
-      { id: 9716, name: "iPhone 15 Pro", size: "iPhone 15 Pro" },
-      { id: 9717, name: "iPhone 14 Pro", size: "iPhone 14 Pro" },
-      { id: 9718, name: "Samsung Galaxy S24", size: "Samsung Galaxy S24" },
+      { id: 20306, name: "iPhone 16", size: "iPhone 16" },
+      { id: 20308, name: "iPhone 16 Pro", size: "iPhone 16 Pro" },
+      { id: 20309, name: "iPhone 16 Pro Max", size: "iPhone 16 Pro Max" },
+      { id: 17715, name: "iPhone 15", size: "iPhone 15" },
+      { id: 17719, name: "iPhone 15 Pro", size: "iPhone 15 Pro" },
+      { id: 17721, name: "iPhone 15 Pro Max", size: "iPhone 15 Pro Max" },
+      { id: 16125, name: "iPhone 14", size: "iPhone 14" },
     ],
     printAreas: {
       front: { width: 3.5, height: 7, x: 50, y: 50 },
     },
+    canvasPrintArea: { x: 370, y: 200, w: 260, h: 600 },
   },
 
   // ===== WALL ART =====
   {
     id: "poster",
-    printfulId: 1, // Premium Matte Poster
+    printfulId: 1, // Enhanced Matte Paper Poster (in)
     name: "Premium Poster",
     category: "wall-art",
     description: "Museum-quality, acid-free matte paper. Vivid colors, sharp details.",
-    basePriceCents: 980,
-    imageUrl: "https://files.cdn.printful.com/products/1/product_1713258827.jpg",
+    basePriceCents: 1139,
+    imageUrl: `${CDN}/o/products/1/product_1613463122.jpg`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/1/18x24-front.png",
+      front: `${CDN}/o/products/1/product_1613463122.jpg`,
     },
     variants: [
-      { id: 2700, name: '18" × 24"', size: '18" × 24"' },
-      { id: 2701, name: '12" × 18"', size: '12" × 18"' },
-      { id: 2702, name: '24" × 36"', size: '24" × 36"' },
+      { id: 3876, name: '12" × 18"', size: '12" × 18"' },
+      { id: 1, name: '18" × 24"', size: '18" × 24"', additionalPriceCents: 150 },
+      { id: 2, name: '24" × 36"', size: '24" × 36"', additionalPriceCents: 650 },
     ],
     printAreas: {
       front: { width: 18, height: 24, x: 50, y: 50 },
     },
+    canvasPrintArea: { x: 180, y: 130, w: 640, h: 740 },
   },
   {
     id: "framed-poster",
-    printfulId: 213, // Premium Framed Poster
+    printfulId: 2, // Enhanced Matte Paper Framed Poster (in), black frame
     name: "Framed Poster",
     category: "wall-art",
-    description: "Museum-quality print in a sleek wood frame. Ready to hang.",
-    basePriceCents: 3850,
-    imageUrl: "https://files.cdn.printful.com/products/213/product_1713263234.jpg",
+    description: "Museum-quality print in a sleek black wood frame. Ready to hang.",
+    basePriceCents: 3213,
+    imageUrl: `${CDN}/o/products/2/product_1613463227.jpg`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/213/18x24-black-frame-front.png",
+      front: `${CDN}/o/products/2/product_1613463227.jpg`,
     },
     variants: [
-      { id: 9206, name: '18" × 24" / Black', size: '18" × 24"' },
-      { id: 9207, name: '12" × 18" / Black', size: '12" × 18"' },
-      { id: 9208, name: '24" × 36" / Black', size: '24" × 36"' },
+      { id: 4398, name: '12" × 18" / Black frame', size: '12" × 18"' },
+      { id: 3, name: '18" × 24" / Black frame', size: '18" × 24"', additionalPriceCents: 1326 },
+      { id: 4, name: '24" × 36" / Black frame', size: '24" × 36"', additionalPriceCents: 4228 },
     ],
     printAreas: {
       front: { width: 18, height: 24, x: 50, y: 50 },
     },
+    canvasPrintArea: { x: 220, y: 170, w: 560, h: 660 },
   },
 
   // ===== HOME & LIVING =====
   {
     id: "throw-pillow",
-    printfulId: 229, // Premium Pillow Case
+    printfulId: 83, // All-Over Print Basic Pillow
     name: "Throw Pillow",
     category: "home-living",
-    description: "18\" × 18\" printed pillow case. Soft, durable polyester.",
-    basePriceCents: 1450,
-    imageUrl: "https://files.cdn.printful.com/products/229/product_1713263226.jpg",
+    description: "All-over printed pillow with insert. Soft, durable polyester.",
+    basePriceCents: 1525,
+    imageUrl: `${CDN}/o/products/83/product_1573737219.jpg`,
     mockupImages: {
-      front: "https://files.cdn.printful.com/mockup-generator-cdn/229/white-front.png",
-      back: "https://files.cdn.printful.com/mockup-generator-cdn/229/white-back.png",
+      front: `${CDN}/o/products/83/product_1573737219.jpg`,
     },
     variants: [
-      { id: 10102, name: '18" × 18"', size: '18" × 18"' },
-      { id: 10102, name: "White", color: "#FFFFFF", colorName: "White" },
-      { id: 10103, name: "Beige", color: "#F5F5DC", colorName: "Beige" },
+      { id: 9513, name: '20" × 12"', size: '20" × 12"' },
+      { id: 4532, name: '18" × 18"', size: '18" × 18"', additionalPriceCents: 102 },
+      { id: 11075, name: '22" × 22"', size: '22" × 22"', additionalPriceCents: 306 },
     ],
     printAreas: {
       front: { width: 18, height: 18, x: 50, y: 50 },
       back: { width: 18, height: 18, x: 50, y: 50 },
     },
+    canvasPrintArea: { x: 230, y: 230, w: 540, h: 540 },
   },
 ];
 
@@ -304,14 +350,52 @@ export function getProductsByCategory(category: ProductCategory): PrintfulProduc
 }
 
 // ============================================================================
-// DEFAULT KYMDA MERCH DESIGNS (Pre-made gallery)
+// VARIANT HELPERS — products carry a full size × color matrix of REAL
+// Printful variant IDs; these helpers let the UI present color and size
+// pickers and resolve the actual variant for ordering.
+// ============================================================================
+
+export function getUniqueColors(product: PrintfulProduct): { colorName: string; color: string; image?: string }[] {
+  const seen = new Map<string, { colorName: string; color: string; image?: string }>();
+  for (const v of product.variants) {
+    if (v.colorName && !seen.has(v.colorName)) {
+      seen.set(v.colorName, { colorName: v.colorName, color: v.color || "#ccc", image: v.image });
+    }
+  }
+  return [...seen.values()];
+}
+
+export function getUniqueSizes(product: PrintfulProduct): string[] {
+  const seen = new Set<string>();
+  for (const v of product.variants) {
+    if (v.size) seen.add(v.size);
+  }
+  return [...seen];
+}
+
+/** Resolve the concrete Printful variant for a (size, color) selection. */
+export function resolveVariant(
+  product: PrintfulProduct,
+  size?: string | null,
+  colorName?: string | null
+): ProductVariant | undefined {
+  return (
+    product.variants.find(
+      (v) =>
+        (!size || v.size === size) && (!colorName || v.colorName === colorName)
+    ) ?? product.variants[0]
+  );
+}
+
+// ============================================================================
+// DEFAULT KYNDA MERCH DESIGNS (Pre-made gallery)
 // ============================================================================
 
 export type DefaultDesign = {
   id: string;
   name: string;
   description: string;
-  imageUrl: string; // Hosted on GitHub or Supabase Storage
+  imageUrl: string; // Hosted in /public/images/default-designs/
   productId: string; // Which product it's designed for
   style: string; // Style category for filtering
   trending?: boolean;
@@ -411,15 +495,14 @@ export const KYND_LOGO = {
 };
 
 // ============================================================================
-// SUPABASE-HOSTED MOCKUP URLS (populated by /api/admin/mockups/sync)
-// These replace the broken Printful CDN mockup-generator URLs.
+// PRODUCT IMAGE RESOLUTION
 // ============================================================================
 
 const SUPABASE_STORAGE_BASE = "https://svfuuvaaynmcofyrkwus.supabase.co/storage/v1/object/public/mockups";
 
 /**
- * Returns the Supabase-hosted mockup URL for a product.
- * Falls back to the product's own imageUrl if the mockup hasn't been synced yet.
+ * Legacy: Supabase-hosted mockup URL (populated by /api/admin/mockups/sync).
+ * Kept for back-compat; getBestProductImage no longer depends on it.
  */
 export function getHostedMockupUrl(productId: string, view: "front" | "back" = "front"): string {
   return `${SUPABASE_STORAGE_BASE}/${productId}-${view}.jpg`;
@@ -427,7 +510,6 @@ export function getHostedMockupUrl(productId: string, view: "front" | "back" = "
 
 /**
  * Build a product-scoped placeholder data-URI when no real image is available.
- * Generates a minimal SVG with the product type icon on a neutral background.
  */
 export function getProductPlaceholderSvg(product: PrintfulProduct): string {
   const colors: Record<ProductCategory, { bg: string; accent: string }> = {
@@ -452,12 +534,13 @@ export function getProductPlaceholderSvg(product: PrintfulProduct): string {
 }
 
 /**
- * Returns the best available image URL for a product, in priority order:
- * 1. Supabase-hosted mockup (if admin has run sync)
- * 2. Product imageUrl (Printful CDN)
- * 3. SVG placeholder data URI
+ * Returns the best available image URL for a product:
+ * 1. Color-matched variant photo (Printful CDN, verified live + CORS-safe)
+ * 2. Product catalog photo
  */
-export function getBestProductImage(product: PrintfulProduct, view: "front" | "back" = "front"): string {
-  // Always try Supabase-hosted mockup first
-  return getHostedMockupUrl(product.id, view);
+export function getBestProductImage(
+  product: PrintfulProduct,
+  variant?: ProductVariant | null
+): string {
+  return variant?.image ?? product.mockupImages.front ?? product.imageUrl;
 }
