@@ -542,8 +542,25 @@ shipping + margin, via Epic 2); order → dropship → tracked.
   session designs (“Saved on this device”), merged into My Designs with source badges; network
   failures fall back locally so work is never lost. Preset design images generated + shipped
   (previous /images/default-designs/* were 404s).
-- [ ] **Catalog expansion + smart sourcing**: broaden Printful product set; auto-pull cost/variants;
-  sourcing hook for trending non-merch Shop goods (Chemex, filters, candles) w/ adaptive pricing.
+- [~] **Catalog expansion + smart sourcing**: Kiss-Cut Stickers, Custom Crew Socks, and Cork-Back
+  Coaster added 2026-06-11 (commit c345b9e, live variant IDs verified). Remaining: auto-pull
+  cost/variants on a schedule; sourcing hook for trending non-merch Shop goods w/ adaptive pricing.
+- [x] **Owner-testing bug sweep (2026-06-11, commit c345b9e)**: same-origin image proxy
+  (/api/printful-image) fixes mockups that never rendered (Printful CDN /products/* paths lack
+  CORS headers); Brave canvas flicker fixed (rAF-coalesced ResizeObserver); saves no longer
+  overwrite (per-product design identity, Update vs Save-as-New, timestamped names); FAL queue
+  polling fixed (status_url then response_url — old code polled the wrong endpoint, every gen
+  "timed out"); print areas re-measured per product against real mockups.
+- [x] **Wallet-first merch checkout** (commit c345b9e): address form removed — Stripe Checkout
+  collects shipping/email/phone (Apple Pay/Google Pay autofill); removed payment_method_types
+  ["card"] that suppressed wallets; webhook now CREATES the Printful order post-payment from the
+  Stripe-verified address (metadata.printful_items).
+- [x] **Admin curated designs** (commit c345b9e): /admin/designs rebuilt — upload or AI-generate
+  designs into Supabase storage; flags for Trending / Live / Show-on-Shop; surfaced in the studio
+  Designs tab and a "Fresh Designs" rail on /shop/merch (deep link /studio?design=<id>).
+  ⚠️ Migration 033 (studio_designs table + bucket) NOT yet applied to prod — apply before use.
+  ⚠️ FAL_KEY in Coolify is rejected by FAL (401 "Cannot access application fal-ai/flux") — AI
+  generation returns 500 until the key is replaced with a valid one from fal.ai/dashboard/keys.
 - [x] Surface the recommendation packs + one-tap seed prompts in the studio UI: **Idea Packs**
   row in the AI Create tab (commit 753fd17) — Kynda Brand / Local / Trending / **Memes** /
   **Seasonal** / Funny / Cool / Sporty, each with tap-to-fill seed prompts wired to brand-aware

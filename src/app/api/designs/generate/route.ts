@@ -94,6 +94,14 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     console.error("[designs/generate] error:", e);
-    return NextResponse.json({ error: e?.message ?? "Generation failed" }, { status: 500 });
+    const msg: string = e?.message ?? "Generation failed";
+    // Misconfigured/expired FAL key — surface a friendly, actionable message
+    if (msg.includes("401") || msg.toLowerCase().includes("authentication")) {
+      return NextResponse.json(
+        { error: "AI generation is temporarily unavailable. Please try again later or upload your own design." },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
