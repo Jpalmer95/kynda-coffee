@@ -27,7 +27,12 @@ import {
   Shirt,
   PenTool,
 } from "lucide-react";
-import { type PrintfulProduct, type ProductVariant, getBestProductImage } from "@/lib/printful/catalog";
+import {
+  type PrintfulProduct,
+  type ProductVariant,
+  getBestProductImage,
+  canvasSafeImageUrl,
+} from "@/lib/printful/catalog";
 
 // ============================================================
 // Coordinate system
@@ -261,14 +266,27 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
     useEffect(() => {
       const el = containerRef.current;
       if (!el) return;
+      let frame = 0;
       const measure = () => {
-        const w = el.clientWidth;
-        if (w > 0) setDisplaySize(w);
+        // Round + threshold guard: Konva replacing its <canvas> can nudge the
+        // container by sub-pixel amounts, which re-fires the ResizeObserver →
+        // re-render → resize → ... an infinite feedback loop that shows up as
+        // flicker/"screen tearing" in some browsers (reported on Brave).
+        const w = Math.round(el.clientWidth);
+        setDisplaySize((prev) => (w > 0 && Math.abs(w - prev) > 2 ? w : prev));
+      };
+      const onResize = () => {
+        // Coalesce observer bursts into one rAF tick
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(measure);
       };
       measure();
-      const ro = new ResizeObserver(measure);
+      const ro = new ResizeObserver(onResize);
       ro.observe(el);
-      return () => ro.disconnect();
+      return () => {
+        cancelAnimationFrame(frame);
+        ro.disconnect();
+      };
     }, []);
 
     const stageScale = displaySize / VIRTUAL;
@@ -314,8 +332,10 @@ export const DesignCanvas = forwardRef<DesignCanvasHandle, DesignCanvasProps>(
     }, []);
 
     // Mockup image — color-matched variant photo first, then product photo
-    const primaryMockup = getBestProductImage(product, variant);
-    const mockupImage = useImageWithFallback(primaryMockup, product.imageUrl);
+    // (routed through the same-origin proxy so the canvas isn't tainted and
+    // CORS-less /products/* CDN paths still load — fixes snapback no-render)
+    const primaryMockup = canvasSafeImageUrl(getBestProductImage(product, variant));
+    const mockupImage = useImageWithFallback(primaryMockup, canvasSafeImageUrl(product.imageUrl));
 
     // Aspect-fit the mockup photo inside the virtual canvas
     const mockupFit = (() => {

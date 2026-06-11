@@ -119,6 +119,32 @@ export default function DesignStudioPage() {
   // Canvas state
   const [currentLayers, setCurrentLayers] = useState<DesignLayer[]>([]);
 
+  // Deep link: /studio?design=<curated id> (from the Shop "Fresh Designs" rail)
+  // Loads the curated design image onto the canvas as a sticker.
+  const deepLinkHandled = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandled.current || typeof window === "undefined") return;
+    const id = new URLSearchParams(window.location.search).get("design");
+    if (!id) return;
+    deepLinkHandled.current = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/studio-designs");
+        if (!res.ok) return;
+        const data = await res.json();
+        const d = (data.designs ?? []).find((x: any) => x.id === id);
+        if (d?.image_url) {
+          // Give the canvas a tick to mount before adding the layer
+          setTimeout(() => {
+            canvasRef.current?.addLayerFromUrl(d.image_url, "sticker", d.name);
+          }, 600);
+        }
+      } catch {
+        /* deep link is best-effort */
+      }
+    })();
+  }, []);
+
   // Design persistence state
   const [currentDesignId, setCurrentDesignId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -176,6 +202,10 @@ export default function DesignStudioPage() {
       setView("front");
       // Clear the canvas on product change
       canvasRef.current?.clearLayers();
+      // Switching products starts a NEW design — never overwrite the
+      // previous product's saved design.
+      setCurrentDesignId(null);
+      setSaveStatus("idle");
     },
     []
   );
@@ -206,22 +236,26 @@ export default function DesignStudioPage() {
   }, [currentLayers, saveStatus]);
 
   // ── Save design: profile (Supabase) when signed in, else this browser ──
-  async function handleSaveDesign(isAutosave = false) {
+  // `asNew` forces a brand-new design instead of updating the current one.
+  async function handleSaveDesign(isAutosave = false, asNew = false) {
     if (currentLayers.length === 0) return;
     setIsSaving(true);
     setSaveStatus("saving");
 
+    const effectiveDesignId = asNew ? null : currentDesignId;
+
     // Generate thumbnail from canvas
     const thumbnail = canvasRef.current?.exportThumbnail() || null;
-    const baseName = `${selectedProduct.name} Design`;
+    // Unique, human-readable name per design (avoids every save looking identical)
+    const baseName = `${selectedProduct.name} — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })} ${new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
 
     // Local/session fallback used when the user isn't signed in (or the
     // network fails) — the design is never lost.
     const saveToSession = () => {
       const now = new Date().toISOString();
       const id =
-        currentDesignId && currentDesignId.startsWith("session-")
-          ? currentDesignId
+        effectiveDesignId && effectiveDesignId.startsWith("session-")
+          ? effectiveDesignId
           : `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const entry: SavedDesign = {
         id,
@@ -246,11 +280,12 @@ export default function DesignStudioPage() {
     try {
       // Session-only designs always stay local until the user signs in;
       // trying to "update" them server-side would 404.
-      const isSessionDesign = currentDesignId?.startsWith("session-");
+      const isSessionDesign = effectiveDesignId?.startsWith("session-");
 
       const payload = {
-        id: isSessionDesign ? undefined : currentDesignId || undefined,
-        name: baseName,
+        id: isSessionDesign ? undefined : effectiveDesignId || undefined,
+        // Keep the original name when updating an existing design
+        name: effectiveDesignId && !isSessionDesign ? undefined : baseName,
         product_id: selectedProduct.id,
         variant_id: selectedVariant?.id || null,
         product_type: selectedProduct.id,
@@ -283,8 +318,8 @@ export default function DesignStudioPage() {
       if (data.design?.id) {
         setCurrentDesignId(data.design.id);
         // If this design previously lived in session storage, retire the local copy.
-        if (isSessionDesign && currentDesignId) {
-          writeSessionDesigns(readSessionDesigns().filter((d) => d.id !== currentDesignId));
+        if (isSessionDesign && effectiveDesignId) {
+          writeSessionDesigns(readSessionDesigns().filter((d) => d.id !== effectiveDesignId));
         }
       }
       setSaveStatus("saved");
@@ -932,14 +967,26 @@ export default function DesignStudioPage() {
                   <span className="text-mocha">No design yet</span>
                 )}
               </div>
-              <button
-                onClick={() => handleSaveDesign(false)}
-                disabled={!hasDesign || isSaving}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-forest/10 text-forest hover:bg-forest/20 transition disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <Save size={14} />
-                {isSaving ? "Saving..." : "Save Design"}
-              </button>
+              <div className="flex items-center gap-2">
+                {currentDesignId && hasDesign && (
+                  <button
+                    onClick={() => handleSaveDesign(false, true)}
+                    disabled={isSaving}
+                    className="px-3 py-2 rounded-lg text-sm font-medium text-mocha hover:text-espresso hover:bg-card transition disabled:opacity-40"
+                    title="Save a separate copy instead of updating this design"
+                  >
+                    Save as New
+                  </button>
+                )}
+                <button
+                  onClick={() => handleSaveDesign(false)}
+                  disabled={!hasDesign || isSaving}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-forest/10 text-forest hover:bg-forest/20 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Save size={14} />
+                  {isSaving ? "Saving..." : currentDesignId ? "Update Design" : "Save Design"}
+                </button>
+              </div>
             </div>
 
             {/* Cart / Order Section */}

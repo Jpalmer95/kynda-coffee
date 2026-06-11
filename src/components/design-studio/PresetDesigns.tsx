@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DEFAULT_DESIGNS,
   STYLE_CATEGORIES,
@@ -16,13 +16,44 @@ interface PresetDesignsProps {
 
 export function PresetDesigns({ onSelectDesign, selectedProductId }: PresetDesignsProps) {
   const [styleFilter, setStyleFilter] = useState<string>("all");
-  const [showKyndaLogo, setShowKyndaLogo] = useState(false);
+  const [adminDesigns, setAdminDesigns] = useState<DefaultDesign[]>([]);
 
-  const trendingDesigns = DEFAULT_DESIGNS.filter((d) => d.trending);
+  // Admin-curated designs from /admin/designs — merged ahead of built-ins
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/studio-designs");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !Array.isArray(data.designs)) return;
+        setAdminDesigns(
+          data.designs.map((d: any) => ({
+            id: `admin-${d.id}`,
+            name: d.name,
+            description: d.description || "",
+            imageUrl: d.image_url,
+            productId: d.product_id || "",
+            style: d.style || "logo",
+            trending: Boolean(d.trending),
+            seasonal: Boolean(d.seasonal),
+          }))
+        );
+      } catch {
+        /* fall back to built-ins */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const allDesigns = [...adminDesigns, ...DEFAULT_DESIGNS];
+  const trendingDesigns = allDesigns.filter((d) => d.trending);
   const filteredDesigns =
     styleFilter === "all"
-      ? DEFAULT_DESIGNS
-      : DEFAULT_DESIGNS.filter((d) => d.style === styleFilter);
+      ? allDesigns
+      : allDesigns.filter((d) => d.style === styleFilter);
 
   // Filter designs that match the selected product
   const matchingDesigns = filteredDesigns.filter((d) => d.productId === selectedProductId);

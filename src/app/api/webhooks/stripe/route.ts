@@ -133,7 +133,64 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // ── Printful merch order confirmation ──
   // If this checkout came from the merch checkout flow, confirm the draft
   // Printful order now that payment has succeeded.
-  const printfulDraftId = metadata.printful_draft_id;
+  let printfulDraftId = metadata.printful_draft_id;
+
+  // Wallet-first flow: no draft was created before checkout (we let Stripe
+  // collect the shipping address). Create the Printful order NOW from the
+  // Stripe-verified address + the compact variant list in metadata.
+  if (!printfulDraftId && metadata.printful_items && process.env.PRINTFUL_API_KEY) {
+    try {
+      const shipping = (session as any).shipping_details || (session as any).shipping;
+      const addr = shipping?.address;
+      if (addr?.line1 && addr?.city && addr?.postal_code) {
+        const compact: Array<{ v: number; q: number; p: number }> = JSON.parse(
+          metadata.printful_items
+        );
+        const pfRes = await fetch("https://api.printful.com/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.PRINTFUL_API_KEY}`,
+          },
+          body: JSON.stringify({
+            confirm: false,
+            recipient: {
+              name: shipping.name || details?.name || email.split("@")[0],
+              email,
+              phone: details?.phone || undefined,
+              address1: addr.line1,
+              address2: addr.line2 || "",
+              city: addr.city,
+              state_code: addr.state || "",
+              zip: addr.postal_code,
+              country_code: addr.country || "US",
+            },
+            items: compact
+              .filter((i) => i.v > 0)
+              .map((i) => ({
+                variant_id: i.v,
+                quantity: i.q,
+                retail_price: (i.p / 100).toFixed(2),
+              })),
+          }),
+        });
+        if (pfRes.ok) {
+          const pfData = await pfRes.json();
+          if (pfData.result?.id) {
+            printfulDraftId = String(pfData.result.id);
+            console.log(`[Stripe Webhook] Created post-payment Printful order ${printfulDraftId}`);
+          }
+        } else {
+          console.error("[Stripe Webhook] Post-payment Printful create failed:", await pfRes.text());
+        }
+      } else {
+        console.error("[Stripe Webhook] Wallet-first merch order missing Stripe shipping address; cannot create Printful order.");
+      }
+    } catch (createErr: any) {
+      console.error("[Stripe Webhook] Post-payment Printful create error:", createErr?.message);
+    }
+  }
+
   if (printfulDraftId) {
     try {
       const { confirmOrder, updateOrderRecipient } = await import("@/lib/printful/client");

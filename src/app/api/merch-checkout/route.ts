@@ -42,23 +42,29 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { items, recipient, shipping_rate_cents } = body as {
       items: MerchCheckoutItem[];
-      recipient: Recipient;
+      recipient?: Recipient; // OPTIONAL — Stripe collects the address (wallet-friendly)
       shipping_rate_cents: number;
     };
 
-    if (!items?.length || !recipient?.email) {
-      return NextResponse.json({ error: "Missing items or recipient info" }, { status: 400 });
+    if (!items?.length) {
+      return NextResponse.json({ error: "Missing items" }, { status: 400 });
     }
 
-    // Validate email
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient.email)) {
+    // Validate email only when explicitly provided (legacy form path)
+    if (recipient?.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient.email)) {
       return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
 
-    // Step 1: Create a draft Printful order
+    // Step 1: Create a draft Printful order — ONLY when the caller supplied a
+    // full address (legacy form path). The default wallet-first flow skips
+    // this; the Stripe webhook creates the Printful order from the Stripe-
+    // verified shipping address after payment succeeds.
     let printfulOrderId: number | null = null;
 
-    if (process.env.PRINTFUL_API_KEY) {
+    const hasFullAddress =
+      recipient?.line1 && recipient?.city && recipient?.state && recipient?.zip;
+
+    if (process.env.PRINTFUL_API_KEY && hasFullAddress && recipient) {
       try {
         const pfRes = await fetch("https://api.printful.com/orders", {
           method: "POST",
@@ -141,14 +147,19 @@ export async function POST(req: NextRequest) {
 
     const session = await stripeClient.checkout.sessions.create({
       mode: "payment",
-      customer_email: recipient.email,
+      // Only prefill email when the legacy form provided one — otherwise
+      // Stripe (and the customer's wallet) collects it.
+      ...(recipient?.email ? { customer_email: recipient.email } : {}),
       line_items: lineItems as any,
       success_url: `${appUrl}/shop/merch/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/shop/merch`,
-      payment_method_types: ["card"],
+      cancel_url: `${appUrl}/studio`,
+      // NOTE: do NOT pass payment_method_types — leaving it unset lets Stripe
+      // automatically offer every method enabled in the Dashboard (Apple Pay,
+      // Google Pay, Link, card, ...). Hardcoding ["card"] suppressed wallets.
       shipping_address_collection: {
         allowed_countries: ["US", "CA"],
       },
+      phone_number_collection: { enabled: true },
       metadata: {
         source: "merch-checkout",
         printful_draft_id: printfulOrderId ? String(printfulOrderId) : "",
@@ -156,7 +167,12 @@ export async function POST(req: NextRequest) {
         subtotal_cents: String(subtotal_cents),
         shipping_cents: String(shipping_cents),
         item_count: String(items.reduce((s, i) => s + i.quantity, 0)),
-        item_names: items.map((i) => i.name).join(", "),
+        item_names: items.map((i) => i.name).join(", ").slice(0, 480),
+        // Compact variant list so the webhook can create the Printful order
+        // post-payment (wallet-first flow has no draft yet).
+        printful_items: JSON.stringify(
+          items.map((i) => ({ v: i.printful_variant_id, q: i.quantity, p: i.price_cents }))
+        ).slice(0, 480),
       },
     } as any);
 
@@ -168,8 +184,8 @@ export async function POST(req: NextRequest) {
     let orderId: string | null = null;
     try {
       const { data: insertedOrder } = await db.from("orders").insert({
-        customer_email: recipient.email,
-        customer_name: recipient.name,
+        customer_email: recipient?.email || "pending@stripe.checkout",
+        customer_name: recipient?.name || "Pending (Stripe checkout)",
         order_type: "merch",
         items: items.map((i) => ({
           name: i.name,

@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useCartStore } from "@/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
 import {
   ShoppingBag,
-  Truck,
   CreditCard,
   ShieldCheck,
   ArrowLeft,
   Loader2,
+  Truck,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -32,19 +32,18 @@ interface CartMerchItem {
   quantity: number;
 }
 
+/**
+ * Merch checkout — wallet-first.
+ *
+ * No address form: Stripe Checkout collects shipping address, email, and
+ * phone (auto-filled by Apple Pay / Google Pay / Link wallets). The Stripe
+ * webhook then creates + confirms the Printful order from the Stripe-verified
+ * address, so the customer never types anything a wallet already knows.
+ */
 export default function MerchCheckoutPage() {
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
 
-  const [recipient, setRecipient] = useState({
-    name: "",
-    email: "",
-    line1: "",
-    line2: "",
-    city: "",
-    state: "",
-    zip: "",
-  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -80,19 +79,11 @@ export default function MerchCheckoutPage() {
     );
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleCheckout() {
     setSubmitting(true);
     setError("");
 
     try {
-      // Validate
-      if (!recipient.name || !recipient.email || !recipient.line1 || !recipient.city || !recipient.state || !recipient.zip) {
-        setError("Please fill in all required fields.");
-        setSubmitting(false);
-        return;
-      }
-
       const res = await fetch("/api/merch-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,7 +101,6 @@ export default function MerchCheckoutPage() {
             view: i.product.design_data?.view,
             design_data: i.product.design_data,
           })),
-          recipient,
           shipping_rate_cents: shippingCents,
         }),
       });
@@ -118,12 +108,12 @@ export default function MerchCheckoutPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Checkout failed. Please try again.");
+        setError(typeof data.error === "string" ? data.error : "Checkout failed. Please try again.");
         setSubmitting(false);
         return;
       }
 
-      // Redirect to Stripe Checkout
+      // Redirect to Stripe Checkout (collects address + payment in one step)
       if (data.url) {
         clearCart();
         window.location.href = data.url;
@@ -137,12 +127,8 @@ export default function MerchCheckoutPage() {
     }
   }
 
-  function updateField(field: string, value: string) {
-    setRecipient((prev) => ({ ...prev, [field]: value }));
-  }
-
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-24">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 pb-24">
       {/* Header */}
       <Link
         href="/studio"
@@ -155,212 +141,109 @@ export default function MerchCheckoutPage() {
         Merch Checkout
       </h1>
 
-      <div className="grid md:grid-cols-[1fr_380px] gap-8">
-        {/* Left: Shipping Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-card rounded-xl p-6 border border-latte/20">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Truck size={18} /> Shipping Address
-            </h2>
+      {/* Order Summary */}
+      <div className="bg-card rounded-xl p-6 border border-latte/20 mb-6">
+        <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-mocha mb-1">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={recipient.name}
-                  onChange={(e) => updateField("name", e.target.value)}
-                  className="form-input"
-                  placeholder="Jane Smith"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-mocha mb-1">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={recipient.email}
-                  onChange={(e) => updateField("email", e.target.value)}
-                  className="form-input"
-                  placeholder="jane@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-mocha mb-1">
-                  Street Address *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={recipient.line1}
-                  onChange={(e) => updateField("line1", e.target.value)}
-                  className="form-input"
-                  placeholder="123 Main St"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-mocha mb-1">
-                  Apt / Suite
-                </label>
-                <input
-                  type="text"
-                  value={recipient.line2}
-                  onChange={(e) => updateField("line2", e.target.value)}
-                  className="form-input"
-                  placeholder="Apt 4B"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-mocha mb-1">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={recipient.city}
-                    onChange={(e) => updateField("city", e.target.value)}
-                    className="form-input"
-                    placeholder="Austin"
+        <div className="space-y-3 mb-4">
+          {merchItems.map((item, idx) => (
+            <div key={idx} className="flex gap-3">
+              <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                {item.product.images?.[0] ? (
+                  <img
+                    src={item.product.images[0]}
+                    alt={item.product.name}
+                    className="w-full h-full rounded-lg object-cover"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-mocha mb-1">
-                    State *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={recipient.state}
-                    onChange={(e) => updateField("state", e.target.value.toUpperCase())}
-                    maxLength={2}
-                    className="form-input"
-                    placeholder="TX"
-                  />
-                </div>
+                ) : (
+                  <ShoppingBag size={20} className="text-mocha/40" />
+                )}
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-mocha mb-1">
-                  ZIP Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={recipient.zip}
-                  onChange={(e) => updateField("zip", e.target.value)}
-                  className="form-input max-w-[200px]"
-                  placeholder="78657"
-                />
-              </div>
-            </div>
-          </div>
-
-          {error && (
-            <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full py-4 rounded-xl bg-forest text-white font-medium text-lg flex items-center justify-center gap-2 hover:bg-forest/90 transition disabled:opacity-50"
-          >
-            {submitting ? (
-              <>
-                <Loader2 size={20} className="animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <CreditCard size={20} />
-                Pay {formatPrice(totalCents)}
-              </>
-            )}
-          </button>
-
-          <div className="flex items-center justify-center gap-2 text-xs text-mocha">
-            <ShieldCheck size={14} />
-            Secure payment via Stripe. Designs are moderated before printing.
-          </div>
-        </form>
-
-        {/* Right: Order Summary */}
-        <div className="bg-card rounded-xl p-6 border border-latte/20 h-fit sticky top-24">
-          <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-
-          <div className="space-y-3 mb-4">
-            {merchItems.map((item, idx) => (
-              <div key={idx} className="flex gap-3">
-                <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                  {item.product.images?.[0] ? (
-                    <img
-                      src={item.product.images[0]}
-                      alt={item.product.name}
-                      className="w-full h-full rounded-lg object-cover"
-                    />
-                  ) : (
-                    <ShoppingBag size={20} className="text-mocha/40" />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">
+                  {item.product.name}
+                </div>
+                <div className="text-xs text-mocha">
+                  {item.product.design_data?.variant_size && (
+                    <span>Size: {item.product.design_data.variant_size}</span>
+                  )}
+                  {item.product.design_data?.variant_color && (
+                    <span className="ml-2">
+                      Color: {item.product.design_data.variant_color}
+                    </span>
+                  )}
+                  {item.quantity > 1 && (
+                    <span className="ml-2">×{item.quantity}</span>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">
-                    {item.product.name}
-                  </div>
-                  <div className="text-xs text-mocha">
-                    {item.product.design_data?.variant_size && (
-                      <span>Size: {item.product.design_data.variant_size}</span>
-                    )}
-                    {item.product.design_data?.variant_color && (
-                      <span className="ml-2">
-                        Color: {item.product.design_data.variant_color}
-                      </span>
-                    )}
-                    {item.quantity > 1 && (
-                      <span className="ml-2">×{item.quantity}</span>
-                    )}
-                  </div>
-                </div>
-                <div className="text-sm font-medium tabular-nums">
-                  {formatPrice(item.product.price_cents * item.quantity)}
-                </div>
               </div>
-            ))}
-          </div>
+              <div className="text-sm font-medium tabular-nums">
+                {formatPrice(item.product.price_cents * item.quantity)}
+              </div>
+            </div>
+          ))}
+        </div>
 
-          <div className="border-t border-latte/20 pt-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-mocha">Subtotal</span>
-              <span className="tabular-nums">{formatPrice(subtotalCents)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-mocha">Shipping</span>
-              <span className="tabular-nums">
-                {shippingCents === 0 ? "Free" : formatPrice(shippingCents)}
-              </span>
-            </div>
-            <div className="flex justify-between font-semibold text-lg pt-2 border-t border-latte/20">
-              <span>Total</span>
-              <span className="tabular-nums">{formatPrice(totalCents)}</span>
-            </div>
+        <div className="border-t border-latte/20 pt-4 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-mocha">Subtotal</span>
+            <span className="tabular-nums">{formatPrice(subtotalCents)}</span>
           </div>
-
-          <div className="mt-4 text-xs text-mocha space-y-1">
-            <p>• Made to order — ships in 5–8 business days</p>
-            <p>• Returns accepted for defects only</p>
-            <p>• Powered by Printful</p>
+          <div className="flex justify-between text-sm">
+            <span className="text-mocha">Shipping</span>
+            <span className="tabular-nums">
+              {shippingCents === 0 ? "Free" : formatPrice(shippingCents)}
+            </span>
+          </div>
+          <div className="flex justify-between font-semibold text-lg pt-2 border-t border-latte/20">
+            <span>Total</span>
+            <span className="tabular-nums">{formatPrice(totalCents)}</span>
           </div>
         </div>
+      </div>
+
+      {/* Shipping note */}
+      <div className="flex items-start gap-3 bg-card/50 rounded-xl p-4 border border-latte/20 mb-6 text-sm text-mocha">
+        <Truck size={18} className="shrink-0 mt-0.5" />
+        <p>
+          You'll enter (or auto-fill with Apple Pay / Google Pay / Link) your
+          shipping address on the next secure payment step — no forms to fill
+          out here.
+        </p>
+      </div>
+
+      {error && (
+        <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg text-sm mb-6">
+          {error}
+        </div>
+      )}
+
+      <button
+        onClick={handleCheckout}
+        disabled={submitting}
+        className="w-full py-4 rounded-xl bg-forest text-white font-medium text-lg flex items-center justify-center gap-2 hover:bg-forest/90 transition disabled:opacity-50"
+      >
+        {submitting ? (
+          <>
+            <Loader2 size={20} className="animate-spin" />
+            Preparing secure checkout...
+          </>
+        ) : (
+          <>
+            <CreditCard size={20} />
+            Continue to Payment — {formatPrice(totalCents)}
+          </>
+        )}
+      </button>
+
+      <div className="flex items-center justify-center gap-2 text-xs text-mocha mt-4">
+        <ShieldCheck size={14} />
+        Secure payment via Stripe (Apple Pay, Google Pay, Link, card). Designs
+        are moderated before printing.
+      </div>
+
+      <div className="mt-4 text-xs text-mocha text-center space-y-1">
+        <p>Made to order — ships in 5–8 business days • Returns accepted for defects only • Powered by Printful</p>
       </div>
     </div>
   );

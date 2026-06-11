@@ -93,7 +93,8 @@ export async function POST(req: NextRequest) {
       const { data, error } = await db
         .from("saved_designs")
         .update({
-          name: name || "Untitled Design",
+          // Only touch the name when the client explicitly sends one
+          ...(name ? { name } : {}),
           product_id,
           variant_id,
           product_type: product_type || product_id,

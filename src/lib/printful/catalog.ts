@@ -118,7 +118,7 @@ export const PRINTFUL_CATALOG: PrintfulProduct[] = [
       front: { width: 12, height: 16, x: 50, y: 30 },
       back: { width: 12, height: 16, x: 50, y: 30 },
     },
-    canvasPrintArea: { x: 330, y: 250, w: 340, h: 440 },
+    canvasPrintArea: { x: 330, y: 310, w: 340, h: 430 },
   },
   {
     id: "hoodie",
@@ -155,7 +155,7 @@ export const PRINTFUL_CATALOG: PrintfulProduct[] = [
       front: { width: 14, height: 18, x: 50, y: 35 },
       back: { width: 14, height: 18, x: 50, y: 35 },
     },
-    canvasPrintArea: { x: 350, y: 300, w: 300, h: 340 },
+    canvasPrintArea: { x: 340, y: 440, w: 320, h: 215 },
   },
   {
     id: "snapback-hat",
@@ -177,7 +177,7 @@ export const PRINTFUL_CATALOG: PrintfulProduct[] = [
     printAreas: {
       front: { width: 3, height: 2.5, x: 50, y: 40 },
     },
-    canvasPrintArea: { x: 370, y: 330, w: 260, h: 190 },
+    canvasPrintArea: { x: 330, y: 320, w: 340, h: 260 },
   },
 
   // ===== DRINKWARE =====
@@ -200,7 +200,7 @@ export const PRINTFUL_CATALOG: PrintfulProduct[] = [
     printAreas: {
       front: { width: 3.5, height: 3.5, x: 50, y: 50 },
     },
-    canvasPrintArea: { x: 300, y: 330, w: 400, h: 340 },
+    canvasPrintArea: { x: 370, y: 320, w: 310, h: 370 },
   },
   {
     id: "travel-mug",
@@ -220,10 +220,31 @@ export const PRINTFUL_CATALOG: PrintfulProduct[] = [
     printAreas: {
       front: { width: 4, height: 6, x: 50, y: 50 },
     },
-    canvasPrintArea: { x: 340, y: 280, w: 320, h: 430 },
+    canvasPrintArea: { x: 350, y: 240, w: 300, h: 610 },
   },
 
   // ===== ACCESSORIES =====
+  {
+    id: "kiss-cut-stickers",
+    printfulId: 358, // Kiss-Cut Stickers
+    name: "Kiss-Cut Stickers",
+    category: "accessories",
+    description: "Durable vinyl stickers with a glossy finish. Indoor & outdoor use.",
+    basePriceCents: 229,
+    imageUrl: `${CDN}/o/products/358/product_1553084472.jpg`,
+    mockupImages: {
+      front: `${CDN}/products/358/10163_1553083889.jpg`,
+    },
+    variants: [
+      { id: 10163, name: '3" × 3"', size: '3" × 3"', image: `${CDN}/products/358/10163_1553083889.jpg` },
+      { id: 10164, name: '4" × 4"', size: '4" × 4"', additionalPriceCents: 20, image: `${CDN}/products/358/10164_1553083894.jpg` },
+      { id: 10165, name: '5.5" × 5.5"', size: '5.5" × 5.5"', additionalPriceCents: 40, image: `${CDN}/products/358/10165_1553083897.jpg` },
+    ],
+    printAreas: {
+      front: { width: 3, height: 3, x: 50, y: 50 },
+    },
+    canvasPrintArea: { x: 250, y: 250, w: 500, h: 500 },
+  },
   {
     id: "tote-bag",
     printfulId: 367, // Econscious EC8000 — Eco Tote Bag
@@ -242,7 +263,7 @@ export const PRINTFUL_CATALOG: PrintfulProduct[] = [
     printAreas: {
       front: { width: 14, height: 16, x: 50, y: 50 },
     },
-    canvasPrintArea: { x: 310, y: 330, w: 380, h: 400 },
+    canvasPrintArea: { x: 250, y: 430, w: 500, h: 390 },
   },
   {
     id: "phone-case",
@@ -315,6 +336,46 @@ export const PRINTFUL_CATALOG: PrintfulProduct[] = [
   },
 
   // ===== HOME & LIVING =====
+  {
+    id: "crew-socks",
+    printfulId: 186, // Black Foot Sublimated Socks
+    name: "Custom Crew Socks",
+    category: "apparel",
+    description: "All-over printed crew socks with black foot. Comfy, bold, fun.",
+    basePriceCents: 1039,
+    imageUrl: `${CDN}/o/upload/product-catalog-img/e9/e9b0b0861f8a72c69d450ecfe8c98635_l`,
+    mockupImages: {
+      front: `${CDN}/products/186/7291_1549982695.jpg`,
+    },
+    variants: [
+      { id: 7290, name: "M", size: "M", image: `${CDN}/products/186/7290_1549982703.jpg` },
+      { id: 7291, name: "L", size: "L", image: `${CDN}/products/186/7291_1549982695.jpg` },
+      { id: 7292, name: "XL", size: "XL", image: `${CDN}/products/186/7292_1549982709.jpg` },
+    ],
+    printAreas: {
+      front: { width: 4, height: 8, x: 50, y: 50 },
+    },
+    canvasPrintArea: { x: 280, y: 220, w: 370, h: 280 },
+  },
+  {
+    id: "cork-coaster",
+    printfulId: 611, // Cork-Back Coaster
+    name: "Cork-Back Coaster",
+    category: "home-living",
+    description: "3.74\" square coaster with cork back. Protects tables in style.",
+    basePriceCents: 544,
+    imageUrl: `${CDN}/o/upload/product-catalog-img/d4/d41d6e69b8c865b6a4546ce030775f2f_l`,
+    mockupImages: {
+      front: `${CDN}/products/611/15662_1660029236.jpg`,
+    },
+    variants: [
+      { id: 15662, name: '3.74" × 3.74"', size: '3.74" × 3.74"', image: `${CDN}/products/611/15662_1660029236.jpg` },
+    ],
+    printAreas: {
+      front: { width: 3.74, height: 3.74, x: 50, y: 50 },
+    },
+    canvasPrintArea: { x: 200, y: 190, w: 300, h: 350 },
+  },
   {
     id: "throw-pillow",
     printfulId: 83, // All-Over Print Basic Pillow
@@ -404,13 +465,49 @@ export type DefaultDesign = {
 
 export const DEFAULT_DESIGNS: DefaultDesign[] = [
   {
+    id: "longhorn-roast",
+    name: "Longhorn Roast",
+    description: "Texas longhorn skull built from coffee beans and steam. Bold, local, badass.",
+    imageUrl: "/images/default-designs/longhorn-roast.png",
+    productId: "unisex-tee",
+    style: "vintage",
+    trending: true,
+  },
+  {
+    id: "coffee-wave",
+    name: "The Great Brew Wave",
+    description: "Hokusai's great wave reimagined in coffee and cream.",
+    imageUrl: "/images/default-designs/coffee-wave.png",
+    productId: "poster",
+    style: "abstract",
+    trending: true,
+  },
+  {
+    id: "cosmic-sip",
+    name: "Cosmic Sip",
+    description: "Astronaut sipping coffee in a latte-swirl galaxy. Out of this world.",
+    imageUrl: "/images/default-designs/cosmic-sip.png",
+    productId: "hoodie",
+    style: "abstract",
+    trending: true,
+  },
+  {
+    id: "bear-brew",
+    name: "Bear Brew Club",
+    description: "Roaring bear with a hot cup. Vintage badge energy.",
+    imageUrl: "/images/default-designs/bear-brew.png",
+    productId: "kiss-cut-stickers",
+    style: "vintage",
+    trending: true,
+  },
+  {
     id: "kynda-logo-classic",
     name: "Kynda Classic",
     description: "The official Kynda Coffee logo. Clean, timeless.",
     imageUrl: "/images/default-designs/kynda-logo-classic.png",
     productId: "unisex-tee",
     style: "logo",
-    trending: true,
+    trending: false,
   },
   {
     id: "hill-country-sunrise",
@@ -445,7 +542,7 @@ export const DEFAULT_DESIGNS: DefaultDesign[] = [
     imageUrl: "/images/default-designs/coffee-first.png",
     productId: "tote-bag",
     style: "typography",
-    trending: true,
+    trending: false,
   },
   {
     id: "seasonal-pumpkin-spice",
@@ -543,4 +640,26 @@ export function getBestProductImage(
   variant?: ProductVariant | null
 ): string {
   return variant?.image ?? product.mockupImages.front ?? product.imageUrl;
+}
+
+/**
+ * Wrap a Printful CDN URL in our same-origin proxy for canvas use.
+ * files.cdn.printful.com serves CORS headers on `/o/...` paths but NOT on
+ * `/products/...` paths — loading the latter with crossOrigin="anonymous"
+ * fails outright (snapback bug) and without it the canvas gets tainted.
+ * Non-Printful URLs (local /images/*, data:) pass through untouched.
+ */
+export function canvasSafeImageUrl(url: string): string {
+  if (!url || url.startsWith("/") || url.startsWith("data:") || url.startsWith("blob:")) {
+    return url;
+  }
+  try {
+    const u = new URL(url);
+    if (u.hostname === "files.cdn.printful.com" || u.hostname === "images.printful.com") {
+      return `/api/printful-image?url=${encodeURIComponent(url)}`;
+    }
+  } catch {
+    /* not a URL — pass through */
+  }
+  return url;
 }
