@@ -12,6 +12,7 @@ import {
   formatModifiers,
   normalizeKdsItems,
   sourceBadge,
+  deliveryPlatformBadge,
   paymentChip,
   placedAtLabel,
 } from "./kds-board";
@@ -227,6 +228,37 @@ describe("sourceBadge", () => {
     expect(sourceBadge(makeOrder({ source: "square-pos", order_channel: "pos" })).label).toBe("POS");
     expect(sourceBadge(makeOrder({ source: "qr" })).label).toBe("QR");
     expect(sourceBadge(makeOrder({ source: "website", order_channel: "web" })).label).toBe("ONLINE");
+  });
+  it("badges third-party delivery platforms above the POS source", () => {
+    const dd = makeOrder({
+      source: "square-pos",
+      order_channel: "delivery",
+      fulfillment_metadata: { mode: "delivery", external_source: "DoorDash" },
+    });
+    expect(sourceBadge(dd).label).toBe("DOORDASH");
+    const ue = makeOrder({
+      source: "square-pos",
+      order_channel: "delivery",
+      fulfillment_metadata: { mode: "delivery", external_source: "Uber Eats" },
+    });
+    expect(sourceBadge(ue).label).toBe("UBER EATS");
+    const gh = makeOrder({
+      source: "square-pos",
+      order_channel: "delivery",
+      fulfillment_metadata: { mode: "delivery", external_source: "Grubhub" },
+    });
+    expect(sourceBadge(gh).label).toBe("GRUBHUB");
+  });
+  it("shows unknown marketplaces by name so staff know it's third-party", () => {
+    const other = makeOrder({
+      source: "square-pos",
+      order_channel: "delivery",
+      fulfillment_metadata: { mode: "delivery", external_source: "ChowNow" },
+    });
+    expect(sourceBadge(other).label).toBe("CHOWNOW");
+  });
+  it("returns null delivery badge when external_source is absent", () => {
+    expect(deliveryPlatformBadge(makeOrder())).toBeNull();
   });
 });
 

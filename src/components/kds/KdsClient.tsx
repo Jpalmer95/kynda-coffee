@@ -23,6 +23,7 @@ import {
   BellOff,
   Check,
   Clock,
+  History as HistoryIcon,
   Loader2,
   Phone,
   RefreshCw,
@@ -79,6 +80,9 @@ function nextActionLabel(status: OrderStatus): string {
   return "Picked Up";
 }
 
+/** Long tickets collapse beyond this many line items (tap to expand). */
+const TICKET_COLLAPSE_AT = 5;
+
 function statusColor(status: OrderStatus) {
   if (status === "pending" || status === "confirmed") return "bg-red-700 text-white";
   if (status === "processing") return "bg-bronze text-white";
@@ -109,6 +113,9 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const initialBoard = (searchParams.get("board") as KdsBoard) || "all";
 
   const [orders, setOrders] = useState<KdsOrder[]>([]);
+  const [completed, setCompleted] = useState<KdsOrder[]>([]);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [expandedTickets, setExpandedTickets] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -159,6 +166,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load KDS orders");
       handleIncomingOrders(data.orders ?? []);
+      setCompleted(data.completed ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load KDS orders");
     } finally {
@@ -449,7 +457,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                   )}
 
                   <div className="flex-1 space-y-2.5">
-                    {items.map((item, index) => (
+                    {(expandedTickets.has(order.id) ? items : items.slice(0, TICKET_COLLAPSE_AT)).map((item, index) => (
                       <div key={index} className="rounded-xl border border-latte/30 px-3 py-2.5">
                         <div className="flex justify-between gap-3 text-lg font-semibold">
                           <span>
@@ -468,6 +476,23 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                         {item.notes ? <div className="mt-1 rounded-lg bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-900">✎ {item.notes}</div> : null}
                       </div>
                     ))}
+                    {items.length > TICKET_COLLAPSE_AT && (
+                      <button
+                        onClick={() =>
+                          setExpandedTickets((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(order.id)) next.delete(order.id);
+                            else next.add(order.id);
+                            return next;
+                          })
+                        }
+                        className="w-full rounded-xl border-2 border-dashed border-latte/50 py-2 text-sm font-bold text-mocha active:scale-[0.985]"
+                      >
+                        {expandedTickets.has(order.id)
+                          ? "▲ Collapse"
+                          : `▼ Show ${items.length - TICKET_COLLAPSE_AT} more item${items.length - TICKET_COLLAPSE_AT === 1 ? "" : "s"}`}
+                      </button>
+                    )}
                     {order.notes && <div className="rounded-xl bg-cream p-3 text-sm font-semibold text-mocha">Note: {order.notes}</div>}
                   </div>
 
@@ -510,6 +535,65 @@ export function KdsClient({ backHref }: { backHref?: string }) {
             })}
           </div>
         )}
+
+        {/* Recently Completed rail — recover an accidental "Picked Up" tap */}
+        <div className="mt-8 border-t border-sand/15 pt-5">
+          <button
+            onClick={() => setShowCompleted((v) => !v)}
+            className="flex items-center gap-2 rounded-2xl border border-sand/20 px-4 py-2 text-sm text-sand/80 hover:bg-sand/10"
+            aria-expanded={showCompleted}
+          >
+            <HistoryIcon className="h-4 w-4" />
+            Recently Completed ({completed.length})
+            <span className="text-xs text-sand/50">{showCompleted ? "▲ hide" : "▼ show"}</span>
+          </button>
+          {showCompleted && (
+            completed.length === 0 ? (
+              <p className="mt-3 text-sm text-sand/60">No orders completed in the last hour.</p>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {completed.map((order) => {
+                  const items = normalizeKdsItems(order.items);
+                  const badge = sourceBadge(order);
+                  const summary = items
+                    .map((it) => `${it.quantity > 1 ? `${it.quantity}x ` : ""}${it.name}`)
+                    .join(", ");
+                  const customerName =
+                    order.fulfillment_metadata?.customer_name ||
+                    order.email?.split("@")[0] ||
+                    "Guest";
+                  return (
+                    <div key={order.id} className="rounded-2xl border border-sand/15 bg-sand/5 p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="text-xs tracking-wide text-sand/60">
+                            {order.order_number} • {placedAtLabel(order.created_at)}
+                          </div>
+                          <div className="truncate text-base font-semibold text-sand">{String(customerName)}</div>
+                          <div className="mt-0.5 line-clamp-2 text-xs text-sand/70">{summary}</div>
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${badge.className}`}>
+                          {badge.label}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => updateStatus(order.id, "ready")}
+                        disabled={updatingId === order.id}
+                        className="mt-3 w-full rounded-xl border border-sand/30 py-2 text-sm font-medium text-sand hover:bg-sand/10 active:scale-[0.985] disabled:opacity-60"
+                      >
+                        {updatingId === order.id ? (
+                          <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                        ) : (
+                          <span><RotateCcw className="mr-1.5 inline h-4 w-4" /> Bring Back to Board</span>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          )}
+        </div>
       </div>
     </div>
   );

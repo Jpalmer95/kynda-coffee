@@ -93,6 +93,8 @@ describe("KDS status transitions", () => {
     expect(assertKdsTransition("ready", "processing").ok).toBe(true);
     // handoff: ready -> complete clears the board
     expect(assertKdsTransition("ready", "complete").ok).toBe(true);
+    // recovery: an accidental Picked Up can come back via Recently Completed
+    expect(assertKdsTransition("complete", "ready").ok).toBe(true);
 
     const backwards = assertKdsTransition("processing", "pending");
     const invalid = assertKdsTransition("delivered", "processing");

@@ -15,20 +15,43 @@ export async function GET(req: NextRequest) {
   if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { data, error } = await supabaseAdmin()
-      .from("orders")
-      .select(ORDER_SELECT)
-      .in("status", [...ACTIVE_KDS_STATUSES])
-      .or("source.eq.qr,order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent)")
-      .order("created_at", { ascending: true })
-      .limit(100);
+    const supabase = supabaseAdmin();
+    const channelFilter =
+      "source.eq.qr,order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent)";
 
-    if (error) {
-      console.error("KDS fetch error", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const [active, completed] = await Promise.all([
+      supabase
+        .from("orders")
+        .select(ORDER_SELECT)
+        .in("status", [...ACTIVE_KDS_STATUSES])
+        .or(channelFilter)
+        .order("created_at", { ascending: true })
+        .limit(100),
+      // Recently Completed rail: finished tickets from the last hour so an
+      // accidental "Picked Up" tap is recoverable (Bring Back button).
+      supabase
+        .from("orders")
+        .select(ORDER_SELECT)
+        .in("status", ["complete", "fulfilled", "delivered"])
+        .or(channelFilter)
+        .gte("updated_at", new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .order("updated_at", { ascending: false })
+        .limit(20),
+    ]);
+
+    if (active.error) {
+      console.error("KDS fetch error", active.error);
+      return NextResponse.json({ error: active.error.message }, { status: 500 });
+    }
+    if (completed.error) {
+      // The rail is a convenience — never block the live board on it.
+      console.error("KDS completed fetch error", completed.error);
     }
 
-    return NextResponse.json({ orders: sortKdsOrders((data ?? []) as KdsOrderLike[]) });
+    return NextResponse.json({
+      orders: sortKdsOrders((active.data ?? []) as KdsOrderLike[]),
+      completed: completed.data ?? [],
+    });
   } catch (error) {
     console.error("KDS error", error);
     return NextResponse.json({ error: "Failed to fetch KDS orders" }, { status: 500 });
@@ -102,7 +125,9 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Ready bump → best-effort customer SMS (never blocks the KDS response).
-    if (nextStatus === "ready") {
+    // Only on the genuine processing→ready bump — bringing a ticket BACK from
+    // Recently Completed (complete→ready) must not re-text the customer.
+    if (nextStatus === "ready" && current.status === "processing") {
       const fm = current.fulfillment_metadata as
         | { customer_phone?: string; mode?: string }
         | null;

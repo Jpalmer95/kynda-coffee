@@ -12,7 +12,9 @@ export const KDS_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   shipped: ["delivered"],
   // "processing" is the undo path for an accidental Ready bump.
   ready: ["complete", "fulfilled", "processing", "cancelled"],
-  complete: ["fulfilled", "delivered", "shipped"],
+  // "ready" is the undo path for an accidental Picked Up bump — the KDS shows
+  // a Recently Completed rail so staff can bring a ticket back within the hour.
+  complete: ["fulfilled", "delivered", "shipped", "ready"],
   fulfilled: [],
   delivered: [],
   cancelled: [],

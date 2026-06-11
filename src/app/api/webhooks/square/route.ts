@@ -52,15 +52,28 @@ export async function POST(req: NextRequest) {
         if (order.source?.name === "Kynda Online") break;
 
         const isOpen = order.state === "OPEN";
+        // Third-party marketplaces connected through Square (DoorDash,
+        // Uber Eats, Grubhub...) arrive on this same webhook with their
+        // platform name in order.source.name. Capture it so the KDS can badge
+        // the ticket and route it onto the Delivery board.
+        const sourceName: string = order.source?.name ?? "";
+        const isDeliveryPlatform = /door\s*dash|uber\s*eats|postmates|grub\s*hub|seamless/i.test(sourceName);
         const orderData = {
           square_order_id: order.id,
           source: "square-pos" as const,
           status: isOpen ? "confirmed" : "delivered",
           // Route genuine POS orders onto the shared KDS board so the team
           // manages every channel (online + counter) from one screen.
-          order_channel: "pos",
+          // Marketplace orders ride the Delivery board instead.
+          order_channel: isDeliveryPlatform ? "delivery" : "pos",
           total_cents: order.total_money?.amount ?? 0,
           email: order.customer_id ? `square:${order.customer_id}` : "pos@kynda.local",
+          fulfillment_metadata: {
+            mode: isDeliveryPlatform ? "delivery" : "pickup",
+            ...(sourceName && sourceName !== "Square Point of Sale"
+              ? { external_source: sourceName }
+              : {}),
+          },
           items: (order.line_items ?? []).map((item: any) => ({
             product_name: item.name || "POS Item",
             variant_name: item.variation_name || undefined,

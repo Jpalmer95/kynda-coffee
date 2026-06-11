@@ -256,7 +256,33 @@ export interface KdsSourceBadge {
   className: string;
 }
 
+/**
+ * Detect third-party delivery platforms. When DoorDash/Uber Eats/Grubhub are
+ * connected through Square, their orders arrive via the Square webhook with a
+ * source name; the webhook stores it in fulfillment_metadata.external_source.
+ * A direct (non-Square) integration can set the same field.
+ */
+const DELIVERY_PLATFORMS: Array<{ match: RegExp; label: string; className: string }> = [
+  { match: /door\s*dash/i, label: "DOORDASH", className: "bg-red-600 text-white" },
+  { match: /uber\s*eats|postmates/i, label: "UBER EATS", className: "bg-green-700 text-white" },
+  { match: /grub\s*hub|seamless/i, label: "GRUBHUB", className: "bg-orange-600 text-white" },
+];
+
+export function deliveryPlatformBadge(order: KdsOrderLike): KdsSourceBadge | null {
+  const ext = order.fulfillment_metadata?.external_source;
+  if (typeof ext !== "string" || !ext.trim()) return null;
+  for (const p of DELIVERY_PLATFORMS) {
+    if (p.match.test(ext)) return { label: p.label, className: p.className };
+  }
+  // Unknown marketplace — still show it so staff know it's third-party.
+  return { label: ext.trim().toUpperCase().slice(0, 12), className: "bg-slate-700 text-white" };
+}
+
 export function sourceBadge(order: KdsOrderLike): KdsSourceBadge {
+  // Third-party delivery platforms take precedence — staff need to match the
+  // ticket to the courier app, not to "POS".
+  const delivery = deliveryPlatformBadge(order);
+  if (delivery) return delivery;
   if (order.source === "agent" || order.order_channel === "agent") {
     return { label: "AGENT", className: "bg-fuchsia-600 text-white" };
   }

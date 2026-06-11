@@ -35,6 +35,16 @@ an order:
 use it if you bumped Ready too early. (The customer may already have the
 text, so give them a heads-up at handoff if the wait grows.)
 
+**Tapped "Picked Up" by accident?** Scroll to the bottom of the board and
+open **Recently Completed** — every ticket finished in the last hour lives
+there. Tap **Bring Back to Board** and it returns to the Ready column (no
+duplicate "order ready" text is sent). After an hour, finished orders are
+still in the admin Orders page, just not on the KDS.
+
+**Long orders:** tickets with more than 5 items collapse automatically and
+show a "▼ Show N more items" button — tap to expand, tap again to collapse.
+Always expand before making a big order so nothing gets missed.
+
 **Do we have to do this for every order?** Yes — that's the whole system.
 Three taps per order keeps the customer informed automatically (no phone
 calls!), keeps the queue honest, and gives Jonathan real prep-time numbers.
@@ -75,6 +85,10 @@ Jonathan — that's a bug, not your fault.
 - **AGENT** (pink) — placed by the customer's AI assistant on their behalf.
   Totally normal order: real name, real phone, validated against our real
   menu. Treat it exactly like a pickup.
+- **DOORDASH** (red) / **UBER EATS** (green) / **GRUBHUB** (orange) — a
+  marketplace delivery order. Make it, bag it, and hand it to the courier —
+  match the order name to the driver's app. These also appear on the
+  Delivery board tab. Payment is handled by the platform; never collect.
 
 **Payment chips:**
 - **PAID** (green) — money is collected. Make it, hand it over.
