@@ -529,17 +529,26 @@ shipping + margin, via Epic 2); order → dropship → tracked.
   brand-aware `buildGenerationPrompt`, seasonal `recommendThemes` (commit bb28e7a).
 - [x] **Real AI generation**: `/api/designs/generate` rewired from a picsum stub to FAL flux/dev with
   a moderated, brand-aware, print-ready prompt; graceful placeholder only when FAL_KEY unset.
-- [ ] Canvas polish: undo/redo, snapping, true product-image underlay (real mockups in Storage).
-  *(Layered stickers + drag/resize/rotate + front/back already in DesignCanvas. **Undo/redo shipped
-  2026-06-10, commit 753fd17** — 50-step history on all canvas mutations. Remaining: snapping +
-  mockup sync run.)*
+- [x] Canvas polish: **Studio rebuilt 2026-06-11, commit bcd3453.** Virtual 1000×1000 coordinate
+  space scaled responsively (full work area always visible — fixed off-screen sticker spawn);
+  layers spawn centered in a per-product print-area guide; Design/Preview mode toggle (preview
+  clips to print area over the real product photo); duplicate/reorder/per-layer-delete/edit-text;
+  keyboard Delete; center-origin rotate+scale. Undo/redo (50 steps) from 753fd17 retained.
+- [x] **Real product imagery + real variant IDs** (commit bcd3453): catalog re-verified against
+  live Printful API — real catalog product IDs (tee 71, hoodie 380, snapback 99, mug 19, tumbler
+  585, tote 367, phone case 601, posters 1/2, pillow 83), full size×color variant_id matrices,
+  per-color CDN product photos (CORS-safe for canvas export). Fixed black-box product grid.
+- [x] **Save fixed** (commit bcd3453): signed-in → Supabase profile; guests → localStorage
+  session designs (“Saved on this device”), merged into My Designs with source badges; network
+  failures fall back locally so work is never lost. Preset design images generated + shipped
+  (previous /images/default-designs/* were 404s).
 - [ ] **Catalog expansion + smart sourcing**: broaden Printful product set; auto-pull cost/variants;
   sourcing hook for trending non-merch Shop goods (Chemex, filters, candles) w/ adaptive pricing.
 - [x] Surface the recommendation packs + one-tap seed prompts in the studio UI: **Idea Packs**
   row in the AI Create tab (commit 753fd17) — Kynda Brand / Local / Trending / **Memes** /
   **Seasonal** / Funny / Cool / Sporty, each with tap-to-fill seed prompts wired to brand-aware
   generation (`theme` + `brand_aware` now sent to `/api/designs/generate`).
-- [ ] My Designs (save/load, exists) + share + reorder.
+- [x] My Designs (save/load: profile + session) — remaining: share + reorder designs.
 
 > **Progress (2026-05-30, commit bb28e7a):** Generation is now real (FAL + moderation + brand-aware
 > prompts) and the recommendation engine (brand/local/trending/genre packs) is built + tested. Pricing
