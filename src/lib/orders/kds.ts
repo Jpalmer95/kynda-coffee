@@ -23,6 +23,25 @@ export const KDS_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 const KDS_CHANNELS = new Set(["qr", "pickup", "table", "lobby", "parking", "delivery", "pos", "agent"]);
 
+/** Café timezone — KDS "today" boundaries follow shop-local midnight. */
+export const KDS_TIMEZONE = "America/Chicago";
+
+/**
+ * Start of "today" at the café (shop-local midnight) as a real Date.
+ * Used by the KDS date filter so stale tickets from previous days can be
+ * hidden by default while still recoverable via the All Days toggle.
+ */
+export function startOfTodayInTz(tz: string = KDS_TIMEZONE, reference: Date = new Date()): Date {
+  // Render `reference` in the target tz, zero the clock, then shift back by
+  // the server-local vs tz delta. Accurate to the minute, which is plenty
+  // for a midnight boundary.
+  const tzNow = new Date(reference.toLocaleString("en-US", { timeZone: tz }));
+  const delta = reference.getTime() - tzNow.getTime();
+  const tzMidnight = new Date(tzNow);
+  tzMidnight.setHours(0, 0, 0, 0);
+  return new Date(tzMidnight.getTime() + delta);
+}
+
 /**
  * Prepaid-only rule (owner directive 2026-06-10): remote/online orders must be
  * PAID before the kitchen sees them — no making drinks for no-shows, no fraud

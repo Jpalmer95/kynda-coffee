@@ -14,6 +14,7 @@ interface Submission {
   type: string;
   status: string;
   created_at: string;
+  source_table?: "contact_submissions" | "catering_requests";
 }
 
 const FILTERS = [
@@ -58,24 +59,25 @@ export default function AdminInboxPage() {
     load();
   }, [load]);
 
-  async function setStatus(id: string, status: string) {
+  async function setStatus(id: string, status: string, sourceTable?: string) {
     await fetch("/api/admin/inbox", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status }),
+      body: JSON.stringify({ id, status, source_table: sourceTable }),
     });
     await load();
   }
 
-  async function remove(id: string) {
+  async function remove(id: string, sourceTable?: string) {
     if (!confirm("Delete this message?")) return;
-    await fetch(`/api/admin/inbox?id=${id}`, { method: "DELETE" });
+    const tableParam = sourceTable === "catering_requests" ? "&table=catering_requests" : "";
+    await fetch(`/api/admin/inbox?id=${id}${tableParam}`, { method: "DELETE" });
     await load();
   }
 
   function reply(s: Submission) {
     // Mark replied, then open the mail client.
-    setStatus(s.id, "replied");
+    setStatus(s.id, "replied", s.source_table);
     const subject = encodeURIComponent(`Re: your message to Kynda Coffee`);
     const body = encodeURIComponent(`Hi ${s.name},\n\n\n\n— Kynda Coffee`);
     window.location.href = `mailto:${s.email}?subject=${subject}&body=${body}`;
@@ -138,16 +140,16 @@ export default function AdminInboxPage() {
                   <Reply className="mr-1.5 inline h-4 w-4" /> Reply
                 </button>
                 {s.status === "new" && (
-                  <button onClick={() => setStatus(s.id, "read")} className="btn-secondary text-sm">
+                  <button onClick={() => setStatus(s.id, "read", s.source_table)} className="btn-secondary text-sm">
                     <CheckCircle className="mr-1.5 inline h-4 w-4" /> Mark read
                   </button>
                 )}
                 {s.status !== "archived" && (
-                  <button onClick={() => setStatus(s.id, "archived")} className="btn-secondary text-sm">
+                  <button onClick={() => setStatus(s.id, "archived", s.source_table)} className="btn-secondary text-sm">
                     <Archive className="mr-1.5 inline h-4 w-4" /> Archive
                   </button>
                 )}
-                <button onClick={() => remove(s.id)} className="rounded-lg p-2 text-red-600 hover:bg-red-50" title="Delete">
+                <button onClick={() => remove(s.id, s.source_table)} className="rounded-lg p-2 text-red-600 hover:bg-red-50" title="Delete">
                   <Trash2 className="h-5 w-5" />
                 </button>
               </div>

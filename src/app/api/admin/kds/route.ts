@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { assertKdsTransition, sortKdsOrders, ACTIVE_KDS_STATUSES, type KdsOrderLike } from "@/lib/orders/kds";
+import { assertKdsTransition, sortKdsOrders, startOfTodayInTz, ACTIVE_KDS_STATUSES, type KdsOrderLike } from "@/lib/orders/kds";
 import { sendSms } from "@/lib/sms/twilio";
 import type { OrderStatus } from "@/types";
 
@@ -19,14 +19,20 @@ export async function GET(req: NextRequest) {
     const channelFilter =
       "source.eq.qr,order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent)";
 
+    // Date scope: default = today only (shop-local midnight). ?scope=all
+    // shows older stale tickets too (e.g. something left over from yesterday).
+    const scope = new URL(req.url).searchParams.get("scope") === "all" ? "all" : "today";
+    let activeQuery = supabase
+      .from("orders")
+      .select(ORDER_SELECT)
+      .in("status", [...ACTIVE_KDS_STATUSES])
+      .or(channelFilter);
+    if (scope === "today") {
+      activeQuery = activeQuery.gte("created_at", startOfTodayInTz().toISOString());
+    }
+
     const [active, completed] = await Promise.all([
-      supabase
-        .from("orders")
-        .select(ORDER_SELECT)
-        .in("status", [...ACTIVE_KDS_STATUSES])
-        .or(channelFilter)
-        .order("created_at", { ascending: true })
-        .limit(100),
+      activeQuery.order("created_at", { ascending: true }).limit(100),
       // Recently Completed rail: finished tickets from the last hour so an
       // accidental "Picked Up" tap is recoverable (Bring Back button).
       supabase

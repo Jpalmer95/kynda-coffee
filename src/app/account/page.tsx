@@ -223,6 +223,12 @@ export default function AccountPage() {
                   {" & "}
                   <Link href="/privacy" className="underline hover:text-espresso">Privacy Policy</Link>
                 </p>
+                <p className="mt-3">
+                  Shared café tablet (KDS)?{" "}
+                  <Link href="/device-login" className="underline hover:text-espresso">
+                    Use device sign-in
+                  </Link>
+                </p>
               </div>
             </div>
 

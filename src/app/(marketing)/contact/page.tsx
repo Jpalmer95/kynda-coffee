@@ -61,14 +61,17 @@ export default function ContactPage() {
     setTeamErrorMsg("");
 
     try {
-      const res = await fetch("/api/contact", {
+      // Route into the real applicant pipeline (job_applications) so every
+      // applicant — contact page or careers page — shows up in /admin/careers.
+      const res = await fetch("/api/careers/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          opening_title: "General Application (Contact Page)",
           name: teamFormState.name,
           email: teamFormState.email,
-          message: `Phone: ${teamFormState.phone}\nAvailability: ${teamFormState.availability}\nExperience: ${teamFormState.experience}`,
-          type: "application",
+          phone: teamFormState.phone,
+          cover_letter: `Availability: ${teamFormState.availability}\n\nExperience: ${teamFormState.experience}`,
         }),
       });
 
@@ -385,7 +388,7 @@ export default function ContactPage() {
         <div className="mt-12 overflow-hidden rounded-2xl border border-latte/20 bg-latte/10 aspect-[4/3] sm:aspect-video">
           <iframe
             title="Kynda Coffee Location"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3444.0!2d-98.368!3d30.544!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x865b3c0!2sKynda+Coffee!5e0!3m2!1sen!2sus!4v1"
+            src="https://www.google.com/maps?q=Kynda%20Coffee%2C%204315%20FM%202147%2C%20Horseshoe%20Bay%2C%20TX%2078657&ll=30.5495,-98.3304&z=16&output=embed"
             width="100%"
             height="100%"
             style={{ border: 0, filter: "grayscale(20%) contrast(1.1)" }}

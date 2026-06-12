@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   Bell,
   BellOff,
+  CalendarDays,
   Check,
   Clock,
   History as HistoryIcon,
@@ -125,6 +126,9 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const [soundOn, setSoundOn] = useState(false);
   const [live, setLive] = useState(false);
   const [announcement, setAnnouncement] = useState<string | null>(null);
+  // Date scope: "today" (default) hides stale tickets from previous days;
+  // "all" reveals them so they can be cleared.
+  const [dateScope, setDateScope] = useState<"today" | "all">("today");
 
   const prevOrdersRef = useRef<KdsOrder[] | null>(null);
   const soundOnRef = useRef(false);
@@ -162,7 +166,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const loadOrders = useCallback(async () => {
     setError(null);
     try {
-      const res = await fetch("/api/admin/kds", { cache: "no-store" });
+      const res = await fetch(`/api/admin/kds?scope=${dateScope}`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load KDS orders");
       handleIncomingOrders(data.orders ?? []);
@@ -172,7 +176,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
     } finally {
       setLoading(false);
     }
-  }, [handleIncomingOrders]);
+  }, [handleIncomingOrders, dateScope]);
 
   async function updateStatus(orderId: string, status: OrderStatus) {
     setUpdatingId(orderId);
@@ -315,6 +319,24 @@ export function KdsClient({ backHref }: { backHref?: string }) {
               {live ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
               {live ? "LIVE" : "POLLING"}
             </span>
+            {/* Date scope toggle: Today (default) vs All Days (reveals stale tickets) */}
+            <button
+              onClick={() => setDateScope((s) => (s === "today" ? "all" : "today"))}
+              className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm transition-colors ${
+                dateScope === "all"
+                  ? "border-amber-400/40 bg-amber-500/15 text-amber-300"
+                  : "border-sand/20 text-sand hover:bg-sand/10"
+              }`}
+              title={
+                dateScope === "today"
+                  ? "Showing today's tickets only — tap to include previous days"
+                  : "Showing all days (stale tickets included) — tap to show today only"
+              }
+              aria-pressed={dateScope === "all"}
+            >
+              <CalendarDays className="h-4 w-4" />
+              {dateScope === "today" ? "Today" : "All Days"}
+            </button>
             {/* Sound alerts toggle (also unlocks iPad audio) */}
             <button
               onClick={toggleSound}
