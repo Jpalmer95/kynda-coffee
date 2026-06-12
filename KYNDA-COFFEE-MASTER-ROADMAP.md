@@ -27,6 +27,17 @@
 
 ### ✅ Completed
 
+**Ops & Forms Hardening (2026-06-12)**
+- [x] Device-auth tablet sign-in (`/device-login`) — owner-approved 6-digit code (SMS via OWNER_PHONE, email fallback) mints persistent Supabase session on shared KDS tablets; whitelist = staff+ profiles or ADMIN_EMAILS
+- [x] KDS Today/All-Days date scope toggle (shop-local midnight, America/Chicago) + server-side `?scope=` filter
+- [x] Fixed prod 500s on contact / careers apply / catering forms (migration 034: tables existed only in repo, never applied; careers RLS referenced nonexistent `profiles.user_id`)
+- [x] `catering_requests` table created; catering + contact submissions unified in /admin/inbox with triage
+- [x] Contact-page "Join Our Team" now feeds the real applicant pipeline (`job_applications` → /admin/careers)
+- [x] Owner email notifications for new applications + catering requests
+- [x] Hermes watchdog cron (9am/4pm): pings owner when untriaged applications/catering/contact items exist
+- [x] Contact page map re-centered on Kynda Coffee (30.5495, -98.3304)
+- [x] Payroll decision (2026-06): STAY on Square Payroll — $35+$6/person vs Gusto $49+$6 (Simple); Gusto has no Square POS tips/timecard import (manual entry every run) and both file TX new-hire reports + TX SUTA. Revisit only if headcount >15 or HR/benefits needs grow (Gusto Plus $80+$12).
+
 **Design System v2 (2026-05-29)**
 - [x] Modern Artisan color palette (Heirloom Cream + Charcoal)
 - [x] EB Garamond + Plus Jakarta Sans typography
