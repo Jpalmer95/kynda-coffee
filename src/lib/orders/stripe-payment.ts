@@ -24,7 +24,7 @@ export interface StripePayableOrder {
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
-const QR_PAYMENT_CHANNELS = new Set(["qr", "pickup", "table", "lobby", "parking"]);
+const QR_PAYMENT_CHANNELS = new Set(["qr", "pickup", "table", "lobby", "parking", "agent"]);
 
 export function canCreateStripePaymentForOrder(order: StripePayableOrder): Result<true> {
   if (order.payment_status === "paid") return { ok: false, error: "Order is already paid." };
@@ -33,7 +33,7 @@ export function canCreateStripePaymentForOrder(order: StripePayableOrder): Resul
   }
   if (order.total_cents <= 0) return { ok: false, error: "Order total must be greater than zero." };
   if (order.source !== "qr" && !QR_PAYMENT_CHANNELS.has(order.order_channel ?? "")) {
-    return { ok: false, error: "Only QR, pickup, table, lobby, and parking orders can use this payment path." };
+    return { ok: false, error: "Only QR, pickup, table, lobby, parking, and agent orders can use this payment path." };
   }
   if (!order.items.length) return { ok: false, error: "Order has no items." };
   return { ok: true, value: true };

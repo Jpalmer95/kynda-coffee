@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email/send";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
@@ -126,6 +127,41 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   const metadata = session.metadata ?? {};
+
+  // ── Gift card purchase: activate on confirmed payment ──
+  // Cards are created pending_payment; only a completed checkout makes them
+  // spendable. The recipient gets their code by email on activation.
+  if (metadata.gift_card_id) {
+    try {
+      const db = supabaseAdmin();
+      const { data: card } = await db
+        .from("gift_cards")
+        .update({ status: "active", purchaser_email: email })
+        .eq("id", metadata.gift_card_id)
+        .in("status", ["pending_payment", "active"]) // idempotent
+        .select("code, amount_cents, recipient_email, message")
+        .maybeSingle();
+      if (card) {
+        console.log(`[Stripe Webhook] Activated gift card ${card.code}`);
+        const to = card.recipient_email || email;
+        sendEmail({
+          to,
+          subject: `You've received a $${(card.amount_cents / 100).toFixed(0)} Kynda Coffee gift card!`,
+          html: `
+            <div style="font-family:Georgia,serif;color:#2b2b2b">
+              <h2 style="color:#b5572f">Kynda Coffee Gift Card</h2>
+              <p>Value: <strong>$${(card.amount_cents / 100).toFixed(2)}</strong></p>
+              <p style="font-size:24px;letter-spacing:3px"><strong>${card.code}</strong></p>
+              ${card.message ? `<p style="white-space:pre-wrap;border-left:3px solid #e7ddcd;padding-left:12px">${String(card.message).replace(/</g, "&lt;")}</p>` : ""}
+              <p>Redeem at checkout on kyndacoffee.com or in store.</p>
+            </div>`,
+        }).catch((e) => console.error("[Stripe Webhook] Gift card email failed:", e));
+      }
+    } catch (gcErr) {
+      console.error("[Stripe Webhook] Gift card activation failed:", gcErr);
+    }
+  }
+
   const subtotalCents = parseInt(metadata.subtotal_cents ?? "0", 10);
   const loyaltyPointsRedeemed = parseInt(metadata.loyalty_points_redeemed ?? "0", 10);
   const loyaltyValueCents = parseInt(metadata.loyalty_value_cents ?? "0", 10);

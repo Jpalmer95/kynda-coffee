@@ -9,7 +9,11 @@ const ASSIGNABLE: RoleTier[] = ["customer", "staff", "manager", "owner"];
 
 /**
  * GET /api/admin/team — list team members + recent customers (manager+).
- * PATCH /api/admin/team — change a user's role.
+ * POST /api/admin/team — invite a brand-new user by email with a role.
+ *   - Creates the auth user (Supabase invite email) + profile row with the
+ *     tier pre-set, so accounts that have never signed up can be added.
+ *   - manager can invite `staff` only; owner can invite any tier.
+ * PATCH /api/admin/team — change an existing user's role.
  *   - manager can grant/revoke `staff` only
  *   - owner can grant/revoke any tier (incl. manager/owner)
  *   - nobody can demote themselves (lockout guard)
@@ -53,6 +57,87 @@ export async function GET(req: NextRequest) {
   }));
 
   return NextResponse.json({ members, viewer_role: team.role });
+}
+
+/** POST — invite a new user by email with a starting role. */
+export async function POST(req: NextRequest) {
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const body = await req.json();
+    const email = String(body.email ?? "").trim().toLowerCase();
+    const role = (body.role ?? "staff") as RoleTier;
+    const fullName = typeof body.full_name === "string" ? body.full_name.trim() : "";
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
+    }
+    if (!ASSIGNABLE.includes(role)) {
+      return NextResponse.json({ error: "Invalid role." }, { status: 400 });
+    }
+    if (team.role !== "owner" && hasTier(role, "manager")) {
+      return NextResponse.json(
+        { error: "Only an owner can invite Team Leads or Owners." },
+        { status: 403 }
+      );
+    }
+
+    const admin = supabaseAdmin();
+
+    // Already have a profile? Point them at the role dropdown instead.
+    const { data: existing } = await admin
+      .from("profiles")
+      .select("id, role")
+      .eq("email", email)
+      .maybeSingle();
+    if (existing) {
+      return NextResponse.json(
+        { error: "That user already exists — search for them above and change their role instead." },
+        { status: 409 }
+      );
+    }
+
+    // Create the auth user + send a Supabase invite email (sets up their login).
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://kyndacoffee.com";
+    const { data: invited, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${appUrl}/auth/callback?next=/account`,
+      data: fullName ? { full_name: fullName } : undefined,
+    });
+
+    if (inviteErr || !invited?.user) {
+      console.error("Team invite error", inviteErr);
+      return NextResponse.json(
+        { error: `Could not invite: ${inviteErr?.message ?? "unknown error"}` },
+        { status: 500 }
+      );
+    }
+
+    // The on_auth_user_created trigger creates the profile row; upsert to set
+    // the role + name regardless of trigger timing.
+    const { error: profileErr } = await admin.from("profiles").upsert(
+      {
+        id: invited.user.id,
+        email,
+        full_name: fullName || null,
+        role,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+    if (profileErr) {
+      console.error("Team invite profile error", profileErr);
+      return NextResponse.json(
+        { error: "Invite sent, but setting the role failed — set it manually below." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ ok: true, user_id: invited.user.id, email, role });
+  } catch {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {

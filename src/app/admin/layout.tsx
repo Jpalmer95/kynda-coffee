@@ -22,17 +22,27 @@ import {
   BotMessageSquare,
   ImageIcon,
   Briefcase,
+  Inbox,
+  CalendarDays,
+  Boxes,
+  Building2,
+  Map as MapIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ADMIN_LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/catalog", label: "POS Catalog", icon: ListChecks },
+  { href: "/admin/inbox", label: "Inbox", icon: Inbox },
   { href: "/admin/kds", label: "KDS", icon: MonitorCheck },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/schedule", label: "Schedule", icon: CalendarDays },
+  { href: "/admin/inventory", label: "Inventory", icon: Boxes },
+  { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/catalog", label: "POS Catalog", icon: ListChecks },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/team", label: "Team & Access", icon: Users },
+  { href: "/admin/careers", label: "Careers", icon: Briefcase },
+  { href: "/admin/b2b", label: "B2B / Wholesale", icon: Building2 },
   { href: "/admin/promo-codes", label: "Promo Codes", icon: Tag },
   { href: "/admin/gift-cards", label: "Gift Cards", icon: Gift },
   { href: "/admin/pricing", label: "Pricing Rules", icon: Tag },
@@ -47,7 +57,7 @@ const ADMIN_LINKS = [
   { href: "/admin/square", label: "Square", icon: CreditCard },
   { href: "/admin/image-sync", label: "Image Sync", icon: ImageIcon },
   { href: "/admin/qr-tables", label: "QR Tables", icon: QrCode },
-  { href: "/admin/careers", label: "Careers", icon: Briefcase },
+  { href: "/admin/sitemap", label: "Site Map", icon: MapIcon },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

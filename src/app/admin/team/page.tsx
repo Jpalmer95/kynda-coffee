@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Loader2, Search, Shield, Users } from "lucide-react";
+import { ArrowLeft, Loader2, Search, Shield, UserPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { TIER_LABELS, type RoleTier } from "@/lib/auth/roles";
 
@@ -41,6 +41,13 @@ export default function AdminTeamPage() {
   const [searched, setSearched] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Invite-new-member form state
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteRole, setInviteRole] = useState<RoleTier>("staff");
+  const [inviting, setInviting] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState<string | null>(null);
 
   const load = useCallback(async (q: string) => {
     setLoading(true);
@@ -86,6 +93,30 @@ export default function AdminTeamPage() {
   const assignable: RoleTier[] =
     viewerRole === "owner" ? ["customer", "staff", "manager", "owner"] : ["customer", "staff"];
 
+  async function inviteMember(e: React.FormEvent) {
+    e.preventDefault();
+    setInviting(true);
+    setInviteMsg(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/team", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: inviteEmail, full_name: inviteName, role: inviteRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to invite");
+      setInviteMsg(`Invite sent to ${data.email} as ${TIER_LABELS[inviteRole]}. They'll get an email to set up their login.`);
+      setInviteEmail("");
+      setInviteName("");
+      await load(searched);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to invite");
+    } finally {
+      setInviting(false);
+    }
+  }
+
   return (
     <div className="p-4 md:p-8">
       <div className="mx-auto max-w-5xl">
@@ -104,6 +135,56 @@ export default function AdminTeamPage() {
             </p>
           </div>
         </div>
+
+        {/* Invite a brand-new member by email */}
+        <form onSubmit={inviteMember} className="mb-6 rounded-2xl border border-latte/20 bg-card p-4">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-espresso">
+            <UserPlus className="h-4 w-4 text-forest" /> Invite a new team member
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="email"
+              required
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="email@example.com"
+              className="flex-1 rounded-xl border border-latte/30 bg-background px-3 py-2.5 text-sm text-espresso placeholder:text-mocha/60 focus:border-forest focus:outline-none"
+            />
+            <input
+              type="text"
+              value={inviteName}
+              onChange={(e) => setInviteName(e.target.value)}
+              placeholder="Full name (optional)"
+              className="flex-1 rounded-xl border border-latte/30 bg-background px-3 py-2.5 text-sm text-espresso placeholder:text-mocha/60 focus:border-forest focus:outline-none"
+            />
+            <select
+              value={inviteRole}
+              onChange={(e) => setInviteRole(e.target.value as RoleTier)}
+              className="rounded-xl border border-latte/30 bg-background px-3 py-2.5 text-sm text-espresso"
+            >
+              {assignable
+                .filter((t) => t !== "customer")
+                .map((tier) => (
+                  <option key={tier} value={tier}>
+                    {TIER_LABELS[tier]}
+                  </option>
+                ))}
+            </select>
+            <button
+              type="submit"
+              disabled={inviting || !inviteEmail.trim()}
+              className="rounded-xl bg-forest px-5 py-2.5 text-sm font-medium text-sand disabled:opacity-50"
+            >
+              {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Invite"}
+            </button>
+          </div>
+          {inviteMsg && (
+            <p className="mt-2 text-xs text-forest">{inviteMsg}</p>
+          )}
+          <p className="mt-2 text-xs text-mocha">
+            They&apos;ll receive an email to set up their account, already holding the role you pick. Existing users: search below and change their role instead.
+          </p>
+        </form>
 
         {/* Search (find a customer to promote to staff) */}
         <form

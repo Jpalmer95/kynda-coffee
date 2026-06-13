@@ -30,7 +30,13 @@ export async function POST(req: NextRequest) {
     }
 
     const code = generateCode();
+    const siteUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "https://kyndacoffee.com";
 
+    // Created as pending_payment; the Stripe webhook flips it to active when
+    // checkout completes, so an abandoned checkout never yields a spendable card.
     const { data: giftCard, error } = await supabaseAdmin()
       .from("gift_cards")
       .insert({
@@ -39,7 +45,7 @@ export async function POST(req: NextRequest) {
         balance_cents: amount_cents,
         recipient_email,
         message,
-        status: "active",
+        status: "pending_payment",
       })
       .select()
       .single();
@@ -65,8 +71,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/gift-cards/success?code=${code}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/gift-cards?canceled=true`,
+      success_url: `${siteUrl}/gift-cards/success?code=${code}`,
+      cancel_url: `${siteUrl}/gift-cards?canceled=true`,
       metadata: {
         gift_card_id: giftCard.id,
         code,
