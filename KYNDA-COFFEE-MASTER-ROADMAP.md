@@ -28,6 +28,11 @@
 ### ✅ Completed
 
 **Ops & Forms Hardening (2026-06-12)**
+- [x] Admin Site Map (`/admin/sitemap`) — master legend of every route incl. previously hidden pages; sidebar now surfaces Inbox, Schedule, Inventory, B2B
+- [x] Team & Access: invite new members by email (Supabase invite + pre-set role)
+- [x] Admin order details rebuilt: fixes $NaN items (POS/QR/agent item shape), shows modifiers, customer phone/vehicle/table, payment + channel badges
+- [x] Gift cards fixed: prod 500 (missing site URL env) + payment integrity — cards born `pending_payment`, activated by Stripe webhook (migration 035), recipient emailed the code
+- [x] Agent ordering verified END-TO-END live: agent.json → menu → place order → Stripe pay link (fixed: pay endpoint now accepts `agent` channel); shipped-beans flow also verified (products → checkout → live Stripe URL)
 - [x] Device-auth tablet sign-in (`/device-login`) — owner-approved 6-digit code (SMS via OWNER_PHONE, email fallback) mints persistent Supabase session on shared KDS tablets; whitelist = staff+ profiles or ADMIN_EMAILS
 - [x] KDS Today/All-Days date scope toggle (shop-local midnight, America/Chicago) + server-side `?scope=` filter
 - [x] Fixed prod 500s on contact / careers apply / catering forms (migration 034: tables existed only in repo, never applied; careers RLS referenced nonexistent `profiles.user_id`)
