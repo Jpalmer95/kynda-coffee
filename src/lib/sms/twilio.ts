@@ -17,17 +17,20 @@ export async function sendSms({
 }) {
   const cfg = getClient();
   if (!cfg) {
-    console.warn("Twilio not configured — skipping SMS");
-    return;
+    console.warn("[sms] Twilio not configured — skipping SMS");
+    return { ok: false as const, reason: "not-configured" };
   }
   try {
-    await cfg.client.messages.create({
+    const msg = await cfg.client.messages.create({
       from: cfg.from,
       to,
       body,
     });
-  } catch (err) {
-    console.error("Failed to send SMS:", err);
+    console.log(`[sms] Twilio sent sid=${msg.sid} to=${to}`);
+    return { ok: true as const, sid: msg.sid };
+  } catch (err: any) {
+    console.error("[sms] Twilio send failed:", err?.message || err);
+    return { ok: false as const, reason: "twilio-error", error: err };
   }
 }
 

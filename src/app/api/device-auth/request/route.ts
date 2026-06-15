@@ -105,9 +105,14 @@ export async function POST(req: NextRequest) {
 
     let channel: "sms" | "email" | "none" = "none";
     if (ownerPhone) {
-      await sendSms({ to: ownerPhone, body: text });
-      channel = "sms";
+      const smsResult = await sendSms({ to: ownerPhone, body: text });
+      if (smsResult.ok) {
+        channel = "sms";
+      } else {
+        console.warn(`[device-auth] SMS failed (${smsResult.reason}), trying email fallback`);
+      }
     }
+
     if (channel === "none") {
       const inbox = ownerInbox();
       if (inbox.length) {
