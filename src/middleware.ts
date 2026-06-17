@@ -33,6 +33,13 @@ export async function middleware(request: NextRequest) {
   const minTier = pathname.startsWith("/api/") ? null : minTierForPath(pathname);
   if (minTier) {
     if (!user) {
+      // KDS/staff tablets → device sign-in (owner-approved 6-digit code,
+      // no email inbox needed on the tablet itself).
+      if (pathname.startsWith("/kds")) {
+        const deviceUrl = new URL("/device-login", request.url);
+        deviceUrl.searchParams.set("next", pathname);
+        return NextResponse.redirect(deviceUrl);
+      }
       const redirectUrl = new URL("/account", request.url);
       redirectUrl.searchParams.set("redirectTo", pathname);
       return NextResponse.redirect(redirectUrl);

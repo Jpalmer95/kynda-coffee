@@ -99,30 +99,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Could not start device sign-in." }, { status: 500 });
     }
 
-    // ── Notify the owner with the approval code ──
-    const ownerPhone = process.env.OWNER_PHONE?.trim();
+    // ── Deliver the approval code ──
+    // Email is the PRIMARY channel (always works once Resend is configured).
+    // SMS via Twilio is a bonus secondary notification when OWNER_PHONE is set.
+    // The code goes to the OWNER inbox(es) AND the requested team email, so the
+    // owner can read it from either inbox and relay it to staff on the tablet.
     const text = `Kynda device sign-in: "${deviceName}" wants to sign in as ${email}. Approval code: ${approvalCode} (expires in 10 min). Enter it on the device to approve.`;
 
-    let channel: "sms" | "email" | "none" = "none";
+    const emailRecipients = [...new Set([...ownerInbox(), email])];
+    let channel: "sms" | "email" | "both" | "none" = "none";
+
+    // 1) Email — always try first
+    if (emailRecipients.length) {
+      const emailResult = await sendEmail({
+        to: emailRecipients,
+        subject: `Device sign-in approval code: ${approvalCode}`,
+        html: `<div style="font-family:Georgia,serif;color:#2b2b2b;max-width:480px;margin:0 auto">
+          <h2 style="color:#b5572f">Device sign-in request</h2>
+          <p><strong>${deviceName}</strong> wants to sign in as <strong>${email}</strong>.</p>
+          <p style="font-size:28px;letter-spacing:6px"><strong>${approvalCode}</strong></p>
+          <p>Enter this code on the device within 10 minutes to approve it.</p>
+          <p style="color:#888;font-size:13px">If you didn't expect this request, you can safely ignore this email.</p>
+        </div>`,
+      });
+      if (emailResult.success !== false) {
+        channel = "email";
+      } else {
+        console.warn(`[device-auth] email delivery failed: ${emailResult.error}`);
+      }
+    }
+
+    // 2) SMS — secondary notification (Twilio A2P may still be processing)
+    const ownerPhone = process.env.OWNER_PHONE?.trim();
     if (ownerPhone) {
       const smsResult = await sendSms({ to: ownerPhone, body: text });
       if (smsResult.ok) {
-        channel = "sms";
+        channel = channel === "email" ? "both" : "sms";
       } else {
-        console.warn(`[device-auth] SMS failed (${smsResult.reason}), trying email fallback`);
+        console.warn(`[device-auth] SMS failed (${smsResult.reason}) — email was the primary channel`);
       }
     }
 
     if (channel === "none") {
-      const inbox = ownerInbox();
-      if (inbox.length) {
-        await sendEmail({
-          to: inbox,
-          subject: `Device sign-in approval code: ${approvalCode}`,
-          html: `<div style="font-family:Georgia,serif;color:#2b2b2b"><h2 style="color:#b5572f">Device sign-in request</h2><p><strong>${deviceName}</strong> wants to sign in as <strong>${email}</strong>.</p><p style="font-size:28px;letter-spacing:6px"><strong>${approvalCode}</strong></p><p>Enter this code on the device within 10 minutes to approve it. If you didn't expect this, ignore it.</p></div>`,
-        });
-        channel = "email";
-      }
+      return NextResponse.json(
+        { error: "Could not deliver the approval code. Make sure email (Resend) or SMS (Twilio) is configured." },
+        { status: 503 }
+      );
     }
 
     return NextResponse.json({
@@ -130,6 +152,7 @@ export async function POST(req: NextRequest) {
       device_secret: deviceSecret,
       expires_at: expiresAt,
       notified_via: channel,
+      notified_inboxes: emailRecipients,
     });
   } catch (err) {
     console.error("[device-auth] request error:", err);

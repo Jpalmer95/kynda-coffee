@@ -5,9 +5,10 @@
 // Flow:
 //  1. Tablet enters the shared team email (e.g. kyndacoffee@gmail.com) + a
 //     device name, taps "Request approval".
-//  2. The OWNER receives a 6-digit code by text/email.
-//  3. Owner reads the code to staff (or types it on the tablet) — entering it
-//     here approves the device and mints a normal persistent Supabase session.
+//  2. A 6-digit code is sent by EMAIL to the owner (jpkorstad@gmail.com) and
+//     the team inbox (kyndacoffee@gmail.com). SMS is a bonus if Twilio is up.
+//  3. Owner reads the code and relays it to staff — entering it here approves
+//     the device and mints a normal persistent Supabase session.
 // No email inbox is ever needed on the tablet.
 
 import { useState } from "react";
@@ -28,6 +29,7 @@ function DeviceLoginInner() {
   const [requestId, setRequestId] = useState("");
   const [deviceSecret, setDeviceSecret] = useState("");
   const [notifiedVia, setNotifiedVia] = useState<string>("");
+  const [notifiedInboxes, setNotifiedInboxes] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +48,7 @@ function DeviceLoginInner() {
       setRequestId(data.request_id);
       setDeviceSecret(data.device_secret);
       setNotifiedVia(data.notified_via);
+      setNotifiedInboxes(data.notified_inboxes ?? []);
       setStep("code");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -148,9 +151,12 @@ function DeviceLoginInner() {
             <form onSubmit={verifyCode} className="space-y-4">
               <div className="rounded-lg bg-sage/10 p-3 text-sm text-espresso">
                 <ShieldCheck className="mr-1.5 inline h-4 w-4 text-sage" aria-hidden="true" />
-                Approval code sent to the owner
-                {notifiedVia === "sms" ? " by text" : notifiedVia === "email" ? " by email" : ""}.
-                Enter it below within 10 minutes.
+                Approval code sent
+                {notifiedVia === "sms" ? " by text" : notifiedVia === "email" ? " by email" : notifiedVia === "both" ? " by email & text" : ""}.
+                {notifiedInboxes.length > 0 && (
+                  <> Check <strong>{notifiedInboxes.join(" or ")}</strong> for the code.</>
+                )}{" "}
+                Enter the 6-digit code below within 10 minutes.
               </div>
               <div>
                 <label htmlFor="approval-code" className="mb-1 block text-sm font-medium text-espresso">
