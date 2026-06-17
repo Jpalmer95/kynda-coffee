@@ -142,7 +142,7 @@ function DeviceLoginInner() {
                   </>
                 ) : (
                   <>
-                    <Send className="mr-2 h-4 w-4" /> Request Owner Approval
+                    <Send className="mr-2 h-4 w-4" /> Request Login Code
                   </>
                 )}
               </button>
