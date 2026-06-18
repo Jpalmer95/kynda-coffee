@@ -318,9 +318,13 @@ export function paymentChip(order: KdsOrderLike & {
   return { label: "PAY AT REGISTER", className: "bg-amber-500 text-black", collect: true };
 }
 
-/** "2:41 PM" — when the order was placed, for the card header. */
+/** "Jun 17 · 2:41 PM" — date + time the order was placed, for the card header.
+ *  Always includes the date so staff can distinguish stale tickets when viewing
+ *  "All Days". */
 export function placedAtLabel(createdAt: string): string {
   const d = new Date(createdAt);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const datePart = d.toLocaleDateString([], { month: "short", day: "numeric" });
+  const timePart = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return `${datePart} · ${timePart}`;
 }

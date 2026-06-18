@@ -52,6 +52,7 @@ import {
   kdsStatusLabel,
   normalizeKdsItems,
   sourceBadge,
+  deliveryPlatformBadge,
   paymentChip,
   placedAtLabel,
 } from "@/lib/orders/kds-board";
@@ -475,6 +476,18 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                   {tag.mode === "parking" && tag.detail && (
                     <div className="mb-3 flex items-center gap-2 rounded-xl bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900">
                       <Car className="h-4 w-4 shrink-0" /> {tag.detail}
+                    </div>
+                  )}
+
+                  {/* Delivery partner callout — show which courier to match */}
+                  {tag.mode === "delivery" && (
+                    <div className="mb-3 flex items-center gap-2 rounded-xl bg-emerald-100 px-3 py-2 text-sm font-semibold text-emerald-900">
+                      <Car className="h-4 w-4 shrink-0" />
+                      {(() => {
+                        const dp = deliveryPlatformBadge(order);
+                        return dp ? dp.label : "Delivery";
+                      })()}
+                      {tag.detail ? ` · ${tag.detail}` : ""}
                     </div>
                   )}
 
