@@ -71,3 +71,31 @@ Audit session: comprehensive admin page review
 ### LOW priority — missing UI feature
 - **Staff schedule:** No UI to cancel a pending schedule request, even though PATCH /api/staff/schedule-requests supports `status: "cancelled"` for the request owner.
 - **Effort:** Quick fix — add Cancel button next to pending requests
+
+## Pending Issues (From Audit — Admin Pages Part 1)
+
+### RESOLVED — Gift Cards page was fake [FIXED]
+- **Issue:** Used hardcoded local state array, never called the real API
+- **Fix:** Rewrote page to use GET/POST/PATCH /api/admin/gift-cards, added POST endpoint
+- **Commit:** 6944355
+
+### RESOLVED — Mass auth migration (35 routes) [FIXED]
+- **Issue:** 35 admin API routes used legacy `getAdminUser` (email allowlist only) instead of `requireTier` — blocked non-allowlisted managers/owners
+- **Fix:** Migrated ALL 35 routes to `requireTier(req, "manager")` from lib/auth/team
+- **Commit:** 6944355
+
+### RESOLVED — Products delete button disabled [FIXED]
+- **Issue:** Delete button had `disabled` attribute with no handler, even though API supported deletion
+- **Fix:** Wired up with confirm dialog + error handling
+- **Commit:** 6944355
+
+### RESOLVED — Square sync disconnected icon green [FIXED]
+- **Issue:** "Not connected" status used text-forest (green) instead of red — confusing
+- **Fix:** Changed to text-red-500
+- **Commit:** 6944355
+
+### MEDIUM priority — still pending
+- **Admin settings integrations:** Calls `/api/admin/integrations` which now exists (was migrated to requireTier) but may return empty/stub data — needs verification that it actually checks env vars for integration status
+- **Admin analytics revenue:** `totalRevenue` may sum all orders instead of last 30 days — needs query audit
+- **Admin inventory:** Read-only table with no inline editing for thresholds/stock counts — needs PATCH handlers + inline UI
+- **Admin promo-codes:** Delete/toggle failures silently swallowed — needs error toast branches
