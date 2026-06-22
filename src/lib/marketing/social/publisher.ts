@@ -118,6 +118,21 @@ export async function publishDuePosts(): Promise<{
 
   for (const row of duePostRows) {
     const post = row as unknown as SocialPost;
+    const client = clients[post.platform];
+
+    // If the platform client isn't configured, skip it — leave it scheduled
+    // so the owner can manually post the content (or set up the API creds).
+    // This prevents unconfigured-platform posts from being marked as "failed".
+    if (!client || !client.isConfigured()) {
+      results.push({
+        post_id: post.id,
+        platform: post.platform,
+        success: false,
+        error: "Platform not configured — skipped (ready for manual posting)",
+      });
+      continue;
+    }
+
     const result = await publishPost(post);
 
     const updateData: Record<string, unknown> = {

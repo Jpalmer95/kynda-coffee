@@ -18,6 +18,7 @@ import {
   Sparkles,
   Calendar,
   Image as ImageIcon,
+  Copy,
 } from "lucide-react";
 
 type Status =
@@ -115,6 +116,13 @@ export default function ApprovalsPage() {
     }
   }
 
+  function copyPostText(text: string, platform: string) {
+    navigator.clipboard.writeText(text);
+    // Brief visual feedback via busy state
+    setBusy(`copy-${platform}-${text.slice(0, 10)}`);
+    setTimeout(() => setBusy(null), 1000);
+  }
+
   const pendingCount = posts.filter((p) => p.status === "pending_approval").length;
 
   return (
@@ -198,7 +206,7 @@ export default function ApprovalsPage() {
                 )}
 
                 {isPending && (
-                  <div className="mt-4 flex gap-3">
+                  <div className="mt-4 flex flex-wrap gap-3">
                     <button
                       onClick={() => act(p.id, "approve")}
                       disabled={busy === p.id}
@@ -213,6 +221,25 @@ export default function ApprovalsPage() {
                       className="btn-secondary text-sm text-red-600 disabled:opacity-60"
                     >
                       <XCircle className="mr-1.5 inline h-4 w-4" /> Reject
+                    </button>
+                    <button
+                      onClick={() => copyPostText(p.text, p.platform)}
+                      className="btn-secondary text-sm disabled:opacity-60"
+                      title="Copy caption for manual posting"
+                    >
+                      <Copy className="mr-1.5 inline h-4 w-4" /> Copy Text
+                    </button>
+                  </div>
+                )}
+
+                {!isPending && (
+                  <div className="mt-4 flex gap-3">
+                    <button
+                      onClick={() => copyPostText(p.text, p.platform)}
+                      className="btn-secondary text-sm"
+                      title="Copy caption for manual posting"
+                    >
+                      <Copy className="mr-1.5 inline h-4 w-4" /> Copy Text
                     </button>
                   </div>
                 )}
