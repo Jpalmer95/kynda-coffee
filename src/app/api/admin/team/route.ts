@@ -14,9 +14,8 @@ const ASSIGNABLE: RoleTier[] = ["customer", "staff", "manager", "owner"];
  *     tier pre-set, so accounts that have never signed up can be added.
  *   - manager can invite `staff` only; owner can invite any tier.
  * PATCH /api/admin/team — change an existing user's role.
- *   - manager can grant/revoke `staff` only
- *   - owner can grant/revoke any tier (incl. manager/owner)
- *   - nobody can demote themselves (lockout guard)
+ *   - Only owners can change roles (any tier).
+ *   - You can promote yourself but never demote yourself (lockout guard).
  */
 export async function GET(req: NextRequest) {
   const team = await requireTier(req, "manager");
@@ -61,8 +60,8 @@ export async function GET(req: NextRequest) {
 
 /** POST — invite a new user by email with a starting role. */
 export async function POST(req: NextRequest) {
-  const team = await requireTier(req, "manager");
-  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "owner");
+  if (!team) return NextResponse.json({ error: "Unauthorized — owner only." }, { status: 401 });
 
   try {
     const body = await req.json();
@@ -75,12 +74,6 @@ export async function POST(req: NextRequest) {
     }
     if (!ASSIGNABLE.includes(role)) {
       return NextResponse.json({ error: "Invalid role." }, { status: 400 });
-    }
-    if (team.role !== "owner" && hasTier(role, "manager")) {
-      return NextResponse.json(
-        { error: "Only an owner can invite Team Leads or Owners." },
-        { status: 403 }
-      );
     }
 
     const admin = supabaseAdmin();
@@ -140,9 +133,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/** PATCH — change an existing user's role. Owner only. */
 export async function PATCH(req: NextRequest) {
-  const team = await requireTier(req, "manager");
-  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "owner");
+  if (!team) return NextResponse.json({ error: "Unauthorized — owner only." }, { status: 401 });
 
   try {
     const body = await req.json();
@@ -153,11 +147,6 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "user_id and a valid role are required." }, { status: 400 });
     }
 
-    // Lockout guard: never let someone change their own tier.
-    if (userId === team.user.id) {
-      return NextResponse.json({ error: "You can't change your own role." }, { status: 400 });
-    }
-
     const { data: target, error: fetchErr } = await supabaseAdmin()
       .from("profiles")
       .select("id, role")
@@ -166,17 +155,13 @@ export async function PATCH(req: NextRequest) {
     if (fetchErr || !target) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
-    const targetRole = normalizeRole(target.role as string);
 
-    if (team.role !== "owner") {
-      // Managers can only move people between customer ↔ staff.
-      const touchingElevated = hasTier(targetRole, "manager") || hasTier(nextRole, "manager");
-      if (touchingElevated) {
-        return NextResponse.json(
-          { error: "Only an owner can assign or change Team Lead / Owner roles." },
-          { status: 403 }
-        );
-      }
+    // Lockout guard: never let someone demote themselves.
+    if (userId === team.user.id && !hasTier(nextRole, "owner")) {
+      return NextResponse.json(
+        { error: "You can't demote yourself from owner." },
+        { status: 400 }
+      );
     }
 
     const { error: updateErr } = await supabaseAdmin()

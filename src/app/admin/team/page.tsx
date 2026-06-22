@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * /admin/team — Team & Access management (owner + team leads).
+ * /admin/team — Team & Access management.
  *
  * Three access tiers per the owner's org design (2026-06-10):
  *   Owner      → everything incl. business metrics, accounting, settings
  *   Team Lead  → day-to-day ops: scheduling, inventory pars, events, KDS
  *   Staff      → KDS, schedule, waste log, recipes, training, handbook
  *
- * Managers can promote customers to Staff; only Owners can assign
- * Team Lead / Owner. Self-demotion is blocked server-side.
+ * Managers can view the roster; only owners can change roles or invite
+ * team members. Self-demotion is blocked server-side (lockout guard).
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -91,7 +91,7 @@ export default function AdminTeamPage() {
   }
 
   const assignable: RoleTier[] =
-    viewerRole === "owner" ? ["customer", "staff", "manager", "owner"] : ["customer", "staff"];
+    viewerRole === "owner" ? ["customer", "staff", "manager", "owner"] : [];
 
   async function inviteMember(e: React.FormEvent) {
     e.preventDefault();
@@ -137,6 +137,7 @@ export default function AdminTeamPage() {
         </div>
 
         {/* Invite a brand-new member by email */}
+        {viewerRole === "owner" && (
         <form onSubmit={inviteMember} className="mb-6 rounded-2xl border border-latte/20 bg-card p-4">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-espresso">
             <UserPlus className="h-4 w-4 text-forest" /> Invite a new team member
@@ -185,6 +186,7 @@ export default function AdminTeamPage() {
             They&apos;ll receive an email to set up their account, already holding the role you pick. Existing users: search below and change their role instead.
           </p>
         </form>
+        )}
 
         {/* Search (find a customer to promote to staff) */}
         <form
@@ -248,10 +250,7 @@ export default function AdminTeamPage() {
                         <select
                           value={m.role}
                           onChange={(e) => changeRole(m.id, e.target.value as RoleTier)}
-                          disabled={
-                            updatingId === m.id ||
-                            (viewerRole !== "owner" && (m.role === "owner" || m.role === "manager"))
-                          }
+                          disabled={updatingId === m.id || viewerRole !== "owner"}
                           className="rounded-lg border border-latte/30 bg-background px-3 py-1.5 text-sm text-espresso disabled:opacity-50"
                         >
                           {/* Always render the current tier so the select shows truth even when not assignable by viewer */}
@@ -272,7 +271,7 @@ export default function AdminTeamPage() {
         )}
 
         <p className="mt-4 text-xs text-mocha">
-          Team Leads can add/remove Staff. Only Owners can assign Team Lead or Owner. You cannot change your own role.
+          Only Owners can change roles or invite team members. You can promote yourself but never demote yourself.
         </p>
       </div>
     </div>
