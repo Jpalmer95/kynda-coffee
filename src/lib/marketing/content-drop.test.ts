@@ -90,9 +90,9 @@ describe("buildDraftsFromDrop", () => {
     notes: "Fall seasonal, real Vermont maple.",
   };
 
-  it("defaults to all four platforms, all pending_approval + content_drop", async () => {
+  it("defaults to all five platforms, all pending_approval + content_drop", async () => {
     const drafts = await buildDraftsFromDrop(base);
-    expect(drafts.length).toBe(4);
+    expect(drafts.length).toBe(5);
     for (const d of drafts) {
       expect(d.status).toBe("pending_approval");
       expect(d.source).toBe("content_drop");

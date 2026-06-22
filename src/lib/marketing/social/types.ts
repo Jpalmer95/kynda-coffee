@@ -1,6 +1,6 @@
 // Type definitions for multi-platform social media posting
 
-export type Platform = "instagram" | "twitter" | "facebook" | "tiktok";
+export type Platform = "instagram" | "twitter" | "facebook" | "tiktok" | "bluesky";
 
 export type SocialPostStatus =
   | "draft"

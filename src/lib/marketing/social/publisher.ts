@@ -5,6 +5,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { TwitterClient } from "./twitter";
 import { FacebookClient } from "./facebook";
 import { InstagramClient } from "./instagram";
+import { BlueskyClient } from "./bluesky";
 import type { PlatformClient, SocialPost, PublishResult, Platform } from "./types";
 
 // ─── Platform client registry ────────────────────────────────────────────────
@@ -12,6 +13,7 @@ const clients: Record<string, PlatformClient> = {
   twitter: new TwitterClient(),
   facebook: new FacebookClient(),
   instagram: new InstagramClient(),
+  bluesky: new BlueskyClient(),
 };
 
 export function getPlatformClient(platform: string): PlatformClient | null {

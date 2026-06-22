@@ -27,6 +27,7 @@ import {
   Boxes,
   Building2,
   Map as MapIcon,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,9 +52,11 @@ const ADMIN_LINKS = [
   { href: "/admin/designs", label: "Designs", icon: Sparkles },
   { href: "/admin/training", label: "Training", icon: GraduationCap },
   { href: "/admin/marketing", label: "Marketing", icon: Share2 },
+  { href: "/admin/marketing/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/marketing/chat", label: "AI Chat", icon: BotMessageSquare },
   { href: "/admin/marketing/images", label: "Images", icon: ImageIcon },
   { href: "/admin/marketing/social", label: "Social", icon: Share2 },
+  { href: "/admin/marketing/validator", label: "X Validator", icon: Zap },
   { href: "/admin/square", label: "Square", icon: CreditCard },
   { href: "/admin/image-sync", label: "Image Sync", icon: ImageIcon },
   { href: "/admin/qr-tables", label: "QR Tables", icon: QrCode },

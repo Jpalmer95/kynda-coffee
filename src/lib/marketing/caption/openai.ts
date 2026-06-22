@@ -18,6 +18,8 @@ function platformBrief(platform: DropPlatform, maxChars: number): string {
   switch (platform) {
     case "twitter":
       return `Platform: X/Twitter. Keep it under ${Math.min(240, maxChars)} characters, punchy, one idea.`;
+    case "bluesky":
+      return `Platform: Bluesky. Conversational, similar to early Twitter. Under ${Math.min(280, maxChars)} chars. No hashtag spam.`;
     case "instagram":
       return `Platform: Instagram. 2-4 short lines, inviting, scannable. Under ${maxChars} chars.`;
     case "facebook":

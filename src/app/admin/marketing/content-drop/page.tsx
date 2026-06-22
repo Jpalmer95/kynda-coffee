@@ -12,6 +12,7 @@ const PLATFORMS = [
   { key: "facebook", label: "Facebook" },
   { key: "twitter", label: "X (Twitter)" },
   { key: "tiktok", label: "TikTok" },
+  { key: "bluesky", label: "Bluesky" },
 ] as const;
 
 export default function ContentDropPage() {

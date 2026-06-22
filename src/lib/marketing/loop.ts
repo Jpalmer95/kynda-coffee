@@ -23,7 +23,7 @@ import type { Special } from "./specials";
 import { isSpecialLive, discountPct } from "./specials";
 
 export type CampaignAngle = "teaser" | "deal" | "feature";
-export type LoopPlatform = "instagram" | "facebook" | "twitter" | "tiktok";
+export type LoopPlatform = "instagram" | "facebook" | "twitter" | "tiktok" | "bluesky";
 
 export interface RecentPostRef {
   special_id: string | null;
@@ -53,7 +53,7 @@ export interface PlannedCampaign {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_PLATFORMS: LoopPlatform[] = ["instagram", "facebook", "twitter", "tiktok"];
+const DEFAULT_PLATFORMS: LoopPlatform[] = ["instagram", "facebook", "twitter", "tiktok", "bluesky"];
 
 function startsWithin(special: Special, nowMs: number, days: number): boolean {
   if (!special.starts_at) return false;

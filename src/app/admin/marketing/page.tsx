@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Send, Loader2, BotMessageSquare, ImageIcon, ArrowRight, ShieldCheck, Sparkles, Mail } from "lucide-react";
+import { Send, Loader2, BotMessageSquare, ImageIcon, ArrowRight, ShieldCheck, Sparkles, Mail, BarChart3, FolderOpen, Zap } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
 export default function MarketingPage() {
@@ -80,6 +80,66 @@ export default function MarketingPage() {
 
       {/* AI Marketing Chat Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-8 max-w-5xl">
+        <Link
+          href="/admin/marketing/dashboard"
+          className="flex items-center gap-4 rounded-xl border border-forest/30 bg-forest/5 p-5 hover:bg-forest/10 transition-colors group"
+        >
+          <div className="h-12 w-12 rounded-xl bg-forest/15 flex items-center justify-center flex-shrink-0">
+            <BarChart3 className="h-6 w-6 text-forest" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
+              Command Center
+              <span className="text-xs font-body font-normal px-2 py-0.5 rounded-full bg-forest/10 text-forest">
+                New
+              </span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Pipeline overview, growth insights, platform status, quick actions.
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-forest opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </Link>
+        <Link
+          href="/admin/marketing/media-drop"
+          className="flex items-center gap-4 rounded-xl border border-forest/30 bg-forest/5 p-5 hover:bg-forest/10 transition-colors group"
+        >
+          <div className="h-12 w-12 rounded-xl bg-forest/15 flex items-center justify-center flex-shrink-0">
+            <FolderOpen className="h-6 w-6 text-forest" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
+              Media Drop
+              <span className="text-xs font-body font-normal px-2 py-0.5 rounded-full bg-forest/10 text-forest">
+                New
+              </span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Upload raw photos and videos — starts the content pipeline.
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-forest opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </Link>
+        <Link
+          href="/admin/marketing/validator"
+          className="flex items-center gap-4 rounded-xl border border-forest/30 bg-forest/5 p-5 hover:bg-forest/10 transition-colors group"
+        >
+          <div className="h-12 w-12 rounded-xl bg-forest/15 flex items-center justify-center flex-shrink-0">
+            <Zap className="h-6 w-6 text-forest" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-heading text-lg font-semibold text-foreground flex items-center gap-2">
+              X Validator
+              <span className="text-xs font-body font-normal px-2 py-0.5 rounded-full bg-forest/10 text-forest">
+                New
+              </span>
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Score posts against the open-source X ranking algorithm.
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-forest opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+        </Link>
         <Link
           href="/admin/marketing/chat"
           className="flex items-center gap-4 rounded-xl border border-forest/30 bg-forest/5 p-5 hover:bg-forest/10 transition-colors group"

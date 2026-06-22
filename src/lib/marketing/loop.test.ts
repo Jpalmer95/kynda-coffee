@@ -31,7 +31,7 @@ describe("planMarketingLoop", () => {
     const plan = planMarketingLoop([mk()], [], {}, NOW);
     expect(plan).toHaveLength(1);
     expect(plan[0].angle).toBe("feature");
-    expect(plan[0].platforms.length).toBe(4);
+    expect(plan[0].platforms.length).toBe(5);
   });
 
   it("classifies a live discounted special as a deal and ranks it first", () => {

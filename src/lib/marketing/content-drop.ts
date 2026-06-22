@@ -15,7 +15,7 @@
  * the existing publisher.createPost() so the approval gate is enforced one place.
  */
 
-export type DropPlatform = "instagram" | "twitter" | "facebook" | "tiktok";
+export type DropPlatform = "instagram" | "twitter" | "facebook" | "tiktok" | "bluesky";
 
 export interface ContentDropInput {
   imageUrl: string;
@@ -46,12 +46,13 @@ export const PLATFORM_COPY_RULES: Record<DropPlatform, PlatformCopyRules> = {
   facebook: { platform: "facebook", maxChars: 2000, maxHashtags: 4, emojiFriendly: true },
   twitter: { platform: "twitter", maxChars: 280, maxHashtags: 3, emojiFriendly: true },
   tiktok: { platform: "tiktok", maxChars: 2200, maxHashtags: 8, emojiFriendly: true },
+  bluesky: { platform: "bluesky", maxChars: 300, maxHashtags: 3, emojiFriendly: true },
 };
 
 /** Always-on brand hashtags (deduped against caller seeds, case-insensitive). */
 export const BRAND_HASHTAGS = ["KyndaCoffee", "HorseshoeBayTX", "SpecialtyCoffee"];
 
-const ALL_PLATFORMS: DropPlatform[] = ["instagram", "facebook", "twitter", "tiktok"];
+const ALL_PLATFORMS: DropPlatform[] = ["instagram", "facebook", "twitter", "tiktok", "bluesky"];
 
 /** Caption function contract — production passes an OpenAI-backed impl. */
 export type CaptionFn = (args: {
@@ -94,7 +95,7 @@ export function fallbackCaption(args: {
   const subject = input.title?.trim() || "Something new at Kynda";
   const note = input.notes?.trim();
 
-  if (platform === "twitter") {
+  if (platform === "twitter" || platform === "bluesky") {
     const base = note ? `${subject} — ${note}` : `${subject}, fresh on the bar.`;
     return base;
   }
