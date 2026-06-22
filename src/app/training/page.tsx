@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, BookOpen, CheckCircle2, ArrowRight } from "lucide-react";
 import { TrainingWrapper } from "./TrainingWrapper";
+import { normalizeRole, isTeamMember } from "@/lib/auth/roles";
 
 export default async function TrainingDashboard() {
   const supabase = await createClient();
@@ -18,7 +19,7 @@ export default async function TrainingDashboard() {
     .eq("id", user.id)
     .single();
 
-  if (!profile || (profile.role !== "admin" && profile.role !== "staff")) {
+  if (!profile || !isTeamMember(normalizeRole(profile.role))) {
     redirect("/");
   }
 

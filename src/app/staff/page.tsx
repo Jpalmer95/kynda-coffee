@@ -68,7 +68,8 @@ export default async function StaffDashboard() {
     const { data: waste } = await supabase
       .from("waste_entries")
       .select("id")
-      .eq("created_at::date", todayISO);
+      .gte("created_at", `${todayISO}T00:00:00`)
+      .lt("created_at", `${todayISO}T23:59:59`);
     wasteEntryCount = waste?.length || 0;
   } catch {
     // waste_entries table may not exist yet
