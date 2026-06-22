@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 
 export const dynamic = "force-dynamic";
 
@@ -8,10 +8,8 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { user } = await getAdminUser(req);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { id } = await params;
@@ -35,10 +33,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { user } = await getAdminUser(req);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { id } = await params;
@@ -80,10 +76,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { user } = await getAdminUser(req);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { id } = await params;

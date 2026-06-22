@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { generateDesign as falGenerate } from "@/lib/fal/client";
 
@@ -18,8 +18,8 @@ export const maxDuration = 150; // AI generation can take a while
  */
 
 async function requireAdmin(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  return user;
+  const team = await requireTier(req, "manager");
+  return team?.user ?? null;
 }
 
 export async function GET(req: NextRequest) {

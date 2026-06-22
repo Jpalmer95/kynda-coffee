@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { toCsv, csvDownloadHeaders, type CsvRow } from "@/lib/export/csv";
 
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
  *   GET /api/admin/export?entity=all&format=json        → complete JSON bundle
  *   GET /api/admin/export                                → lists available entities
  *
- * Admin-only. Uses the service-role client (bypasses RLS) behind getAdminUser.
+ * Admin-only. Uses the service-role client (bypasses RLS) behind requireTier.
  */
 
 // Each exportable entity → its table + the columns to select (null = all).
@@ -49,8 +49,8 @@ async function fetchEntity(name: string): Promise<CsvRow[]> {
 }
 
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const params = new URL(req.url).searchParams;
   const entity = params.get("entity");

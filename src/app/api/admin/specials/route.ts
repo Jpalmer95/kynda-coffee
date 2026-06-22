@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +20,8 @@ function normStr(v: unknown): string | null {
 
 /** GET — list all specials (admin view, includes inactive/scheduled). */
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data, error } = await supabaseAdmin()
     .from("specials")
@@ -35,8 +35,8 @@ export async function GET(req: NextRequest) {
 
 /** POST — create or update a special (upsert when id provided). */
 export async function POST(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await req.json();
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ special: data });
     }
 
-    row.created_by = user.id;
+    row.created_by = team.user.id;
     const { data, error } = await supabaseAdmin()
       .from("specials")
       .insert(row)
@@ -91,8 +91,8 @@ export async function POST(req: NextRequest) {
 
 /** DELETE — remove a special by ?id=. */
 export async function DELETE(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });

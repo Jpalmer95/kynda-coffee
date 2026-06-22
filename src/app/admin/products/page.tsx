@@ -105,6 +105,18 @@ export default function AdminProductsPage() {
     });
   }, [filter, products, searchTerm]);
 
+  async function deleteProduct(id: string, name: string) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Delete failed");
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete product");
+    }
+  }
+
   const squareCount = products.filter((product) => product.source === "square").length;
   const missingImageCount = products.filter((product) => imageCount(product) === 0).length;
 
@@ -246,7 +258,11 @@ export default function AdminProductsPage() {
                           <ExternalLink className="h-4 w-4" />
                         </Link>
                         {product.source !== "square" && (
-                          <button className="rounded-lg p-2 text-mocha hover:bg-bronze/10 hover:text-forest" aria-label="Delete product" disabled>
+                          <button
+                            onClick={() => deleteProduct(product.id, product.name)}
+                            className="rounded-lg p-2 text-mocha hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                            aria-label="Delete product"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         )}

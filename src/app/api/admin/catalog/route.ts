@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { getPosCatalog } from "@/lib/pos/catalog";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search")?.trim().toLowerCase() ?? "";

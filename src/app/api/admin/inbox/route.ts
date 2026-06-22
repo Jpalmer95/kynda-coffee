@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -8,8 +8,8 @@ const VALID_STATUS = ["new", "read", "replied", "archived"];
 
 /** GET — list contact submissions (default newest first); ?status= to filter, ?type= optional. */
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const params = new URL(req.url).searchParams;
   const status = params.get("status");
@@ -83,8 +83,8 @@ export async function GET(req: NextRequest) {
 
 /** POST — { id, status, source_table? } update a submission's triage status. */
 export async function POST(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { id, status, source_table } = await req.json();
@@ -111,8 +111,8 @@ export async function POST(req: NextRequest) {
 
 /** DELETE — remove a submission by ?id= (&table=catering_requests for catering). */
 export async function DELETE(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const params = new URL(req.url).searchParams;
   const id = params.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });

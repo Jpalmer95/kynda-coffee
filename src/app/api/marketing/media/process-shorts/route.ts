@@ -3,15 +3,15 @@
 // Creates platform-specific vertical variants + social_post drafts.
 
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { createShortsJob, processShortsJob, SHORTS_SPECS, type ShortsPlatform } from "@/lib/marketing/video/shorts-pipeline";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 min max for video processing
 
 export async function POST(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await req.json();

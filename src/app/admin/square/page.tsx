@@ -164,8 +164,8 @@ export default function AdminSquarePage() {
             </>
           ) : (
             <>
-              <AlertCircle className="h-5 w-5 text-forest" />
-              <span className="text-sm text-forest">Not connected</span>
+              <AlertCircle className="h-5 w-5 text-red-500" />
+              <span className="text-sm text-red-500">Not connected</span>
             </>
           )}
         </div>

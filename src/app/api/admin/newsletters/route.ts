@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { buildNewsletter } from "@/lib/marketing/newsletter";
 import { sendNewsletter } from "@/lib/marketing/newsletter-sender";
@@ -12,8 +12,8 @@ const SELECT =
 
 /** GET — list newsletters (newest first). */
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data, error } = await getSupabaseAdmin()
     .from("newsletters")
@@ -41,8 +41,8 @@ export async function GET(req: NextRequest) {
  *  - { action: "send", id }              send an approved newsletter now
  */
 export async function POST(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const supabase = getSupabaseAdmin();
   let body: Record<string, unknown>;
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
         if (error) throw error;
         return NextResponse.json({ newsletter: data });
       }
-      row.created_by = user.id;
+      row.created_by = team.user.id;
       row.status = "draft";
       const { data, error } = await supabase.from("newsletters").insert(row).select(SELECT).single();
       if (error) throw error;
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
         .update({
           status: "approved",
           scheduled_at: typeof body.scheduled_at === "string" ? body.scheduled_at : null,
-          approved_by: user.id,
+          approved_by: team.user.id,
           approved_at: new Date().toISOString(),
           rejection_reason: null,
           updated_at: new Date().toISOString(),
@@ -154,8 +154,8 @@ export async function POST(req: NextRequest) {
 
 /** DELETE — remove a newsletter draft by ?id=. */
 export async function DELETE(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
   const { error } = await getSupabaseAdmin().from("newsletters").delete().eq("id", id);

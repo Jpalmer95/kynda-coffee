@@ -1,14 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { getAdminUser } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
-  const { user } = await getAdminUser(req as any);
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET(req: NextRequest) {
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { data: orders, error } = await supabaseAdmin()

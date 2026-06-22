@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { approvePost, rejectPost, listSocialPosts } from "@/lib/marketing/social/publisher";
 
 export const dynamic = "force-dynamic";
@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
  * approval can move a post toward scheduled/approved (publishable).
  */
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const params = new URL(req.url).searchParams;
   const status = params.get("status") ?? "pending_approval";
@@ -32,8 +32,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { action, postId, reason } = await req.json();
@@ -42,13 +42,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "approve") {
-      const result = await approvePost(postId, user.id);
+      const result = await approvePost(postId, team.user.id);
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
       return NextResponse.json({ ok: true, status: result.status });
     }
 
     if (action === "reject") {
-      const result = await rejectPost(postId, user.id, typeof reason === "string" ? reason : undefined);
+      const result = await rejectPost(postId, team.user.id, typeof reason === "string" ? reason : undefined);
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
       return NextResponse.json({ ok: true });
     }

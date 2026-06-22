@@ -1,78 +1,94 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Gift, Plus, Search } from "lucide-react";
+import { ArrowLeft, Gift, Plus, Search, Loader2, Trash2 } from "lucide-react";
 
 type GiftCard = {
   id: string;
   code: string;
-  balance: number;
-  originalAmount: number;
-  status: "Active" | "Redeemed" | "Expired";
-  issuedTo?: string;
-  issuedDate: string;
-  lastUsed?: string;
+  amount_cents: number;
+  balance_cents: number;
+  recipient_email: string | null;
+  message: string | null;
+  status: string;
+  created_at: string;
+  redeemed_at: string | null;
+  expires_at: string | null;
 };
 
-const initialCards: GiftCard[] = [
-  {
-    id: "gc1",
-    code: "KYND-2026-AB12",
-    balance: 48.50,
-    originalAmount: 50,
-    status: "Active",
-    issuedTo: "Priya Patel",
-    issuedDate: "May 8, 2026",
-    lastUsed: "May 10",
-  },
-  {
-    id: "gc2",
-    code: "KYND-2026-CD34",
-    balance: 0,
-    originalAmount: 25,
-    status: "Redeemed",
-    issuedTo: "Marcus Thompson",
-    issuedDate: "April 22, 2026",
-    lastUsed: "May 3",
-  },
-  {
-    id: "gc3",
-    code: "KYND-2026-EF56",
-    balance: 75,
-    originalAmount: 100,
-    status: "Active",
-    issuedTo: "Elena Rodriguez",
-    issuedDate: "May 5, 2026",
-  },
-];
-
 export default function AdminGiftCardsPage() {
-  const [cards, setCards] = useState<GiftCard[]>(initialCards);
+  const [cards, setCards] = useState<GiftCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [newCard, setNewCard] = useState({ amount: 50, issuedTo: "" });
+  const [newCard, setNewCard] = useState({ amount: 50, recipient_email: "" });
+  const [creating, setCreating] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/gift-cards", { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load gift cards");
+      setCards(data.gift_cards ?? []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filteredCards = cards.filter(
     (card) =>
       card.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (card.issuedTo && card.issuedTo.toLowerCase().includes(searchTerm.toLowerCase()))
+      (card.recipient_email && card.recipient_email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  function createGiftCard() {
-    const code = `KYND-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const card: GiftCard = {
-      id: `gc${Date.now()}`,
-      code,
-      balance: newCard.amount,
-      originalAmount: newCard.amount,
-      status: "Active",
-      issuedTo: newCard.issuedTo || undefined,
-      issuedDate: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-    };
-    setCards((prev) => [card, ...prev]);
-    setShowCreate(false);
-    setNewCard({ amount: 50, issuedTo: "" });
+  async function createGiftCard() {
+    setCreating(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/gift-cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: newCard.amount,
+          recipient_email: newCard.recipient_email || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create");
+      setShowCreate(false);
+      setNewCard({ amount: 50, recipient_email: "" });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function toggleStatus(card: GiftCard) {
+    const nextStatus = card.status === "active" ? "cancelled" : "active";
+    try {
+      const res = await fetch("/api/admin/gift-cards", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: card.id, status: nextStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update");
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update");
+    }
   }
 
   return (
@@ -94,6 +110,12 @@ export default function AdminGiftCardsPage() {
           <Plus className="h-4 w-4" /> Issue New Card
         </button>
       </div>
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          {error}
+        </div>
+      )}
 
       {/* Search */}
       <div className="mb-6 relative max-w-md">
@@ -117,33 +139,49 @@ export default function AdminGiftCardsPage() {
               <th className="px-6 py-4 font-medium">Balance</th>
               <th className="px-6 py-4 font-medium">Status</th>
               <th className="px-6 py-4 font-medium">Issued</th>
-              <th className="px-6 py-4 font-medium">Last Used</th>
+              <th className="px-6 py-4 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-latte/10">
-            {filteredCards.length === 0 && (
+            {loading && (
+              <tr>
+                <td colSpan={6} className="px-6 py-12 text-center text-mocha">
+                  <Loader2 className="mx-auto h-5 w-5 animate-spin" />
+                </td>
+              </tr>
+            )}
+            {!loading && filteredCards.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-mocha">No gift cards found.</td>
               </tr>
             )}
-            {filteredCards.map((card) => (
+            {!loading && filteredCards.map((card) => (
               <tr key={card.id} className="hover:bg-latte/5">
                 <td className="px-6 py-4 font-mono text-espresso font-medium">{card.code}</td>
-                <td className="px-6 py-4 text-mocha">{card.issuedTo || "—"}</td>
+                <td className="px-6 py-4 text-mocha">{card.recipient_email || "—"}</td>
                 <td className="px-6 py-4">
-                  <span className="font-semibold text-espresso">${card.balance.toFixed(2)}</span>
-                  <span className="text-xs text-mocha ml-1">/ ${card.originalAmount}</span>
+                  <span className="font-semibold text-espresso">${(card.balance_cents / 100).toFixed(2)}</span>
+                  <span className="text-xs text-mocha ml-1">/ ${(card.amount_cents / 100).toFixed(2)}</span>
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-block px-3 py-0.5 text-xs font-medium rounded-full ${
-                    card.status === "Active" ? "bg-emerald-100 text-emerald-700" :
-                    card.status === "Redeemed" ? "bg-latte/50 text-mocha" : "bg-red-100 text-red-600"
+                    card.status === "active" ? "bg-emerald-100 text-emerald-700" :
+                    card.status === "redeemed" ? "bg-latte/50 text-mocha" : "bg-red-100 text-red-600"
                   }`}>
                     {card.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-xs text-mocha">{card.issuedDate}</td>
-                <td className="px-6 py-4 text-xs text-mocha">{card.lastUsed || "—"}</td>
+                <td className="px-6 py-4 text-xs text-mocha">
+                  {new Date(card.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </td>
+                <td className="px-6 py-4">
+                  <button
+                    onClick={() => toggleStatus(card)}
+                    className="text-xs text-mocha hover:text-espresso underline"
+                  >
+                    {card.status === "active" ? "Cancel" : "Reactivate"}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -152,8 +190,8 @@ export default function AdminGiftCardsPage() {
 
       {/* Create Modal */}
       {showCreate && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-2xl w-full max-w-sm p-6">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setShowCreate(false)}>
+          <div className="bg-card rounded-2xl w-full max-w-sm p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-xl mb-5 flex items-center gap-2">
               <Gift className="h-5 w-5 text-forest" /> Issue New Gift Card
             </h3>
@@ -163,18 +201,19 @@ export default function AdminGiftCardsPage() {
                 <label className="text-sm text-mocha mb-1 block">Amount (USD)</label>
                 <input
                   type="number"
+                  min="1"
                   value={newCard.amount}
                   onChange={(e) => setNewCard({ ...newCard, amount: Number(e.target.value) })}
                   className="input-field w-full"
                 />
               </div>
               <div>
-                <label className="text-sm text-mocha mb-1 block">Issued To (optional)</label>
+                <label className="text-sm text-mocha mb-1 block">Recipient Email (optional)</label>
                 <input
-                  type="text"
-                  placeholder="Customer name or email"
-                  value={newCard.issuedTo}
-                  onChange={(e) => setNewCard({ ...newCard, issuedTo: e.target.value })}
+                  type="email"
+                  placeholder="customer@example.com"
+                  value={newCard.recipient_email}
+                  onChange={(e) => setNewCard({ ...newCard, recipient_email: e.target.value })}
                   className="input-field w-full"
                 />
               </div>
@@ -182,7 +221,13 @@ export default function AdminGiftCardsPage() {
 
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowCreate(false)} className="flex-1 btn btn-secondary">Cancel</button>
-              <button onClick={createGiftCard} className="flex-1 btn-primary">Create Gift Card</button>
+              <button
+                onClick={createGiftCard}
+                disabled={creating}
+                className="flex-1 btn-primary disabled:opacity-50"
+              >
+                {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Gift Card"}
+              </button>
             </div>
           </div>
         </div>

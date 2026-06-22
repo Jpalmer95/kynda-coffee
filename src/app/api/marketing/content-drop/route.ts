@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { buildDraftsFromDrop, type ContentDropInput, type DropPlatform } from "@/lib/marketing/content-drop";
 import { createOpenAICaptionFn } from "@/lib/marketing/caption/openai";
 import { createSocialPost } from "@/lib/marketing/social/publisher";
@@ -19,8 +19,8 @@ const VALID_PLATFORMS: DropPlatform[] = ["instagram", "facebook", "twitter", "ti
  * published — the owner approves from /admin/marketing/approvals.
  */
 export async function POST(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let body: Partial<ContentDropInput>;
   try {
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       status: "pending_approval",
       source: "content_drop",
       special_id: d.special_id,
-      created_by: user.id,
+      created_by: team.user.id,
     });
     if ("id" in result) {
       created.push({ id: result.id, platform: d.platform });

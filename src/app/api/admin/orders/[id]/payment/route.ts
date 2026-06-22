@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { buildPaymentUpdate, type PaymentMethod, type PaymentOrderLike, type PaymentStatus } from "@/lib/orders/payment";
 
@@ -11,8 +11,8 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { id } = await params;
@@ -40,7 +40,7 @@ export async function PATCH(
       nextStatus,
       method,
       note,
-      actor: user.email ?? user.id,
+      actor: team.user.email ?? team.user.id,
     });
 
     if (!update.ok) {

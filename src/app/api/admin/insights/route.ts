@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
+import { requireTier } from "@/lib/auth/team";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { generateInsights, type InsightInputs } from "@/lib/marketing/insights";
 import { isSpecialLive, type Special } from "@/lib/marketing/specials";
@@ -15,8 +15,8 @@ const DAY_MS = 86_400_000;
  * to produce prioritized, actionable recommendations for the owner. Read-only.
  */
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const supabase = getSupabaseAdmin();
   const since = new Date(Date.now() - 30 * DAY_MS).toISOString();
