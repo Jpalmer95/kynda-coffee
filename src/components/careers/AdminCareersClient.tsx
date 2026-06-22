@@ -436,14 +436,19 @@ function StatusBadges({ current, applicationId }: { current: string; application
 
   async function updateStatus(status: string) {
     try {
-      await fetch("/api/careers/applications", {
+      const res = await fetch("/api/careers/applications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: applicationId, status }),
       });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to update status");
+        return;
+      }
       window.location.reload();
     } catch {
-      // silent
+      alert("Failed to update status");
     }
   }
 

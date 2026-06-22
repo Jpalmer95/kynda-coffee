@@ -76,7 +76,6 @@ const OWNER_ONLY_ADMIN = [
   "/admin/data-export",
   "/admin/insights",
   "/admin/analytics",
-  "/admin/accounting",
   "/admin/pricing",
 ];
 

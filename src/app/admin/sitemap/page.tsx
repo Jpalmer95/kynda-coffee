@@ -61,7 +61,6 @@ const GROUPS: RouteGroup[] = [
   {
     title: "Admin — Money & Intelligence (owner only)",
     routes: [
-      { path: "/admin/accounting", label: "Accounting", note: "P&L, transactions" },
       { path: "/admin/analytics", label: "Analytics" },
       { path: "/admin/insights", label: "Insights", note: "AI business insights (NOT in sidebar)" },
       { path: "/admin/customers", label: "Customers" },

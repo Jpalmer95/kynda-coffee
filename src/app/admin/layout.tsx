@@ -47,7 +47,6 @@ const ADMIN_LINKS = [
   { href: "/admin/promo-codes", label: "Promo Codes", icon: Tag },
   { href: "/admin/gift-cards", label: "Gift Cards", icon: Gift },
   { href: "/admin/pricing", label: "Pricing Rules", icon: Tag },
-  { href: "/admin/accounting", label: "Accounting", icon: CreditCard },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/designs", label: "Designs", icon: Sparkles },
   { href: "/admin/training", label: "Training", icon: GraduationCap },

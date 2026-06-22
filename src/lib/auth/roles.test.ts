@@ -77,7 +77,6 @@ describe("isOwnerOnlyAdminPath", () => {
     expect(isOwnerOnlyAdminPath("/admin/data-export")).toBe(true);
     expect(isOwnerOnlyAdminPath("/admin/insights")).toBe(true);
     expect(isOwnerOnlyAdminPath("/admin/analytics")).toBe(true);
-    expect(isOwnerOnlyAdminPath("/admin/accounting")).toBe(true);
     expect(isOwnerOnlyAdminPath("/admin/pricing")).toBe(true);
   });
 
