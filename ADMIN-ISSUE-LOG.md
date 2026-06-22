@@ -50,6 +50,24 @@ Audit session: comprehensive admin page review
 - **Fix:** Migrated to requireTier("staff") + supabaseAdmin()
 - **Commit:** 96d05b9
 
-## Pending Issues (From Audit)
+### 9. Staff dashboard waste entry count always 0 [FIXED]
+- **Issue:** `.eq("created_at::date", todayISO)` is invalid PostgREST syntax — silently always returned 0
+- **Fix:** Changed to `.gte("created_at", todayISO + "T00:00:00").lt("created_at", todayISO + "T23:59:59")`
+- **Commit:** f101d81
 
-(Audit subagents running — findings will be appended below when complete)
+### 10. Training page excluded owners/managers [FIXED]
+- **Issue:** Raw role check `profile.role !== "admin" && profile.role !== "staff"` excluded owners and managers
+- **Fix:** Migrated to `normalizeRole()` + `isTeamMember()` from lib/auth/roles
+- **Commit:** f101d81
+
+## Pending Issues (From Audit — Staff/KDS Section)
+
+### LOW priority — error handling improvements
+- **Staff chat load():** No catch block — 500 from /api/staff/chat leaves UI stuck at "Loading chat…". Add error state.
+- **Staff schedule load():** Same silent-error pattern — failed fetch shows "No published shifts" instead of error.
+- **Staff par-counts load():** Same pattern — silently drops fetch errors.
+- **Effort:** Quick fix for each — add .catch() with setError()
+
+### LOW priority — missing UI feature
+- **Staff schedule:** No UI to cancel a pending schedule request, even though PATCH /api/staff/schedule-requests supports `status: "cancelled"` for the request owner.
+- **Effort:** Quick fix — add Cancel button next to pending requests
