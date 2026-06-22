@@ -1,11 +1,10 @@
 "use client";
 
 // /admin/marketing/media-drop — Raw media ingestion hub.
-// Team drops photos AND videos here. Photos go to the existing image pipeline;
-// videos are stored for the shorts processing pipeline. Everything organizes
-// by date and is ready for content-drop → approval → publish.
+// Team drops photos AND videos here. Photos → image pipeline; videos → shorts processing.
+// Shows recent uploads gallery + one-click shorts generation.
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -17,6 +16,8 @@ import {
   X,
   Sparkles,
   FolderOpen,
+  Zap,
+  Play,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -28,12 +29,42 @@ interface UploadedFile {
   error?: string;
 }
 
+interface MediaItem {
+  name: string;
+  url: string;
+  type: "image" | "video";
+  size: number | null;
+  updated_at: string | null;
+}
+
 export default function MediaDropPage() {
   const { toast } = useToast();
   const [dragging, setDragging] = useState(false);
   const [uploads, setUploads] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [loadingMedia, setLoadingMedia] = useState(true);
+  const [processingShorts, setProcessingShorts] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const loadMedia = useCallback(async () => {
+    setLoadingMedia(true);
+    try {
+      const res = await fetch("/api/marketing/media/list", { cache: "no-store" });
+      const data = await res.json();
+      if (res.ok) {
+        setMedia(data.media || []);
+      }
+    } catch {
+      // silent fail
+    } finally {
+      setLoadingMedia(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMedia();
+  }, [loadMedia]);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -53,39 +84,18 @@ export default function MediaDropPage() {
         const isVideo = file.type.startsWith("video/");
 
         try {
-          if (isVideo) {
-            // Upload video to marketing-videos bucket
-            const formData = new FormData();
-            formData.append("file", file);
-            const res = await fetch("/api/marketing/media/upload", {
-              method: "POST",
-              body: formData,
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Upload failed");
+          const formData = new FormData();
+          formData.append("file", file);
+          const endpoint = isVideo ? "/api/marketing/media/upload" : "/api/marketing/images/upload";
+          const res = await fetch(endpoint, { method: "POST", body: formData });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Upload failed");
 
-            setUploads((prev) =>
-              prev.map((u, idx) =>
-                idx === i ? { ...u, status: "done", url: data.url } : u
-              )
-            );
-          } else {
-            // Upload image via existing pipeline
-            const formData = new FormData();
-            formData.append("file", file);
-            const res = await fetch("/api/marketing/images/upload", {
-              method: "POST",
-              body: formData,
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Upload failed");
-
-            setUploads((prev) =>
-              prev.map((u, idx) =>
-                idx === i ? { ...u, status: "done", url: data.url } : u
-              )
-            );
-          }
+          setUploads((prev) =>
+            prev.map((u, idx) =>
+              idx === i ? { ...u, status: "done", url: data.url } : u
+            )
+          );
         } catch (e) {
           setUploads((prev) =>
             prev.map((u, idx) =>
@@ -99,9 +109,35 @@ export default function MediaDropPage() {
 
       setUploading(false);
       toast("Upload complete", "success");
+      await loadMedia(); // refresh gallery
     },
-    [toast]
+    [toast, loadMedia]
   );
+
+  async function processShorts(videoUrl: string, filename: string) {
+    setProcessingShorts(filename);
+    try {
+      const res = await fetch("/api/marketing/media/process-shorts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceUrl: videoUrl,
+          sourceFilename: filename,
+          title: filename.replace(/\.[^/.]+$/, "").replace(/_/g, " "),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        toast(data.message || "Shorts created — check approval queue", "success");
+      } else {
+        toast(data.error || data.message || "Processing failed", "error");
+      }
+    } catch {
+      toast("Failed to process shorts", "error");
+    } finally {
+      setProcessingShorts(null);
+    }
+  }
 
   function onDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -119,12 +155,8 @@ export default function MediaDropPage() {
     setDragging(false);
   }
 
-  function clearUploads() {
-    setUploads([]);
-  }
-
-  const completedImages = uploads.filter((u) => u.type === "image" && u.status === "done");
-  const completedVideos = uploads.filter((u) => u.type === "video" && u.status === "done");
+  const videos = media.filter((m) => m.type === "video");
+  const images = media.filter((m) => m.type === "image");
 
   return (
     <div className="container-max py-6 sm:py-10">
@@ -150,13 +182,13 @@ export default function MediaDropPage() {
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onClick={() => inputRef.current?.click()}
-            className={`flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition ${
+            className={`flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition ${
               dragging
                 ? "border-forest bg-forest/5"
                 : "border-latte/30 bg-card hover:border-forest/40 hover:bg-forest/5"
             }`}
           >
-            <Upload className={`mb-3 h-12 w-12 ${dragging ? "text-forest" : "text-mocha"}`} />
+            <Upload className={`mb-3 h-10 w-10 ${dragging ? "text-forest" : "text-mocha"}`} />
             <p className="font-heading text-lg font-semibold text-espresso">
               {dragging ? "Drop to upload" : "Drag & drop or click to upload"}
             </p>
@@ -182,17 +214,14 @@ export default function MediaDropPage() {
           {uploads.length > 0 && (
             <div className="mt-4">
               <div className="mb-2 flex items-center justify-between">
-                <h3 className="text-sm font-medium text-espresso">Uploads ({uploads.length})</h3>
-                <button onClick={clearUploads} className="text-xs text-mocha hover:text-espresso">
+                <h3 className="text-sm font-medium text-espresso">Recent Uploads ({uploads.length})</h3>
+                <button onClick={() => setUploads([])} className="text-xs text-mocha hover:text-espresso">
                   Clear
                 </button>
               </div>
-              <div className="max-h-64 space-y-2 overflow-y-auto">
+              <div className="max-h-48 space-y-2 overflow-y-auto">
                 {uploads.map((u, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 rounded-lg border border-latte/20 bg-card p-2"
-                  >
+                  <div key={i} className="flex items-center gap-2 rounded-lg border border-latte/20 bg-card p-2">
                     {u.type === "image" ? (
                       <FileImage className="h-4 w-4 shrink-0 text-sage" />
                     ) : (
@@ -202,79 +231,109 @@ export default function MediaDropPage() {
                     {u.status === "uploading" && <Loader2 className="h-4 w-4 animate-spin text-mocha" />}
                     {u.status === "done" && <CheckCircle className="h-4 w-4 text-forest" />}
                     {u.status === "error" && <X className="h-4 w-4 text-red-600" />}
-                    {u.status === "error" && u.error && (
-                      <span className="text-xs text-red-600">{u.error}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Next Steps */}
-        <div className="space-y-4">
-          {completedImages.length > 0 && (
-            <div className="rounded-2xl border border-forest/20 bg-forest/5 p-4">
-              <h3 className="mb-2 flex items-center gap-2 font-heading text-sm font-semibold text-espresso">
-                <Sparkles className="h-4 w-4 text-forest" /> {completedImages.length} image(s) ready
-              </h3>
-              <p className="mb-3 text-xs text-mocha">
-                Turn these images into platform-specific social posts. The content-drop pipeline will
-                generate captions, hashtags, and draft posts for your approval.
-              </p>
-              <Link
-                href="/admin/marketing/content-drop"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-forest/10 px-3 py-2 text-sm font-medium text-forest transition hover:bg-forest/20"
-              >
-                <Sparkles className="h-4 w-4" /> Go to Content Drop
-              </Link>
-            </div>
-          )}
-
-          {completedVideos.length > 0 && (
-            <div className="rounded-2xl border border-clay/20 bg-clay/5 p-4">
-              <h3 className="mb-2 flex items-center gap-2 font-heading text-sm font-semibold text-espresso">
-                <FileVideo className="h-4 w-4 text-clay" /> {completedVideos.length} video(s) uploaded
-              </h3>
-              <p className="text-xs text-mocha">
-                Videos are stored and ready for the shorts processing pipeline (coming soon — will auto-generate
-                TikTok, Reels, and YouTube Shorts variants from your raw footage).
-              </p>
-              <div className="mt-2 space-y-1">
-                {completedVideos.map((v, i) => (
-                  <div key={i} className="truncate text-xs text-mocha">
-                    ✓ {v.name}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {uploads.length === 0 && (
-            <div className="rounded-2xl border border-latte/20 bg-card p-6 text-center">
-              <FolderOpen className="mx-auto mb-2 h-10 w-10 opacity-30" />
-              <p className="text-sm text-mocha">
-                Upload media to see next steps here.
-                <br />
-                Images → Content Drop → Approval → Publish
-                <br />
-                Videos → Shorts Pipeline (coming soon)
-              </p>
-            </div>
-          )}
-
-          {/* Pipeline Overview */}
-          <div className="rounded-2xl border border-latte/20 bg-card p-4">
+          {/* Pipeline info */}
+          <div className="mt-4 rounded-2xl border border-latte/20 bg-card p-4">
             <h3 className="mb-2 font-heading text-sm font-semibold text-espresso">How it works</h3>
-            <ol className="space-y-2 text-xs text-mocha">
-              <li><strong className="text-espresso">1. Capture</strong> — You and your team take photos and videos at the shop</li>
-              <li><strong className="text-espresso">2. Drop</strong> — Upload raw media here (this page)</li>
-              <li><strong className="text-espresso">3. Generate</strong> — Content Drop turns images into platform-specific drafts</li>
-              <li><strong className="text-espresso">4. Approve</strong> — You review drafts in the Approval Queue</li>
+            <ol className="space-y-1.5 text-xs text-mocha">
+              <li><strong className="text-espresso">1. Capture</strong> — Take photos and videos at the shop</li>
+              <li><strong className="text-espresso">2. Drop</strong> — Upload raw media here</li>
+              <li><strong className="text-espresso">3. Generate</strong> — Images → Content Drop · Videos → Shorts</li>
+              <li><strong className="text-espresso">4. Approve</strong> — Review drafts in the Approval Queue</li>
               <li><strong className="text-espresso">5. Publish</strong> — Approved posts auto-publish on schedule</li>
             </ol>
           </div>
+        </div>
+
+        {/* Gallery */}
+        <div>
+          {loadingMedia ? (
+            <div className="flex items-center justify-center py-16 text-mocha">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading media…
+            </div>
+          ) : media.length === 0 ? (
+            <div className="flex aspect-square max-h-80 items-center justify-center rounded-2xl border border-dashed border-latte/30 bg-card text-center text-mocha">
+              <div>
+                <FolderOpen className="mx-auto mb-2 h-10 w-10 opacity-40" />
+                <p className="text-sm">No media uploaded yet. Drop files on the left to get started.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Videos */}
+              {videos.length > 0 && (
+                <div>
+                  <h3 className="mb-2 flex items-center gap-2 font-heading text-sm font-semibold text-espresso">
+                    <FileVideo className="h-4 w-4 text-clay" /> Videos ({videos.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {videos.map((v) => (
+                      <div key={v.name} className="flex items-center gap-3 rounded-xl border border-latte/20 bg-card p-3">
+                        <Play className="h-5 w-5 shrink-0 text-clay" />
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm font-medium text-espresso">{v.name}</p>
+                          {v.size && (
+                            <p className="text-xs text-mocha">{(v.size / 1024 / 1024).toFixed(1)} MB</p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => processShorts(v.url, v.name)}
+                          disabled={processingShorts === v.name}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-forest/10 px-3 py-1.5 text-xs font-medium text-forest transition hover:bg-forest/20 disabled:opacity-60"
+                        >
+                          {processingShorts === v.name ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Zap className="h-3.5 w-3.5" />
+                          )}
+                          {processingShorts === v.name ? "Processing…" : "Make Shorts"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Images */}
+              {images.length > 0 && (
+                <div>
+                  <h3 className="mb-2 flex items-center gap-2 font-heading text-sm font-semibold text-espresso">
+                    <FileImage className="h-4 w-4 text-sage" /> Images ({images.length})
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {images.map((img) => (
+                      <div key={img.name} className="group relative aspect-square overflow-hidden rounded-lg border border-latte/20">
+                        <img
+                          src={img.url}
+                          alt={img.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                        <Link
+                          href={`/admin/marketing/content-drop`}
+                          className="absolute inset-0 flex items-center justify-center bg-espresso/0 opacity-0 transition group-hover:bg-espresso/60 group-hover:opacity-100"
+                        >
+                          <Sparkles className="h-6 w-6 text-cream" />
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-mocha">
+                    Hover an image and click to send it to{" "}
+                    <Link href="/admin/marketing/content-drop" className="text-forest underline">
+                      Content Drop
+                    </Link>
+                    .
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

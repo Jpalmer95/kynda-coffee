@@ -69,37 +69,43 @@ export default function MarketingDashboardPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [pipelineRes, platformsRes, insightsRes, recentRes] = await Promise.all([
+      // Use the existing admin APIs for pipeline + platform data
+      const [pipelineRes, platformsRes] = await Promise.all([
         fetch("/api/admin/marketing/approvals?status=all&limit=200", { cache: "no-store" }),
-        fetch("/api/marketing/social/posts", { cache: "no-store" }),
-        fetch("/api/admin/agent?action=insights", { cache: "no-store" }).catch(() => null),
-        fetch("/api/admin/marketing/approvals?status=published&limit=5", { cache: "no-store" }),
+        fetch("/api/marketing/social/posts", { cache: "no-store" }).catch(() => null),
       ]);
 
       const pipelineData = await pipelineRes.json();
-      const platformsData = await platformsRes.json();
-      const recentData = await recentRes.json();
-
       const allPosts = pipelineData.posts || [];
-      const pipeline: PipelineStats = {
-        total: allPosts.length,
-        pending_approval: allPosts.filter((p: { status: string }) => p.status === "pending_approval").length,
-        scheduled: allPosts.filter((p: { status: string }) => p.status === "scheduled").length,
-        published: allPosts.filter((p: { status: string }) => p.status === "published").length,
-        draft: allPosts.filter((p: { status: string }) => p.status === "draft").length,
-        failed: allPosts.filter((p: { status: string }) => p.status === "failed").length,
-      };
 
-      setData({
-        pipeline,
-        platforms: platformsData.platforms || [],
-        insights: [],
-        recentPublished: (recentData.posts || []).map((p: { id: string; platform: string; text: string; published_at: string }) => ({
+      let platforms: PlatformStatus[] = [];
+      if (platformsRes && platformsRes.ok) {
+        const platformsData = await platformsRes.json();
+        platforms = platformsData.platforms || [];
+      }
+
+      const recentPublished = allPosts
+        .filter((p: { status: string }) => p.status === "published")
+        .slice(0, 5)
+        .map((p: { id: string; platform: string; text: string; published_at: string }) => ({
           id: p.id,
           platform: p.platform,
           text: p.text,
           published_at: p.published_at,
-        })),
+        }));
+
+      setData({
+        pipeline: {
+          total: allPosts.length,
+          pending_approval: allPosts.filter((p: { status: string }) => p.status === "pending_approval").length,
+          scheduled: allPosts.filter((p: { status: string }) => p.status === "scheduled").length,
+          published: allPosts.filter((p: { status: string }) => p.status === "published").length,
+          draft: allPosts.filter((p: { status: string }) => p.status === "draft").length,
+          failed: allPosts.filter((p: { status: string }) => p.status === "failed").length,
+        },
+        platforms,
+        insights: [],
+        recentPublished,
       });
     } catch {
       toast("Failed to load dashboard", "error");

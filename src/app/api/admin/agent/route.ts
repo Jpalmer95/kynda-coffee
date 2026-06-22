@@ -33,6 +33,7 @@ function authenticate(req: NextRequest): boolean {
 type AgentAction =
   | "status"
   | "marketing_summary"
+  | "marketing_dashboard"
   | "schedule_post"
   | "catalog_overview"
   | "recent_orders"
@@ -52,7 +53,6 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
-
   const { action } = body;
   const db = supabaseAdmin();
 
@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
         return await handleStatus(db);
       case "marketing_summary":
         return await handleMarketingSummary(db);
+      case "marketing_dashboard":
+        return await handleMarketingDashboard(db);
       case "schedule_post":
         return await handleSchedulePost(db, body.params ?? {});
       case "catalog_overview":
@@ -83,6 +85,7 @@ export async function POST(req: NextRequest) {
             available_actions: [
               "status",
               "marketing_summary",
+              "marketing_dashboard",
               "schedule_post",
               "catalog_overview",
               "recent_orders",
@@ -215,7 +218,7 @@ async function handleSchedulePost(
     );
   }
 
-  const validPlatforms = ["instagram", "twitter", "facebook"];
+  const validPlatforms = ["instagram", "twitter", "facebook", "tiktok", "bluesky"];
   if (!validPlatforms.includes(platform as string)) {
     return NextResponse.json(
       { error: `platform must be one of: ${validPlatforms.join(", ")}` },
@@ -510,5 +513,59 @@ async function handleProposeRecipe(params: Record<string, unknown>) {
     created_ingredients: createdIngredients,
     recipe,
     note: "Recipe created in MenuMetrics tagged [agent]. Owner reviews there; nothing was added to the live menu.",
+  });
+}
+
+// ── Marketing Dashboard ──────────────────────────────────────────────
+// Aggregated pipeline stats + platform status for the dashboard UI and
+// the Hermes growth-strategy cron. No PII.
+async function handleMarketingDashboard(db: ReturnType<typeof supabaseAdmin>) {
+  const [
+    { count: pendingApproval },
+    { count: scheduled },
+    { count: published },
+    { count: draft },
+    { count: failed },
+    { count: totalPosts },
+    { data: recentPublished },
+  ] = await Promise.all([
+    db.from("social_posts").select("*", { count: "exact", head: true }).eq("status", "pending_approval"),
+    db.from("social_posts").select("*", { count: "exact", head: true }).eq("status", "scheduled"),
+    db.from("social_posts").select("*", { count: "exact", head: true }).eq("status", "published"),
+    db.from("social_posts").select("*", { count: "exact", head: true }).eq("status", "draft"),
+    db.from("social_posts").select("*", { count: "exact", head: true }).eq("status", "failed"),
+    db.from("social_posts").select("*", { count: "exact", head: true }),
+    db.from("social_posts")
+      .select("id, platform, text, published_at")
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(5),
+  ]);
+
+  // Platform connection status — check which env vars are set
+  const platforms = [
+    { key: "twitter", name: "Twitter/X", configured: !!(process.env.TWITTER_API_KEY && process.env.TWITTER_ACCESS_TOKEN) },
+    { key: "facebook", name: "Facebook", configured: !!(process.env.FACEBOOK_PAGE_ID && process.env.FACEBOOK_ACCESS_TOKEN) },
+    { key: "instagram", name: "Instagram", configured: !!(process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID && process.env.FACEBOOK_ACCESS_TOKEN) },
+    { key: "tiktok", name: "TikTok", configured: !!process.env.TIKTOK_ACCESS_TOKEN },
+    { key: "bluesky", name: "Bluesky", configured: !!(process.env.BLUESKY_IDENTIFIER && process.env.BLUESKY_APP_PASSWORD) },
+  ];
+
+  return NextResponse.json({
+    pipeline: {
+      total: totalPosts ?? 0,
+      pending_approval: pendingApproval ?? 0,
+      scheduled: scheduled ?? 0,
+      published: published ?? 0,
+      draft: draft ?? 0,
+      failed: failed ?? 0,
+    },
+    platforms,
+    recent_published: (recentPublished ?? []).map((p) => ({
+      id: p.id,
+      platform: p.platform,
+      text: p.text,
+      published_at: p.published_at,
+    })),
   });
 }
