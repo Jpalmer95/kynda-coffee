@@ -3,8 +3,7 @@
 // executes any tool calls server-side, returns final response.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { requireTier } from "@/lib/auth/team";
 import { chatWithClaude, ChatMessage } from "@/lib/marketing/claude";
 
 export const runtime = "nodejs";
@@ -12,39 +11,9 @@ export const maxDuration = 60; // Claude tool loops can take a few seconds
 
 export async function POST(req: NextRequest) {
   try {
-    // Auth check — must be admin
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check admin role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
+    // Auth check — must be staff+
+    const team = await requireTier(req, "staff");
+    if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // Parse request body
     const body = await req.json();
@@ -68,7 +37,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Call Claude with tool-calling loop
-    const response = await chatWithClaude(messages, user.id);
+    const response = await chatWithClaude(messages, team.user.id);
 
     // Serialize content blocks for the client
     // Strip tool_use blocks from the final response (they're internal)

@@ -11,7 +11,11 @@ interface JobOpening {
   title: string;
   slug: string;
   department: string;
+  location: string;
   type: string;
+  description: string;
+  requirements: string[];
+  compensation: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -37,7 +41,7 @@ async function getData() {
     const [openingsRes, appsRes] = await Promise.all([
       supabase
         .from("job_openings")
-        .select("id, title, slug, department, type, is_active, created_at")
+        .select("id, title, slug, department, location, type, description, requirements, compensation, is_active, created_at")
         .order("created_at", { ascending: false }),
       supabase
         .from("job_applications")

@@ -142,6 +142,22 @@ export default function MarketingImagesPage() {
     toast(`${label} copied`, "success");
   }
 
+  // ─── Delete image ───────────────────────────────────────────────────
+  async function handleDelete(imagePath: string) {
+    if (!confirm("Delete this image and all its variants?")) return;
+    try {
+      const res = await fetch(`/api/marketing/images?path=${encodeURIComponent(imagePath)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Delete failed");
+      toast("Image deleted", "success");
+      loadImages();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Delete failed", "error");
+    }
+  }
+
   // ─── Platform label helper ──────────────────────────────────────────
   const PLATFORM_LABELS: Record<string, string> = {
     "ig-square": "IG Square 1080×1080",
@@ -254,6 +270,15 @@ export default function MarketingImagesPage() {
                       <Sparkles className="h-3.5 w-3.5" />
                     )}
                     Alt-text
+                  </button>
+
+                  {/* Delete button */}
+                  <button
+                    onClick={() => handleDelete(image.path)}
+                    className="flex items-center justify-center px-2 py-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
 
                   {/* Expand variants */}

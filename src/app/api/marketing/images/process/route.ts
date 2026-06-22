@@ -2,9 +2,8 @@
 // Takes an original image path, generates all platform variants with watermark
 
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { requireTier } from "@/lib/auth/team";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { processAllPlatforms, PLATFORM_PRESETS } from "@/lib/marketing/image/processor";
 
 export const runtime = "nodejs";
@@ -13,37 +12,8 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   try {
     // Auth check
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-    }
+    const team = await requireTier(req, "staff");
+    if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
     const { path: originalPath, watermark = true } = body;
@@ -52,7 +22,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "path required" }, { status: 400 });
     }
 
-    const adminClient = getSupabaseAdmin();
+    const adminClient = supabaseAdmin();
 
     // Download original from storage
     const { data: fileData, error: downloadError } = await adminClient.storage

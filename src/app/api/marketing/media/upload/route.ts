@@ -3,9 +3,8 @@
 // Also handles images as a passthrough (though images typically go through /images/upload).
 
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { requireTier } from "@/lib/auth/team";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -13,37 +12,8 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   try {
     // Auth check
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin" && profile?.role !== "employee") {
-      return NextResponse.json({ error: "Staff access required" }, { status: 403 });
-    }
+    const team = await requireTier(req, "staff");
+    if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
@@ -80,7 +50,7 @@ export async function POST(req: NextRequest) {
     const folder = isVideo ? "raw" : "originals";
     const storagePath = `${folder}/${fileName}`;
 
-    const adminClient = getSupabaseAdmin();
+    const adminClient = supabaseAdmin();
 
     const { error: uploadError } = await adminClient.storage
       .from(bucket)

@@ -2,16 +2,16 @@
 // Lists raw media (images + videos) from Supabase Storage.
 
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminUser } from "@/lib/auth/admin";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { requireTier } from "@/lib/auth/team";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const { user } = await getAdminUser(req);
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const team = await requireTier(req, "staff");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const adminClient = getSupabaseAdmin();
+  const adminClient = supabaseAdmin();
   const type = new URL(req.url).searchParams.get("type") || "all";
 
   const results: Array<Record<string, unknown>> = [];
@@ -25,11 +25,13 @@ export async function GET(req: NextRequest) {
       if (!imgErr && imageFiles) {
         for (const f of imageFiles) {
           if (f.id === null) continue; // skip folders
+          const storagePath = `originals/${f.name}`;
           const { data: urlData } = adminClient.storage
             .from("marketing-images")
-            .getPublicUrl(`originals/${f.name}`);
+            .getPublicUrl(storagePath);
           results.push({
             name: f.name,
+            path: storagePath,
             url: urlData.publicUrl,
             type: "image",
             size: f.metadata?.size ?? null,
@@ -47,11 +49,13 @@ export async function GET(req: NextRequest) {
       if (!vidErr && videoFiles) {
         for (const f of videoFiles) {
           if (f.id === null) continue;
+          const storagePath = `raw/${f.name}`;
           const { data: urlData } = adminClient.storage
             .from("marketing-videos")
-            .getPublicUrl(`raw/${f.name}`);
+            .getPublicUrl(storagePath);
           results.push({
             name: f.name,
+            path: storagePath,
             url: urlData.publicUrl,
             type: "video",
             size: f.metadata?.size ?? null,

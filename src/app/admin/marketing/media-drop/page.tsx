@@ -18,6 +18,7 @@ import {
   FolderOpen,
   Zap,
   Play,
+  Trash2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -31,6 +32,7 @@ interface UploadedFile {
 
 interface MediaItem {
   name: string;
+  path: string;
   url: string;
   type: "image" | "video";
   size: number | null;
@@ -79,6 +81,7 @@ export default function MediaDropPage() {
       }));
       setUploads((prev) => [...newUploads, ...prev]);
 
+      let hadError = false;
       for (let i = 0; i < fileArr.length; i++) {
         const file = fileArr[i];
         const isVideo = file.type.startsWith("video/");
@@ -97,6 +100,7 @@ export default function MediaDropPage() {
             )
           );
         } catch (e) {
+          hadError = true;
           setUploads((prev) =>
             prev.map((u, idx) =>
               idx === i
@@ -108,11 +112,31 @@ export default function MediaDropPage() {
       }
 
       setUploading(false);
-      toast("Upload complete", "success");
+      if (hadError) {
+        toast("Some files failed to upload", "error");
+      } else {
+        toast("Upload complete", "success");
+      }
       await loadMedia(); // refresh gallery
     },
     [toast, loadMedia]
   );
+
+  async function deleteMedia(item: MediaItem) {
+    if (!confirm(`Delete ${item.name}?`)) return;
+    try {
+      const res = await fetch(
+        `/api/marketing/media?path=${encodeURIComponent(item.path)}&type=${item.type}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Delete failed");
+      toast("Deleted", "success");
+      await loadMedia();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Failed to delete", "error");
+    }
+  }
 
   async function processShorts(videoUrl: string, filename: string) {
     setProcessingShorts(filename);
@@ -222,7 +246,9 @@ export default function MediaDropPage() {
               <div className="max-h-48 space-y-2 overflow-y-auto">
                 {uploads.map((u, i) => (
                   <div key={i} className="flex items-center gap-2 rounded-lg border border-latte/20 bg-card p-2">
-                    {u.type === "image" ? (
+                    {u.status === "done" && u.url && u.type === "image" ? (
+                      <img src={u.url} alt={u.name} className="h-8 w-8 shrink-0 rounded object-cover" />
+                    ) : u.type === "image" ? (
                       <FileImage className="h-4 w-4 shrink-0 text-sage" />
                     ) : (
                       <FileVideo className="h-4 w-4 shrink-0 text-clay" />
@@ -230,7 +256,11 @@ export default function MediaDropPage() {
                     <span className="flex-1 truncate text-sm text-espresso">{u.name}</span>
                     {u.status === "uploading" && <Loader2 className="h-4 w-4 animate-spin text-mocha" />}
                     {u.status === "done" && <CheckCircle className="h-4 w-4 text-forest" />}
-                    {u.status === "error" && <X className="h-4 w-4 text-red-600" />}
+                    {u.status === "error" && (
+                      <span className="flex items-center gap-1 text-xs text-red-600">
+                        <X className="h-4 w-4" /> {u.error}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -293,6 +323,13 @@ export default function MediaDropPage() {
                           )}
                           {processingShorts === v.name ? "Processing…" : "Make Shorts"}
                         </button>
+                        <button
+                          onClick={() => deleteMedia(v)}
+                          className="rounded-lg p-1.5 text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/30"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -320,6 +357,13 @@ export default function MediaDropPage() {
                         >
                           <Sparkles className="h-6 w-6 text-cream" />
                         </Link>
+                        <button
+                          onClick={() => deleteMedia(img)}
+                          className="absolute right-1 top-1 rounded-lg bg-espresso/80 p-1 text-red-400 opacity-0 transition group-hover:opacity-100 hover:bg-espresso hover:text-red-300"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     ))}
                   </div>
