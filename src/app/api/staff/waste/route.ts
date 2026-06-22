@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireTier } from "@/lib/auth/team";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 /**
  * POST /api/staff/waste
@@ -7,23 +8,9 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify staff role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "admin" && profile.role !== "employee")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const team = await requireTier(req, "staff");
+    if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = team.user;
 
     const body = await req.json();
     const { product_id, quantity, unit, reason, cost_cents, notes } = body;
@@ -32,10 +19,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const admin = supabaseAdmin();
+
     // Get product name
     let product_name = "";
     try {
-      const { data: product } = await supabase
+      const { data: product } = await admin
         .from("products")
         .select("name")
         .eq("id", product_id)
@@ -45,7 +34,7 @@ export async function POST(req: NextRequest) {
       product_name = "Unknown product";
     }
 
-    const { data: entry, error } = await supabase
+    const { data: entry, error } = await admin
       .from("waste_entries")
       .insert({
         product_id,
@@ -80,26 +69,12 @@ export async function POST(req: NextRequest) {
  * GET /api/staff/waste
  * List waste entries
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const team = await requireTier(req, "staff");
+    if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "admin" && profile.role !== "employee")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
-
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin()
       .from("waste_entries")
       .select("*")
       .order("created_at", { ascending: false })

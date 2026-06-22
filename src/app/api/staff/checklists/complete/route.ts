@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireTier } from "@/lib/auth/team";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 /**
  * POST /api/staff/checklists/complete
@@ -7,22 +8,9 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || (profile.role !== "admin" && profile.role !== "employee")) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
+    const team = await requireTier(req, "staff");
+    if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const user = team.user;
 
     const body = await req.json();
     const { checklist_type, completed_items } = body;
@@ -33,7 +21,8 @@ export async function POST(req: NextRequest) {
 
     // Upsert today's completion record
     const todayISO = new Date().toISOString().split("T")[0];
-    const { data: existing } = await supabase
+    const admin = supabaseAdmin();
+    const { data: existing } = await admin
       .from("checklist_completions")
       .select("id")
       .eq("completed_by", user.id)
@@ -42,7 +31,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (existing) {
-      const { error } = await supabase
+      const { error } = await admin
         .from("checklist_completions")
         .update({
           completed_items,
@@ -54,7 +43,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
     } else {
-      const { error } = await supabase
+      const { error } = await admin
         .from("checklist_completions")
         .insert({
           checklist_type,
