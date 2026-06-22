@@ -24,10 +24,17 @@ export const dynamic = "force-dynamic";
  */
 
 function authenticate(req: NextRequest): boolean {
+  // Primary: X-Agent-Key header matching AGENT_API_KEY
   const key = req.headers.get("x-agent-key");
   const expected = process.env.AGENT_API_KEY;
-  if (!expected) return false;
-  return key === expected;
+  if (expected && key === expected) return true;
+
+  // Fallback: CRON_SECRET via Authorization Bearer (shared with other cron endpoints)
+  const authHeader = req.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) return true;
+
+  return false;
 }
 
 type AgentAction =
@@ -41,6 +48,45 @@ type AgentAction =
   | "menu_costing"
   | "price_watch"
   | "propose_recipe";
+
+export async function GET(req: NextRequest) {
+  // GET handler for convenience — same auth, action via ?action= query param.
+  // POST is preferred for production (body params), but GET is useful for
+  // simple status/insights queries from Hermes crons.
+  if (!authenticate(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const action = new URL(req.url).searchParams.get("action") as AgentAction | null;
+  if (!action) {
+    return NextResponse.json({ error: "action query param required" }, { status: 400 });
+  }
+
+  const db = supabaseAdmin();
+
+  try {
+    switch (action) {
+      case "status":
+        return await handleStatus(db);
+      case "marketing_summary":
+        return await handleMarketingSummary(db);
+      case "marketing_dashboard":
+        return await handleMarketingDashboard(db);
+      case "insights":
+        return await handleInsights(db);
+      case "catalog_overview":
+        return await handleCatalogOverview(db);
+      default:
+        return NextResponse.json(
+          { error: `Action ${action} not available via GET. Use POST.` },
+          { status: 400 }
+        );
+    }
+  } catch (err) {
+    console.error("Agent API GET error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   if (!authenticate(req)) {
