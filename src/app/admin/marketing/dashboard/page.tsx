@@ -123,10 +123,7 @@ export default function MarketingDashboardPage() {
     try {
       const res = await fetch("/api/marketing/loop/run", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-agent-key": process.env.NEXT_PUBLIC_AGENT_API_KEY || "",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dryRun: false }),
       });
       const data = await res.json();

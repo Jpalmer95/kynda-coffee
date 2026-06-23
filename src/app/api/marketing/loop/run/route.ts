@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { requireTier } from "@/lib/auth/team";
 import { planMarketingLoop, type RecentPostRef } from "@/lib/marketing/loop";
 import type { Special } from "@/lib/marketing/specials";
 import { buildDraftText, type DropPlatform } from "@/lib/marketing/content-drop";
@@ -11,7 +12,12 @@ export const dynamic = "force-dynamic";
 /**
  * Weekly Marketing Loop cron (Roadmap V2 — Epic 5).
  *
- * Secured by CRON_SECRET (Bearer). Each cycle:
+ * Secured by EITHER:
+ *   - CRON_SECRET bearer (Coolify/scheduler)
+ *   - X-Agent-Key (Hermes cron)
+ *   - Authenticated manager+ session (admin dashboard button)
+ *
+ * Each cycle:
  *  1. Load active specials + recent post history (for cooldown).
  *  2. planMarketingLoop() picks which specials to campaign and the angle.
  *  3. For each, build platform drafts (content-drop module, OpenAI captions w/
@@ -19,12 +25,11 @@ export const dynamic = "force-dynamic";
  *  4. Mark those specials marketing_generated=true.
  *
  * Posts NOTHING publicly — everything lands in the approval queue for the owner.
- * Call from Hermes/Coolify cron weekly:
- *   curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://kyndacoffee.com/api/marketing/loop/run
  */
 export async function POST(req: NextRequest) {
   // Accept EITHER a CRON_SECRET bearer (Coolify/scheduler) OR the X-Agent-Key
-  // (Hermes cron, same key the daily-sync job already uses). Either is sufficient.
+  // (Hermes cron, same key the daily-sync job already uses) OR an authenticated
+  // manager+ session (admin dashboard button). Any one is sufficient.
   const cronSecret = process.env.CRON_SECRET;
   const agentKey = process.env.AGENT_API_KEY;
   const authHeader = req.headers.get("authorization");
@@ -33,7 +38,13 @@ export async function POST(req: NextRequest) {
   const cronOk = cronSecret ? authHeader === `Bearer ${cronSecret}` : false;
   const agentOk = agentKey ? headerAgentKey === agentKey : false;
 
+  let sessionOk = false;
   if (!cronOk && !agentOk) {
+    const team = await requireTier(req, "manager");
+    sessionOk = !!team;
+  }
+
+  if (!cronOk && !agentOk && !sessionOk) {
     if (!cronSecret && !agentKey) {
       console.warn("[marketing/loop] neither CRON_SECRET nor AGENT_API_KEY set — refusing. Set one in production.");
     }

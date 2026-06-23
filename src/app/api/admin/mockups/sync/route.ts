@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { PRINTFUL_CATALOG } from "@/lib/printful/catalog";
 
@@ -17,10 +17,9 @@ export const dynamic = "force-dynamic";
  * Idempotent — overwrites existing files with the same key.
  */
 export async function POST(req: NextRequest) {
-  // Auth gate — only authenticated admins
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  // Auth gate — only authenticated managers+
+  const team = await requireTier(req, "manager");
+  if (!team) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -133,9 +132,8 @@ export async function POST(req: NextRequest) {
 
 /** GET — dry run: list what mockup URLs are currently configured */
 export async function GET(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  const team = await requireTier(req, "manager");
+  if (!team) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

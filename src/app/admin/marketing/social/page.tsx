@@ -514,7 +514,7 @@ export default function MarketingSocialPage() {
                             {new Date(post.published_at).toLocaleString()}
                           </span>
                         )}
-                        {post.image_urls.length > 0 && (
+                        {post.image_urls?.length > 0 && (
                           <span className="flex items-center gap-1">
                             <ImageIcon className="h-3 w-3" />
                             {post.image_urls.length} image
