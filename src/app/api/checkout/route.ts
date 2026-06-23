@@ -250,6 +250,51 @@ export async function POST(req: NextRequest) {
       metadata,
     } as any);
 
+    // ── Create a pending order row in the DB ──
+    // The Stripe webhook will flip this to "confirmed" + "paid" when payment
+    // succeeds. Without this row, online shop orders never appear in the DB.
+    const orderNumber = `SHOP-${Date.now().toString(36).toUpperCase()}`;
+    const orderItems = parsed.items.map((item) => {
+      const product = resolved.get(item.product_id);
+      return {
+        product_id: item.product_id,
+        name: product?.name ?? "Unknown",
+        quantity: item.quantity,
+        unit_price_cents: product?.price_cents ?? 0,
+        variant: item.variant,
+      };
+    });
+
+    const totalCents = session.amount_total ?? subtotal;
+
+    try {
+      await supabaseAdmin().from("orders").insert({
+        order_number: orderNumber,
+        email: parsed.customer_email,
+        status: "pending",
+        source: "website",
+        order_channel: "pickup",
+        items: orderItems,
+        subtotal_cents: subtotal,
+        tax_cents: 0,
+        shipping_cents: adjustedSubtotal >= STORE_CONFIG.free_shipping_threshold_cents ? 0 : STORE_CONFIG.flat_shipping_cents,
+        total_cents: totalCents,
+        payment_status: "unpaid",
+        payment_preference: "online",
+        stripe_checkout_session_id: session.id,
+        fulfillment_metadata: {
+          type: "shop_checkout",
+          promo_code: parsed.promo_code ?? null,
+          gift_card_id: parsed.gift_card_id ?? null,
+          loyalty_points_used: loyaltyPointsRedeemed || null,
+          discount_cents: discount_cents,
+        },
+      });
+      console.log(`[checkout] Created pending order ${orderNumber} for session ${session.id}`);
+    } catch (orderErr) {
+      console.error("[checkout] Failed to create order row (non-fatal — payment will still work):", orderErr);
+    }
+
     return NextResponse.json({ url: session.url, session_id: session.id });
   } catch (err) {
     console.error("Checkout error:", err);
