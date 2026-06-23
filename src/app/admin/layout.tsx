@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -28,6 +29,7 @@ import {
   Building2,
   Map as MapIcon,
   Zap,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -69,6 +71,17 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [navQuery, setNavQuery] = useState("");
+
+  const filteredLinks = useMemo(() => {
+    if (!navQuery.trim()) return ADMIN_LINKS;
+    const q = navQuery.toLowerCase();
+    return ADMIN_LINKS.filter(
+      (link) =>
+        link.label.toLowerCase().includes(q) ||
+        link.href.toLowerCase().includes(q)
+    );
+  }, [navQuery]);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -97,8 +110,23 @@ export default function AdminLayout({
       <div className="flex">
         {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-64 sticky top-[69px] h-[calc(100vh-69px)] border-r border-latte bg-surface text-sand overflow-y-auto">
-          <nav className="p-4 space-y-1.5" aria-label="Admin navigation">
-            {ADMIN_LINKS.map((link) => {
+          <div className="p-4 pb-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-mocha/60" />
+              <input
+                type="text"
+                value={navQuery}
+                onChange={(e) => setNavQuery(e.target.value)}
+                placeholder="Filter pages…"
+                className="w-full rounded-lg border border-latte/30 bg-white/5 py-1.5 pl-8 pr-3 text-xs text-sand placeholder:text-mocha/50 focus:border-forest/50 focus:outline-none"
+              />
+            </div>
+          </div>
+          <nav className="px-4 pb-4 space-y-1.5" aria-label="Admin navigation">
+            {filteredLinks.length === 0 && (
+              <p className="px-3 py-4 text-xs text-mocha/60">No pages match "{navQuery}"</p>
+            )}
+            {filteredLinks.map((link) => {
               const isActive =
                 pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
@@ -128,7 +156,7 @@ export default function AdminLayout({
           aria-label="Admin mobile navigation"
         >
           <div className="flex items-center justify-around px-2 pt-2">
-            {ADMIN_LINKS.map((link) => {
+            {(navQuery ? filteredLinks : ADMIN_LINKS).map((link) => {
               const isActive =
                 pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
