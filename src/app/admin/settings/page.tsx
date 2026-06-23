@@ -13,6 +13,8 @@ import {
   AlertCircle,
   Save,
   RefreshCw,
+  Eye,
+  Zap,
 } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -270,6 +272,9 @@ export default function AdminSettingsPage() {
             />
           </div>
         </section>
+
+        {/* AI Vision Config */}
+        <VlmSettingsSection />
       </div>
 
       {/* Save bar */}
@@ -340,5 +345,242 @@ function IntegrationStatus({
         </span>
       )}
     </div>
+  );
+}
+
+// ─── AI Vision (VLM) Settings ──────────────────────────────────────────────
+
+const PROVIDERS = [
+  { value: "local", label: "Local (LM Studio / Ollama)", api_base: "http://127.0.0.1:1234/v1", note: "Free, runs on your machine at home" },
+  { value: "huggingface", label: "Hugging Face (cloud, free tier)", api_base: "https://router.huggingface.co/v1", note: "Free $0.10/mo credits, then pay-as-you-go" },
+  { value: "custom", label: "Custom (OpenAI-compatible)", api_base: "", note: "Any OpenAI-compatible API endpoint" },
+];
+
+const HF_MODELS = [
+  { value: "Qwen/Qwen3-VL-8B-Instruct", label: "Qwen3 VL 8B (free-friendly)" },
+  { value: "Qwen/Qwen3-VL-30B-A3B-Instruct", label: "Qwen3 VL 30B MoE" },
+  { value: "google/gemma-3-4b-it", label: "Gemma 3 4B (lightweight)" },
+  { value: "google/gemma-3-12b-it", label: "Gemma 3 12B" },
+  { value: "meta-llama/Llama-4-Scout-17B-16E-Instruct", label: "Llama 4 Scout 17B" },
+];
+
+function VlmSettingsSection() {
+  const { toast } = useToast();
+  const [config, setConfig] = useState({
+    provider: "local" as "local" | "huggingface" | "custom",
+    model: "",
+    api_base: "http://127.0.0.1:1234/v1",
+    api_key: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; message?: string; error?: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/settings/vlm")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.config) {
+          setConfig({
+            provider: data.config.provider || "local",
+            model: data.config.model || "",
+            api_base: data.config.api_base || "http://127.0.0.1:1234/v1",
+            api_key: "", // masked from server
+          });
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  function selectProvider(p: "local" | "huggingface" | "custom") {
+    const prov = PROVIDERS.find((x) => x.value === p)!;
+    setConfig((c) => ({
+      ...c,
+      provider: p,
+      api_base: prov.api_base || c.api_base,
+      model: p === "huggingface" ? HF_MODELS[0].value : c.model,
+    }));
+    setTestResult(null);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/settings/vlm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      toast("AI Vision settings saved", "success");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Failed to save", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleTest() {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await fetch("/api/admin/settings/vlm?test=true", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setTestResult({ ok: true, message: data.message || "Connection successful" });
+        toast("Model responded successfully", "success");
+      } else {
+        setTestResult({ ok: false, error: data.error || "Test failed" });
+        toast("Connection test failed", "error");
+      }
+    } catch (e) {
+      setTestResult({ ok: false, error: e instanceof Error ? e.message : "Connection failed" });
+      toast("Connection test failed", "error");
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <section className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
+        <Loader2 className="h-5 w-5 animate-spin text-mocha" />
+      </section>
+    );
+  }
+
+  return (
+    <section className="rounded-xl border border-latte/20 bg-card p-5 sm:p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Eye className="h-4 w-4 text-forest" />
+        <h2 className="font-heading text-lg font-semibold text-espresso">AI Vision (Alt-Text Generation)</h2>
+      </div>
+      <p className="mb-4 text-sm text-mocha">
+        Configure the vision-language model used for generating alt-text and captions on marketing images.
+        Use a local model for free (at home) or a cloud provider when away.
+      </p>
+
+      {/* Provider selector */}
+      <div className="mb-4">
+        <label className="mb-2 block text-sm font-medium text-espresso">Provider</label>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {PROVIDERS.map((p) => (
+            <button
+              key={p.value}
+              type="button"
+              onClick={() => selectProvider(p.value as "local" | "huggingface" | "custom")}
+              className={`rounded-lg border p-3 text-left transition-colors ${
+                config.provider === p.value
+                  ? "border-forest bg-forest/5"
+                  : "border-latte/30 hover:border-latte/50"
+              }`}
+            >
+              <p className="text-sm font-medium text-espresso">{p.label}</p>
+              <p className="mt-1 text-xs text-mocha">{p.note}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Model + API base */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-espresso">Model</label>
+          {config.provider === "huggingface" ? (
+            <select
+              value={config.model}
+              onChange={(e) => setConfig({ ...config, model: e.target.value })}
+              className="input-field"
+            >
+              {HF_MODELS.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={config.model}
+              onChange={(e) => setConfig({ ...config, model: e.target.value })}
+              placeholder={config.provider === "local" ? "e.g. qwen3-vl-8b-instruct" : "model-id"}
+              className="input-field"
+            />
+          )}
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-espresso">API Base URL</label>
+          <input
+            type="text"
+            value={config.api_base}
+            onChange={(e) => setConfig({ ...config, api_base: e.target.value })}
+            className="input-field"
+          />
+        </div>
+        {config.provider !== "local" && (
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-espresso">API Key</label>
+            <input
+              type="password"
+              value={config.api_key}
+              onChange={(e) => setConfig({ ...config, api_key: e.target.value })}
+              placeholder={config.provider === "huggingface" ? "hf_..." : "sk-..."}
+              className="input-field"
+            />
+            <p className="mt-1 text-xs text-mocha">
+              {config.provider === "huggingface"
+                ? "Free token at huggingface.co/settings/tokens"
+                : "Leave empty if your API doesn't require a key"}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Test result */}
+      {testResult && (
+        <div className={`mt-4 rounded-lg border p-3 text-sm ${
+          testResult.ok
+            ? "border-sage/30 bg-sage/5 text-sage"
+            : "border-red-300 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300"
+        }`}>
+          {testResult.ok ? (
+            <span className="flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" /> {testResult.message}
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" /> {testResult.error}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="mt-4 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleTest}
+          disabled={testing || !config.model}
+          className="flex items-center gap-1.5 rounded-lg border border-latte/30 px-4 py-2 text-sm text-mocha hover:bg-latte/10 disabled:opacity-50"
+        >
+          {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+          Test Connection
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || !config.model}
+          className="btn-primary"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          Save AI Config
+        </button>
+      </div>
+    </section>
   );
 }
