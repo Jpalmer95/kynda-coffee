@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { SkipLink } from "@/components/ui/SkipLink";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import { FloatingCheckout } from "@/components/cart/FloatingCheckout";
 import { BackToTop } from "@/components/ui/BackToTop";
 import { InstallPrompt } from "@/components/ui/InstallPrompt";
 import { OfflineBanner } from "@/components/ui/OfflineBanner";
@@ -173,6 +174,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
             <BottomNav />
             <CartDrawer />
+            <FloatingCheckout />
             <BackToTop />
             <InstallPrompt />
             <SWUpdater />
