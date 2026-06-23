@@ -31,6 +31,7 @@ export default function CartPage() {
   const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
+  const [giftCardId, setGiftCardId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const tax = calculateTax(subtotal_cents);
@@ -43,15 +44,32 @@ export default function CartPage() {
     if (!promoCode.trim()) return;
     setPromoLoading(true);
     try {
-      // Simple mock validation for now (real gift card / promo handling exists)
-      if (promoCode.toUpperCase() === "KYNDACOFFEE20") {
-        applyPromo(promoCode.toUpperCase(), 2000);
-        toast("Promo applied!", "success");
+      const res = await fetch("/api/checkout/apply-promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: promoCode.trim(),
+          subtotal_cents,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast(data.error || "Invalid code", "error");
       } else {
-        toast("Invalid promo code", "error");
+        applyPromo(data.code, data.discount_cents);
+        if (data.gift_card_id) {
+          // Store gift card ID for checkout
+          setGiftCardId(data.gift_card_id);
+        }
+        toast(
+          data.type === "fixed_amount"
+            ? `Gift card applied: $${(data.discount_cents / 100).toFixed(2)} off`
+            : "Promo applied!",
+          "success"
+        );
       }
     } catch {
-      toast("Failed to apply promo", "error");
+      toast("Failed to apply code", "error");
     } finally {
       setPromoLoading(false);
     }
@@ -75,6 +93,7 @@ export default function CartPage() {
           success_url: `${window.location.origin}/shop/checkout?success=true`,
           cancel_url: `${window.location.origin}/shop/cart`,
           promo_code: promo_code ?? undefined,
+          gift_card_id: giftCardId ?? undefined,
           discount_cents: discount_cents ?? 0,
           loyalty_points_redeemed: loyalty_points_used || 0,
           loyalty_points_value_cents: loyalty_value_cents || 0,
@@ -273,7 +292,7 @@ export default function CartPage() {
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Promo code"
+                    placeholder="Promo or gift card code"
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                     className="input-field flex-1"

@@ -128,6 +128,37 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   const metadata = session.metadata ?? {};
 
+  // ── Gift card REDEMPTION: deduct balance after confirmed payment ──
+  // When a customer uses a gift card at checkout, the discount was already
+  // applied to the Stripe session. Now that payment succeeded, deduct the
+  // actual balance from the gift card so it can't be reused.
+  if (metadata.gift_card_redeem_id) {
+    try {
+      const db = supabaseAdmin();
+      const { data: card } = await db
+        .from("gift_cards")
+        .select("id, balance_cents, status")
+        .eq("id", metadata.gift_card_redeem_id)
+        .single();
+
+      if (card && card.status === "active") {
+        const redeemAmount = parseInt(metadata.discount_cents ?? "0", 10) || card.balance_cents;
+        const newBalance = Math.max(0, card.balance_cents - redeemAmount);
+        await db
+          .from("gift_cards")
+          .update({
+            balance_cents: newBalance,
+            status: newBalance <= 0 ? "redeemed" : "active",
+            redeemed_at: new Date().toISOString(),
+          })
+          .eq("id", card.id);
+        console.log(`[Stripe Webhook] Redeemed gift card ${card.id}: ${card.balance_cents} → ${newBalance}`);
+      }
+    } catch (redeemErr) {
+      console.error("[Stripe Webhook] Gift card redemption failed:", redeemErr);
+    }
+  }
+
   // ── Gift card purchase: activate on confirmed payment ──
   // Cards are created pending_payment; only a completed checkout makes them
   // spendable. The recipient gets their code by email on activation.

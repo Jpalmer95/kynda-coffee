@@ -111,6 +111,9 @@ export default function AdminGiftCardsPage() {
         </button>
       </div>
 
+      {/* In-person verification tool */}
+      <GiftCardLookup />
+
       {error && (
         <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
           {error}
@@ -230,6 +233,93 @@ export default function AdminGiftCardsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Staff gift card verification tool ─────────────────────────────────────
+function GiftCardLookup() {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{
+    found: boolean;
+    code?: string;
+    balance?: number;
+    amount?: number;
+    status?: string;
+  } | null>(null);
+
+  async function handleLookup() {
+    if (!code.trim()) return;
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await fetch(`/api/gift-cards/check?code=${encodeURIComponent(code.trim())}`);
+      const data = await res.json();
+      if (res.ok && data.gift_card) {
+        setResult({
+          found: true,
+          code: data.gift_card.code,
+          balance: data.gift_card.balance_cents,
+          amount: data.gift_card.amount_cents,
+          status: data.gift_card.status,
+        });
+      } else {
+        setResult({ found: false });
+      }
+    } catch {
+      setResult({ found: false });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="mb-6 rounded-xl border border-latte/20 bg-card p-4">
+      <h3 className="mb-2 text-sm font-semibold text-espresso">Verify Gift Card (In-Person)</h3>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          onKeyDown={(e) => e.key === "Enter" && handleLookup()}
+          placeholder="Enter gift card code..."
+          className="input-field flex-1 font-mono"
+        />
+        <button
+          onClick={handleLookup}
+          disabled={loading || !code.trim()}
+          className="btn-secondary disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Check"}
+        </button>
+      </div>
+      {result && (
+        <div className="mt-3">
+          {result.found ? (
+            <div className="rounded-lg border border-sage/30 bg-sage/5 p-3">
+              <p className="font-mono font-bold text-espresso">{result.code}</p>
+              <p className="mt-1 text-sm">
+                Balance:{" "}
+                <span className={`font-bold ${result.status === "active" ? "text-sage" : "text-red-600"}`}>
+                  ${((result.balance ?? 0) / 100).toFixed(2)}
+                </span>
+                <span className="text-mocha"> / ${((result.amount ?? 0) / 100).toFixed(2)} original</span>
+              </p>
+              <p className="text-sm">
+                Status:{" "}
+                <span className={`font-medium ${result.status === "active" ? "text-sage" : "text-red-600"}`}>
+                  {result.status}
+                </span>
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+              Gift card not found. Check the code and try again.
+            </div>
+          )}
         </div>
       )}
     </div>

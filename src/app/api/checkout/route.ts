@@ -201,7 +201,13 @@ export async function POST(req: NextRequest) {
       subtotal_cents: String(subtotal),
     };
     if (parsed.promo_code) metadata.promo_code = parsed.promo_code;
-    if (parsed.gift_card_id) metadata.gift_card_id = parsed.gift_card_id;
+    if (parsed.gift_card_id) {
+      // Gift card redemption: deduct balance after payment succeeds.
+      // (Gift card PURCHASES go through /api/gift-cards/create which sets
+      // its own metadata — this is for USING a gift card at checkout.)
+      metadata.gift_card_redeem_id = parsed.gift_card_id;
+      metadata.discount_cents = String(discount_cents);
+    }
     if (loyaltyPointsRedeemed > 0) {
       metadata.loyalty_points_redeemed = String(loyaltyPointsRedeemed);
       metadata.loyalty_value_cents = String(loyaltyValueCents);
