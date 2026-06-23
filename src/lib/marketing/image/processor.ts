@@ -52,7 +52,7 @@ export async function resizeForPlatform(
 
 // ─── Add watermark ───────────────────────────────────────────────────────────
 export interface WatermarkOptions {
-  position?: "south-east" | "south-west" | "north-east" | "north-west" | "center";
+  position?: "southeast" | "southwest" | "northeast" | "northwest" | "center";
   opacity?: number; // 0–1, default 0.15
   scale?: number; // fraction of image width, default 0.12
 }
@@ -61,7 +61,7 @@ export async function addWatermark(
   inputBuffer: Buffer,
   options: WatermarkOptions = {}
 ): Promise<Buffer> {
-  const { position = "south-east", opacity = 0.15, scale = 0.12 } = options;
+  const { position = "southeast", opacity = 0.15, scale = 0.12 } = options;
 
   const metadata = await sharp(inputBuffer).metadata();
   const imgWidth = metadata.width || 1080;
