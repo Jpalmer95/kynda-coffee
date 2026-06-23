@@ -99,3 +99,28 @@ Audit session: comprehensive admin page review
 - **Admin analytics revenue:** `totalRevenue` may sum all orders instead of last 30 days — needs query audit
 - **Admin inventory:** Read-only table with no inline editing for thresholds/stock counts — needs PATCH handlers + inline UI
 - **Admin promo-codes:** Delete/toggle failures silently swallowed — needs error toast branches
+
+## Pending Issues (From Audit — Admin Pages Part 2)
+
+### RESOLVED — Marketing dashboard exposed agent key [FIXED]
+- **Issue:** `process.env.NEXT_PUBLIC_AGENT_API_KEY` sent in client-side fetch header — visible in browser bundle
+- **Fix:** Removed header; loop/run endpoint now accepts requireTier("manager") session as third auth option
+- **Commit:** 0f4c852
+
+### RESOLVED — Mockups sync raw auth [FIXED]
+- **Issue:** `/api/admin/mockups/sync` used createClient + getUser() with no tier check — any authenticated user could trigger Printful sync
+- **Fix:** Migrated to requireTier("manager")
+- **Commit:** 0f4c852
+
+### RESOLVED — Marketing social null reference [FIXED]
+- **Issue:** `post.image_urls.length` threw TypeError when image_urls was null
+- **Fix:** Optional chaining: `post.image_urls?.length`
+- **Commit:** 0f4c852
+
+### MEDIUM priority — still pending
+- **Image-sync / sync-catalog:** Admin page calls /api/square/sync-catalog which only accepts CRON_SECRET or AGENT_API_KEY — browser call gets 401. Needs a separate requireTier-protected admin endpoint or proxy
+- **QR Tables:** Uses localStorage only, no backend persistence — data lost across devices/incognito. Needs DB table + API
+
+### LOW priority — still pending
+- **Marketing social filter badges:** Show total count for every status tab instead of per-status count
+- **Training page:** `.limit(1)` on courses query means only one course is ever shown — may need a course selector if multiple courses exist
