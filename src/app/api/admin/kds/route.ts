@@ -23,18 +23,17 @@ export async function GET(req: NextRequest) {
     // This prevents stale tickets from accumulating on the board when staff
     // forget to bump them. Runs on every KDS load (non-blocking).
     const staleCutoff = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
-    supabase
+    void supabase
       .from("orders")
       .update({ status: "complete", updated_at: new Date().toISOString() })
       .in("status", [...ACTIVE_KDS_STATUSES])
       .or(channelFilter)
       .lt("created_at", staleCutoff)
       .then((r) => {
-        if (r.data && (r.data as any[]).length > 0) {
-          console.log(`[KDS] Auto-completed ${(r.data as any[]).length} stale orders older than 2 days`);
+        if (r.data && (r.data as unknown[]).length > 0) {
+          console.log(`[KDS] Auto-completed ${(r.data as unknown[]).length} stale orders older than 2 days`);
         }
-      })
-      .catch(() => {}); // non-blocking, never fail the KDS load
+      });
 
     // Date scope: default = today only (shop-local midnight). ?scope=all
     // shows older stale tickets too (e.g. something left over from yesterday).
