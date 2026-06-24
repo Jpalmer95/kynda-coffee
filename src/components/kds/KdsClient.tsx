@@ -573,18 +573,29 @@ export function KdsClient({ backHref }: { backHref?: string }) {
 
         {/* Recently Completed rail — recover an accidental "Picked Up" tap */}
         <div className="mt-8 border-t border-sand/15 pt-5">
-          <button
-            onClick={() => setShowCompleted((v) => !v)}
-            className="flex items-center gap-2 rounded-2xl border border-sand/20 px-4 py-2 text-sm text-sand/80 hover:bg-sand/10"
-            aria-expanded={showCompleted}
-          >
-            <HistoryIcon className="h-4 w-4" />
-            Recently Completed ({completed.length})
-            <span className="text-xs text-sand/50">{showCompleted ? "▲ hide" : "▼ show"}</span>
-          </button>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => setShowCompleted((v) => !v)}
+              className="flex items-center gap-2 rounded-2xl border border-sand/20 px-4 py-2 text-sm text-sand/80 hover:bg-sand/10"
+              aria-expanded={showCompleted}
+            >
+              <HistoryIcon className="h-4 w-4" />
+              Recently Completed ({completed.length})
+              <span className="text-xs text-sand/50">{showCompleted ? "▲ hide" : "▼ show"}</span>
+            </button>
+            {backHref && (
+              <Link
+                href="/admin/orders/history"
+                className="flex items-center gap-2 rounded-2xl border border-sand/20 px-4 py-2 text-sm text-sand/80 hover:bg-sand/10"
+              >
+                <HistoryIcon className="h-4 w-4" />
+                Full Order History →
+              </Link>
+            )}
+          </div>
           {showCompleted && (
             completed.length === 0 ? (
-              <p className="mt-3 text-sm text-sand/60">No orders completed in the last hour.</p>
+              <p className="mt-3 text-sm text-sand/60">No orders completed in the last 24 hours.</p>
             ) : (
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {completed.map((order) => {

@@ -16,8 +16,13 @@ export async function GET(req: NextRequest) {
 
   try {
     const supabase = supabaseAdmin();
+    // Broadened channel filter: catches every known order source so nothing
+    // falls through if order_channel happens to be NULL. The OR means an
+    // order matches if EITHER its source OR its order_channel is recognised.
+    //   Sources: qr, website, square-pos, agent, kynda-qr-order, kynda-website
+    //   Channels: qr, pickup, table, lobby, parking, delivery, pos, agent, web
     const channelFilter =
-      "source.eq.qr,order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent)";
+      "source.in.(qr,website,square-pos,agent,kynda-qr-order,kynda-website),order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent,web)";
 
     // Auto-cleanup: mark any active order older than 2 days as complete.
     // This prevents stale tickets from accumulating on the board when staff
@@ -49,16 +54,18 @@ export async function GET(req: NextRequest) {
 
     const [active, completed] = await Promise.all([
       activeQuery.order("created_at", { ascending: true }).limit(100),
-      // Recently Completed rail: finished tickets from the last hour so an
-      // accidental "Picked Up" tap is recoverable (Bring Back button).
+      // Recently Completed rail: finished tickets from the last 24 hours so
+      // an accidental "Picked Up" tap is recoverable and staff can review
+      // the day's fulfilled orders. Limit raised to 50 for a full day's
+      // worth of tickets.
       supabase
         .from("orders")
         .select(ORDER_SELECT)
         .in("status", ["complete", "fulfilled", "delivered"])
         .or(channelFilter)
-        .gte("updated_at", new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .gte("updated_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .order("updated_at", { ascending: false })
-        .limit(20),
+        .limit(50),
     ]);
 
     if (active.error) {

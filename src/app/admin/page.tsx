@@ -20,6 +20,7 @@ import {
   Sparkles,
   Inbox,
   Database,
+  History as HistoryIcon,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
@@ -72,6 +73,12 @@ export default function AdminPage() {
       label: "Orders",
       desc: "View and manage all orders",
       icon: ShoppingCart,
+    },
+    {
+      href: "/admin/orders/history",
+      label: "Order History",
+      desc: "Search past orders by day, week, or custom date range",
+      icon: HistoryIcon,
     },
     {
       href: "/admin/designs",
