@@ -583,15 +583,13 @@ export function KdsClient({ backHref }: { backHref?: string }) {
               Recently Completed ({completed.length})
               <span className="text-xs text-sand/50">{showCompleted ? "▲ hide" : "▼ show"}</span>
             </button>
-            {backHref && (
-              <Link
-                href="/admin/orders/history"
-                className="flex items-center gap-2 rounded-2xl border border-sand/20 px-4 py-2 text-sm text-sand/80 hover:bg-sand/10"
-              >
-                <HistoryIcon className="h-4 w-4" />
-                Full Order History →
-              </Link>
-            )}
+            <Link
+              href="/admin/orders/history"
+              className="flex items-center gap-2 rounded-2xl border border-sand/20 px-4 py-2 text-sm text-sand/80 hover:bg-sand/10"
+            >
+              <HistoryIcon className="h-4 w-4" />
+              Full Order History →
+            </Link>
           </div>
           {showCompleted && (
             completed.length === 0 ? (

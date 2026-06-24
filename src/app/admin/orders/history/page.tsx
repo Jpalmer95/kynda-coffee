@@ -7,6 +7,7 @@ import {
   Calendar,
   Download,
   Loader2,
+  Monitor,
   Package,
   Search,
 } from "lucide-react";
@@ -188,6 +189,13 @@ export default function OrderHistoryPage() {
                 {filtered.length} order{filtered.length === 1 ? "" : "s"} · Revenue: {formatPrice(totalRevenue)}
               </p>
             </div>
+            <Link
+              href="/admin/kds"
+              className="flex items-center gap-2 rounded-2xl border border-sand/20 px-4 py-2 text-sm text-sand/80 hover:bg-sand/10"
+            >
+              <Monitor className="h-4 w-4" />
+              KDS Board →
+            </Link>
           </div>
           <button
             onClick={handleExport}
