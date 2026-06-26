@@ -23,6 +23,8 @@ import {
   BellOff,
   CalendarDays,
   Check,
+  ChevronDown,
+  ChevronUp,
   Clock,
   History as HistoryIcon,
   Loader2,
@@ -117,6 +119,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const [orders, setOrders] = useState<KdsOrder[]>([]);
   const [completed, setCompleted] = useState<KdsOrder[]>([]);
   const [showCompleted, setShowCompleted] = useState(false);
+  const [expandedCompleted, setExpandedCompleted] = useState<Set<string>>(new Set());
   const [expandedTickets, setExpandedTickets] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -599,6 +602,8 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                 {completed.map((order) => {
                   const items = normalizeKdsItems(order.items);
                   const badge = sourceBadge(order);
+                  const tag = fulfillmentTag(order);
+                  const pay = paymentChip(order);
                   const summary = items
                     .map((it) => `${it.quantity > 1 ? `${it.quantity}x ` : ""}${it.name}`)
                     .join(", ");
@@ -606,6 +611,8 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                     order.fulfillment_metadata?.customer_name ||
                     order.email?.split("@")[0] ||
                     "Guest";
+                  const customerPhone = order.fulfillment_metadata?.customer_phone;
+                  const isExpanded = expandedCompleted.has(order.id);
                   return (
                     <div key={order.id} className="rounded-2xl border border-sand/15 bg-sand/5 p-4">
                       <div className="flex items-start justify-between gap-2">
@@ -620,6 +627,86 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                           {badge.label}
                         </span>
                       </div>
+
+                      {/* Expand / collapse toggle */}
+                      <button
+                        onClick={() =>
+                          setExpandedCompleted((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(order.id)) next.delete(order.id);
+                            else next.add(order.id);
+                            return next;
+                          })
+                        }
+                        className="mt-2 flex w-full items-center justify-center gap-1 text-xs font-medium text-sand/60 hover:text-sand"
+                      >
+                        {isExpanded ? (
+                          <><ChevronUp className="h-3.5 w-3.5" /> Hide details</>
+                        ) : (
+                          <><ChevronDown className="h-3.5 w-3.5" /> View details</>
+                        )}
+                      </button>
+
+                      {/* Expanded order details */}
+                      {isExpanded && (
+                        <div className="mt-2 space-y-2 border-t border-sand/15 pt-3">
+                          {/* Fulfillment + payment chips */}
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${tag.className}`}>
+                              {tag.label}
+                            </span>
+                            {pay && (
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${pay.className}`}>
+                                {pay.label}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Customer phone */}
+                          {typeof customerPhone === "string" && customerPhone.trim() && (
+                            <div className="flex items-center gap-1.5 text-xs text-sand/70">
+                              <Phone className="h-3 w-3 shrink-0" /> {customerPhone}
+                            </div>
+                          )}
+
+                          {/* Line items */}
+                          <div className="space-y-1.5">
+                            {items.map((item, i) => (
+                              <div key={i} className="rounded-lg border border-sand/10 px-2.5 py-1.5">
+                                <div className="flex justify-between gap-2 text-sm font-semibold text-sand">
+                                  <span>
+                                    {item.name}
+                                    {item.variant && <span className="ml-1 text-xs font-normal text-sand/60">({item.variant})</span>}
+                                  </span>
+                                  <span className={item.quantity > 1 ? "rounded bg-sand/20 px-1.5 text-xs" : ""}>x{item.quantity}</span>
+                                </div>
+                                {item.modifiers.length > 0 && (
+                                  <ul className="mt-0.5 space-y-0.5">
+                                    {item.modifiers.map((mod, mi) => (
+                                      <li key={mi} className="text-xs text-sand/60">+ {mod}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                                {item.notes && (
+                                  <div className="mt-0.5 rounded bg-amber-500/10 px-1.5 py-0.5 text-xs text-amber-300">✎ {item.notes}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Total + notes */}
+                          <div className="flex items-center justify-between border-t border-sand/10 pt-2 text-xs text-sand/70">
+                            <span>{items.length} item{items.length === 1 ? "" : "s"}</span>
+                            <span className="font-semibold text-sand">${(order.total_cents / 100).toFixed(2)}</span>
+                          </div>
+                          {order.notes && (
+                            <div className="rounded-lg bg-sand/10 px-2.5 py-1.5 text-xs text-sand/70">
+                              <span className="font-semibold text-sand">Note:</span> {order.notes}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <button
                         onClick={() => updateStatus(order.id, "ready")}
                         disabled={updatingId === order.id}
