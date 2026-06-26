@@ -4,8 +4,15 @@ function getClient() {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
   const from = process.env.TWILIO_PHONE_NUMBER;
+  const msgServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
   if (!sid || !token || !from) return null;
-  return { client: twilio(sid, token), from };
+  return {
+    client: twilio(sid, token),
+    from,
+    // When a Messaging Service SID (MG...) is set, Twilio routes through the
+    // A2P 10DLC campaign automatically — prefer it over the bare number.
+    sender: msgServiceSid || from,
+  };
 }
 
 export async function sendSms({
@@ -22,7 +29,7 @@ export async function sendSms({
   }
   try {
     const msg = await cfg.client.messages.create({
-      from: cfg.from,
+      from: cfg.sender,
       to,
       body,
     });
