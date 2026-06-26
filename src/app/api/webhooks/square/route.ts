@@ -61,13 +61,18 @@ export async function POST(req: NextRequest) {
         const orderData = {
           square_order_id: order.id,
           source: "square-pos" as const,
-          status: isOpen ? "confirmed" : "delivered",
+          status: isOpen ? "confirmed" : "complete",
           // Route genuine POS orders onto the shared KDS board so the team
           // manages every channel (online + counter) from one screen.
           // Marketplace orders ride the Delivery board instead.
           order_channel: isDeliveryPlatform ? "delivery" : "pos",
+          // POS orders are settled inside Square — never "unpaid" from our
+          // perspective. Without payment_status='paid' the prepaid-only KDS
+          // gate hides them.
+          payment_status: "paid",
+          payment_method: "square",
           total_cents: order.total_money?.amount ?? 0,
-          email: order.customer_id ? `square:${order.customer_id}` : "pos@kynda.local",
+          email: order.customer_id ? `square:${order.customer_id}` : "pos@kyndacoffee.com",
           fulfillment_metadata: {
             mode: isDeliveryPlatform ? "delivery" : "pickup",
             ...(sourceName && sourceName !== "Square Point of Sale"
@@ -93,6 +98,148 @@ export async function POST(req: NextRequest) {
         await supabaseAdmin()
           .from("orders")
           .upsert(orderData, { onConflict: "square_order_id" });
+        break;
+      }
+
+      case "payment.created":
+      case "payment.updated": {
+        const payment = data.payment;
+        if (!payment) break;
+
+        // Sync Square payment status onto the matching order. The order_id
+        // on the payment links back to our square_order_id column. This
+        // catches refunds, failures, and completions that the order.state
+        // webhook might not surface (especially for partial refunds).
+        const squareOrderId = payment.order_id;
+        if (!squareOrderId) break;
+
+        const { data: order } = await supabaseAdmin()
+          .from("orders")
+          .select("id, payment_status, payment_metadata")
+          .eq("square_order_id", squareOrderId)
+          .maybeSingle();
+
+        if (!order) break;
+
+        const cardDetails = payment.card_details?.card ?? {};
+        const paymentMetadata = {
+          ...((order.payment_metadata as Record<string, unknown>) ?? {}),
+          square_payment_id: payment.id,
+          card_brand: cardDetails.card_brand ?? null,
+          last_4: cardDetails.last_4 ?? null,
+          payment_state: payment.status,
+        };
+
+        // Map Square payment status to our payment_status
+        let paymentStatus = order.payment_status;
+        if (payment.status === "COMPLETED" || payment.status === "APPROVED") {
+          paymentStatus = "paid";
+        } else if (payment.status === "CANCELED" || payment.status === "FAILED") {
+          paymentStatus = "unpaid";
+        }
+
+        await supabaseAdmin()
+          .from("orders")
+          .update({
+            payment_status: paymentStatus,
+            payment_metadata: paymentMetadata,
+            ...(payment.status === "COMPLETED" || payment.status === "APPROVED"
+              ? { paid_at: payment.approved_money?.amount ? new Date().toISOString() : null }
+              : {}),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", order.id);
+
+        console.log(`[Square Webhook] Synced payment ${payment.id} for order ${squareOrderId} (status: ${payment.status})`);
+        break;
+      }
+
+      case "refund.created":
+      case "refund.updated": {
+        const refund = data.refund;
+        if (!refund) break;
+
+        const squareOrderId = refund.payment?.order_id ?? refund.order_id;
+        if (!squareOrderId) break;
+
+        const { data: order } = await supabaseAdmin()
+          .from("orders")
+          .select("id, payment_status, total_cents, payment_metadata")
+          .eq("square_order_id", squareOrderId)
+          .maybeSingle();
+
+        if (!order) break;
+
+        const refundAmount = refund.amount_money?.amount ?? 0;
+        const totalCents = order.total_cents ?? 0;
+        const isFullRefund = refundAmount >= totalCents;
+
+        const metadata = {
+          ...((order.payment_metadata as Record<string, unknown>) ?? {}),
+          square_refund_id: refund.id,
+          refund_amount_cents: refundAmount,
+          refund_reason: refund.reason ?? null,
+          refund_status: refund.status,
+        };
+
+        await supabaseAdmin()
+          .from("orders")
+          .update({
+            payment_status: isFullRefund ? "refunded" : "partially_refunded",
+            payment_metadata: metadata,
+            status: isFullRefund ? "refunded" : order.payment_status === "paid" ? "paid" : undefined,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", order.id);
+
+        console.log(`[Square Webhook] Refund ${refund.id} for order ${squareOrderId} (${isFullRefund ? "full" : "partial"}: ${refundAmount}c)`);
+        break;
+      }
+
+      case "customer.created":
+      case "customer.updated": {
+        const sqCustomer = data.customer;
+        if (!sqCustomer) break;
+
+        // Sync Square customers into our customers table so loyalty and
+        // order history work for walk-in/POS customers, not just online.
+        const email = sqCustomer.email_address?.toLowerCase().trim();
+        if (!email) break; // Square customers without an email are unmatchable
+
+        const customerData = {
+          square_customer_id: sqCustomer.id,
+          email,
+          full_name: sqCustomer.given_name || sqCustomer.family_name
+            ? `${sqCustomer.given_name ?? ""} ${sqCustomer.family_name ?? ""}`.trim()
+            : null,
+          phone: sqCustomer.phone_number ?? null,
+        };
+
+        // Upsert by email — if the customer already exists (placed an online
+        // order before), just stamp the square_customer_id. Otherwise create.
+        const { data: existing } = await supabaseAdmin()
+          .from("customers")
+          .select("id")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (existing) {
+          await supabaseAdmin()
+            .from("customers")
+            .update({ square_customer_id: sqCustomer.id })
+            .eq("id", existing.id);
+        } else {
+          await supabaseAdmin()
+            .from("customers")
+            .insert({
+              email,
+              square_customer_id: sqCustomer.id,
+              loyalty_points: 0,
+              loyalty_tier: "bronze",
+            });
+        }
+
+        console.log(`[Square Webhook] Synced customer ${sqCustomer.id} (${email})`);
         break;
       }
 
@@ -123,6 +270,63 @@ export async function POST(req: NextRequest) {
         // Queue a catalog sync — in production, use a background job
         // For now, just log and optionally trigger a lightweight sync
         console.log("[Square] Catalog updated, consider running sync-square-catalog");
+        break;
+      }
+
+      // ── Team / Labor (Square Team + Payroll) ──────────────────────
+      // Kynda uses Square Team for scheduling and Square Payroll. These
+      // events keep our shifts table and team member records in sync so
+      // managers can schedule from either Square Dashboard or our staff
+      // portal. Logged for now; full sync can be layered in when needed.
+      case "team_member.created":
+      case "team_member.updated": {
+        const member = data.team_member;
+        if (!member) break;
+        console.log(`[Square Webhook] Team member ${event.type}: ${member.id} (${member.given_name ?? ""} ${member.family_name ?? ""})`);
+        // Future: upsert into profiles table with square_team_member_id
+        break;
+      }
+
+      case "team_member.wage_setting.updated": {
+        const member = data.team_member;
+        if (!member) break;
+        console.log(`[Square Webhook] Wage setting updated for ${member.id}`);
+        break;
+      }
+
+      case "job.created":
+      case "job.updated": {
+        const job = data.job;
+        if (!job) break;
+        console.log(`[Square Webhook] Job ${event.type}: ${job.id} (${job.title ?? ""})`);
+        break;
+      }
+
+      // Square Team scheduling (Shifts API)
+      case "labor.shift.created":
+      case "labor.shift.updated":
+      case "labor.shift.deleted": {
+        const shift = data.shift;
+        if (!shift) break;
+        console.log(`[Square Webhook] Labor shift ${event.type}: ${shift.id}`);
+        // Future: upsert/delete from shifts table keyed by square_shift_id
+        break;
+      }
+
+      // Square Team timecards (clock in/out for payroll)
+      case "labor.timecard.created":
+      case "labor.timecard.updated":
+      case "labor.timecard.deleted": {
+        const timecard = data.timecard;
+        if (!timecard) break;
+        console.log(`[Square Webhook] Timecard ${event.type}: ${timecard.id}`);
+        break;
+      }
+
+      default: {
+        // Unhandled event — log the type so we can spot gaps without
+        // crashing the webhook (Square retries on non-2xx).
+        console.log(`[Square Webhook] Unhandled event: ${event.type}`);
         break;
       }
     }
