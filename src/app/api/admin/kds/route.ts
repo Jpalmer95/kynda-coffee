@@ -19,10 +19,13 @@ export async function GET(req: NextRequest) {
     // Broadened channel filter: catches every known order source so nothing
     // falls through if order_channel happens to be NULL. The OR means an
     // order matches if EITHER its source OR its order_channel is recognised.
-    //   Sources: qr, website, square-pos, agent, kynda-qr-order, kynda-website
+    //   Sources: pos, qr, website, square-pos, agent, kynda-qr-order, kynda-website
     //   Channels: qr, pickup, table, lobby, parking, delivery, pos, agent, web
+    // 'pos' is included as a legacy safety net — syncRecentOrders originally
+    // wrote source='pos' (now corrected to 'square-pos') and 300 historical
+    // rows still carry the old value.
     const channelFilter =
-      "source.in.(qr,website,square-pos,agent,kynda-qr-order,kynda-website),order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent,web)";
+      "source.in.(pos,qr,website,square-pos,agent,kynda-qr-order,kynda-website),order_channel.in.(qr,pickup,table,lobby,parking,delivery,pos,agent,web)";
 
     // Auto-cleanup: mark any active order older than 2 days as complete.
     // This prevents stale tickets from accumulating on the board when staff

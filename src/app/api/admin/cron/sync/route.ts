@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
  * Authenticates via X-Agent-Key header matching AGENT_API_KEY env var
  * (same key used by the Hermes agent API bridge).
  *
- * Body options (all optional, defaults to both):
- *   { "catalog": true, "mockups": false }
+ * Body options (all optional, defaults to catalog only):
+ *   { "catalog": true, "mockups": false, "orders": false }
  *
  * Returns a summary of what was synced.
  */
@@ -29,15 +29,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { catalog?: boolean; mockups?: boolean } = {};
+  let body: { catalog?: boolean; mockups?: boolean; orders?: boolean } = {};
   try {
     body = await req.json();
   } catch {
-    // no body — default to both
+    // no body — default to catalog
   }
 
   const runCatalog = body.catalog !== false;
   const runMockups = body.mockups === true;
+  const runOrders = body.orders === true;
   const results: Record<string, unknown> = {};
   const baseUrl = new URL(req.url).origin;
 
@@ -65,5 +66,18 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ success: true, triggered: { catalog: runCatalog, mockups: runMockups }, results });
+  if (runOrders) {
+    try {
+      const res = await fetch(`${baseUrl}/api/square/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "orders", hoursBack: 24 }),
+      });
+      results.orders = await res.json();
+    } catch (err) {
+      results.orders = { error: String(err) };
+    }
+  }
+
+  return NextResponse.json({ success: true, triggered: { catalog: runCatalog, mockups: runMockups, orders: runOrders }, results });
 }

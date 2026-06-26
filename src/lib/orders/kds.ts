@@ -21,7 +21,7 @@ export const KDS_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   refunded: [],
 };
 
-const KDS_CHANNELS = new Set(["qr", "pickup", "table", "lobby", "parking", "delivery", "pos", "agent"]);
+const KDS_CHANNELS = new Set(["qr", "pickup", "table", "lobby", "parking", "delivery", "pos", "agent", "web"]);
 
 /** Café timezone — KDS "today" boundaries follow shop-local midnight. */
 export const KDS_TIMEZONE = "America/Chicago";
@@ -52,7 +52,7 @@ export function startOfTodayInTz(tz: string = KDS_TIMEZONE, reference: Date = ne
  */
 export function isHeldForPayment(order: KdsOrderLike): boolean {
   // In-person surfaces are exempt.
-  if (order.source === "square-pos" || order.order_channel === "pos") return false;
+  if (order.source === "square-pos" || order.source === "pos" || order.order_channel === "pos") return false;
   if (order.fulfillment_metadata?.label === "Kiosk") return false;
   return order.payment_status !== "paid";
 }

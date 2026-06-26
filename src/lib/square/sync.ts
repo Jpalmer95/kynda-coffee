@@ -232,6 +232,12 @@ export async function syncRecentOrders(hoursBack: number = 24): Promise<SyncResu
 
         if (existing) continue;
 
+        // Normalize the Square order state to our KDS lifecycle.
+        // OPEN orders land on the board as "confirmed" (ready to start).
+        // COMPLETED orders map to "complete" so they show in Recently Completed.
+        // CANCELED → cancelled (off the active board).
+        const orderState = mapSquareOrderStatus(order.state);
+
         const lineItems = order.lineItems?.map((item) => ({
           product_name: item.name ?? "Unknown",
           quantity: parseInt(item.quantity ?? "1"),
@@ -239,11 +245,21 @@ export async function syncRecentOrders(hoursBack: number = 24): Promise<SyncResu
           total_cents: Number(item.totalMoney?.amount ?? 0),
         })) ?? [];
 
+        // Source + channel MUST match what the Square webhook writes so the
+        // KDS channelFilter (source IN (... 'square-pos' ...) OR
+        // order_channel IN (... 'pos' ...)) picks them up. The old code
+        // wrote source='pos' with no order_channel, which matched neither.
         const orderRecord = {
           order_number: `SQ-${order.id?.slice(-8) ?? Date.now()}`,
           email: order.fulfillments?.[0]?.shipmentDetails?.recipient?.emailAddress ?? "pos@kyndacoffee.com",
-          status: mapSquareOrderStatus(order.state),
-          source: "pos" as const,
+          status: orderState,
+          source: "square-pos" as const,
+          order_channel: "pos" as const,
+          // POS orders are settled inside Square — they're never "unpaid" from
+          // our perspective. Without this, the prepaid-only gate hides them.
+          payment_status: "paid" as const,
+          payment_method: "square" as const,
+          paid_at: order.closedAt ?? new Date().toISOString(),
           items: lineItems,
           subtotal_cents: Number(order.totalMoney?.amount ?? 0),
           tax_cents: Number(order.totalTaxMoney?.amount ?? 0),
@@ -288,7 +304,9 @@ function mapSquareCategory(squareCategory: string | undefined): string {
 function mapSquareOrderStatus(state: string | undefined): string {
   const mapping: Record<string, string> = {
     "OPEN": "confirmed",
-    "COMPLETED": "delivered",
+    // COMPLETED Square orders go to "complete" so they appear in the KDS
+    // Recently Completed rail. "delivered" is terminal and invisible.
+    "COMPLETED": "complete",
     "CANCELED": "cancelled",
   };
   return mapping[state ?? ""] ?? "pending";
