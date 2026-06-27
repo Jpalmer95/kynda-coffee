@@ -5,6 +5,7 @@ import { Loader2, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import type { PosCatalogCategoryGroup, PosCatalogItem, PosCatalogModifier } from "@/lib/pos/catalog";
 import { formatMoney } from "@/lib/pos/catalog";
 import type { QrFulfillmentMode, QrPaymentPreference } from "@/lib/orders/qr-order";
+import { SmsConsentCheckbox } from "@/components/order/SmsConsentCheckbox";
 
 interface QrCartLine {
   id: string;
@@ -49,6 +50,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
+  const [smsConsent, setSmsConsent] = useState(false);
   const [fulfillmentMode, setFulfillmentMode] = useState<QrFulfillmentMode>(
     (initialMode === "table" || initialMode === "parking") ? initialMode : "lobby"
   );
@@ -312,6 +314,15 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
               Phone
               <input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="mt-1 w-full rounded-xl border border-latte/40 px-3 py-2" placeholder="Text/call if needed" />
             </label>
+            {customerPhone.trim() && (
+              <div className="sm:col-span-2 xl:col-span-1">
+                <SmsConsentCheckbox
+                  checked={smsConsent}
+                  onChange={setSmsConsent}
+                  id="sms-consent-qr"
+                />
+              </div>
+            )}
             <label className="text-sm font-medium text-espresso">
               Email optional
               <input type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="mt-1 w-full rounded-xl border border-latte/40 px-3 py-2" placeholder="you@email.com" />

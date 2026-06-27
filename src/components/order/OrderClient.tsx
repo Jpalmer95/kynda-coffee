@@ -11,6 +11,7 @@ import { formatMoney } from "@/lib/pos/catalog";
 import { formatPrice } from "@/lib/utils";
 import type { QrFulfillmentMode, QrPaymentPreference } from "@/lib/orders/qr-order";
 import { useMenuCartStore } from "@/hooks/useMenuCart";
+import { SmsConsentCheckbox } from "@/components/order/SmsConsentCheckbox";
 
 interface CartLine {
   id: string;
@@ -84,7 +85,8 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
-  const initialFulfillment: QrFulfillmentMode = 
+  const [smsConsent, setSmsConsent] = useState(false);
+  const initialFulfillment: QrFulfillmentMode =
     initialMode === "table" ? "table" :
     initialMode === "parking" ? "parking" :
     initialMode === "pickup" ? "pickup" : "lobby";
@@ -557,6 +559,12 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       className="input w-full bg-surface-deep border border-latte px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
                     />
                   </label>
+                  {customerPhone.trim() && (
+                    <SmsConsentCheckbox
+                      checked={smsConsent}
+                      onChange={setSmsConsent}
+                    />
+                  )}
                   
                   <label className="block">
                     <span className="sr-only">Email</span>
