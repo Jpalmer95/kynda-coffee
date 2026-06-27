@@ -76,20 +76,6 @@ export function CartDrawer() {
 
   return (
     <>
-      {/* Floating cart button (mobile) */}
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed right-4 bottom-24 z-40 flex h-14 w-14 items-center justify-center rounded-[8px] bg-forest text-surface-card shadow-lg transition-transform hover:scale-105 active:scale-95 lg:hidden"
-          aria-label={`Open cart (${item_count} items)`}
-        >
-          <ShoppingBag className="h-6 w-6" />
-          {item_count > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-surface-800 text-[11px] font-bold text-sand border border-forest">
-              {item_count > 9 ? "9+" : item_count}
-            </span>
-          )}
-        </button>
-
       {/* Overlay */}
       {open && (
         <div

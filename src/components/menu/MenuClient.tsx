@@ -2,13 +2,11 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { ShoppingCart, SlidersHorizontal, X, Coffee, Minus, Plus, Search, Leaf, Wheat, MilkOff } from "lucide-react";
+import { SlidersHorizontal, X, Coffee, Search, Leaf, Wheat, MilkOff } from "lucide-react";
 import type { PosCatalogCategoryGroup, PosCatalogItem } from "@/lib/pos/catalog";
-import { formatMoney } from "@/lib/pos/catalog";
 import { MenuItemDialog } from "@/components/menu/MenuItemDialog";
 import { MenuSpecials } from "@/components/menu/MenuSpecials";
 import { BuildYourOwn } from "@/components/menu/BuildYourOwn";
-import { useMenuCartStore } from "@/hooks/useMenuCart";
 
 interface MenuClientProps {
   categories: PosCatalogCategoryGroup[];
@@ -52,9 +50,6 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
   const [activeDietary, setActiveDietary] = useState<Set<DietaryTag>>(new Set());
   const [selectedItem, setSelectedItem] = useState<PosCatalogItem | null>(null);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [showCart, setShowCart] = useState(false);
-
-  const { items, item_count, subtotal_cents, updateQuantity, removeItem } = useMenuCartStore();
 
   const allCategoryNames = useMemo(() => categories.map((c) => c.name), [categories]);
 
@@ -389,122 +384,11 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
 
       <MenuItemDialog item={selectedItem} onClose={() => setSelectedItem(null)} />
 
-      {/* Floating Cart Button */}
-      {item_count > 0 && (
-        <button
-          onClick={() => setShowCart(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-[8px] border border-forest-300/30 bg-forest-300/10 text-forest-300 px-5 py-4 font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(74,222,128,0.15)] transition-transform hover:scale-105 active:scale-95"
-        >
-          <ShoppingCart className="h-5 w-5" />
-          <span>
-            {item_count} Item{item_count !== 1 ? "s" : ""} · {formatMoney(subtotal_cents)}
-          </span>
-        </button>
-      )}
-
-      {/* Cart Drawer Modal Desktop */}
-      {showCart && (
-        <div
-          className="fixed inset-0 z-50 flex justify-end bg-surface-800/40 backdrop-blur-[12px]"
-          onClick={() => setShowCart(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="flex h-full w-full max-w-md flex-col overflow-auto bg-surface-sidebar shadow-[0_0_40px_rgba(0,0,0,0.5)] animate-fade-in border-l border-latte"
-          >
-            <div className="flex items-center justify-between border-b border-latte bg-surface-deep px-5 py-6">
-              <h2 className="font-heading text-2xl font-bold text-sand tracking-tight">
-                Current Order
-              </h2>
-              <button
-                onClick={() => setShowCart(false)}
-                className="flex items-center justify-center rounded-[4px] border border-latte bg-surface-sidebar p-2 text-sand-50 hover:bg-latte hover:text-sand"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-5 py-4">
-              {items.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center text-center">
-                  <ShoppingCart className="h-10 w-10 text-latte" />
-                  <p className="mt-3 text-mocha">Your cart is empty</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {items.map((line) => (
-                    <div
-                      key={line.id}
-                      className="flex gap-4 rounded-[8px] border border-latte bg-surface-card p-4 shadow-sm"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="font-heading text-lg font-bold text-espresso dark:text-sand">
-                          {line.itemName}
-                          {line.variationName && line.variationName !== "Regular" && (
-                            <span className="text-latte-500 font-body text-sm font-medium"> — {line.variationName}</span>
-                          )}
-                        </div>
-                        {line.modifierNames.length > 0 && (
-                          <div className="mt-2 text-[11px] text-forest font-bold tracking-widest uppercase opacity-90 line-clamp-2">
-                            {line.modifierNames.join(" • ")}
-                          </div>
-                        )}
-                        <div className="mt-4 flex items-center justify-between">
-                          <div className="flex items-center rounded-[4px] border border-latte bg-surface-deep p-0.5">
-                            <button
-                              onClick={() => updateQuantity(line.id, line.quantity - 1)}
-                              className="flex h-8 w-8 items-center justify-center rounded-sm text-sand-50 hover:bg-latte hover:text-white"
-                            >
-                              <Minus className="h-4 w-4" />
-                            </button>
-                            <span className="w-8 text-center text-sm font-bold text-sand">
-                              {line.quantity}
-                            </span>
-                            <button
-                              onClick={() => updateQuantity(line.id, line.quantity + 1)}
-                              className="flex h-8 w-8 items-center justify-center rounded-sm text-sand-50 hover:bg-latte hover:text-white"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </button>
-                          </div>
-                          <button
-                            onClick={() => removeItem(line.id)}
-                            className="text-sm font-bold text-latte-500 transition-colors hover:text-red-500 underline decoration-latte underline-offset-4"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <div className="font-mono text-base font-bold text-sand">
-                          {formatMoney(line.unitPriceCents * line.quantity)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {items.length > 0 && (
-              <div className="border-t border-latte bg-[cream] px-5 py-6 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-base text-mocha font-body tracking-[0.05em] uppercase">Subtotal</span>
-                  <span className="text-2xl font-bold font-mono tracking-tight text-forest">
-                    {formatMoney(subtotal_cents)}
-                  </span>
-                </div>
-                <a
-                  href="/order"
-                  className="btn-accent mt-4 flex w-full items-center justify-center py-4 text-sm font-bold tracking-[0.05em] uppercase border border-forest-300/30"
-                >
-                  PROCEED TO CHECKOUT &rarr;
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/*
+        Floating cart button and cart drawer are handled globally by
+        FloatingCheckout + CartDrawer, which read from useMenuCartStore.
+        No local duplicate is needed here.
+      */}
     </div>
   );
 }

@@ -12,7 +12,7 @@ export function abandonedCartHtml(data: any) {
         `).join("") || ""}
       </div>
       
-      <a href="${data.cartUrl || "https://kyndacoffee.com/cart"}" 
+      <a href="${data.cartUrl || "https://kyndacoffee.com/shop/cart"}" 
          style="display: inline-block; background: #286849; color: white; padding: 12px 24px; text-decoration: none; border-radius: 9999px; font-weight: 600;">
         Complete your order
       </a>
