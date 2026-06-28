@@ -20,34 +20,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Code and amount required" }, { status: 400 });
     }
 
-    const { data: giftCard } = await supabaseAdmin()
-      .from("gift_cards")
-      .select("id, balance_cents, status")
-      .eq("code", code)
-      .maybeSingle();
+    // ── Race-condition-safe redemption ────────────────────────────────
+    // Uses a SECURITY DEFINER RPC that locks the gift card row with
+    // SELECT ... FOR UPDATE, validates the balance, and decrements in a
+    // single transaction. Concurrent redemption attempts serialize on
+    // the row lock, preventing double-spend.
+    const { data: result, error: rpcError } = await supabaseAdmin()
+      .rpc("redeem_gift_card", {
+        p_code: code,
+        p_amount_cents: amount_cents,
+      });
 
-    if (!giftCard) {
+    if (rpcError) {
+      console.error("Gift card redeem RPC error:", rpcError);
+      return NextResponse.json({ error: "Failed to redeem gift card" }, { status: 500 });
+    }
+
+    if (!result || result.length === 0) {
       return NextResponse.json({ error: "Invalid gift card code" }, { status: 404 });
     }
 
-    if (giftCard.status !== "active") {
-      return NextResponse.json({ error: "Gift card is not active" }, { status: 400 });
+    const r = result[0];
+    if (!r.success) {
+      return NextResponse.json({ error: r.message || "Failed to redeem gift card" }, { status: 400 });
     }
 
-    if (giftCard.balance_cents < amount_cents) {
-      return NextResponse.json({ error: "Insufficient balance" }, { status: 400 });
-    }
-
-    const newBalance = giftCard.balance_cents - amount_cents;
-    await supabaseAdmin()
-      .from("gift_cards")
-      .update({
-        balance_cents: newBalance,
-        status: newBalance <= 0 ? "redeemed" : "active",
-      })
-      .eq("id", giftCard.id);
-
-    return NextResponse.json({ success: true, remaining_balance_cents: newBalance });
+    return NextResponse.json({ success: true, remaining_balance_cents: r.remaining_balance_cents });
   } catch {
     return NextResponse.json({ error: "Failed to redeem gift card" }, { status: 500 });
   }

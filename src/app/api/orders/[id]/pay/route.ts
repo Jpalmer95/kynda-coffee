@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
   buildStripeLineItemsForOrder,
   buildStripeOrderMetadata,
@@ -36,6 +37,38 @@ export async function POST(
       return NextResponse.json({ error: "Order not found." }, { status: 404 });
     }
 
+    // ── Auth: verify the caller is authorized to pay this order ──────
+    // Accept any of:
+    //   1. CRON_SECRET / AGENT_API_KEY bearer (server-side flows)
+    //   2. Authenticated session whose email matches the order
+    //   3. Unauthenticated QR/table/pickup orders (the order was just
+    //      created by this client; the Stripe session itself is harmless
+    //      without payment completion, and the order must be unpaid)
+    const authHeader = req.headers.get("authorization") ?? "";
+    const bearer = authHeader.replace(/^Bearer\s+/i, "");
+    const cronSecret = process.env.CRON_SECRET;
+    const agentKey = process.env.AGENT_API_KEY;
+    const isServerAuth =
+      (cronSecret && bearer === cronSecret) ||
+      (agentKey && bearer === agentKey);
+
+    if (!isServerAuth) {
+      // Check if the user is authenticated (cookie-based session)
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user && order.email !== user.email) {
+        // Authenticated user trying to pay someone else's order
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      // If no authenticated user, only allow for QR/table/pickup orders
+      // (these are created without login). Online shop orders require auth.
+      if (!user && order.source === "website") {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
     const payableOrder = order as StripePayableOrder;
     const canPay = canCreateStripePaymentForOrder(payableOrder);
     if (!canPay.ok) {
@@ -49,12 +82,6 @@ export async function POST(
       line_items: buildStripeLineItemsForOrder(payableOrder),
       success_url: stripeSuccessUrl(origin, payableOrder),
       cancel_url: stripeCancelUrl(origin, payableOrder),
-      // Apple Pay / Google Pay / Link / card are enabled automatically for
-      // Checkout Sessions via the Stripe Dashboard. (automatic_payment_methods
-      // is a PaymentIntent-only param and is rejected by checkout.sessions.)
-      // Collect the customer's name + phone at Stripe so wallet payments
-      // (Apple Pay / Google Pay) fill these in automatically — the webhook
-      // backfills them onto the order so staff can identify pickups.
       billing_address_collection: "auto",
       phone_number_collection: { enabled: true },
       metadata: buildStripeOrderMetadata(payableOrder),
