@@ -137,6 +137,9 @@ export async function POST(req: NextRequest) {
 
         const orderData = {
           square_order_id: order.id,
+          // Generate order_number from the Square order ID (matches the
+          // historical pattern: SQ-<last 8 chars>).
+          order_number: `SQ-${order.id.slice(-8)}`,
           source: "square-pos" as const,
           status: isOpen ? "confirmed" : "complete",
           // Route genuine POS orders onto the shared KDS board so the team
