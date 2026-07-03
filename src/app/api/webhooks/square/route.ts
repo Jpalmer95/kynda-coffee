@@ -152,6 +152,11 @@ export async function POST(req: NextRequest) {
           payment_status: "paid",
           payment_method: "square",
           total_cents: order.total_money?.amount ?? 0,
+          subtotal_cents: order.net_amounts?.discount_money?.amount != null
+            ? (order.total_money?.amount ?? 0) - (order.total_tax_money?.amount ?? 0) - (order.total_tip_money?.amount ?? 0)
+            : (order.total_money?.amount ?? 0) - (order.total_tax_money?.amount ?? 0),
+          tax_cents: order.total_tax_money?.amount ?? 0,
+          shipping_cents: 0,
           email: customerEmailForFulfillment
             ?? (order.customer_id ? `square:${order.customer_id}` : "pos@kyndacoffee.com"),
           fulfillment_metadata: {
