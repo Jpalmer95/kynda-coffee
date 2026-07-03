@@ -57,18 +57,18 @@ export async function GET(req: NextRequest) {
 
     const [active, completed] = await Promise.all([
       activeQuery.order("created_at", { ascending: true }).limit(100),
-      // Recently Completed rail: finished tickets from the last 24 hours so
+      // Recently Completed rail: finished tickets from the last 48 hours so
       // an accidental "Picked Up" tap is recoverable and staff can review
-      // the day's fulfilled orders. Limit raised to 50 for a full day's
-      // worth of tickets.
+      // 1-2 days' worth of fulfilled orders. Ordered newest-first so the
+      // most recently completed ticket is at the top.
       supabase
         .from("orders")
         .select(ORDER_SELECT)
         .in("status", ["complete", "fulfilled", "delivered"])
         .or(channelFilter)
-        .gte("updated_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .gte("updated_at", new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString())
         .order("updated_at", { ascending: false })
-        .limit(50),
+        .limit(200),
     ]);
 
     if (active.error) {

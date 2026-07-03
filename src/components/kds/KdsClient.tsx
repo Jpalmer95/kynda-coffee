@@ -596,7 +596,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
           </div>
           {showCompleted && (
             completed.length === 0 ? (
-              <p className="mt-3 text-sm text-sand/60">No orders completed in the last 24 hours.</p>
+              <p className="mt-3 text-sm text-sand/60">No orders completed in the last 48 hours.</p>
             ) : (
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {completed.map((order) => {

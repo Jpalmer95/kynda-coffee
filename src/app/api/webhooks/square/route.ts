@@ -158,6 +158,7 @@ export async function POST(req: NextRequest) {
             ...(sourceName && sourceName !== "Square Point of Sale"
               ? { external_source: sourceName }
               : {}),
+            ...(order.location_id ? { square_location_id: order.location_id } : {}),
           },
           items: (order.line_items ?? []).map((item: any) => ({
             product_name: item.name || "POS Item",
@@ -172,7 +173,6 @@ export async function POST(req: NextRequest) {
             })).filter((m: any) => m.name),
             notes: item.note || undefined,
           })),
-          metadata: { square_location_id: order.location_id },
         };
 
         const { error: upsertError } = await supabaseAdmin()
