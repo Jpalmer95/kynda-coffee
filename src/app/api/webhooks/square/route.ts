@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { squareOrders } from "@/lib/square/client";
 
 export const dynamic = "force-dynamic";
 
@@ -57,12 +58,35 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "order.created":
       case "order.updated": {
-        // Square wraps the order under data.object.order for most events.
-        // Some event variants nest it differently — try both shapes so we
-        // never silently drop a ticket.
-        const order = data.order ?? data.order_created?.order ?? data;
-        if (!order || !order.id) {
-          console.log("[Square Webhook] order event without order object:", event.type);
+        // Square v2 webhook events contain a MINIMAL order snapshot (just
+        // order_id, state, location_id, version) — NOT the full order with
+        // line_items, totals, fulfillments, etc. To get the data the KDS
+        // needs, we must fetch the full order from the Square Orders API.
+        //
+        // The event payload shapes we've seen:
+        //   order.created: event.data.object.order_created = { order_id, state, ... }
+        //   order.updated: event.data.object.order_updated = { order_id, state, ... }
+        // Some events also include data.object.order with the full object.
+        const orderSnapshot = data.order ?? data.order_created ?? data.order_updated ?? {};
+        const orderId: string = orderSnapshot.id ?? orderSnapshot.order_id ?? "";
+
+        if (!orderId) {
+          console.log("[Square Webhook] order event without order_id:", event.type, JSON.stringify(data).slice(0, 200));
+          break;
+        }
+
+        // Fetch the full order from Square's Orders API
+        let order: any = null;
+        try {
+          const { result } = await squareOrders().retrieveOrder(orderId);
+          order = result.order;
+        } catch (fetchErr: any) {
+          console.error(`[Square Webhook] Failed to fetch order ${orderId} from Square API:`, fetchErr?.message ?? fetchErr);
+          break;
+        }
+
+        if (!order) {
+          console.log(`[Square Webhook] Order ${orderId} not found in Square API`);
           break;
         }
 
