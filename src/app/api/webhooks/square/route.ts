@@ -175,14 +175,39 @@ export async function POST(req: NextRequest) {
           })),
         };
 
-        const { error: upsertError } = await supabaseAdmin()
+        // Use manual SELECT + INSERT/UPDATE instead of upsert(onConflict)
+        // because the unique index on square_order_id may not exist in all
+        // environments (migration 031 was not fully applied in production).
+        const { data: existingOrder } = await supabaseAdmin()
           .from("orders")
-          .upsert(orderData, { onConflict: "square_order_id" });
+          .select("id")
+          .eq("square_order_id", order.id)
+          .maybeSingle();
+
+        let upsertError: { message: string } | null = null;
+        if (existingOrder) {
+          // Update existing order — don't overwrite created_at or order_number
+          const { error } = await supabaseAdmin()
+            .from("orders")
+            .update({
+              ...orderData,
+              // Keep the original created_at so KDS timer is accurate
+              created_at: undefined,
+            })
+            .eq("id", existingOrder.id);
+          upsertError = error;
+        } else {
+          // Insert new order
+          const { error } = await supabaseAdmin()
+            .from("orders")
+            .insert(orderData);
+          upsertError = error;
+        }
 
         if (upsertError) {
-          console.error(`[Square Webhook] Failed to upsert order ${order.id}:`, upsertError.message);
+          console.error(`[Square Webhook] Failed to ${existingOrder ? "update" : "insert"} order ${order.id}:`, upsertError.message);
         } else {
-          console.log(`[Square Webhook] Upserted order ${order.id} (${sourceName || "POS"}) — ${orderData.items.length} items, $${(orderData.total_cents / 100).toFixed(2)}, status=${orderData.status}`);
+          console.log(`[Square Webhook] ${existingOrder ? "Updated" : "Inserted"} order ${order.id} (${sourceName || "POS"}) — ${orderData.items.length} items, $${(orderData.total_cents / 100).toFixed(2)}, status=${orderData.status}`);
         }
         break;
       }
