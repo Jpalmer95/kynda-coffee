@@ -4,9 +4,26 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-function verifySignature(body: string, signature: string, key: string): boolean {
-  const hmac = crypto.createHmac("sha256", key).update(body).digest("base64");
-  return hmac === signature;
+/**
+ * Square webhook signature verification.
+ *
+ * Square computes the HMAC-SHA256 over the CONCATENATION of the notification
+ * URL and the raw request body (notificationUrl + rawBody), then base64-encodes
+ * the digest.  See: https://developer.squareup.com/docs/webhooks/step3validate
+ *
+ * If SQUARE_WEBHOOK_NOTIFICATION_URL is not set, we fall back to constructing
+ * it from the incoming request URL so verification still works.
+ */
+function verifySignature(body: string, signature: string, key: string, notificationUrl: string): boolean {
+  const hmac = crypto.createHmac("sha256", key).update(notificationUrl + body).digest("base64");
+  // Use timingSafeEqual to prevent timing attacks on the signature comparison.
+  try {
+    const a = Buffer.from(hmac, "base64");
+    const b = Buffer.from(signature, "base64");
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -18,7 +35,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Webhook key not configured" }, { status: 500 });
   }
 
-  if (!verifySignature(body, signature, sigKey)) {
+  // The notification URL must match what's registered in the Square Dashboard.
+  // Prefer the explicit env var; fall back to reconstructing from the request.
+  const notificationUrl =
+    process.env.SQUARE_WEBHOOK_NOTIFICATION_URL ??
+    `${req.nextUrl.origin}/api/webhooks/square`;
+
+  if (!verifySignature(body, signature, sigKey, notificationUrl)) {
+    console.error("[Square Webhook] Signature verification failed", {
+      notificationUrl,
+      signaturePresent: !!signature,
+      bodyLength: body.length,
+    });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -29,8 +57,14 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "order.created":
       case "order.updated": {
-        const order = data.order;
-        if (!order) break;
+        // Square wraps the order under data.object.order for most events.
+        // Some event variants nest it differently — try both shapes so we
+        // never silently drop a ticket.
+        const order = data.order ?? data.order_created?.order ?? data;
+        if (!order || !order.id) {
+          console.log("[Square Webhook] order event without order object:", event.type);
+          break;
+        }
 
         // ── Echo-loop guard ───────────────────────────────────────────
         // Orders we pushed upstream (Kynda online → Square) come back to
@@ -58,6 +92,25 @@ export async function POST(req: NextRequest) {
         // the ticket and route it onto the Delivery board.
         const sourceName: string = order.source?.name ?? "";
         const isDeliveryPlatform = /door\s*dash|uber\s*eats|postmates|grub\s*hub|seamless/i.test(sourceName);
+
+        // Extract customer info from fulfillments (DoorDash/Uber Eats put
+        // the recipient name, phone, and email in pickup_details.recipient).
+        const fulfillment = (order.fulfillments ?? [])[0] ?? {};
+        const recipient = fulfillment.pickup_details?.recipient
+          ?? fulfillment.delivery_details?.recipient
+          ?? {};
+        const customerName =
+          order.ticket_name // Square sets this for marketplace orders
+          || recipient.display_name
+          || undefined;
+        const customerPhone = recipient.phone_number || undefined;
+        const customerEmailForFulfillment = recipient.email_address || undefined;
+
+        // Determine fulfillment mode from the Square fulfillment type.
+        let fulfillmentMode = isDeliveryPlatform ? "delivery" : "pickup";
+        if (fulfillment.type === "DELIVERY") fulfillmentMode = "delivery";
+        else if (fulfillment.type === "PICKUP") fulfillmentMode = isDeliveryPlatform ? "delivery" : "pickup";
+
         const orderData = {
           square_order_id: order.id,
           source: "square-pos" as const,
@@ -72,9 +125,12 @@ export async function POST(req: NextRequest) {
           payment_status: "paid",
           payment_method: "square",
           total_cents: order.total_money?.amount ?? 0,
-          email: order.customer_id ? `square:${order.customer_id}` : "pos@kyndacoffee.com",
+          email: customerEmailForFulfillment
+            ?? (order.customer_id ? `square:${order.customer_id}` : "pos@kyndacoffee.com"),
           fulfillment_metadata: {
-            mode: isDeliveryPlatform ? "delivery" : "pickup",
+            mode: fulfillmentMode,
+            ...(customerName ? { customer_name: customerName } : {}),
+            ...(customerPhone ? { customer_phone: customerPhone } : {}),
             ...(sourceName && sourceName !== "Square Point of Sale"
               ? { external_source: sourceName }
               : {}),
@@ -95,9 +151,15 @@ export async function POST(req: NextRequest) {
           metadata: { square_location_id: order.location_id },
         };
 
-        await supabaseAdmin()
+        const { error: upsertError } = await supabaseAdmin()
           .from("orders")
           .upsert(orderData, { onConflict: "square_order_id" });
+
+        if (upsertError) {
+          console.error(`[Square Webhook] Failed to upsert order ${order.id}:`, upsertError.message);
+        } else {
+          console.log(`[Square Webhook] Upserted order ${order.id} (${sourceName || "POS"}) — ${orderData.items.length} items, $${(orderData.total_cents / 100).toFixed(2)}, status=${orderData.status}`);
+        }
         break;
       }
 
