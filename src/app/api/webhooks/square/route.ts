@@ -75,11 +75,22 @@ export async function POST(req: NextRequest) {
           break;
         }
 
-        // Fetch the full order from Square's Orders API
+        // Fetch the full order from Square's Orders API.
+        // The Square Node.js SDK returns objects with camelCase properties
+        // (e.g. totalMoney, lineItems) and BigInt for monetary values.
+        // We convert to a plain JSON object with snake_case keys by serializing
+        // with a BigInt-aware replacer, so the rest of the handler can use
+        // the same snake_case field names the REST API uses.
         let order: any = null;
         try {
           const { result } = await squareOrders().retrieveOrder(orderId);
-          order = result.order;
+          // JSON.stringify with a BigInt replacer, then parse back to get
+          // a plain object with numbers instead of BigInts.
+          order = JSON.parse(
+            JSON.stringify(result.order, (_, v) =>
+              typeof v === "bigint" ? Number(v) : v
+            )
+          );
         } catch (fetchErr: any) {
           console.error(`[Square Webhook] Failed to fetch order ${orderId} from Square API:`, fetchErr?.message ?? fetchErr);
           break;
@@ -118,22 +129,27 @@ export async function POST(req: NextRequest) {
         const isDeliveryPlatform = /door\s*dash|uber\s*eats|postmates|grub\s*hub|seamless/i.test(sourceName);
 
         // Extract customer info from fulfillments (DoorDash/Uber Eats put
-        // the recipient name, phone, and email in pickup_details.recipient).
+        // the recipient name, phone, and email in pickupDetails.recipient).
+        // NOTE: Square SDK uses camelCase property names.
         const fulfillment = (order.fulfillments ?? [])[0] ?? {};
-        const recipient = fulfillment.pickup_details?.recipient
-          ?? fulfillment.delivery_details?.recipient
+        const recipient = fulfillment.pickupDetails?.recipient
+          ?? fulfillment.deliveryDetails?.recipient
           ?? {};
         const customerName =
-          order.ticket_name // Square sets this for marketplace orders
-          || recipient.display_name
+          order.ticketName // Square sets this for marketplace orders
+          || recipient.displayName
           || undefined;
-        const customerPhone = recipient.phone_number || undefined;
-        const customerEmailForFulfillment = recipient.email_address || undefined;
+        const customerPhone = recipient.phoneNumber || undefined;
+        const customerEmailForFulfillment = recipient.emailAddress || undefined;
 
         // Determine fulfillment mode from the Square fulfillment type.
         let fulfillmentMode = isDeliveryPlatform ? "delivery" : "pickup";
         if (fulfillment.type === "DELIVERY") fulfillmentMode = "delivery";
         else if (fulfillment.type === "PICKUP") fulfillmentMode = isDeliveryPlatform ? "delivery" : "pickup";
+
+        const totalCents = order.totalMoney?.amount ?? 0;
+        const taxCents = order.totalTaxMoney?.amount ?? 0;
+        const tipCents = order.totalTipMoney?.amount ?? 0;
 
         const orderData = {
           square_order_id: order.id,
@@ -151,14 +167,12 @@ export async function POST(req: NextRequest) {
           // gate hides them.
           payment_status: "paid",
           payment_method: "square",
-          total_cents: order.total_money?.amount ?? 0,
-          subtotal_cents: order.net_amounts?.discount_money?.amount != null
-            ? (order.total_money?.amount ?? 0) - (order.total_tax_money?.amount ?? 0) - (order.total_tip_money?.amount ?? 0)
-            : (order.total_money?.amount ?? 0) - (order.total_tax_money?.amount ?? 0),
-          tax_cents: order.total_tax_money?.amount ?? 0,
+          total_cents: totalCents,
+          subtotal_cents: totalCents - taxCents - tipCents,
+          tax_cents: taxCents,
           shipping_cents: 0,
           email: customerEmailForFulfillment
-            ?? (order.customer_id ? `square:${order.customer_id}` : "pos@kyndacoffee.com"),
+            ?? (order.customerId ? `square:${order.customerId}` : "pos@kyndacoffee.com"),
           fulfillment_metadata: {
             mode: fulfillmentMode,
             ...(customerName ? { customer_name: customerName } : {}),
@@ -166,18 +180,18 @@ export async function POST(req: NextRequest) {
             ...(sourceName && sourceName !== "Square Point of Sale"
               ? { external_source: sourceName }
               : {}),
-            ...(order.location_id ? { square_location_id: order.location_id } : {}),
+            ...(order.locationId ? { square_location_id: order.locationId } : {}),
           },
-          items: (order.line_items ?? []).map((item: any) => ({
+          items: (order.lineItems ?? []).map((item: any) => ({
             product_name: item.name || "POS Item",
-            variant_name: item.variation_name || undefined,
+            variant_name: item.variationName || undefined,
             quantity: parseInt(item.quantity || "1", 10),
-            unit_price_cents: item.base_price_money?.amount ?? 0,
-            total_cents: (item.base_price_money?.amount ?? 0) * parseInt(item.quantity || "1", 10),
+            unit_price_cents: item.basePriceMoney?.amount ?? 0,
+            total_cents: (item.basePriceMoney?.amount ?? 0) * parseInt(item.quantity || "1", 10),
             // Carry POS modifiers onto the KDS ticket (e.g. "Oat milk", "Iced")
             modifiers: (item.modifiers ?? []).map((m: any) => ({
               name: m.name || "",
-              price_cents: m.base_price_money?.amount ?? 0,
+              price_cents: m.basePriceMoney?.amount ?? 0,
             })).filter((m: any) => m.name),
             notes: item.note || undefined,
           })),
