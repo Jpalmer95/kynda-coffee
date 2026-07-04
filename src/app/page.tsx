@@ -321,12 +321,20 @@ export default function HomePage() {
                 Order for Pickup
               </Link>
               <a
-                href="https://www.doordash.com/store/kynda-coffee-horseshoe-bay-123456/"
+                href="https://www.doordash.com/store/kynda-coffee-cottonwood-shores-918179/89750989/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-secondary w-full sm:w-auto text-base px-8 py-4"
               >
                 DoorDash Delivery
+              </a>
+              <a
+                href="https://www.ubereats.com/store/kynda-coffee/XrrLK7JvW4-A0zobou3l4w"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary w-full sm:w-auto text-base px-8 py-4"
+              >
+                Uber Eats Delivery
               </a>
             </div>
           </div>

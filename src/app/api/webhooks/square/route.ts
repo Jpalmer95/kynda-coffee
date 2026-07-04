@@ -151,13 +151,21 @@ export async function POST(req: NextRequest) {
         const taxCents = order.totalTaxMoney?.amount ?? 0;
         const tipCents = order.totalTipMoney?.amount ?? 0;
 
+        // POS orders (in-store, taken at the Square terminal) are assumed
+        // already in production — the barista is standing right there. Route
+        // them directly to Recently Completed so they don't clutter the
+        // active board or trigger sound alerts. Delivery platform orders
+        // (DoorDash, Uber Eats) still need kitchen attention, so they stay
+        // active on the KDS.
+        const posOrderStatus = isDeliveryPlatform ? (isOpen ? "confirmed" : "complete") : "complete";
+
         const orderData = {
           square_order_id: order.id,
           // Generate order_number from the Square order ID (matches the
           // historical pattern: SQ-<last 8 chars>).
           order_number: `SQ-${order.id.slice(-8)}`,
           source: "square-pos" as const,
-          status: isOpen ? "confirmed" : "complete",
+          status: posOrderStatus,
           // Route genuine POS orders onto the shared KDS board so the team
           // manages every channel (online + counter) from one screen.
           // Marketplace orders ride the Delivery board instead.

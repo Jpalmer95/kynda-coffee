@@ -11,7 +11,7 @@ import type { KdsOrderLike } from "@/lib/orders/kds";
  */
 
 /** A KDS "board" = a filtered view a given tablet/display is pinned to. */
-export type KdsBoard = "all" | "pickup" | "parking" | "table" | "delivery" | "lobby";
+export type KdsBoard = "all" | "pickup" | "table" | "delivery" | "lobby";
 
 export interface KdsBoardDef {
   key: KdsBoard;
@@ -23,8 +23,7 @@ export interface KdsBoardDef {
 /** Board presets. A tablet bookmarks /(kds)?board=parking etc. */
 export const KDS_BOARDS: KdsBoardDef[] = [
   { key: "all", label: "All Orders", matches: ["*"] },
-  { key: "pickup", label: "Pickup", matches: ["pickup"] },
-  { key: "parking", label: "Curbside", matches: ["parking"] },
+  { key: "pickup", label: "Pickup", matches: ["pickup", "parking"] },
   { key: "table", label: "Dine-In", matches: ["table", "lobby"] },
   { key: "delivery", label: "Delivery", matches: ["delivery"] },
 ];

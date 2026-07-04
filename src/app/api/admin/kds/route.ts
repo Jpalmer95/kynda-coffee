@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
 
 /** "Your order is ready" customer notification, fired on the KDS Ready bump. */
 function readySmsBody(orderNumber: string, mode?: string): string {
-  if (mode === "parking") {
+  if (mode === "pickup" || mode === "parking") {
     return `Kynda Coffee: Order ${orderNumber} is ready — we're bringing it out to your vehicle now!`;
   }
   if (mode === "table") {

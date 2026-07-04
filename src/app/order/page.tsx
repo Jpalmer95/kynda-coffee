@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Order | Kynda Coffee",
-  description: "Order from your table, the lobby, curbside pickup, or a parking spot. Fast, simple, and powered by our real-time menu.",
+  description: "Order for lobby pickup or curbside. Fast, simple, and powered by our real-time menu.",
 };
 
 export default async function OrderPage({
@@ -44,7 +44,7 @@ export default async function OrderPage({
           </h1>
           <p className="mt-5 max-w-prose text-base text-mocha sm:text-lg">
             Choose your fulfillment, add what you love, and pay how you prefer. 
-            Great for solo orders, groups at tables, or easy curbside pickup.
+            Great for solo orders, groups, or easy curbside pickup.
           </p>
           <p className="mt-4 text-[11px] font-bold tracking-widest text-mocha uppercase">
             {itemCount} items available right now — ready to craft.

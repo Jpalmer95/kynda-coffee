@@ -476,7 +476,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                   </div>
 
                   {/* Curbside vehicle / pickup spot callout */}
-                  {tag.mode === "parking" && tag.detail && (
+                  {(tag.mode === "parking" || tag.mode === "pickup") && tag.detail && (
                     <div className="mb-3 flex items-center gap-2 rounded-xl bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900">
                       <Car className="h-4 w-4 shrink-0" /> {tag.detail}
                     </div>

@@ -65,9 +65,9 @@ describe("orderMatchesBoard", () => {
   it("'all' board matches everything", () => {
     expect(orderMatchesBoard(makeOrder({ fulfillment_metadata: { mode: "delivery" } }), "all")).toBe(true);
   });
-  it("parking board only matches curbside orders", () => {
-    expect(orderMatchesBoard(makeOrder({ fulfillment_metadata: { mode: "parking" } }), "parking")).toBe(true);
-    expect(orderMatchesBoard(makeOrder({ fulfillment_metadata: { mode: "pickup" } }), "parking")).toBe(false);
+  it("pickup board matches both pickup and parking (curbside) orders", () => {
+    expect(orderMatchesBoard(makeOrder({ fulfillment_metadata: { mode: "parking" } }), "pickup")).toBe(true);
+    expect(orderMatchesBoard(makeOrder({ fulfillment_metadata: { mode: "pickup" } }), "pickup")).toBe(true);
   });
   it("table board matches both table and lobby", () => {
     expect(orderMatchesBoard(makeOrder({ fulfillment_metadata: { mode: "table" } }), "table")).toBe(true);
@@ -83,7 +83,8 @@ describe("filterOrdersForBoard", () => {
   ];
 
   it("filters to a board", () => {
-    expect(filterOrdersForBoard(orders, "parking").map((o) => o.id)).toEqual(["b"]);
+    // "pickup" board now matches both pickup and parking (curbside) modes
+    expect(filterOrdersForBoard(orders, "pickup").map((o) => o.id)).toEqual(["a", "b"]);
   });
   it("searches by order number, customer, vehicle, and item name", () => {
     expect(filterOrdersForBoard(orders, "all", "blue truck").map((o) => o.id)).toEqual(["b"]);
@@ -149,7 +150,7 @@ describe("KDS_BOARDS", () => {
   it("includes an 'all' board and the key fulfillment boards", () => {
     const keys = KDS_BOARDS.map((b) => b.key);
     expect(keys).toContain("all");
-    expect(keys).toContain("parking");
+    expect(keys).toContain("pickup");
     expect(keys).toContain("table");
     expect(keys).toContain("delivery");
   });

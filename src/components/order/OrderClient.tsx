@@ -88,7 +88,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   const [smsConsent, setSmsConsent] = useState(false);
   const initialFulfillment: QrFulfillmentMode =
     initialMode === "table" ? "table" :
-    initialMode === "parking" ? "parking" :
+    initialMode === "parking" ? "pickup" :
     initialMode === "pickup" ? "pickup" : "lobby";
 
   const [fulfillmentMode, setFulfillmentMode] = useState<QrFulfillmentMode>(initialFulfillment);
@@ -210,10 +210,6 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       setError("Please enter your table number or name.");
       return;
     }
-    if (fulfillmentMode === "parking" && !fulfillmentLabel.trim()) {
-      setError("Please enter your parking spot number.");
-      return;
-    }
 
     setSubmitting(true);
     setError("");
@@ -274,7 +270,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
     <div className="mt-12">
       {/* Order Options */}
       <div className="mb-0 flex flex-wrap gap-2">
-        {(["table", "lobby", "pickup", "parking"] as const).map((mode) => (
+        {(["lobby", "pickup"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setFulfillmentMode(mode)}
@@ -284,22 +280,29 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                 : "bg-surface-800 text-sand-50 border border-latte hover:bg-cream-200 hover:border-forest"
             }`}
           >
-            {mode === "table" ? "Table" : mode === "parking" ? "Parking Spot" : mode === "pickup" ? "Curbside Auto" : "Lobby Pickup"}
+            {mode === "pickup" ? "Curbside" : "Lobby Pickup"}
           </button>
         ))}
+        <button
+          disabled
+          className="rounded-[4px] px-5 py-3 text-sm font-medium bg-surface-800 text-sand/40 border border-latte/20 cursor-not-allowed"
+          title="Coming soon — QR table ordering will be available once table QR codes are installed"
+        >
+          At the Table (Coming Soon)
+        </button>
       </div>
 
-      {/* Fulfillment label for table/parking */}
-      {fulfillmentMode !== "lobby" && fulfillmentMode !== "pickup" && (
+      {/* Fulfillment label for table */}
+      {fulfillmentMode === "table" && (
         <div className="mb-0 mt-8 max-w-sm">
           <label className="block text-sm font-medium text-mocha mb-1">
-            {fulfillmentMode === "table" ? "Table number or name" : "Parking spot number"}
+            Table number or name
           </label>
           <input
             type="text"
             value={fulfillmentLabel}
             onChange={(e) => setFulfillmentLabel(e.target.value)}
-            placeholder={fulfillmentMode === "table" ? "Table 7" : "Spot A14"}
+            placeholder="Table 7"
             className="w-full rounded-[4px] border border-latte bg-surface-deep px-4 py-3 text-lg text-sand focus:border-forest focus:ring-1 focus:ring-forest outline-none"
           />
         </div>
@@ -559,12 +562,10 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
                       className="input w-full bg-surface-deep border border-latte px-4 py-3 rounded-[4px] outline-none focus:border-forest focus:ring-1 focus:ring-forest text-sand" 
                     />
                   </label>
-                  {customerPhone.trim() && (
-                    <SmsConsentCheckbox
-                      checked={smsConsent}
-                      onChange={setSmsConsent}
-                    />
-                  )}
+                  <SmsConsentCheckbox
+                    checked={smsConsent}
+                    onChange={setSmsConsent}
+                  />
                   
                   <label className="block">
                     <span className="sr-only">Email</span>

@@ -13,6 +13,10 @@ import Link from "next/link";
  * - HELP and STOP instructions
  * - Links to Terms of Service and Privacy Policy
  *
+ * This component is ALWAYS visible on the checkout form (not gated behind
+ * phone number entry) so Twilio campaign reviewers can verify the opt-in
+ * flow when they visit the page.
+ *
  * Show this below the phone number field on any form where customers
  * provide their mobile number.
  */

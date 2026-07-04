@@ -314,15 +314,13 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
               Phone
               <input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} className="mt-1 w-full rounded-xl border border-latte/40 px-3 py-2" placeholder="Text/call if needed" />
             </label>
-            {customerPhone.trim() && (
-              <div className="sm:col-span-2 xl:col-span-1">
-                <SmsConsentCheckbox
-                  checked={smsConsent}
-                  onChange={setSmsConsent}
-                  id="sms-consent-qr"
-                />
-              </div>
-            )}
+            <div className="sm:col-span-2 xl:col-span-1">
+              <SmsConsentCheckbox
+                checked={smsConsent}
+                onChange={setSmsConsent}
+                id="sms-consent-qr"
+              />
+            </div>
             <label className="text-sm font-medium text-espresso">
               Email optional
               <input type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="mt-1 w-full rounded-xl border border-latte/40 px-3 py-2" placeholder="you@email.com" />
@@ -333,9 +331,8 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
               Order context
               <select value={fulfillmentMode} onChange={(e) => setFulfillmentMode(e.target.value as QrFulfillmentMode)} className="mt-1 w-full rounded-xl border border-latte/40 px-3 py-2">
                 <option value="lobby">Lobby / counter pickup</option>
-                <option value="table">Table</option>
-                <option value="parking">Parking spot</option>
-                <option value="pickup">To-go pickup</option>
+                <option value="pickup">Curbside pickup</option>
+                <option value="table" disabled>At the Table (Coming Soon)</option>
               </select>
             </label>
             <label className="text-sm font-medium text-espresso">

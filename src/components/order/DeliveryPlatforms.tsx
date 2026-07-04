@@ -10,7 +10,7 @@ const DELIVERY_PLATFORMS = [
   {
     id: "doordash",
     name: "DoorDash",
-    url: "https://www.doordash.com/store/kynda-coffee",
+    url: "https://www.doordash.com/store/kynda-coffee-cottonwood-shores-918179/89750989/",
     color: "#FF3008",
     bgColor: "bg-[#FF3008]",
     tagline: "Fast delivery to your door",
@@ -19,7 +19,7 @@ const DELIVERY_PLATFORMS = [
   {
     id: "ubereats",
     name: "Uber Eats",
-    url: "https://www.ubereats.com/store/kynda-coffee",
+    url: "https://www.ubereats.com/store/kynda-coffee/XrrLK7JvW4-A0zobou3l4w",
     color: "#06C167",
     bgColor: "bg-[#06C167]",
     tagline: "Uber Eats delivery",
