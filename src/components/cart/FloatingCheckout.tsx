@@ -54,7 +54,7 @@ export function FloatingCheckout() {
     >
       <div className="relative">
         <ShoppingBag className="h-5 w-5" />
-        <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-rust text-[10px] font-bold text-white">
+        <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-surface-deep text-[10px] font-bold text-forest">
           {totalCount}
         </span>
       </div>
