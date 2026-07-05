@@ -134,7 +134,7 @@ export function Header() {
             >
               <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
               {itemCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-bronze text-[11px] font-bold cart-badge-text">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-forest text-[11px] font-bold text-surface-deep">
                   {itemCount > 9 ? "9+" : itemCount}
                 </span>
               )}
@@ -232,7 +232,7 @@ export function Header() {
             <ShoppingBag className="h-5 w-5" aria-hidden="true" />
             Cart
             {itemCount > 0 && (
-              <span className="ml-auto rounded-full bg-bronze px-2.5 py-0.5 text-xs font-bold cart-badge-text">
+              <span className="ml-auto rounded-full bg-forest px-2.5 py-0.5 text-xs font-bold text-surface-deep">
                 {itemCount}
               </span>
             )}

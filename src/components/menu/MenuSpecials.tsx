@@ -135,9 +135,9 @@ export function MenuSpecials({ items, onSelectItem }: MenuSpecialsProps) {
               )}
 
               {/* Featured badge */}
-              <div className="absolute top-3 left-3 rounded-full bg-forest px-3 py-1 text-xs font-semibold text-sand shadow-sm">
+              <div className="absolute top-3 left-3 rounded-full bg-forest px-3 py-1 text-xs font-semibold text-surface-deep shadow-sm">
                 <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-sand" />
+                  <Star className="h-3 w-3 fill-surface-deep" />
                   Featured
                 </div>
               </div>

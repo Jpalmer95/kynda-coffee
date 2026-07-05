@@ -57,7 +57,7 @@ export const ProductCard = memo(function ProductCard({ product, onQuickView }: P
           <div className="absolute inset-0 bg-espresso/0 transition-colors duration-300 group-hover:bg-espresso/10" aria-hidden="true" />
           {/* Featured badge */}
           {product.is_featured && (
-            <div className="absolute left-2 top-2 rounded-full bg-bronze px-2.5 py-1 text-[11px] font-medium text-white sm:left-3 sm:top-3 sm:text-xs">
+            <div className="absolute left-2 top-2 rounded-full bg-forest px-2.5 py-1 text-[11px] font-medium text-surface-deep sm:left-3 sm:top-3 sm:text-xs">
               Featured
             </div>
           )}
