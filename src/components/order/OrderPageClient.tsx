@@ -28,7 +28,10 @@ export function OrderPageClient({
 
   const parseInitialMode = (m?: string): QrFulfillmentMode | "delivery" | null => {
     if (!m) return null;
-    if (m === "table" || m === "lobby" || m === "pickup" || m === "parking") return m;
+    if (m === "table" || m === "lobby") return m;
+    // "curbside" is the user-facing URL; "pickup" is the internal mode key.
+    // Accept both so old bookmarks/links still work.
+    if (m === "pickup" || m === "curbside" || m === "parking") return "pickup";
     if (m === "delivery") return "delivery";
     return null;
   };
@@ -43,7 +46,10 @@ export function OrderPageClient({
     (mode: QrFulfillmentMode | "delivery") => {
       setSelectedMode(mode);
       const params = new URLSearchParams(window.location.search);
-      params.set("mode", mode);
+      // Use "curbside" in the URL for the pickup mode — it's the
+      // user-facing nomenclature. "pickup" is still accepted on read.
+      const urlMode = mode === "pickup" ? "curbside" : mode;
+      params.set("mode", urlMode);
       router.replace(`/order?${params.toString()}`, { scroll: false });
 
       // Scroll down to the order form after a short delay

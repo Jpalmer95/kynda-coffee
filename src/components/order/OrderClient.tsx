@@ -122,6 +122,19 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   // Track expanded modifier lists per item
   const [expandedModifiers, setExpandedModifiers] = useState<Record<string, boolean>>({});
 
+  // Sync fulfillmentMode when the parent FulfillmentModeSelector changes the
+  // selected mode card (e.g. switching from "In the Lobby" to "Curbside").
+  // Without this, useState only reads initialMode on first mount, so the
+  // vehicle description field and button highlight wouldn't update until a
+  // full page reload.
+  useEffect(() => {
+    if (!initialMode) return;
+    const next: QrFulfillmentMode =
+      initialMode === "table" ? "table" :
+      initialMode === "parking" || initialMode === "pickup" || initialMode === "curbside" ? "pickup" : "lobby";
+    setFulfillmentMode(next);
+  }, [initialMode]);
+
   const itemCount = useMemo(() => cart.reduce((s, l) => s + l.quantity, 0), [cart]);
   const subtotalCents = useMemo(
     () => cart.reduce((s, l) => s + l.quantity * l.unitPriceCents, 0),
