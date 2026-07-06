@@ -115,6 +115,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
             ...(verifiedName ? { customer_name: verifiedName } : {}),
             ...(verifiedPhone ? { customer_phone: verifiedPhone } : {}),
             ...(verifiedShipping ? { verified_shipping_address: verifiedShipping } : {}),
+            // Preserve the sms_consent flag from the original order submission
+            // so the KDS "ready" SMS only fires for customers who opted in.
+            sms_consent: fm.sms_consent === true,
           },
           updated_at: new Date().toISOString(),
         })

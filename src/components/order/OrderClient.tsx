@@ -250,6 +250,7 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
       notes: orderNotes.trim() || undefined,
       paymentPreference,
       splitBill,
+      smsConsent,
     };
 
     try {

@@ -57,7 +57,11 @@ export async function POST(
       const supabase = await createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
-      if (user && order.email !== user.email) {
+      // QR/menu orders use a placeholder email ("pending@kyndacoffee.com")
+      // that Stripe backfills after payment. Don't enforce email match for
+      // these — the order was just created by this client and the real email
+      // arrives from the Stripe checkout session.
+      if (user && order.email !== user.email && order.source !== "qr") {
         // Authenticated user trying to pay someone else's order
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }

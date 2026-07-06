@@ -159,12 +159,16 @@ export async function PATCH(req: NextRequest) {
     // Ready bump → best-effort customer SMS (never blocks the KDS response).
     // Only on the genuine processing→ready bump — bringing a ticket BACK from
     // Recently Completed (complete→ready) must not re-text the customer.
+    // Only send if the customer explicitly consented to SMS (sms_consent=true
+    // in fulfillment_metadata). Orders without a consent flag (e.g. older
+    // orders, POS orders) are skipped for A2P 10DLC compliance.
     if (nextStatus === "ready" && current.status === "processing") {
       const fm = current.fulfillment_metadata as
-        | { customer_phone?: string; mode?: string }
+        | { customer_phone?: string; mode?: string; sms_consent?: boolean }
         | null;
       const phone = fm?.customer_phone?.trim();
-      if (phone) {
+      const consented = fm?.sms_consent === true;
+      if (phone && consented) {
         sendSms({
           to: phone,
           body: readySmsBody(current.order_number as string, fm?.mode),

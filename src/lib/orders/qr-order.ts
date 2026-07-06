@@ -24,6 +24,7 @@ export interface QrOrderRequest {
   paymentPreference?: QrPaymentPreference;
   notes?: string;
   items?: QrOrderRequestItem[];
+  smsConsent?: boolean;
 }
 
 export interface NormalizedQrOrderRequest {
@@ -45,6 +46,7 @@ export interface NormalizedQrOrderRequest {
     modifierIds: string[];
     notes: string;
   }>;
+  smsConsent: boolean;
 }
 
 export interface OrderModifierDraft {
@@ -87,6 +89,7 @@ export interface QrOrderDraft {
     customer_name: string;
     customer_phone: string;
     payment_preference: QrPaymentPreference;
+    sms_consent: boolean;
   };
   payment_status: "unpaid";
   payment_method: "pay_at_counter";
@@ -166,6 +169,7 @@ export function validateQrOrderRequest(request: QrOrderRequest): Result<Normaliz
       paymentPreference,
       notes: cleanText(request.notes).slice(0, 1000),
       items,
+      smsConsent: request.smsConsent === true,
     },
   };
 }
@@ -277,6 +281,7 @@ export function buildQrOrderDraft(
         customer_name: normalized.value.customer.name,
         customer_phone: normalized.value.customer.phone,
         payment_preference: normalized.value.paymentPreference,
+        sms_consent: normalized.value.smsConsent,
       },
       payment_status: "unpaid",
       payment_method: "pay_at_counter",

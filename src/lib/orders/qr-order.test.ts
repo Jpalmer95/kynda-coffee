@@ -226,6 +226,7 @@ describe("QR order draft builder", () => {
       customer_name: "Jonathan",
       customer_phone: "512-555-0100",
       payment_preference: "pay_at_counter",
+      sms_consent: false,
     });
     expect(result.value.payment_status).toBe("unpaid");
     expect(result.value.payment_method).toBe("pay_at_counter");

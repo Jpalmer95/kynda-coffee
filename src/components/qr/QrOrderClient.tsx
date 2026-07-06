@@ -143,6 +143,7 @@ export function QrOrderClient({ categories, generatedAt, initialMode, initialLab
           fulfillment: { mode: fulfillmentMode, label: fulfillmentLabel },
           paymentPreference,
           notes: orderNotes,
+          smsConsent,
           items: cart.map((line) => ({
             providerItemId: line.providerItemId,
             providerVariationId: line.providerVariationId,
