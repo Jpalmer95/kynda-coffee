@@ -171,10 +171,8 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const [live, setLive] = useState(false);
   const [announcement, setAnnouncement] = useState<string | null>(null);
   // Unacknowledged orders = pending/confirmed (not yet started). The alert
-  // repeats every 2 min until staff starts the order or snoozes it.
+  // repeats every 2 min until staff starts the order or snoozes all alerts.
   const [unacknowledgedIds, setUnacknowledgedIds] = useState<Set<string>>(new Set());
-  // Per-order snooze: orderId → timestamp when snooze expires
-  const [snoozedUntil, setSnoozedUntil] = useState<Record<string, number>>({});
   // Global snooze: when set, suppresses all alerts until this timestamp
   const [globalSnoozeUntil, setGlobalSnoozeUntil] = useState<number | null>(null);
   // Date scope: "today" (default) hides stale tickets from previous days;
@@ -187,9 +185,8 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const announceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const repeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const wakeLockRef = useRef<any>(null); // WakeLockSentinel (not in TS DOM libs)
-  // Refs mirroring snooze state for use in callbacks/intervals that would
+  // Ref mirroring global snooze for use in callbacks/intervals that would
   // otherwise capture stale closures.
-  const snoozedUntilRef = useRef<Record<string, number>>({});
   const globalSnoozeUntilRef = useRef<number | null>(null);
 
   const handleIncomingOrders = useCallback((next: KdsOrder[]) => {
@@ -224,18 +221,10 @@ export function KdsClient({ backHref }: { backHref?: string }) {
         const nowMs = Date.now();
         const globallySnoozed = globalSnoozeUntilRef.current !== null && globalSnoozeUntilRef.current > nowMs;
         if (!globallySnoozed) {
-          // Filter out snoozed orders
-          const snoozeMap = snoozedUntilRef.current;
-          const alertable = newOrders.filter((o) => {
-            const snoozed = snoozeMap[o.id];
-            return !snoozed || snoozed <= nowMs;
-          });
-          if (alertable.length > 0) {
-            try {
-              playNewOrderAlert(audioCtxRef.current);
-            } catch {
-              /* audio is best-effort */
-            }
+          try {
+            playNewOrderAlert(audioCtxRef.current);
+          } catch {
+            /* audio is best-effort */
           }
         }
       }
@@ -371,32 +360,23 @@ export function KdsClient({ backHref }: { backHref?: string }) {
       // Global snooze?
       if (globalSnoozeUntilRef.current !== null && globalSnoozeUntilRef.current > nowMs) return;
 
-      // Per-order snooze filter
-      const snoozeMap = snoozedUntilRef.current;
-      const alertableIds = [...unacknowledgedIds].filter((id) => {
-        const snoozed = snoozeMap[id];
-        return !snoozed || snoozed <= nowMs;
-      });
-
-      if (alertableIds.length > 0) {
-        try {
-          playNewOrderAlert(audioCtxRef.current);
-        } catch {
-          /* audio is best-effort */
-        }
-        // Update the announcement banner to draw attention back
-        const orderNums = alertableIds
-          .map((id) => orders.find((o) => o.id === id)?.order_number)
-          .filter(Boolean);
-        if (orderNums.length > 0) {
-          setAnnouncement(
-            orderNums.length === 1
-              ? `⏰ Reminder: order ${orderNums[0]} still waiting — start or snooze it.`
-              : `⏰ ${orderNums.length} orders still waiting: ${orderNums.join(", ")}.`
-          );
-          if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
-          announceTimerRef.current = setTimeout(() => setAnnouncement(null), 10000);
-        }
+      try {
+        playNewOrderAlert(audioCtxRef.current);
+      } catch {
+        /* audio is best-effort */
+      }
+      // Update the announcement banner to draw attention back
+      const orderNums = [...unacknowledgedIds]
+        .map((id) => orders.find((o) => o.id === id)?.order_number)
+        .filter(Boolean);
+      if (orderNums.length > 0) {
+        setAnnouncement(
+          orderNums.length === 1
+            ? `⏰ Reminder: order ${orderNums[0]} still waiting — start or snooze it.`
+            : `⏰ ${orderNums.length} orders still waiting: ${orderNums.join(", ")}.`
+        );
+        if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
+        announceTimerRef.current = setTimeout(() => setAnnouncement(null), 10000);
       }
     };
 
@@ -406,49 +386,20 @@ export function KdsClient({ backHref }: { backHref?: string }) {
     };
   }, [unacknowledgedIds, orders]);
 
-  // ─── Snooze a single order for 5 minutes ────────────────────────────────
-  const snoozeOrder = useCallback((orderId: string) => {
-    const expiry = Date.now() + SNOOZE_MS;
-    snoozedUntilRef.current = { ...snoozedUntilRef.current, [orderId]: expiry };
-    setSnoozedUntil(snoozedUntilRef.current);
-  }, []);
-
-  // ─── Snooze all unacknowledged orders for 5 minutes ──────────────────────
+  // ─── Snooze all alerts for 5 minutes ─────────────────────────────────────
   const snoozeAll = useCallback(() => {
-    const nowMs = Date.now();
-    const expiry = nowMs + SNOOZE_MS;
-    // Per-order snooze for each currently unacknowledged order
-    const updates: Record<string, number> = { ...snoozedUntilRef.current };
-    for (const id of unacknowledgedIds) {
-      updates[id] = expiry;
-    }
-    snoozedUntilRef.current = updates;
-    setSnoozedUntil(updates);
-    // Also set a global snooze as a belt-and-suspenders catch for any
-    // orders that arrive in the next 5 minutes.
+    const expiry = Date.now() + SNOOZE_MS;
     globalSnoozeUntilRef.current = expiry;
     setGlobalSnoozeUntil(expiry);
     setAnnouncement(`🔕 Alerts snoozed for 5 minutes (until ${new Date(expiry).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}).`);
     if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
     announceTimerRef.current = setTimeout(() => setAnnouncement(null), 6000);
-  }, [unacknowledgedIds]);
+  }, []);
 
-  // ─── Clean up expired snoozes periodically ────────────────────────────────
+  // ─── Clean up expired global snooze periodically ───────────────────────────
   useEffect(() => {
     const cleanup = setInterval(() => {
       const nowMs = Date.now();
-      let changed = false;
-      const updated = { ...snoozedUntilRef.current };
-      for (const [id, expiry] of Object.entries(updated)) {
-        if (expiry <= nowMs) {
-          delete updated[id];
-          changed = true;
-        }
-      }
-      if (changed) {
-        snoozedUntilRef.current = updated;
-        setSnoozedUntil(updated);
-      }
       if (globalSnoozeUntilRef.current !== null && globalSnoozeUntilRef.current <= nowMs) {
         globalSnoozeUntilRef.current = null;
         setGlobalSnoozeUntil(null);
@@ -829,15 +780,6 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                         className="w-full rounded-2xl border border-latte/40 py-2 text-sm font-medium text-mocha active:scale-[0.985] disabled:opacity-60"
                       >
                         <RotateCcw className="mr-1.5 inline h-4 w-4" /> Back to Preparing
-                      </button>
-                    )}
-                    {/* Snooze this order's alert for 5 minutes */}
-                    {isUnacknowledged && (
-                      <button
-                        onClick={() => snoozeOrder(order.id)}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-amber-400/40 bg-amber-500/10 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-500/20 active:scale-[0.985]"
-                      >
-                        <BellOff className="h-4 w-4" /> Snooze 5 min
                       </button>
                     )}
                   </div>
