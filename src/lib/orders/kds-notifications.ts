@@ -32,7 +32,7 @@ export function isActiveKdsNotificationOrder(order: KdsNotificationOrder): boole
  * making the drink. This filter is a safety net in case a POS order
  * briefly appears in an active status between insert and update.
  */
-function isPosOrder(order: KdsNotificationOrder): boolean {
+export function isPosOrder(order: KdsNotificationOrder): boolean {
   return order.source === "square-pos" || order.source === "pos" || order.order_channel === "pos";
 }
 

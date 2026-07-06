@@ -3,6 +3,7 @@ import {
   detectNewKdsOrders,
   shouldPlayKdsNotificationSound,
   kdsNewOrderMessage,
+  isPosOrder,
   type KdsNotificationOrder,
 } from "./kds-notifications";
 
@@ -60,5 +61,17 @@ describe("KDS new-order notifications", () => {
     expect(kdsNewOrderMessage([{ order_number: "QR-1001" }, { order_number: "QR-1002" }])).toBe(
       "2 new KDS orders: QR-1001, QR-1002."
     );
+  });
+
+  it("identifies POS orders by source or channel", () => {
+    expect(isPosOrder({ ...baseOrder, source: "square-pos" })).toBe(true);
+    expect(isPosOrder({ ...baseOrder, source: "pos" })).toBe(true);
+    expect(isPosOrder({ ...baseOrder, order_channel: "pos" })).toBe(true);
+    expect(isPosOrder({ ...baseOrder, source: "square-pos", order_channel: "pos" })).toBe(true);
+    // Non-POS orders return false
+    expect(isPosOrder({ ...baseOrder, source: null })).toBe(false);
+    expect(isPosOrder({ ...baseOrder, source: "online" })).toBe(false);
+    expect(isPosOrder({ ...baseOrder, order_channel: "qr" })).toBe(false);
+    expect(isPosOrder(baseOrder)).toBe(false);
   });
 });

@@ -14,6 +14,11 @@
  * New-order alert: audible chime (WebAudio — no asset to load) + on-screen
  * flash. iPads require a user gesture before audio can play, so the sound
  * toggle doubles as the audio unlock; preference persists per device.
+ *
+ * Unacknowledged orders (pending/confirmed, non-POS) repeat the alert every
+ * 2 minutes until staff starts the order (→ processing = acknowledged) or
+ * snoozes it (per-order or global, 5-minute intervals). A Screen Wake Lock
+ * keeps the kitchen tablet awake so alerts never miss due to sleep.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -62,6 +67,7 @@ import {
   detectNewKdsOrders,
   shouldPlayKdsNotificationSound,
   kdsNewOrderMessage,
+  isPosOrder,
 } from "@/lib/orders/kds-notifications";
 
 /** KDS orders carry the canonical Order fields plus the KDS-specific metadata. */
@@ -69,6 +75,8 @@ type KdsOrder = Order & KdsOrderLike;
 
 const SOUND_PREF_KEY = "kynda-kds-sound";
 const POLL_FALLBACK_MS = 30_000;
+const REPEAT_ALERT_MS = 120_000; // 2 minutes between repeated alerts
+const SNOOZE_MS = 300_000; // 5 minutes
 
 /** The forward "bump" action for each active status. */
 function nextStatus(status: OrderStatus): OrderStatus | null {
@@ -162,6 +170,13 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const [soundOn, setSoundOn] = useState(false);
   const [live, setLive] = useState(false);
   const [announcement, setAnnouncement] = useState<string | null>(null);
+  // Unacknowledged orders = pending/confirmed (not yet started). The alert
+  // repeats every 2 min until staff starts the order or snoozes it.
+  const [unacknowledgedIds, setUnacknowledgedIds] = useState<Set<string>>(new Set());
+  // Per-order snooze: orderId → timestamp when snooze expires
+  const [snoozedUntil, setSnoozedUntil] = useState<Record<string, number>>({});
+  // Global snooze: when set, suppresses all alerts until this timestamp
+  const [globalSnoozeUntil, setGlobalSnoozeUntil] = useState<number | null>(null);
   // Date scope: "today" (default) hides stale tickets from previous days;
   // "all" reveals them so they can be cleared.
   const [dateScope, setDateScope] = useState<"today" | "all">("today");
@@ -170,6 +185,12 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const soundOnRef = useRef(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const announceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const repeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wakeLockRef = useRef<any>(null); // WakeLockSentinel (not in TS DOM libs)
+  // Refs mirroring snooze state for use in callbacks/intervals that would
+  // otherwise capture stale closures.
+  const snoozedUntilRef = useRef<Record<string, number>>({});
+  const globalSnoozeUntilRef = useRef<number | null>(null);
 
   const handleIncomingOrders = useCallback((next: KdsOrder[]) => {
     const { newOrders } = detectNewKdsOrders({
@@ -179,7 +200,19 @@ export function KdsClient({ backHref }: { backHref?: string }) {
     prevOrdersRef.current = next;
     setOrders(next);
 
+    // Track unacknowledged orders: pending/confirmed AND non-POS.
+    // Once an order moves to processing/ready/complete it's acknowledged
+    // and should stop repeating the alert.
+    const stillUnacknowledged = new Set<string>();
+    for (const order of next) {
+      if ((order.status === "pending" || order.status === "confirmed") && !isPosOrder(order)) {
+        stillUnacknowledged.add(order.id);
+      }
+    }
+    setUnacknowledgedIds(stillUnacknowledged);
+
     if (newOrders.length > 0) {
+      // Play the alert for genuinely new orders (not repeats)
       if (
         shouldPlayKdsNotificationSound({
           alertsEnabled: soundOnRef.current,
@@ -187,10 +220,23 @@ export function KdsClient({ backHref }: { backHref?: string }) {
         }) &&
         audioCtxRef.current
       ) {
-        try {
-          playNewOrderAlert(audioCtxRef.current);
-        } catch {
-          /* audio is best-effort */
+        // Check global snooze
+        const nowMs = Date.now();
+        const globallySnoozed = globalSnoozeUntilRef.current !== null && globalSnoozeUntilRef.current > nowMs;
+        if (!globallySnoozed) {
+          // Filter out snoozed orders
+          const snoozeMap = snoozedUntilRef.current;
+          const alertable = newOrders.filter((o) => {
+            const snoozed = snoozeMap[o.id];
+            return !snoozed || snoozed <= nowMs;
+          });
+          if (alertable.length > 0) {
+            try {
+              playNewOrderAlert(audioCtxRef.current);
+            } catch {
+              /* audio is best-effort */
+            }
+          }
         }
       }
       setAnnouncement(kdsNewOrderMessage(newOrders));
@@ -277,6 +323,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
       clearInterval(poll);
       clearInterval(clock);
       if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
+      if (repeatTimerRef.current) clearInterval(repeatTimerRef.current);
     };
   }, [loadOrders]);
 
@@ -306,6 +353,146 @@ export function KdsClient({ backHref }: { backHref?: string }) {
     const b = (searchParams.get("board") as KdsBoard) || "all";
     setBoard(b);
   }, [searchParams]);
+
+  // ─── Repeating alert for unacknowledged orders ──────────────────────────
+  // Every 2 minutes, if there are unacknowledged (pending/confirmed) non-POS
+  // orders that haven't been snoozed, replay the alert sound. This handles
+  // the case where staff are away from the tablet or too busy to hear the
+  // first alert. The cycle stops automatically once orders move to
+  // "processing" (Start Preparing = acknowledged) because they're removed
+  // from unacknowledgedIds by handleIncomingOrders.
+  useEffect(() => {
+    const tick = () => {
+      if (!soundOnRef.current || !audioCtxRef.current) return;
+      if (unacknowledgedIds.size === 0) return;
+
+      const nowMs = Date.now();
+
+      // Global snooze?
+      if (globalSnoozeUntilRef.current !== null && globalSnoozeUntilRef.current > nowMs) return;
+
+      // Per-order snooze filter
+      const snoozeMap = snoozedUntilRef.current;
+      const alertableIds = [...unacknowledgedIds].filter((id) => {
+        const snoozed = snoozeMap[id];
+        return !snoozed || snoozed <= nowMs;
+      });
+
+      if (alertableIds.length > 0) {
+        try {
+          playNewOrderAlert(audioCtxRef.current);
+        } catch {
+          /* audio is best-effort */
+        }
+        // Update the announcement banner to draw attention back
+        const orderNums = alertableIds
+          .map((id) => orders.find((o) => o.id === id)?.order_number)
+          .filter(Boolean);
+        if (orderNums.length > 0) {
+          setAnnouncement(
+            orderNums.length === 1
+              ? `⏰ Reminder: order ${orderNums[0]} still waiting — start or snooze it.`
+              : `⏰ ${orderNums.length} orders still waiting: ${orderNums.join(", ")}.`
+          );
+          if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
+          announceTimerRef.current = setTimeout(() => setAnnouncement(null), 10000);
+        }
+      }
+    };
+
+    repeatTimerRef.current = setInterval(tick, REPEAT_ALERT_MS);
+    return () => {
+      if (repeatTimerRef.current) clearInterval(repeatTimerRef.current);
+    };
+  }, [unacknowledgedIds, orders]);
+
+  // ─── Snooze a single order for 5 minutes ────────────────────────────────
+  const snoozeOrder = useCallback((orderId: string) => {
+    const expiry = Date.now() + SNOOZE_MS;
+    snoozedUntilRef.current = { ...snoozedUntilRef.current, [orderId]: expiry };
+    setSnoozedUntil(snoozedUntilRef.current);
+  }, []);
+
+  // ─── Snooze all unacknowledged orders for 5 minutes ──────────────────────
+  const snoozeAll = useCallback(() => {
+    const nowMs = Date.now();
+    const expiry = nowMs + SNOOZE_MS;
+    // Per-order snooze for each currently unacknowledged order
+    const updates: Record<string, number> = { ...snoozedUntilRef.current };
+    for (const id of unacknowledgedIds) {
+      updates[id] = expiry;
+    }
+    snoozedUntilRef.current = updates;
+    setSnoozedUntil(updates);
+    // Also set a global snooze as a belt-and-suspenders catch for any
+    // orders that arrive in the next 5 minutes.
+    globalSnoozeUntilRef.current = expiry;
+    setGlobalSnoozeUntil(expiry);
+    setAnnouncement(`🔕 Alerts snoozed for 5 minutes (until ${new Date(expiry).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}).`);
+    if (announceTimerRef.current) clearTimeout(announceTimerRef.current);
+    announceTimerRef.current = setTimeout(() => setAnnouncement(null), 6000);
+  }, [unacknowledgedIds]);
+
+  // ─── Clean up expired snoozes periodically ────────────────────────────────
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      const nowMs = Date.now();
+      let changed = false;
+      const updated = { ...snoozedUntilRef.current };
+      for (const [id, expiry] of Object.entries(updated)) {
+        if (expiry <= nowMs) {
+          delete updated[id];
+          changed = true;
+        }
+      }
+      if (changed) {
+        snoozedUntilRef.current = updated;
+        setSnoozedUntil(updated);
+      }
+      if (globalSnoozeUntilRef.current !== null && globalSnoozeUntilRef.current <= nowMs) {
+        globalSnoozeUntilRef.current = null;
+        setGlobalSnoozeUntil(null);
+      }
+    }, 30_000);
+    return () => clearInterval(cleanup);
+  }, []);
+
+  // ─── Screen Wake Lock: keep the kitchen tablet awake ─────────────────────
+  // A kitchen tablet that dims/sleeps won't fire alerts. Request a wake lock
+  // when sound alerts are enabled (which requires a user gesture — the toggle
+  // tap — so the gesture requirement for wake lock is satisfied too).
+  // Re-acquire on visibilitychange (wake locks are released when tab is
+  // backgrounded or screen turns off).
+  useEffect(() => {
+    if (!soundOn) return;
+
+    const requestWakeLock = async () => {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
+        }
+      } catch {
+        /* wake lock is best-effort — older browsers / iOS don't support it */
+      }
+    };
+
+    requestWakeLock();
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && soundOnRef.current) {
+        requestWakeLock();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release?.().catch(() => {});
+        wakeLockRef.current = null;
+      }
+    };
+  }, [soundOn]);
 
   const visibleOrders = useMemo(
     () => filterOrdersForBoard(orders, board, query),
@@ -402,6 +589,43 @@ export function KdsClient({ backHref }: { backHref?: string }) {
           )}
         </div>
 
+        {/* Persistent unacknowledged alert — stays until staff starts or snoozes. */}
+        {unacknowledgedIds.size > 0 && (
+          <div className="mb-4 flex flex-col gap-3 rounded-2xl border-2 border-amber-400/60 bg-amber-500/15 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <Bell className="h-6 w-6 animate-pulse text-amber-400" />
+              <span className="text-lg font-bold text-amber-300">
+                {unacknowledgedIds.size} order{unacknowledgedIds.size !== 1 ? "s" : ""} waiting to be started
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={snoozeAll}
+                className="flex items-center gap-2 rounded-2xl border border-amber-400/40 bg-amber-500/20 px-4 py-2 text-sm font-semibold text-amber-200 transition-colors hover:bg-amber-500/30 active:scale-[0.98]"
+              >
+                <BellOff className="h-4 w-4" /> Snooze All 5 min
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Global snooze indicator */}
+        {globalSnoozeUntil !== null && globalSnoozeUntil > Date.now() && (
+          <div className="mb-4 flex items-center gap-2 rounded-2xl border border-slate-500/40 bg-slate-700/30 px-5 py-3 text-sm font-medium text-slate-300">
+            <BellOff className="h-4 w-4" /> Alerts snoozed until{" "}
+            {new Date(globalSnoozeUntil).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            <button
+              onClick={() => {
+                globalSnoozeUntilRef.current = null;
+                setGlobalSnoozeUntil(null);
+              }}
+              className="ml-2 underline hover:text-slate-100"
+            >
+              Resume now
+            </button>
+          </div>
+        )}
+
         {/* Stats strip */}
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           <StatCard label="In Queue" value={stats.total} />
@@ -466,9 +690,17 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                 "Guest";
               const customerPhone = order.fulfillment_metadata?.customer_phone;
               const itemCount = items.reduce((sum, it) => sum + it.quantity, 0);
+              const isUnacknowledged = unacknowledgedIds.has(order.id);
 
               return (
-                <article key={order.id} className="flex h-full flex-col rounded-3xl border-4 border-sand bg-card p-5 text-espresso shadow-xl">
+                <article
+                  key={order.id}
+                  className={`flex h-full flex-col rounded-3xl border-4 bg-card p-5 text-espresso shadow-xl ${
+                    isUnacknowledged
+                      ? "border-amber-400 animate-pulse shadow-amber-400/20"
+                      : "border-sand"
+                  }`}
+                >
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-xs tracking-[2px] text-mocha">
@@ -597,6 +829,15 @@ export function KdsClient({ backHref }: { backHref?: string }) {
                         className="w-full rounded-2xl border border-latte/40 py-2 text-sm font-medium text-mocha active:scale-[0.985] disabled:opacity-60"
                       >
                         <RotateCcw className="mr-1.5 inline h-4 w-4" /> Back to Preparing
+                      </button>
+                    )}
+                    {/* Snooze this order's alert for 5 minutes */}
+                    {isUnacknowledged && (
+                      <button
+                        onClick={() => snoozeOrder(order.id)}
+                        className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-amber-400/40 bg-amber-500/10 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-500/20 active:scale-[0.985]"
+                      >
+                        <BellOff className="h-4 w-4" /> Snooze 5 min
                       </button>
                     )}
                   </div>
