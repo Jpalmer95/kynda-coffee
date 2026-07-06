@@ -94,7 +94,7 @@ function statusColor(status: OrderStatus) {
   return "bg-latte/20 text-espresso";
 }
 
-/** Two-tone "order up" chime via WebAudio. Safe to call repeatedly. */
+/** Single two-tone "ding-ding" — used for the toggle confirmation. */
 function playChime(ctx: AudioContext) {
   const play = (freq: number, start: number, duration: number) => {
     const osc = ctx.createOscillator();
@@ -110,6 +110,38 @@ function playChime(ctx: AudioContext) {
   };
   play(880, 0, 0.35);
   play(1174.66, 0.18, 0.45); // D6 — rising "ding-ding"
+}
+
+/**
+ * Sustained new-order alert: repeats the two-tone chime 4 times with a
+ * short gap between each burst, totalling ~4 seconds. This ensures the
+ * kitchen team has enough time to hear the alert even when busy or across
+ * the room. Only used for incoming non-POS orders (POS orders are filtered
+ * out by detectNewKdsOrders before we ever get here).
+ */
+function playNewOrderAlert(ctx: AudioContext) {
+  const play = (freq: number, start: number, duration: number) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime + start);
+    gain.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime + start);
+    osc.stop(ctx.currentTime + start + duration + 0.05);
+  };
+  // 4 bursts of the rising two-tone chime, 0.5s apart.
+  // Each burst: 0.63s (0.35 + 0.18 + 0.45 overlap).
+  // Total: 4 * 0.63 + 3 * 0.5 ≈ 4.02s — comfortably in the 3-5s target.
+  const burstGap = 0.5;
+  const burstDuration = 0.63;
+  for (let i = 0; i < 4; i++) {
+    const offset = i * (burstDuration + burstGap);
+    play(880, offset, 0.35);
+    play(1174.66, offset + 0.18, 0.45); // D6
+  }
 }
 
 export function KdsClient({ backHref }: { backHref?: string }) {
@@ -156,7 +188,7 @@ export function KdsClient({ backHref }: { backHref?: string }) {
         audioCtxRef.current
       ) {
         try {
-          playChime(audioCtxRef.current);
+          playNewOrderAlert(audioCtxRef.current);
         } catch {
           /* audio is best-effort */
         }
