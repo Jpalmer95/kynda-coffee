@@ -30,6 +30,10 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | undefined>();
+  // SMS consent state (separate from notification_settings — stored on profiles)
+  const [smsOptIn, setSmsOptIn] = useState(false);
+  const [smsSaving, setSmsSaving] = useState(false);
+  const [smsOptInAt, setSmsOptInAt] = useState<string | null>(null);
   const { supported: pushSupported, subscribed, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications(userId);
 
   useEffect(() => {
@@ -42,12 +46,14 @@ export default function NotificationsPage() {
     setUserId(user.id);
     const { data } = await supabase
       .from("profiles")
-      .select("notification_settings")
+      .select("notification_settings, sms_opt_in, sms_opt_in_at")
       .eq("id", user.id)
       .single();
     if (data?.notification_settings) {
       setSettings({ ...DEFAULT_SETTINGS, ...data.notification_settings });
     }
+    setSmsOptIn(data?.sms_opt_in ?? false);
+    setSmsOptInAt(data?.sms_opt_in_at ?? null);
     setLoading(false);
   }
 
@@ -62,6 +68,28 @@ export default function NotificationsPage() {
     if (error) toast(error.message, "error");
     else toast("Preferences saved", "success");
     setSaving(false);
+  }
+
+  async function handleSmsToggle(next: boolean) {
+    setSmsSaving(true);
+    try {
+      const res = await fetch("/api/account/sms-consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ consent: next }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSmsOptIn(data.sms_opt_in);
+        toast(next ? "SMS updates enabled" : "SMS updates disabled", "success");
+      } else {
+        toast("Failed to update SMS preferences", "error");
+      }
+    } catch {
+      toast("Failed to update SMS preferences", "error");
+    } finally {
+      setSmsSaving(false);
+    }
   }
 
   function toggle(key: keyof NotificationSettings) {
@@ -80,7 +108,6 @@ export default function NotificationsPage() {
 
   const items: { key: keyof NotificationSettings; icon: typeof Mail; title: string; desc: string }[] = [
     { key: "email_updates", icon: Mail, title: "Email Updates", desc: "Order confirmations, shipping updates, and account notifications" },
-    { key: "sms_alerts", icon: MessageSquare, title: "SMS Alerts", desc: "Delivery notifications and urgent order updates via text" },
     { key: "push_notifications", icon: Bell, title: "Push Notifications", desc: "App alerts for deals, new arrivals, and order status" },
     { key: "marketing_emails", icon: Mail, title: "Marketing Emails", desc: "Promotions, new roasts, and Coffee Club updates" },
     { key: "restock_alerts", icon: Bell, title: "Restock Alerts", desc: "Get notified when your favorite items are back in stock" },
@@ -96,7 +123,59 @@ export default function NotificationsPage() {
         <h1 className="font-heading text-2xl sm:text-3xl font-bold text-espresso">Notifications</h1>
         <p className="mt-1 text-sm text-mocha">Choose how we keep in touch</p>
 
-        <div className="mt-6 space-y-3">
+        {/* SMS Order Updates — dedicated consent card with full legal disclosures */}
+        <div className="mt-6 rounded-xl border border-latte/20 bg-card p-5">
+          <div className="flex items-start gap-3 mb-3">
+            <MessageSquare className="h-5 w-5 text-forest shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h2 className="font-heading text-lg font-semibold text-espresso">SMS Order Updates</h2>
+              <p className="text-xs text-mocha mt-0.5">
+                Receive text messages about your order status — confirmation,
+                ready-for-pickup, and delivery notifications.
+              </p>
+            </div>
+          </div>
+
+          {smsOptIn && smsOptInAt && (
+            <p className="text-xs text-forest mb-3">
+              ✓ Enabled on {new Date(smsOptInAt).toLocaleDateString()}
+            </p>
+          )}
+
+          <div className="rounded-lg border border-latte/20 bg-cream/30 p-3 mb-3">
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={smsOptIn}
+                onChange={(e) => handleSmsToggle(e.target.checked)}
+                disabled={smsSaving}
+                className="mt-0.5 h-5 w-5 shrink-0 rounded border-latte/40 text-forest focus:ring-forest"
+              />
+              <span className="text-xs leading-relaxed text-mocha">
+                <span className="font-semibold text-espresso">
+                  {smsOptIn ? "SMS updates enabled" : "Enable SMS order updates"}
+                </span>
+                {" — "}
+                Message frequency varies based on order activity. Message and
+                data rates may apply. Reply{" "}
+                <strong>HELP</strong> for help or{" "}
+                <strong>STOP</strong> to cancel at any time. See our{" "}
+                <Link href="/terms" className="text-forest hover:underline">Terms</Link>{" "}
+                and{" "}
+                <Link href="/privacy" className="text-forest hover:underline">Privacy Policy</Link>.
+              </span>
+            </label>
+          </div>
+
+          {smsSaving && (
+            <p className="text-xs text-mocha flex items-center gap-1.5">
+              <Loader2 className="h-3 w-3 animate-spin" /> Updating...
+            </p>
+          )}
+        </div>
+
+        {/* Other notification settings */}
+        <div className="mt-3 space-y-3">
           {items.map((item) => (
             <label key={item.key} className="flex items-center justify-between rounded-xl border border-latte/20 bg-card p-4 cursor-pointer transition-colors hover:border-latte/40">
               <div className="flex items-center gap-3">

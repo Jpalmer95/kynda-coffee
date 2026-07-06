@@ -21,7 +21,7 @@ export default function SmsOptInPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
@@ -34,8 +34,16 @@ export default function SmsOptInPage() {
       return;
     }
 
-    // In production, this would POST to an API endpoint that stores the
-    // opt-in record. For now, we show a success confirmation.
+    // Try to persist consent to the user's profile (if logged in)
+    try {
+      await fetch("/api/account/sms-consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ consent: true }),
+      });
+    } catch {
+      // Not logged in — consent will be recorded when they place an order
+    }
     setSubmitted(true);
   }
 

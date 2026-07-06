@@ -123,6 +123,35 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         })
         .eq("id", pendingOrder.id);
       console.log(`[Stripe Webhook] Marked order ${pendingOrder.id} paid (session ${session.id})`);
+
+      // Persist SMS consent to the customer's profile now that we have their
+      // real email from Stripe. The consent flag traveled with the order
+      // metadata; now we can link it to an actual user account.
+      if (fm.sms_consent === true && email) {
+        const now = new Date().toISOString();
+        // Persist SMS consent to profile + customer records (best-effort)
+        (async () => {
+          try {
+            await db.from("profiles")
+              .update({
+                sms_opt_in: true,
+                sms_opt_in_at: now,
+                updated_at: now,
+                ...(verifiedPhone ? { phone: verifiedPhone } : {}),
+              })
+              .eq("email", email.toLowerCase());
+          } catch (e) {
+            console.error("[Stripe Webhook] SMS consent profile persist failed:", e);
+          }
+          try {
+            await db.from("customers")
+              .update({ sms_opt_in: true, ...(verifiedPhone ? { phone: verifiedPhone } : {}) })
+              .eq("email", email.toLowerCase());
+          } catch (e) {
+            console.error("[Stripe Webhook] SMS consent customer persist failed:", e);
+          }
+        })();
+      }
     }
   } catch (orderErr) {
     console.error("[Stripe Webhook] Failed to mark order paid", orderErr);

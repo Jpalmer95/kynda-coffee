@@ -13,6 +13,35 @@ function orderChannelForMode(mode: string) {
   return "pickup";
 }
 
+/**
+ * Persist SMS consent to the customer's profile when they check the box
+ * at checkout. This runs server-side so consent is recorded even for
+ * customers whose browser might not have completed the client-side POST
+ * (e.g. they submitted the order right after checking the box).
+ */
+async function persistSmsConsent(email: string, consent: boolean) {
+  if (!email || email.endsWith("@kyndacoffee.local") || email === "pending@kyndacoffee.com") return;
+  const db = supabaseAdmin();
+  const now = new Date().toISOString();
+
+  // Update profiles table (if user has an account)
+  await db
+    .from("profiles")
+    .update({
+      sms_opt_in: consent,
+      sms_opt_in_at: consent ? now : null,
+      sms_opt_out_at: !consent ? now : null,
+      updated_at: now,
+    })
+    .eq("email", email.toLowerCase());
+
+  // Sync to customers table
+  await db
+    .from("customers")
+    .update({ sms_opt_in: consent })
+    .eq("email", email.toLowerCase());
+}
+
 // The `orders.payment_preference` column has a CHECK constraint that predates
 // the `stripe` preference value (migration 010 allows only 'online' |
 // 'pay_at_counter' | 'online_later'). Map our app-level preference to a
@@ -69,6 +98,14 @@ export async function POST(request: Request) {
     if (error) {
       console.error("QR order insert failed", error);
       return NextResponse.json({ error: "Failed to submit order." }, { status: 500 });
+    }
+
+    // Persist SMS consent to the customer's profile (best-effort, non-blocking)
+    if (draftResult.value.fulfillment_metadata.sms_consent) {
+      const customerEmail = draftResult.value.email;
+      persistSmsConsent(customerEmail, true).catch((e) =>
+        console.error("[orders/submit] SMS consent persist failed:", e)
+      );
     }
 
     // Best-effort upstream mirror into Square (team sees the order in Square
