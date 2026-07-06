@@ -10,7 +10,7 @@ import type {
 import { formatMoney } from "@/lib/pos/catalog";
 import { formatPrice } from "@/lib/utils";
 import type { QrFulfillmentMode, QrPaymentPreference } from "@/lib/orders/qr-order";
-import { useMenuCartStore } from "@/hooks/useMenuCart";
+import { useMenuCartStore, buildMenuCartItem } from "@/hooks/useMenuCart";
 import { SmsConsentCheckbox } from "@/components/order/SmsConsentCheckbox";
 
 interface CartLine {
@@ -57,6 +57,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   // to re-add everything just to choose pickup + pay.
   const menuStoreItems = useMenuCartStore((s) => s.items);
   const clearMenuStore = useMenuCartStore((s) => s.clearCart);
+  const removeMenuItem = useMenuCartStore((s) => s.removeItem);
+  const updateMenuQuantity = useMenuCartStore((s) => s.updateQuantity);
+  const addMenuItem = useMenuCartStore((s) => s.addItem);
 
   const [cart, setCart] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -182,6 +185,9 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         },
       ];
     });
+    // Sync to persisted menu cart store so the header badge and CartDrawer
+    // stay in sync with this page's working cart.
+    addMenuItem(buildMenuCartItem(item, variation, modifiers, quantity));
     setShowCart(true);
     form.reset();
   }
@@ -189,10 +195,12 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
   function updateQuantity(id: string, qty: number) {
     if (qty < 1) return;
     setCart((current) => current.map((line) => (line.id === id ? { ...line, quantity: Math.min(20, qty) } : line)));
+    updateMenuQuantity(id, Math.min(20, qty));
   }
 
   function removeLine(id: string) {
     setCart((current) => current.filter((line) => line.id !== id));
+    removeMenuItem(id);
   }
 
   async function payOnline(orderId: string) {
@@ -264,8 +272,13 @@ export function OrderClient({ categories, initialMode, initialLabel }: Props) {
         throw new Error(json.error || "Could not submit order");
       }
 
-      // If paying online, redirect to Stripe Checkout immediately
+      // If paying online, redirect to Stripe Checkout immediately.
+      // Clear the cart BEFORE the redirect — the browser navigates away,
+      // so the code below never runs. Without this, the persisted menu
+      // cart store keeps all items and they resurface after payment.
       if (paymentPreference === "stripe" && json.order?.id) {
+        setCart([]);
+        clearMenuStore();
         await payOnline(json.order.id);
         return;
       }
