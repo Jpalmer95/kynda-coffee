@@ -278,4 +278,24 @@ describe("POS catalog formatting", () => {
     expect(qrItems.some((item) => item.providerItemId === "SQ_ITEM_LATTE")).toBe(false);
     expect(allItems.some((item) => item.providerItemId === "SQ_ITEM_HOODIE")).toBe(false);
   });
+
+  it("propagates is_featured from override through to PosCatalogItem and Product", () => {
+    const overriddenRows = applyCatalogOverrides(rows, overrides);
+    const allItems = mapPosCatalogRows(overriddenRows, { channel: "all", includeModifiers: false });
+
+    // The latte override has is_featured: true
+    const latte = allItems.find((item) => item.providerItemId === "SQ_ITEM_LATTE");
+    expect(latte).toBeDefined();
+    expect(latte!.isFeatured).toBe(true);
+
+    // mapPosCatalogItemToProduct must carry is_featured through (powers homepage)
+    const product = mapPosCatalogItemToProduct(latte!);
+    expect(product.is_featured).toBe(true);
+  });
+
+  it("defaults isFeatured to false when no override sets it", () => {
+    const items = mapPosCatalogRows(rows, { channel: "all", includeModifiers: false });
+    // No overrides applied — neither row has is_featured
+    expect(items.every((item) => item.isFeatured === false)).toBe(true);
+  });
 });

@@ -40,14 +40,20 @@ function scoreSpecialness(item: PosCatalogItem): number {
   return score;
 }
 
+// Build the specials list. Items explicitly marked is_featured (via admin
+// catalog overrides) always come first. If there aren't enough featured items
+// to fill the carousel, we top up with the heuristic-scored items.
 function getSpecialsList(items: PosCatalogItem[], maxCount = 6): PosCatalogItem[] {
+  const featured = items.filter((item) => item.isFeatured);
+
   const scored = items
+    .filter((item) => !item.isFeatured)
     .map((item) => ({ item, score: scoreSpecialness(item) }))
     .filter((x) => x.score > 8) // Minimum threshold
-    .sort((a, b) => b.score - a.score)
-    .slice(0, maxCount);
+    .sort((a, b) => b.score - a.score);
 
-  return scored.map((x) => x.item);
+  const toppedUp = scored.map((x) => x.item);
+  return [...featured, ...toppedUp].slice(0, maxCount);
 }
 
 export function MenuSpecials({ items, onSelectItem }: MenuSpecialsProps) {

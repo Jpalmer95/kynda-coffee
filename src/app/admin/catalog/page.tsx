@@ -194,9 +194,22 @@ export default function AdminCatalogPage() {
     }));
   }
 
-  async function saveOverride(item: CatalogItem) {
+  // Auto-save when a quick-toggle (Featured / Hidden) is clicked so the
+  // change persists without needing to press the per-row Save button.
+  async function updateAndSave(item: CatalogItem, patch: Partial<Override>) {
     const key = overrideKey(item.provider, item.providerItemId);
-    const override = getOverride(item);
+    const merged = { ...getOverride(item), ...patch };
+    setOverrides((current) => ({
+      ...current,
+      [key]: merged,
+    }));
+    await saveOverride(item, patch);
+  }
+
+  async function saveOverride(item: CatalogItem, patch?: Partial<Override>) {
+    const key = overrideKey(item.provider, item.providerItemId);
+    // Merge patch into the latest override state before saving
+    const override = { ...getOverride(item), ...patch };
     setSavingKey(key);
 
     const res = await fetch("/api/admin/catalog/overrides", {
@@ -310,14 +323,14 @@ export default function AdminCatalogPage() {
 
                     <div className="flex flex-wrap gap-2">
                       <button
-                        onClick={() => updateOverride(item, { is_hidden: !hidden })}
+                        onClick={() => updateAndSave(item, { is_hidden: !hidden })}
                         className={`rounded-full px-3 py-1.5 text-xs font-medium ${hidden ? "bg-red-50 text-red-700" : "bg-sage/20 text-sage"}`}
                       >
                         {hidden ? <EyeOff className="mr-1 inline h-3 w-3" /> : <Eye className="mr-1 inline h-3 w-3" />}
                         {hidden ? "Hidden" : "Visible"}
                       </button>
                       <button
-                        onClick={() => updateOverride(item, { is_featured: !override.is_featured })}
+                        onClick={() => updateAndSave(item, { is_featured: !override.is_featured })}
                         className={`rounded-full px-3 py-1.5 text-xs font-medium ${override.is_featured ? "bg-amber-50 text-amber-700" : "bg-latte/20 text-mocha"}`}
                       >
                         <Star className="mr-1 inline h-3 w-3" /> Featured

@@ -77,6 +77,7 @@ export interface PosCatalogRow {
   variations?: PosCatalogVariationRow[];
   modifierLists?: PosCatalogModifierListRow[];
   override?: CatalogOverrideRow | null;
+  is_featured?: boolean | null;
 }
 
 export interface CatalogOverrideRow {
@@ -182,6 +183,7 @@ export interface PosCatalogItem {
   currency: string;
   priceLabel: string;
   variationLabels: string[];
+  isFeatured: boolean;
 }
 
 export interface PosCatalogCategoryGroup {
@@ -395,6 +397,7 @@ export function mapPosCatalogRows(
         currency,
         priceLabel,
         variationLabels: variations.map((variation) => `${variation.name} • ${variation.priceLabel}`),
+        isFeatured: row.is_featured === true,
       };
     })
     .sort((a, b) => {
@@ -440,6 +443,7 @@ export function applyCatalogOverrides(rows: PosCatalogRow[], overrides: CatalogO
       available_shipping: override.available_shipping ?? row.available_shipping,
       available_qr: override.available_qr ?? row.available_qr,
       image_urls: override.image_urls ?? row.image_urls,
+      is_featured: override.is_featured ?? row.is_featured ?? false,
       override,
     };
   });
@@ -528,7 +532,7 @@ export function mapPosCatalogItemToProduct(item: PosCatalogItem): Product {
     track_inventory: primaryVariation?.trackInventory ?? false,
     inventory_synced_at: undefined,
     is_active: item.availableOnline ?? true,
-    is_featured: item.itemType === "merch" || item.availableShipping,
+    is_featured: item.isFeatured,
     inventory_count: undefined,
     created_at: new Date(0).toISOString(),
     updated_at: new Date().toISOString(),
