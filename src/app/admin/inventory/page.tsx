@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, AlertTriangle, Loader2, Package, RefreshCw } from "lucide-react";
+import { ArrowLeft, AlertTriangle, ClipboardList, Loader2, Package, RefreshCw, TrendingDown } from "lucide-react";
 import MenuMetricsPanel from "@/components/admin/MenuMetricsPanel";
 
 type InventoryItem = {
@@ -85,7 +85,7 @@ export default function AdminInventoryPage() {
 
   return (
     <div className="container-max py-6 sm:py-10">
-      <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
           <Link href="/admin" className="rounded-lg p-2 text-mocha transition-colors hover:bg-latte/10" aria-label="Back to admin">
             <ArrowLeft className="h-5 w-5" />
@@ -99,10 +99,18 @@ export default function AdminInventoryPage() {
             </p>
           </div>
         </div>
-        <button className="btn-primary text-sm" onClick={syncSquare} disabled={syncing}>
-          {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-          Sync Square Inventory
-        </button>
+        <div className="flex gap-2">
+          <Link href="/admin/inventory/counts" className="btn-secondary text-sm">
+            <ClipboardList className="mr-2 h-4 w-4" /> Count Sheets
+          </Link>
+          <Link href="/admin/inventory/waste" className="btn-secondary text-sm">
+            <TrendingDown className="mr-2 h-4 w-4" /> Waste Log
+          </Link>
+          <button className="btn-primary text-sm" onClick={syncSquare} disabled={syncing}>
+            {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+            Sync Square
+          </button>
+        </div>
       </div>
 
       {error && <div className="mb-6 rounded-2xl border border-bronze/30 bg-bronze/10 p-4 text-sm text-espresso">{error}</div>}

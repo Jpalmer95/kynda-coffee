@@ -273,7 +273,7 @@ Features:
 - Hermes skill for ad-hoc strategic analysis (triggered from CLI/Telegram)
 - Admin page for team-facing strategic dashboard with AI chat
 - Shared context pool: both read from the same business knowledge base
-- Cron job (optional): weekly strategic brief — AI analyzes the week and sends a summary to owner
+- Cron job (optional and configurable): weekly strategic brief — AI analyzes the week and sends a summary to owner
 - Pros: Best of both worlds, owner can use CLI for deep analysis, team uses admin for quick questions
 - Cons: Most upfront effort
 
