@@ -40,6 +40,7 @@ const ADMIN_LINKS = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/admin/inventory", label: "Inventory", icon: Boxes },
+  { href: "/admin/chat", label: "Team Chat", icon: BotMessageSquare },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/catalog", label: "POS Catalog", icon: ListChecks },
   { href: "/admin/customers", label: "Customers", icon: Users },
