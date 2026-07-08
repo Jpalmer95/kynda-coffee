@@ -109,6 +109,7 @@ function catalogItem(overrides: Partial<PosCatalogItem> = {}): PosCatalogItem {
     currency: "USD",
     priceLabel: "from $4.50",
     variationLabels: ["Small • $4.50", "Large • $6.50"],
+    isFeatured: false,
     ...overrides,
   };
 }
