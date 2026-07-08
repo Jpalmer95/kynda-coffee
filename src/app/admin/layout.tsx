@@ -30,6 +30,7 @@ import {
   Map as MapIcon,
   Zap,
   Search,
+  Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +53,7 @@ const ADMIN_LINKS = [
   { href: "/admin/gift-cards", label: "Gift Cards", icon: Gift },
   { href: "/admin/pricing", label: "Pricing Rules", icon: Tag },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/strategist", label: "AI Strategist", icon: Brain },
   { href: "/admin/designs", label: "Designs", icon: Sparkles },
   { href: "/admin/training", label: "Training", icon: GraduationCap },
   { href: "/admin/marketing", label: "Marketing", icon: Share2 },
