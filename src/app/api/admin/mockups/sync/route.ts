@@ -17,10 +17,19 @@ export const dynamic = "force-dynamic";
  * Idempotent — overwrites existing files with the same key.
  */
 export async function POST(req: NextRequest) {
-  // Auth gate — only authenticated managers+
-  const team = await requireTier(req, "manager");
-  if (!team) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Auth gate — manager+ session, OR service auth (CRON_SECRET bearer /
+  // X-Agent-Key) so cron and the admin/cron/sync wrapper can run headlessly.
+  const cronSecret = process.env.CRON_SECRET;
+  const agentKeyEnv = process.env.AGENT_API_KEY;
+  const authHeader = req.headers.get("authorization");
+  const headerAgentKey = req.headers.get("x-agent-key");
+  const cronOk = cronSecret ? authHeader === `Bearer ${cronSecret}` : false;
+  const agentOk = agentKeyEnv ? headerAgentKey === agentKeyEnv : false;
+  if (!cronOk && !agentOk) {
+    const team = await requireTier(req, "manager");
+    if (!team) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
   }
 
   const apiKey = process.env.PRINTFUL_API_KEY;

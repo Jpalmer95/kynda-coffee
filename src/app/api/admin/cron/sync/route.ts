@@ -16,18 +16,25 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(req: NextRequest) {
   // --- Auth gate ---
+  // Accepts X-Agent-Key (AGENT_API_KEY) or Bearer CRON_SECRET so cron can run
+  // headlessly without a manager session.
   const agentKey = req.headers.get("x-agent-key") || req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   const expected = process.env.AGENT_API_KEY;
+  const cronSecret = process.env.CRON_SECRET;
 
-  if (!expected) {
+  const agentOk = expected ? agentKey === expected : false;
+  const cronOk = cronSecret ? agentKey === cronSecret : false;
+  if (!expected && !cronSecret) {
     return NextResponse.json(
-      { error: "AGENT_API_KEY not configured on server" },
+      { error: "Neither AGENT_API_KEY nor CRON_SECRET configured on server" },
       { status: 500 }
     );
   }
-  if (!agentKey || agentKey !== expected) {
+  if (!agentKey || (!agentOk && !cronOk)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  // Forwarded auth for sub-route calls that enforce their own auth.
+  const forwardAuth = cronSecret ?? expected ?? "";
 
   let body: { catalog?: boolean; mockups?: boolean; orders?: boolean } = {};
   try {
@@ -46,7 +53,7 @@ export async function POST(req: NextRequest) {
     try {
       const res = await fetch(`${baseUrl}/api/square/sync-catalog`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${forwardAuth}` },
       });
       results.catalog = await res.json();
     } catch (err) {
@@ -58,7 +65,7 @@ export async function POST(req: NextRequest) {
     try {
       const res = await fetch(`${baseUrl}/api/admin/mockups/sync`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${forwardAuth}` },
       });
       results.mockups = await res.json();
     } catch (err) {
@@ -70,7 +77,7 @@ export async function POST(req: NextRequest) {
     try {
       const res = await fetch(`${baseUrl}/api/square/sync`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${forwardAuth}` },
         body: JSON.stringify({ type: "orders", hoursBack: 24 }),
       });
       results.orders = await res.json();
