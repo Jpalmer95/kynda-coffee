@@ -1,4 +1,5 @@
 import twilio from "twilio";
+import { orderStatusSms } from "./templates";
 
 function getClient() {
   const sid = process.env.TWILIO_ACCOUNT_SID;
@@ -50,13 +51,8 @@ export async function sendOrderStatusSms({
   orderNumber: string;
   status: string;
 }) {
-  const messages: Record<string, string> = {
-    confirmed: `Kynda Coffee: Your order ${orderNumber} is confirmed! We're roasting your beans now. Track at kyndacoffee.com/track-order`,
-    shipped: `Kynda Coffee: Great news! Your order ${orderNumber} has shipped. Track at kyndacoffee.com/track-order`,
-    delivered: `Kynda Coffee: Your order ${orderNumber} has been delivered. Enjoy your coffee!`,
-    refunded: `Kynda Coffee: Your order ${orderNumber} has been refunded. The funds will appear in 3-5 business days.`,
-  };
-
-  const body = messages[status] ?? `Kynda Coffee: Your order ${orderNumber} status is now: ${status}`;
+  // Templates live in ./templates — the canonical source of campaign-approved
+  // wording (see that file's header before editing message text).
+  const body = orderStatusSms(orderNumber, status);
   await sendSms({ to, body });
 }

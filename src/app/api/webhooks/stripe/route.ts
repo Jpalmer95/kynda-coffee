@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
+import { sendSms } from "@/lib/sms/twilio";
+import { orderConfirmationSms, optInWelcomeSms } from "@/lib/sms/templates";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
@@ -88,7 +90,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const db = supabaseAdmin();
     const { data: pendingOrder } = await db
       .from("orders")
-      .select("id, fulfillment_metadata")
+      .select("id, order_number, fulfillment_metadata")
       .eq("stripe_checkout_session_id", session.id)
       .maybeSingle();
 
@@ -123,6 +125,39 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         })
         .eq("id", pendingOrder.id);
       console.log(`[Stripe Webhook] Marked order ${pendingOrder.id} paid (session ${session.id})`);
+
+      // ── Customer SMS notifications (best-effort, never blocks) ──
+      // Gated on the consent flag captured at checkout (A2P 10DLC). Sends:
+      //  1. A one-time opt-in welcome text if this is the customer's first
+      //     SMS consent (welcome flag flips so it never re-sends).
+      //  2. The order confirmation text (approved campaign sample #1).
+      if (fm.sms_consent === true && verifiedPhone) {
+        const orderNumber = pendingOrder.order_number ?? "";
+        // Confirmation text — fire and forget
+        if (orderNumber) {
+          sendSms({ to: verifiedPhone, body: orderConfirmationSms(orderNumber) })
+            .catch((e) => console.error("[Stripe Webhook] Confirmation SMS failed:", e));
+        }
+        // One-time welcome text — only when the customer hasn't been welcomed yet
+        if (fm.sms_welcomed !== true) {
+          sendSms({ to: verifiedPhone, body: optInWelcomeSms() })
+            .then(async (res) => {
+              if (res.ok) {
+                const { data: fresh } = await db
+                  .from("orders")
+                  .select("fulfillment_metadata")
+                  .eq("id", pendingOrder.id)
+                  .maybeSingle();
+                const freshFm = (fresh?.fulfillment_metadata as Record<string, unknown>) ?? {};
+                await db
+                  .from("orders")
+                  .update({ fulfillment_metadata: { ...freshFm, sms_welcomed: true } })
+                  .eq("id", pendingOrder.id);
+              }
+            })
+            .catch((e) => console.error("[Stripe Webhook] Welcome SMS failed:", e));
+        }
+      }
 
       // Persist SMS consent to the customer's profile now that we have their
       // real email from Stripe. The consent flag traveled with the order

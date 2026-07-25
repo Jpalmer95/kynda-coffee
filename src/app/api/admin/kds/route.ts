@@ -3,6 +3,7 @@ import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { assertKdsTransition, sortKdsOrders, startOfTodayInTz, ACTIVE_KDS_STATUSES, type KdsOrderLike } from "@/lib/orders/kds";
 import { sendSms } from "@/lib/sms/twilio";
+import { orderReadySms } from "@/lib/sms/templates";
 import type { OrderStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -90,16 +91,8 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/** "Your order is ready" customer notification, fired on the KDS Ready bump. */
-function readySmsBody(orderNumber: string, mode?: string): string {
-  if (mode === "pickup" || mode === "parking") {
-    return `Kynda Coffee: Order ${orderNumber} is ready — we're bringing it out to your vehicle now!`;
-  }
-  if (mode === "table") {
-    return `Kynda Coffee: Order ${orderNumber} is ready — we're bringing it to your table!`;
-  }
-  return `Kynda Coffee: Order ${orderNumber} is ready for pickup at the counter. See you in a sec!`;
-}
+/** "Your order is ready" customer notification, fired on the KDS Ready bump.
+ *  Template lives in @/lib/sms/templates (campaign-approved wording). */
 
 export async function PATCH(req: NextRequest) {
   const team = await requireTier(req, "staff");
@@ -171,7 +164,7 @@ export async function PATCH(req: NextRequest) {
       if (phone && consented) {
         sendSms({
           to: phone,
-          body: readySmsBody(current.order_number as string, fm?.mode),
+          body: orderReadySms(current.order_number as string, fm?.mode),
         }).catch((e) => console.error("Ready SMS failed:", e));
       }
     }
