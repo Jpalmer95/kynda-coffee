@@ -47,7 +47,10 @@ export async function POST(req: NextRequest) {
   const runMockups = body.mockups === true;
   const runOrders = body.orders === true;
   const results: Record<string, unknown> = {};
-  const baseUrl = new URL(req.url).origin;
+  // Prefer loopback — req.url's origin can be an internal/proxy host that
+  // undici (Node fetch) cannot reach from inside the container.
+  const baseUrl =
+    process.env.INTERNAL_BASE_URL ?? `http://127.0.0.1:${process.env.PORT ?? 3000}`;
 
   if (runCatalog) {
     try {
