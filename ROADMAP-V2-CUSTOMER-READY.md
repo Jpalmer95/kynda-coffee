@@ -21,6 +21,11 @@ runs the entire business (metrics, marketing, sales, inventory, costs, B2B, staf
 > `TWILIO_*` (for KDS Ready→SMS). Set `REPLICA IDENTITY FULL` note: orders updates currently use
 > default replica identity (KDS refetches on any event, so this is fine).
 
+> **Owner revamp (2026-08-06):** Design Studio moved behind the admin wall, About-page logo
+> fixed, specials quick-create shipped, marketing cron pipeline overhauled (4 broken crons fixed,
+> plan at `MARKETING-CRON-PIPELINE.md`), and a new Command & Control Center epic added — see the
+> full dated audit section at the end of this document.
+
 ---
 
 ## How to Read This Document
@@ -752,3 +757,136 @@ automated transaction categorization, P&L/balance-sheet).**
 
 > Previous roadmap retained at `KYNDA-COFFEE-MASTER-ROADMAP.md` as the historical Phase 1–7 record.
 > This V2 is the active plan to reach a fully working, customer-ready, owner-operated platform.
+
+---
+
+# Owner Revamp Audit — 2026-08-06
+
+Dated record of the owner-driven revamp session. Covers what shipped, what's
+still pending, and the new Command & Control Center epic.
+
+## Shipped this session
+
+### A. Design Studio moved behind the admin wall (Epic 8 amendment)
+- **Route:** `src/app/studio/` → `src/app/admin/designs/studio/` (owner-only via
+  existing `/admin` tiered middleware).
+- **Back-compat:** `/studio` now 301-redirects to `/admin/designs/studio` (old
+  links/QR/bookmarks keep working; non-admins bounce to account login).
+- **Customer surface scrubbed:** Header nav, Footer, mobile BottomNav, home-page
+  CTA + value-prop card, Gallery CTA, account Dashboard card, FAQ copy, and the
+  Shop "Fresh Designs" rail (which deep-linked into the studio). Sitemap + robots
+  updated. Studio now in the admin sidebar under Designs.
+- **Intent:** refine behind the wall, flip back on for customers when ready.
+  Re-enable work = restore links + deep-link rail + remove the `/studio` redirect.
+
+### B. About page — real logo instead of flame icon
+- New asset `public/images/logos/kynda-logo-cream.png` (black logo remapped to
+  the design token `sand #E5E2E1`, alpha preserved, flame carved out).
+- Etymology block now renders the actual wordmark above "KYNDA /KEN-DUH/".
+
+### C. Specials — efficient featuring + source-of-truth answer (Epic 5/9)
+- **Answer:** the website's "This Month's Specials" banner is curated in the
+  **admin portal** (`/admin/specials`) — that table is the single source of
+  truth and also seeds marketing campaigns. Square's `is_featured` flag only
+  powers a heuristic fallback carousel when no curated specials exist. Team
+  keeps Square as POS source of truth; the owner features items in admin.
+- **Shipped:** "Pick from Menu" quick-create in `/admin/specials` — searchable
+  picker over the Square-synced catalog; one click pre-fills title/image/price/
+  `provider_item_id` (Add-to-Cart link) + "Featured" badge.
+
+### D. Marketing cron pipeline overhaul
+- **Fixed 4 broken crons:** `kynda-marketing-loop.sh` + `kynda-publish-due.sh`
+  now use `KYNDA_CRON_SECRET` (with `~/.hermes/.env` fallback) instead of the
+  never-set `$CRON_SECRET`; `kynda-submissions-check.sh` rewritten to call the
+  new `GET /api/admin/inbox/counts` (CRON_SECRET auth) instead of SSH+psql with
+  a stale droplet DB password. Trending Research's last failure was a transient
+  search-backend error (job retries fine).
+- **Plan doc:** `MARKETING-CRON-PIPELINE.md` — target-state job roster
+  (Content Calendar Builder, Specials-to-Newsletter, Platform Analytics Digest
+  added), approval-gated workflow, platform readiness, rollout steps.
+
+### E. New Epic — Command & Control Center (see below)
+
+---
+
+# EPIC 13 — Command & Control Center (Owner Mission Control)
+
+**Added 2026-08-06 (owner ask: "a command and control center for my coffee shop
+business" — solo, self-funded, no budget).**
+
+**State today:** Business signals are spread across `/admin` (stats cards),
+`/admin/strategist` (AI brief), `/admin/insights` (ranked recommendations),
+`/admin/marketing/dashboard` (pipeline), `/admin/inbox` (submissions),
+`/admin/inventory` (MenuMetrics panel), `/admin/b2b` (wholesale pipeline).
+
+**Target:** ONE landing page that answers "how is the business doing right now,
+and what needs my attention?" — a live mission control with:
+- **Vitals strip** — today's revenue/orders, 7d + WoW, avg ticket, customers,
+  subscribers.
+- **Attention queue** — pending marketing approvals, open inventory alerts,
+  new B2B leads, pending schedule requests, untriaged inbox items, live specials.
+- **Marketing pulse** — drafts/scheduled/published counts, platform connection
+  status, one-click "run marketing loop".
+- **Growth vectors** — top products (30d), top insights recommendations, B2B
+  pipeline rollup, wholesale + referrals quick links.
+- **Quick actions** — jump to the 8 most-used admin tools.
+
+**Work:**
+- [ ] `/admin/command-center` page (client, degrades gracefully per API) —
+      aggregates `/api/admin/stats` + `/api/admin/insights` +
+      `/api/marketing/social/posts` + `/api/admin/inbox/counts` + `/api/admin/specials`.
+- [ ] Sidebar entry + admin sitemap entry.
+- [ ] Weekly: Hermes Growth Strategy cron already exists (Sun 5pm) — add a
+      "command-center digest" mode so the owner gets the same snapshot in chat.
+- [ ] Later: pin the command center as the `/admin` landing with tabs.
+
+**Why it matters:** Owner runs the whole business solo; the win is one screen
+that converts scattered dashboards into "here's your day" — attention first,
+growth second.
+
+---
+
+# Pending Items (from ADMIN-ISSUE-LOG.md + this audit)
+
+**Blocking / high-value:**
+- [ ] **Migration 033 NOT applied to prod** (`studio_designs` table + bucket) —
+      admin curated-design upload/generate unusable until applied.
+- [ ] **FAL_KEY invalid on prod** — FAL returns 401 "Cannot access fal-ai/flux";
+      AI generation 500s until the key is replaced from fal.ai/dashboard/keys.
+- [ ] **Square catalog sync from browser 401s** — `/admin/image-sync` calls a
+      CRON_SECRET-only endpoint; needs a `requireTier` proxy route.
+- [ ] **QR tables are localStorage-only** — lost across devices; needs a DB
+      table + API + persistence.
+- [ ] **SMS order confirmation (Twilio)** — pickup/café email confirmation done
+      (d372f39); the SMS leg (and KDS Ready→SMS envs) still pending.
+
+**Medium / quality:**
+- [ ] `/admin/analytics` revenue: audit `totalRevenue` (all orders vs 30d).
+- [ ] `/admin/settings` integrations: verify env-var status check is real.
+- [ ] `/admin/inventory`: read-only — add inline threshold editing + PATCH.
+- [ ] `/admin/promo-codes`: delete/toggle errors silently swallowed → toasts.
+- [ ] Staff UX: chat/schedule/par-counts silent fetch errors; schedule-request
+      Cancel button (API already supports it).
+- [ ] Training page `.limit(1)` on courses query — course selector needed.
+- [ ] Marketing social filter badges: per-status totals.
+- [ ] FAQ admin editor (`/admin/content/faq`) — missing.
+- [ ] Kiosk settings (enable/disable, hide categories) — missing.
+- [ ] Epic 8: prove full Printful order path end-to-end (draft → pay → confirm →
+      webhook → email); catalog auto-sourcing.
+- [ ] Epic 10: migrate `/api/checkout` + Stripe webhook through the payment
+      factory; POS provider selector UI; migration playbook doc.
+- [ ] Epic 11: CSRF tokens, CSP + HSTS headers, cron-secret review, Playwright
+      E2E on money paths, scheduled Supabase backups + restore test.
+- [ ] Epic 12: AI suggestion layer, Plaid Link, Square/Stripe payout auto-ingest,
+      balance sheet + sales-tax report, monthly P&L digest cron.
+- [ ] Voice Order button (deferred, needs platform speech API).
+
+**UI/UX recommendations (no-code debt, noted for polish passes):**
+- Admin sidebar is 30+ items and growing — group into collapsible sections
+  (Operations / Commerce / Growth / System).
+- Make `/admin/command-center` the `/admin` landing once stable.
+- Menu "Specials" banner: consider time-windowed specials (AM pastries vs PM
+  happy hour) using the existing `starts_at`/`ends_at` fields.
+- Specials cards: add the same quick-add affordance as the menu grid.
+- Light/dark: verify the new cream logo + About block contrast in both themes
+  (block is always-dark by design — should be fine, confirm visually after deploy).

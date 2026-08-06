@@ -37,13 +37,12 @@ export default function GalleryPage() {
             Community Gallery
           </h1>
           <p className="mt-3 text-base text-mocha max-w-xl mx-auto">
-            Designs created by the Kynda community using our AI Design Studio.
-            Click any design to start your own creation.
+            Designs from the Kynda community. Click any design to see it in the shop.
           </p>
           <div className="mt-6">
-            <Link href="/studio" className="btn-primary">
+            <Link href="/shop/merch" className="btn-primary">
               <Sparkles className="mr-2 h-4 w-4" />
-              Create Your Own
+              Shop Kynda Merch
             </Link>
           </div>
         </div>

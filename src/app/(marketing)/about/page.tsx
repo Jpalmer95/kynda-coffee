@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Coffee, Heart, Award, MapPin, Phone, Clock, Flame } from "lucide-react";
+import { Coffee, Heart, Award, MapPin, Phone, Clock } from "lucide-react";
 
 export const metadata = {
   title: "Our Story | Kynda Coffee",
@@ -23,9 +24,14 @@ export default function AboutPage() {
 
           {/* Etymology Block */}
           <div className="rounded-2xl bg-surface p-6 sm:p-8 text-center mb-10">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bronze/20 mb-4">
-              <Flame className="h-6 w-6 text-sand" aria-hidden="true" />
-            </div>
+            <Image
+              src="/images/logos/kynda-logo-cream.png"
+              alt="Kynda Coffee logo"
+              width={3300}
+              height={2550}
+              priority
+              className="mx-auto mb-4 h-16 sm:h-20 w-auto"
+            />
             <h2 className="font-heading text-2xl sm:text-3xl font-bold text-sand tracking-wide">
               KYNDA <span className="text-sand/80 font-normal italic">/KEN-DUH/</span>
             </h2>

@@ -21,6 +21,7 @@ import {
   Inbox,
   Database,
   History as HistoryIcon,
+  Zap,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 
@@ -56,6 +57,12 @@ export default function AdminPage() {
   }, []);
 
   const sections = [
+    {
+      href: "/admin/command-center",
+      label: "Command Center",
+      desc: "One screen: revenue, attention queue, marketing, growth",
+      icon: Zap,
+    },
     {
       href: "/admin/analytics",
       label: "Analytics",

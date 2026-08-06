@@ -106,18 +106,13 @@ const FAQ_DATA: FaqItem[] = [
   // Custom Merch
   {
     category: "Custom Merch",
-    q: "How does the Design Studio work?",
-    a: "Visit kyndacoffee.com/studio to design custom merch. Upload your own artwork or generate AI designs. Choose from mugs, tees, hoodies, posters, and more. Preview your design on real product mockups before ordering.",
+    q: "Where can I find Kynda merch?",
+    a: "Our ready-made merch — mugs, tees, totes, hats, and more — is in the Kynda Shop at kyndacoffee.com/shop/merch. Designs are made in-house and printed to order.",
   },
   {
     category: "Custom Merch",
-    q: "Can I upload my own design?",
-    a: "Yes! Upload PNG, JPG, or SVG files. For best results, use transparent PNG at 300dpi. We support up to 10MB per file.",
-  },
-  {
-    category: "Custom Merch",
-    q: "What if I don't have design skills?",
-    a: "Use our AI design generator! Enter a text prompt (e.g., 'geometric coffee bean pattern, minimalist') and we'll create unique designs for you. You can also browse our preset gallery for inspiration.",
+    q: "Can I request a custom design?",
+    a: "We're currently refining our custom design experience — it will be back soon! In the meantime, message us on the Contact page and we'll do our best to help.",
   },
   {
     category: "Custom Merch",

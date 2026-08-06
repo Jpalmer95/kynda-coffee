@@ -151,9 +151,9 @@ const QUICK_LINKS = [
     color: "bg-mocha/10 text-mocha",
   },
   {
-    href: "/studio",
-    label: "Design Studio",
-    desc: "AI merch creation",
+    href: "/shop/merch",
+    label: "Kynda Merch",
+    desc: "Mugs, tees, totes & more",
     icon: Sparkles,
     color: "bg-espresso/10 text-espresso",
   },

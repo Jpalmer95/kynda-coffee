@@ -93,7 +93,7 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm text-sand/70">
               <li><Link href="/menu" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Menu</Link></li>
               <li><Link href="/shop" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Shop</Link></li>
-              <li><Link href="/studio" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Design Studio</Link></li>
+              <li><Link href="/shop/merch" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Shop Merch</Link></li>
               <li><Link href="/gallery" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Community Gallery</Link></li>
               <li><Link href="/gift-cards" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Gift Cards</Link></li>
               <li><Link href="/about" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Our Story</Link></li>

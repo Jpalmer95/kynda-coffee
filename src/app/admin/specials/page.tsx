@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Loader2, Save, Trash2, Sparkles, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Plus, Loader2, Save, Trash2, Sparkles, Eye, EyeOff, Search, ShoppingBasket } from "lucide-react";
 import { isSpecialLive, type Special } from "@/lib/marketing/specials";
 
 type EditState = Partial<Special> & { title: string };
+
+/** A Square-synced menu item offered by the "Pick from catalog" quick-create. */
+interface CatalogPick {
+  name: string;
+  description: string;
+  category: string;
+  price_cents: number;
+  image_url: string | null;
+  provider_item_id: string | null;
+}
 
 const EMPTY: EditState = {
   title: "",
@@ -37,6 +47,59 @@ export default function AdminSpecialsPage() {
   const [editing, setEditing] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Pick-from-catalog quick-create ──
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [catalogItems, setCatalogItems] = useState<CatalogPick[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogQuery, setCatalogQuery] = useState("");
+
+  async function openPicker() {
+    setPickerOpen(true);
+    if (catalogItems.length > 0) return;
+    setCatalogLoading(true);
+    try {
+      // Pure POS feed (menu channel): Square-synced food & drink items.
+      const res = await fetch("/api/products?source=pos&includePos=true&limit=250", { cache: "no-store" });
+      const data = await res.json();
+      const items: CatalogPick[] = (data.products ?? [])
+        .map((p: any) => ({
+          name: p.name ?? "",
+          description: p.description ?? "",
+          category: p.category ?? "",
+          price_cents: p.price_cents ?? 0,
+          image_url: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
+          provider_item_id: p.square_item_id ?? null,
+        }))
+        .filter((p: CatalogPick) => p.name && p.provider_item_id);
+      setCatalogItems(items);
+    } catch {
+      setCatalogItems([]);
+    } finally {
+      setCatalogLoading(false);
+    }
+  }
+
+  /** One click: prefill the editor from a catalog item, then let the owner tweak. */
+  function applyCatalogPick(item: CatalogPick) {
+    setEditing({
+      ...EMPTY,
+      title: item.name,
+      subtitle: item.description ? item.description.slice(0, 120) : "",
+      description: item.description,
+      provider_item_id: item.provider_item_id,
+      image_url: item.image_url,
+      price_cents: item.price_cents,
+      compare_at_cents: null,
+      badge: "Featured",
+    });
+    setPickerOpen(false);
+    setCatalogQuery("");
+  }
+
+  const filteredCatalog = catalogQuery.trim()
+    ? catalogItems.filter((p) => `${p.name} ${p.description} ${p.category}`.toLowerCase().includes(catalogQuery.toLowerCase()))
+    : catalogItems;
 
   async function load() {
     setLoading(true);
@@ -110,7 +173,73 @@ export default function AdminSpecialsPage() {
         <button onClick={() => setEditing({ ...EMPTY })} className="btn-primary text-sm">
           <Plus className="mr-1.5 inline h-4 w-4" /> New Special
         </button>
+        <button onClick={openPicker} className="btn-secondary text-sm">
+          <ShoppingBasket className="mr-1.5 inline h-4 w-4" /> Pick from Menu
+        </button>
       </div>
+
+      {/* Quick-create picker: feature an existing Square menu item in one click */}
+      {pickerOpen && (
+        <div className="mb-6 rounded-2xl border border-forest/25 bg-background p-4">
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <h2 className="font-heading text-lg font-bold text-espresso">Pick from the menu catalog</h2>
+            <span className="rounded-full bg-forest/10 px-2.5 py-1 text-xs text-forest">
+              Square-synced items · links Add to Cart automatically
+            </span>
+          </div>
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mocha" />
+            <input
+              value={catalogQuery}
+              onChange={(e) => setCatalogQuery(e.target.value)}
+              placeholder="Search by name, category, or description…"
+              className="input-field pl-9"
+              autoFocus
+            />
+          </div>
+          {catalogLoading ? (
+            <div className="flex items-center justify-center py-10 text-mocha">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading menu catalog…
+            </div>
+          ) : filteredCatalog.length === 0 ? (
+            <p className="py-8 text-center text-sm text-mocha">
+              No items found{catalogItems.length === 0 ? " — is the Square catalog synced? Try /admin/square" : " — try a different search"}.
+            </p>
+          ) : (
+            <ul className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
+              {filteredCatalog.map((item, i) => (
+                <li key={`${item.provider_item_id}-${i}`}>
+                  <button
+                    onClick={() => applyCatalogPick(item)}
+                    className="flex w-full items-center gap-3 rounded-xl border border-latte/20 bg-card p-2.5 text-left transition hover:border-forest/40 hover:bg-forest/5"
+                  >
+                    {item.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.image_url} alt="" className="h-10 w-10 flex-shrink-0 rounded-lg bg-white object-cover" loading="lazy" />
+                    ) : (
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-latte/20 text-mocha">
+                        <ShoppingBasket className="h-5 w-5" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold text-espresso">{item.name}</div>
+                      <div className="truncate text-xs text-mocha">
+                        {item.category} · {item.price_cents != null ? `$${(item.price_cents / 100).toFixed(2)}` : "—"}
+                      </div>
+                    </div>
+                    <span className="rounded-lg bg-forest/10 px-2.5 py-1 text-xs font-medium text-forest">Feature →</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-3 text-xs text-mocha">
+            Tip: the website&apos;s &ldquo;This Month&apos;s Specials&rdquo; banner is curated <em>here</em> in the admin portal.
+            Square&apos;s &ldquo;featured&rdquo; flag only powers a fallback carousel when no curated specials exist — so
+            feature items here, and let your team keep Square as the POS source of truth.
+          </p>
+        </div>
+      )}
 
       {error && <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
 

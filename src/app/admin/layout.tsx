@@ -31,10 +31,12 @@ import {
   Zap,
   Search,
   Brain,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ADMIN_LINKS = [
+  { href: "/admin/command-center", label: "Command Center", icon: Zap },
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/inbox", label: "Inbox", icon: Inbox },
   { href: "/admin/kds", label: "KDS", icon: MonitorCheck },
@@ -55,6 +57,7 @@ const ADMIN_LINKS = [
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/strategist", label: "AI Strategist", icon: Brain },
   { href: "/admin/designs", label: "Designs", icon: Sparkles },
+  { href: "/admin/designs/studio", label: "Design Studio", icon: Palette },
   { href: "/admin/training", label: "Training", icon: GraduationCap },
   { href: "/admin/marketing", label: "Marketing", icon: Share2 },
   { href: "/admin/marketing/dashboard", label: "Dashboard", icon: BarChart3 },

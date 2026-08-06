@@ -72,7 +72,7 @@ function SuccessContent() {
 
       <div className="mt-10 space-y-3">
         <Link
-          href="/studio"
+          href="/admin/designs/studio"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-forest text-white font-medium hover:bg-forest/90 transition"
         >
           <Package size={18} />

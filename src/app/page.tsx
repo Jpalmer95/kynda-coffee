@@ -193,9 +193,9 @@ export default function HomePage() {
               },
               {
                 icon: Sparkles,
-                title: "AI Design Studio",
+                title: "Kynda Merch",
                 description:
-                  "Create one-of-a-kind Kynda merch. Browse trends, generate with AI, and customize your own designs.",
+                  "Mugs, tees, totes, and more — designed in-house, made to order, and shipped to your door.",
                 accent: "from-bronze/10 to-transparent",
               },
             ].map((item) => (
@@ -250,29 +250,29 @@ export default function HomePage() {
       {/* Recently Viewed */}
       <RecentlyViewedStrip />
 
-      {/* AI Design Studio CTA */}
+      {/* Merch CTA */}
       <section className="section-padding">
         <div className="container-max">
           <div className="overflow-hidden rounded-2xl sm:rounded-3xl bg-surface">
             <div className="grid items-center lg:grid-cols-2">
               <div className="p-6 sm:p-12 lg:p-16">
                 <p className="text-xs sm:text-sm font-medium uppercase tracking-widest text-forest">
-                  New Feature
+                  Made to Order
                 </p>
                 <h2 className="mt-3 font-heading text-2xl sm:text-3xl font-bold leading-tight text-sand lg:text-4xl">
-                  Design Your Own
+                  Take Kynda Home
                   <br />
-                  Kynda Merch
+                  With You
                 </h2>
                 <p className="mt-4 text-base sm:text-lg leading-relaxed text-sand/90">
-                  Browse trending designs, generate unique patterns with AI, and see
-                  your creation on mugs, tees, glassware, and more. Every piece is
-                  made to order.
+                  Bags of our signature roasts, mugs, tees, totes, and more —
+                  designed in-house and made to order, shipped anywhere in the
+                  US.
                 </p>
                 <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
-                  <Link href="/studio" className="btn-accent text-base px-6 sm:px-8 py-3.5 sm:py-4">
+                  <Link href="/shop/merch" className="btn-accent text-base px-6 sm:px-8 py-3.5 sm:py-4">
                     <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
-                    Open Design Studio
+                    Shop Kynda Merch
                   </Link>
                   <Link
                     href="/shop"

@@ -191,13 +191,12 @@ export default function ShopPage() {
               Want Something Unique?
             </h2>
             <p className="mt-3 text-sm sm:text-base text-sand/90">
-              Head to the Design Studio to create your own custom merch with AI.
-              Choose your product, browse trends, generate designs, and see them
-              come to life.
+              Browse Kynda&apos;s ready-made merch — mugs, tees, totes, hats, and
+              more, designed in-house and made to order.
             </p>
-            <Link href="/studio" className="btn-accent mt-6 inline-flex">
+            <Link href="/shop/merch" className="btn-accent mt-6 inline-flex">
               <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
-              Open Design Studio
+              Shop Kynda Merch
             </Link>
           </div>
         </div>

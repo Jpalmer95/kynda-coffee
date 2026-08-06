@@ -1,9 +1,38 @@
 # Kynda Admin — Issue Log & Audit Results
 
-Last updated: 2026-06-22
+Last updated: 2026-08-06
 Audit session: comprehensive admin page review
 
-## Resolved Issues (This Session)
+## Resolved Issues (2026-08-06 — Owner Revamp Session)
+
+### 11. Design Studio customer exposure [RESOLVED]
+- **Issue:** Design Studio was customer-facing at /studio while still being refined
+- **Fix:** Moved to /admin/designs/studio (owner-only); /studio redirects; all customer
+  nav/CTAs/sitemap/robots scrubbed; admin sidebar + sitemap updated
+- **Intent:** re-enable customer-facing later (see ROADMAP-V2 Epic 8 amendment)
+
+### 12. About page flame icon [RESOLVED]
+- **Issue:** Flame lucide icon used instead of the actual brand logo
+- **Fix:** New cream logo variant (public/images/logos/kynda-logo-cream.png, sand #E5E2E1)
+  rendered in the Etymology block
+
+### 13. Specials featuring was manual [RESOLVED]
+- **Issue:** No efficient way to feature a menu item — retyping everything
+- **Fix:** "Pick from Menu" quick-create in /admin/specials — searchable Square-catalog
+  picker that pre-fills title/image/price/provider_item_id + Featured badge
+- **Answer (documented in UI):** specials SSOT = admin portal; Square is_featured = fallback
+  heuristic carousel only
+
+### 14. Marketing cron scripts used unset $CRON_SECRET [RESOLVED]
+- **Issue:** kynda-marketing-loop.sh + kynda-publish-due.sh errored every run
+- **Fix:** Both now use KYNDA_CRON_SECRET with ~/.hermes/.env fallback
+
+### 15. Submissions watchdog broke on DB password rotation [RESOLVED]
+- **Issue:** SSH+psql to droplet using stale SUPABASE_DB_URL
+- **Fix:** New GET /api/admin/inbox/counts (CRON_SECRET auth); script rewritten to use it —
+  no credentials, no SSH
+
+## Resolved Issues (Previous Sessions)
 
 ### 1. Team & Access — Self-role change blocked [FIXED]
 - **Issue:** Owners couldn't change their own role; Jonathan stuck as "customer"

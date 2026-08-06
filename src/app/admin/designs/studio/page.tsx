@@ -608,7 +608,8 @@ export default function DesignStudioPage() {
           Design Studio
         </h1>
         <p className="text-lg text-mocha mt-3 max-w-2xl mx-auto">
-          Pick a product, add your design, and order custom merch shipped to your door.
+          Owner workspace — refine designs and order samples here. When it&apos;s
+          ready, we&apos;ll flip the studio back on for customers.
         </p>
       </div>
 

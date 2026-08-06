@@ -69,11 +69,11 @@ export default function MerchCheckoutPage() {
           Your cart is empty
         </h1>
         <p className="mt-2 text-mocha">
-          Head to the{" "}
-          <Link href="/studio" className="text-forest underline">
-            Design Studio
+          Browse the{" "}
+          <Link href="/shop/merch" className="text-forest underline">
+            merch shop
           </Link>{" "}
-          to create custom merch.
+          for ready-made Kynda designs.
         </p>
       </div>
     );
@@ -131,7 +131,7 @@ export default function MerchCheckoutPage() {
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 pb-24">
       {/* Header */}
       <Link
-        href="/studio"
+        href="/admin/designs/studio"
         className="inline-flex items-center gap-1 text-sm text-mocha hover:text-espresso mb-6"
       >
         <ArrowLeft size={14} /> Back to Studio
