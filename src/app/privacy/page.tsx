@@ -94,18 +94,31 @@ export default function PrivacyPage() {
               SMS Text Messaging
             </h2>
             <p className="mt-2">
-              If you provide your mobile phone number during checkout, we will
-              send transactional SMS messages related to your order, including
-              order confirmation, ready-for-pickup alerts, shipping
-              notifications, and delivery confirmations. Message frequency varies
-              based on your order activity. Standard message and data rates may
-              apply from your wireless carrier.
+              <strong>SMS opt-in is optional.</strong> We send SMS text
+              messages about your order (confirmation, ready-for-pickup alerts,
+              shipping notifications, and delivery confirmations) only to
+              customers who separately and voluntarily opt in. Providing your
+              mobile phone number during checkout does <em>not</em> by itself
+              constitute consent to receive SMS messages — the number may be
+              provided for order-related contact without opting in to SMS.
+            </p>
+            <p className="mt-2">
+              Opt-in is collected through an unchecked checkbox you actively
+              select at checkout or through our dedicated opt-in page at
+              kyndacoffee.com/sms-opt-in. The checkbox is never pre-checked for
+              first-time consent, and opting in is never required to place an
+              order, create an account, or complete a transaction. You may
+              decline SMS updates without any effect on your use of our
+              services. Message frequency varies based on your order activity.
+              Standard message and data rates may apply from your wireless
+              carrier.
             </p>
             <p className="mt-2">
               <strong>Opt-out:</strong> You may opt out of SMS notifications at
-              any time by replying STOP to any message. After opting out, you
-              will receive a confirmation message. To re-subscribe, reply
-              START. For help, reply HELP or contact us at
+              any time by replying STOP to any message or by updating your
+              preferences at kyndacoffee.com/account/notifications. After
+              opting out, you will receive a confirmation message. To
+              re-subscribe, reply START. For help, reply HELP or contact us at
               kyndacoffee@gmail.com or (512) 219-6781.
             </p>
             <p className="mt-2">

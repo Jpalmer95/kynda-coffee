@@ -117,10 +117,14 @@ export function SmsConsentCheckbox({
           className="mt-0.5 h-4 w-4 shrink-0 rounded border-latte/40 text-forest focus:ring-forest"
         />
         <span className="text-xs leading-relaxed text-mocha">
-          Yes, send me SMS order status updates (confirmation, ready-for-pickup,
-          and shipping notifications). Message frequency varies based on order
-          activity. Message and data rates may apply. Reply HELP for help or
-          STOP to cancel at any time. See our{" "}
+          <span className="font-semibold text-espresso">
+            Optional: send me SMS order status updates
+          </span>{" "}
+          (confirmation, ready-for-pickup, and shipping notifications).
+          Message frequency varies based on order activity. Message and data
+          rates may apply. Reply HELP for help or STOP to cancel at any time.
+          You can place your order without opting in — leaving this box
+          unchecked won&apos;t affect your order. See our{" "}
           <Link href="/terms" className="text-forest hover:underline">
             Terms
           </Link>{" "}

@@ -121,23 +121,39 @@ export default function TermsPage() {
               SMS and Email Communications
             </h2>
             <p className="mt-2">
-              By providing your phone number during checkout, you consent to
-              receive transactional SMS messages from Kynda Coffee related to
-              your order status, including order confirmation, ready-for-pickup
-              alerts, shipping, and delivery notifications. Message frequency
-              varies based on order activity. Standard message and data rates
-              may apply.
+              <strong>SMS opt-in is optional.</strong> We send SMS text
+              messages about your order status (confirmation,
+              ready-for-pickup alerts, shipping, and delivery notifications)
+              only to customers who separately and voluntarily opt in. Providing
+              your phone number during checkout does <em>not</em> by itself
+              constitute consent to receive SMS messages — a phone number is
+              collected for order-related contact (such as a question about
+              your pickup) and can be provided without opting in to SMS.
             </p>
             <p className="mt-2">
-              <strong>Opt-out:</strong> Reply STOP to any SMS to opt out.
-              Reply START to re-subscribe. Reply HELP for assistance. You may
-              also contact us at kyndacoffee@gmail.com or (512) 219-6781.
+              Opt-in is collected through an unchecked checkbox that you
+              actively select at checkout (kyndacoffee.com/order) or through
+              our dedicated opt-in page at kyndacoffee.com/sms-opt-in. The
+              checkbox is never pre-checked for first-time consent. You are
+              never required to opt in to SMS in order to place an order,
+              create an account, or complete any transaction, and you may
+              decline SMS updates without any effect on your use of our
+              services. Message frequency varies based on order activity.
+              Standard message and data rates may apply.
+            </p>
+            <p className="mt-2">
+              <strong>Opt-out:</strong> You may revoke SMS consent at any time
+              by replying STOP to any message, or by updating your preferences
+              at kyndacoffee.com/account/notifications. Reply START to
+              re-subscribe. Reply HELP for assistance. You may also contact us
+              at kyndacoffee@gmail.com or (512) 219-6781.
             </p>
             <p className="mt-2">
               By providing your email address, you consent to receive
-              transactional emails (order confirmations, shipping updates) and,
-              if you opt in, marketing emails. You may unsubscribe from
-              marketing emails at any time via the link in each email.
+              transactional emails (order confirmations, shipping updates).
+              Marketing emails are sent only if you separately opt in, and you
+              may unsubscribe from marketing emails at any time via the link in
+              each email.
             </p>
             <p className="mt-2">
               Our SMS terms and conditions are available at this URL:
