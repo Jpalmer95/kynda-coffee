@@ -17,6 +17,8 @@ import {
   X,
   Loader2,
   Save,
+  Sparkles,
+  Calendar,
 } from "lucide-react";
 
 interface JobOpening {
@@ -45,6 +47,16 @@ interface JobApplication {
   status: string;
   admin_notes: string | null;
   created_at: string;
+  // AI hiring fields
+  availability?: string | null;
+  start_date?: string | null;
+  bio?: string | null;
+  ai_score?: number | null;
+  ai_rank?: number | null;
+  ai_summary?: string | null;
+  ai_suggested_questions?: string[] | null;
+  interview_status?: string | null;
+  interview_notes?: string | null;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -71,20 +83,30 @@ const EMPTY_DRAFT: Omit<JobOpening, "id" | "created_at"> = {
 
 export function AdminCareersClient({
   openings: initialOpenings,
-  applications,
+  applications: initialApplications,
 }: {
   openings: JobOpening[];
   applications: JobApplication[];
 }) {
-  const [tab, setTab] = useState<"applications" | "openings">("openings");
+  const [tab, setTab] = useState<"applications" | "openings">("applications");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expandedApp, setExpandedApp] = useState<string | null>(null);
+  const [aiReviewing, setAiReviewing] = useState<string | null>(null);
+  const [applications, setApplications] = useState<JobApplication[]>(initialApplications);
   const [openings, setOpenings] = useState<JobOpening[]>(initialOpenings);
   const [editing, setEditing] = useState<JobOpening | null>(null);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sort applications by AI score (nulls last) then by date
+  const sortedApps = [...applications].sort((a, b) => {
+    if (a.ai_score != null && b.ai_score != null) return b.ai_score - a.ai_score;
+    if (a.ai_score != null) return -1;
+    if (b.ai_score != null) return 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   const reloadOpenings = useCallback(async () => {
     try {
@@ -96,7 +118,32 @@ export function AdminCareersClient({
     }
   }, []);
 
-  const filteredApps = applications.filter((app) => {
+  async function runAIReview(appId: string) {
+    setAiReviewing(appId);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/careers/ai-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ application_id: appId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI review failed");
+      // Update the application in state
+      setApplications((prev) => prev.map((a) => a.id === appId ? {
+        ...a,
+        ai_score: data.score,
+        ai_summary: data.summary,
+        ai_suggested_questions: data.questions,
+      } : a));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "AI review failed");
+    } finally {
+      setAiReviewing(null);
+    }
+  }
+
+  const filteredApps = sortedApps.filter((app) => {
     const matchSearch =
       app.name.toLowerCase().includes(search.toLowerCase()) ||
       app.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -265,6 +312,8 @@ export function AdminCareersClient({
                     app={app}
                     expanded={expandedApp === app.id}
                     onToggle={() => setExpandedApp(expandedApp === app.id ? null : app.id)}
+                    onAIReview={runAIReview}
+                    aiReviewing={aiReviewing}
                   />
                 ))}
               </div>
@@ -360,10 +409,14 @@ function ApplicationCard({
   app,
   expanded,
   onToggle,
+  onAIReview,
+  aiReviewing,
 }: {
   app: JobApplication;
   expanded: boolean;
   onToggle: () => void;
+  onAIReview?: (id: string) => void;
+  aiReviewing?: string | null;
 }) {
   return (
     <div className="rounded-xl border border-border bg-card transition-shadow hover:shadow-sm">
@@ -383,9 +436,20 @@ function ApplicationCard({
             </p>
           </div>
         </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_COLORS[app.status] || STATUS_COLORS.new}`}>
-          {app.status}
-        </span>
+        <div className="flex items-center gap-2">
+          {app.ai_score != null && (
+            <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+              app.ai_score >= 70 ? "bg-green-100 text-green-800"
+              : app.ai_score >= 50 ? "bg-yellow-100 text-yellow-800"
+              : "bg-red-100 text-red-800"
+            }`}>
+              AI: {app.ai_score}
+            </span>
+          )}
+          <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_COLORS[app.status] || STATUS_COLORS.new}`}>
+            {app.status}
+          </span>
+        </div>
       </button>
       {expanded && (
         <div className="border-t border-border px-4 py-4 space-y-3">
@@ -405,6 +469,73 @@ function ApplicationCard({
               </span>
             )}
           </div>
+
+          {/* AI Review section */}
+          {app.ai_score != null ? (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-semibold text-primary">AI Assessment</span>
+                <span className={`text-lg font-bold ${
+                  app.ai_score >= 70 ? "text-green-700" : app.ai_score >= 50 ? "text-yellow-700" : "text-red-700"
+                }`}>{app.ai_score}/100</span>
+              </div>
+              {app.ai_summary && (
+                <p className="text-sm text-foreground whitespace-pre-wrap">{app.ai_summary}</p>
+              )}
+              {app.ai_suggested_questions && app.ai_suggested_questions.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-medium text-muted-foreground">Suggested Interview Questions:</p>
+                  <ul className="mt-1 space-y-1">
+                    {app.ai_suggested_questions.map((q, i) => (
+                      <li key={i} className="text-sm text-foreground">• {q}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {onAIReview && (
+                <button
+                  onClick={() => onAIReview(app.id)}
+                  disabled={aiReviewing === app.id}
+                  className="mt-2 text-xs text-primary hover:underline disabled:opacity-50"
+                >
+                  {aiReviewing === app.id ? "Re-reviewing..." : "Re-run AI review"}
+                </button>
+              )}
+            </div>
+          ) : (
+            onAIReview && (
+              <button
+                onClick={() => onAIReview(app.id)}
+                disabled={aiReviewing === app.id}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+              >
+                {aiReviewing === app.id ? (
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" /> AI reviewing...</>
+                ) : (
+                  <><Sparkles className="h-3.5 w-3.5" /> Run AI Review</>
+                )}
+              </button>
+            )
+          )}
+
+          {/* Applicant bio / availability */}
+          {app.bio && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">Bio</p>
+              <p className="mt-1 whitespace-pre-wrap rounded-lg bg-muted/50 p-3 text-sm text-foreground">{app.bio}</p>
+            </div>
+          )}
+          {(app.availability || app.start_date) && (
+            <div className="flex flex-wrap gap-4 text-sm">
+              {app.availability && (
+                <span className="text-muted-foreground"><Clock className="mr-1 inline h-3.5 w-3.5" />Available: {app.availability}</span>
+              )}
+              {app.start_date && (
+                <span className="text-muted-foreground"><Calendar className="mr-1 inline h-3.5 w-3.5" />Start: {new Date(app.start_date).toLocaleDateString()}</span>
+              )}
+            </div>
+          )}
+
           {app.cover_letter && (
             <div>
               <p className="text-xs font-medium text-muted-foreground">Cover Letter</p>
