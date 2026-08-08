@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Hash, Loader2, Pin, Send, Users } from "lucide-react";
+import { ArrowLeft, Hash, ImageIcon, Loader2, Pin, Send, Users, Video } from "lucide-react";
 
 type Channel = {
   id: string;
@@ -19,6 +19,8 @@ type Message = {
   user_id: string;
   body: string | null;
   image_url: string | null;
+  video_url: string | null;
+  media_type: string | null;
   pinned: boolean;
   created_at: string;
   authorName: string;
@@ -44,7 +46,11 @@ export default function TeamChatPage() {
   const [sending, setSending] = useState(false);
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [pendingMedia, setPendingMedia] = useState<{ url: string; type: "image" | "video" } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const loadChannels = useCallback(async () => {
     setError(null);
@@ -98,25 +104,50 @@ export default function TeamChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  async function handleFileUpload(file: File, expectedType: "image" | "video") {
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/chat/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setPendingMedia({ url: data.url, type: data.media_type });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
-    if (!text || !activeChannel) return;
+    if (!text && !pendingMedia) return;
+    if (!activeChannel) return;
     setSending(true);
     setInput("");
     try {
+      const body: Record<string, unknown> = { channel_id: activeChannel };
+      if (text) body.body = text;
+      if (pendingMedia?.type === "image") body.image_url = pendingMedia.url;
+      if (pendingMedia?.type === "video") body.video_url = pendingMedia.url;
+      if (pendingMedia) body.media_type = pendingMedia.type;
+
       const res = await fetch("/api/admin/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channel_id: activeChannel, body: text }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send");
+      setPendingMedia(null);
       await loadMessages();
-      await loadChannels(); // refresh unread counts
+      await loadChannels();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send");
-      setInput(text); // restore input on failure
+      setInput(text);
     } finally {
       setSending(false);
     }
@@ -252,6 +283,9 @@ export default function TeamChatPage() {
                           {msg.image_url && (
                             <img src={msg.image_url} alt="" className="max-h-48 rounded-lg border border-latte/20" />
                           )}
+                          {msg.video_url && (
+                            <video src={msg.video_url} controls className="max-h-48 rounded-lg border border-latte/20" />
+                          )}
                           <button
                             onClick={() => deleteMessage(msg.id)}
                             className="ml-auto shrink-0 text-xs text-mocha opacity-0 transition-opacity hover:text-red-600 group-hover:opacity-100"
@@ -271,7 +305,57 @@ export default function TeamChatPage() {
 
           {/* Input */}
           <form onSubmit={sendMessage} className="border-t border-latte/20 bg-card p-3">
+            {/* Pending media preview */}
+            {pendingMedia && (
+              <div className="mb-2 flex items-center gap-2 rounded-lg border border-forest/30 bg-forest/5 px-3 py-2">
+                {pendingMedia.type === "image" ? (
+                  <img src={pendingMedia.url} alt="" className="h-12 w-12 rounded object-cover" />
+                ) : (
+                  <video src={pendingMedia.url} className="h-12 w-12 rounded object-cover" />
+                )}
+                <span className="text-xs text-mocha">{pendingMedia.type} ready to send</span>
+                <button type="button" onClick={() => setPendingMedia(null)} className="ml-auto text-xs text-mocha hover:text-red-600">Remove</button>
+              </div>
+            )}
+            {uploading && (
+              <div className="mb-2 flex items-center gap-2 text-xs text-mocha">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading...
+              </div>
+            )}
             <div className="flex items-center gap-2">
+              {/* Attach buttons */}
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, "image"); e.target.value = ""; }}
+              />
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, "video"); e.target.value = ""; }}
+              />
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={uploading || sending}
+                className="shrink-0 rounded-lg border border-latte/30 p-2 text-mocha hover:border-forest/40 hover:text-forest disabled:opacity-50"
+                title="Attach image"
+              >
+                <ImageIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => videoInputRef.current?.click()}
+                disabled={uploading || sending}
+                className="shrink-0 rounded-lg border border-latte/30 p-2 text-mocha hover:border-forest/40 hover:text-forest disabled:opacity-50"
+                title="Attach video"
+              >
+                <Video className="h-4 w-4" />
+              </button>
               <input
                 type="text"
                 value={input}
@@ -282,7 +366,7 @@ export default function TeamChatPage() {
               />
               <button
                 type="submit"
-                disabled={sending || !input.trim()}
+                disabled={sending || (!input.trim() && !pendingMedia)}
                 className="btn-primary shrink-0"
               >
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

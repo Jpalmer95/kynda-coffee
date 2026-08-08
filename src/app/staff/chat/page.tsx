@@ -7,13 +7,16 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, MessageCircle, Send } from "lucide-react";
+import { ImageIcon, Loader2, MessageCircle, Send, Video, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface ChatMessage {
   id: string;
   user_id: string;
   body: string;
+  image_url: string | null;
+  video_url: string | null;
+  media_type: string | null;
   created_at: string;
   profiles?: { full_name: string | null; email: string } | null;
 }
@@ -33,7 +36,11 @@ export default function TeamChatPage() {
   const [sending, setSending] = useState(false);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [pendingMedia, setPendingMedia] = useState<{ url: string; type: "image" | "video" } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -74,21 +81,45 @@ export default function TeamChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
+  async function handleFileUpload(file: File, expectedType: "image" | "video") {
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/chat/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setPendingMedia({ url: data.url, type: data.media_type });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const text = draft.trim();
-    if (!text || sending) return;
+    if (!text && !pendingMedia) return;
+    if (sending) return;
     setSending(true);
     setError(null);
     try {
+      const body: Record<string, unknown> = { body: text || null };
+      if (pendingMedia?.type === "image") body.image_url = pendingMedia.url;
+      if (pendingMedia?.type === "video") body.video_url = pendingMedia.url;
+      if (pendingMedia) body.media_type = pendingMedia.type;
+
       const res = await fetch("/api/staff/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: text }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send");
       setDraft("");
+      setPendingMedia(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send");
@@ -127,6 +158,12 @@ export default function TeamChatPage() {
                       </div>
                     )}
                     <div className="whitespace-pre-wrap break-words text-sm">{m.body}</div>
+                    {m.image_url && (
+                      <img src={m.image_url} alt="" className="mt-2 max-h-48 rounded-lg" />
+                    )}
+                    {m.video_url && (
+                      <video src={m.video_url} controls className="mt-2 max-h-48 rounded-lg" />
+                    )}
                     <div className={`mt-1 text-[10px] ${mine ? "text-sand/70" : "text-mocha/70"}`}>{fmtTime(m.created_at)}</div>
                   </div>
                 </div>
@@ -138,7 +175,59 @@ export default function TeamChatPage() {
 
         {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
 
+        {/* Pending media preview */}
+        {pendingMedia && (
+          <div className="mt-2 flex items-center gap-2 rounded-lg border border-forest/30 bg-forest/5 px-3 py-2">
+            {pendingMedia.type === "image" ? (
+              <img src={pendingMedia.url} alt="" className="h-10 w-10 rounded object-cover" />
+            ) : (
+              <video src={pendingMedia.url} className="h-10 w-10 rounded object-cover" />
+            )}
+            <span className="text-xs text-mocha">{pendingMedia.type} ready</span>
+            <button type="button" onClick={() => setPendingMedia(null)} className="ml-auto text-xs text-mocha hover:text-red-600">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+        {uploading && (
+          <div className="mt-2 flex items-center gap-2 text-xs text-mocha">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading...
+          </div>
+        )}
+
         <form onSubmit={send} className="mt-3 flex gap-2">
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, "image"); e.target.value = ""; }}
+          />
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, "video"); e.target.value = ""; }}
+          />
+          <button
+            type="button"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={uploading || sending}
+            className="shrink-0 rounded-xl border border-latte/30 p-3 text-mocha hover:border-forest/40 hover:text-forest disabled:opacity-50"
+            title="Attach image"
+          >
+            <ImageIcon className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => videoInputRef.current?.click()}
+            disabled={uploading || sending}
+            className="shrink-0 rounded-xl border border-latte/30 p-3 text-mocha hover:border-forest/40 hover:text-forest disabled:opacity-50"
+            title="Attach video"
+          >
+            <Video className="h-4 w-4" />
+          </button>
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -148,7 +237,7 @@ export default function TeamChatPage() {
           />
           <button
             type="submit"
-            disabled={sending || !draft.trim()}
+            disabled={sending || (!draft.trim() && !pendingMedia)}
             className="flex items-center gap-2 rounded-xl bg-forest px-5 py-3 text-sm font-medium text-sand disabled:opacity-50"
           >
             {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

@@ -48,15 +48,45 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const text = String(body.body ?? "").trim();
-    if (!text || text.length > 2000) {
-      return NextResponse.json({ error: "Message must be 1–2000 characters." }, { status: 400 });
+    const imageUrl = body.image_url ? String(body.image_url) : null;
+    const videoUrl = body.video_url ? String(body.video_url) : null;
+    const mediaType = body.media_type || (videoUrl ? "video" : imageUrl ? "image" : "text");
+
+    if (!text && !imageUrl && !videoUrl) {
+      return NextResponse.json({ error: "Message must include text, image, or video." }, { status: 400 });
     }
 
     const { data, error } = await supabaseAdmin()
       .from("team_messages")
-      .insert({ user_id: team.user.id, body: text })
+      .insert({ user_id: team.user.id, body: text || null })
       .select("id, user_id, body, created_at")
       .single();
+
+    // If chat_messages table exists (channels model), also insert there
+    // so the admin chat picks it up.
+    if (videoUrl || imageUrl) {
+      // team_messages doesn't have image/video columns — store media in chat_messages
+      // by inserting into the "general" channel if it exists
+      const { data: generalChannel } = await supabaseAdmin()
+        .from("chat_channels")
+        .select("id")
+        .eq("name", "general")
+        .limit(1)
+        .single();
+
+      if (generalChannel) {
+        await supabaseAdmin()
+          .from("chat_messages")
+          .insert({
+            channel_id: generalChannel.id,
+            user_id: team.user.id,
+            body: text || null,
+            image_url: imageUrl,
+            video_url: videoUrl,
+            media_type: mediaType,
+          });
+      }
+    }
 
     if (error) {
       console.error("Team chat post error", error);

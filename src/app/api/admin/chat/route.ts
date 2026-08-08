@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       // Fetch messages for a channel
       const { data: messages, error } = await supabaseAdmin()
         .from("chat_messages")
-        .select("id, channel_id, user_id, body, image_url, pinned, created_at")
+        .select("id, channel_id, user_id, body, image_url, video_url, media_type, pinned, created_at")
         .eq("channel_id", channelId)
         .order("created_at", { ascending: true })
         .limit(100);
@@ -177,9 +177,11 @@ export async function POST(req: NextRequest) {
     const channelId = body.channel_id;
     const text = (body.body ?? "").trim();
     const imageUrl = body.image_url;
+    const videoUrl = body.video_url;
+    const mediaType = body.media_type || (videoUrl ? "video" : imageUrl ? "image" : "text");
 
     if (!channelId) return NextResponse.json({ error: "channel_id required" }, { status: 400 });
-    if (!text && !imageUrl) return NextResponse.json({ error: "body or image_url required" }, { status: 400 });
+    if (!text && !imageUrl && !videoUrl) return NextResponse.json({ error: "body, image_url, or video_url required" }, { status: 400 });
 
     const { data, error } = await supabaseAdmin()
       .from("chat_messages")
@@ -188,6 +190,8 @@ export async function POST(req: NextRequest) {
         user_id: team.user.id,
         body: text || null,
         image_url: imageUrl || null,
+        video_url: videoUrl || null,
+        media_type: mediaType,
       })
       .select()
       .single();
