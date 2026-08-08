@@ -13,10 +13,22 @@ export async function POST(req: NextRequest) {
     const user = team.user;
 
     const body = await req.json();
-    const { checklist_type, completed_items } = body;
+    const { checklist_type, completed_items, checklist_id } = body;
 
     if (!checklist_type || !Array.isArray(completed_items)) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // Resolve the checklist row to get the id (if not provided)
+    let clId = checklist_id;
+    if (!clId) {
+      const { data: cl } = await supabaseAdmin()
+        .from("checklists")
+        .select("id")
+        .eq("type", checklist_type)
+        .limit(1)
+        .single();
+      clId = cl?.id;
     }
 
     // Upsert today's completion record
@@ -47,6 +59,7 @@ export async function POST(req: NextRequest) {
         .from("checklist_completions")
         .insert({
           checklist_type,
+          checklist_id: clId ?? null,
           completed_by: user.id,
           completed_items,
           completed_at: new Date().toISOString(),

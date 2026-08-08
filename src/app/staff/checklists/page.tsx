@@ -1,49 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import {
-  ClipboardList,
-} from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { ChecklistClient } from "@/components/staff/ChecklistClient";
 
 export const dynamic = "force-dynamic";
-
-// Seed checklists (used when database table doesn't exist)
-export const SEED_OPENING = [
-  "Turn on espresso machine — let warm up 20 min",
-  "Grind espresso beans — dial in shots",
-  "Brew drip coffee (regular + decaf)",
-  "Prepare pastry display case",
-  "Stock cups, lids, napkins, stirrers",
-  "Fill condiment bar (sugar, cream, cinnamon)",
-  "Wipe down all counter surfaces",
-  "Check refrigerated items — discard expired",
-  "Set up POS — log in, check cash drawer",
-  "Turn on background music",
-];
-
-export const SEED_CLOSING = [
-  "Run cleaning cycle on espresso machine",
-  "Empty and sanitize grinder",
-  "Wash all equipment and utensils",
-  "Wipe down espresso machine group heads",
-  "Empty drip trays and rinse",
-  "Restock cups, lids, and supplies for tomorrow",
-  "Clean pastry display case",
-  "Wipe down all tables and chairs",
-  "Sweep and mop floors",
-  "Empty trash and replace liners",
-  "Count cash drawer — record on close sheet",
-  "Turn off equipment, lights, and music",
-  "Lock all doors — set alarm",
-];
-
-export const SEED_MIDSHIFT = [
-  "Restock supplies as needed",
-  "Wipe down tables and condiment bar",
-  "Check fridge temps",
-  "Refill coffee as needed",
-  "Quick sweep of visible floor areas",
-];
 
 export default async function StaffChecklistPage() {
   const supabase = await createClient();
@@ -53,25 +13,59 @@ export default async function StaffChecklistPage() {
 
   if (!user) redirect("/account");
 
-  const todayISO = new Date().toISOString().split("T")[0];
+  // Fetch checklists from DB (migration 044 seeds opening/closing/mid-shift)
+  let checklists: any[] = [];
+  let error = null;
+  try {
+    const { data, error: clError } = await supabase
+      .from("checklists")
+      .select("id, title, description, type, items")
+      .order("type");
+    if (clError) {
+      error = clError.message;
+    } else {
+      checklists = (data ?? []).map((c) => ({
+        id: c.id,
+        title: c.title,
+        description: c.description,
+        type: c.type,
+        items: Array.isArray(c.items) ? c.items : [],
+      }));
+    }
+  } catch (e: any) {
+    error = e.message;
+  }
 
   // Fetch today's completions by this user
-  let completedItems: string[] = [];
+  const todayISO = new Date().toISOString().split("T")[0];
+  let completedByType: Record<string, number[]> = {};
   try {
     const { data } = await supabase
       .from("checklist_completions")
-      .select("checklist_type, completed_items")
+      .select("checklist_type, completed_items, completed_at")
       .eq("completed_by", user.id)
       .gte("completed_at", `${todayISO}T00:00:00`);
 
     if (data) {
-      completedItems = data.flatMap((c) =>
-        c.completed_items ? c.completed_items.map((i: any) => `${c.checklist_type}:${i}`) : []
-      );
+      for (const c of data) {
+        const items = Array.isArray(c.completed_items) ? c.completed_items : [];
+        if (!completedByType[c.checklist_type] || items.length >= (completedByType[c.checklist_type]?.length ?? 0)) {
+          completedByType[c.checklist_type] = items;
+        }
+      }
     }
   } catch {
-    // Table may not exist
+    // Table may not exist yet
   }
+
+  // Get the user's name for the completion banner
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, email")
+    .eq("id", user.id)
+    .single();
+
+  const displayName = (profile as any)?.full_name || (profile as any)?.email?.split("@")[0] || "Team Member";
 
   return (
     <div className="mx-auto max-w-4xl p-6 lg:p-10">
@@ -91,10 +85,22 @@ export default async function StaffChecklistPage() {
             month: "long",
             day: "numeric",
           })}
+          {" — "}<span className="font-medium text-espresso">{displayName}</span>
         </p>
       </div>
 
-      <ChecklistClient completedItems={completedItems} username={user.id} />
+      {error && checklists.length === 0 ? (
+        <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Could not load checklists: {error}
+        </div>
+      ) : null}
+
+      <ChecklistClient
+        checklists={checklists}
+        completedByType={completedByType}
+        username={user.id}
+        displayName={displayName}
+      />
     </div>
   );
 }
