@@ -34,6 +34,7 @@ import {
   Search,
   Brain,
   Palette,
+  Coffee,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,7 @@ const ADMIN_LINKS = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/checklists", label: "Checklists", icon: ClipboardList },
   { href: "/admin/how-to", label: "How-To", icon: Wrench },
+  { href: "/admin/recipes", label: "Recipes", icon: Coffee },
   { href: "/admin/inventory", label: "Inventory", icon: Boxes },
   { href: "/admin/chat", label: "Team Chat", icon: BotMessageSquare },
   { href: "/admin/media", label: "Team Media", icon: ImageIcon },
