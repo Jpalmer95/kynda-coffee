@@ -42,7 +42,12 @@ export default function TeamChatPage() {
       if (res.ok) {
         setMessages(data.messages ?? []);
         setMe(data.me ?? null);
+        setError(null);
+      } else {
+        setError(data.error || "Failed to load chat");
       }
+    } catch {
+      setError("Could not load chat — check your connection.");
     } finally {
       setLoading(false);
     }

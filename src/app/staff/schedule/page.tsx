@@ -2,8 +2,8 @@
 
 /**
  * /staff/schedule — staff view their published shifts + submit schedule
- * requests (time off / swap / availability). Managers review requests at
- * /admin/schedule.
+ * requests (time off / swap / availability). Scheduling lives on Square;
+ * this page is shift visibility + requests only.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -67,15 +67,20 @@ export default function StaffSchedulePage() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const [sRes, rRes] = await Promise.all([
         fetch("/api/staff/schedule", { cache: "no-store" }),
         fetch("/api/staff/schedule-requests", { cache: "no-store" }),
       ]);
-      const sData = await sRes.json();
-      const rData = await rRes.json();
+      const sData = await sRes.json().catch(() => ({}));
+      const rData = await rRes.json().catch(() => ({}));
       if (sRes.ok) setShifts(sData.shifts ?? []);
+      else throw new Error(sData.error || "Failed to load shifts");
       if (rRes.ok) setRequests(rData.requests ?? []);
+      else throw new Error(rData.error || "Failed to load requests");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load schedule");
     } finally {
       setLoading(false);
     }
@@ -112,6 +117,23 @@ export default function StaffSchedulePage() {
       setError(err instanceof Error ? err.message : "Failed to submit");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function cancelRequest(id: string) {
+    if (!confirm("Cancel this request?")) return;
+    setError(null);
+    try {
+      const res = await fetch("/api/staff/schedule-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: "cancelled" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to cancel");
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to cancel");
     }
   }
 
@@ -175,6 +197,7 @@ export default function StaffSchedulePage() {
         )}
 
         {/* Shifts */}
+        {error && <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
         {loading ? (
           <div className="flex items-center justify-center py-12 text-mocha">
             <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading schedule...
@@ -222,6 +245,14 @@ export default function StaffSchedulePage() {
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_BADGE[r.status] ?? ""}`}>{r.status}</span>
                   {r.reason && <span className="text-xs text-mocha/70">{r.reason}</span>}
                   {r.review_note && <span className="text-xs italic text-mocha/70">Lead: {r.review_note}</span>}
+                  {r.status === "pending" && (
+                    <button
+                      onClick={() => cancelRequest(r.id)}
+                      className="ml-auto rounded-lg border border-latte/30 px-2.5 py-1 text-xs text-mocha hover:border-red-300 hover:text-red-600"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

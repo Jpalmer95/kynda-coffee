@@ -41,7 +41,6 @@ const ADMIN_LINKS = [
   { href: "/admin/inbox", label: "Inbox", icon: Inbox },
   { href: "/admin/kds", label: "KDS", icon: MonitorCheck },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/admin/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/admin/inventory", label: "Inventory", icon: Boxes },
   { href: "/admin/chat", label: "Team Chat", icon: BotMessageSquare },
   { href: "/admin/media", label: "Team Media", icon: ImageIcon },

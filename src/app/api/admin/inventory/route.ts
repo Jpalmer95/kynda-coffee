@@ -39,6 +39,18 @@ export async function GET(req: NextRequest) {
 
   try {
     const catalog = await getPosCatalog({ channel: "all", includeModifiers: false, limit: 500 });
+
+    // Load saved threshold overrides (keyed by source + provider variation id).
+    const { data: savedThresholds } = await supabaseAdmin()
+      .from("inventory_thresholds")
+      .select("source, provider_variation_id, threshold");
+    const thresholdMap = new Map<string, number>();
+    for (const t of savedThresholds ?? []) {
+      thresholdMap.set(`${t.source}:${t.provider_variation_id}`, Number(t.threshold));
+    }
+    const thresholdForRow = (source: "square" | "online", variationId: string, fallback: number) =>
+      thresholdMap.get(`${source}:${variationId}`) ?? fallback;
+
     const squareRows: InventoryRow[] = catalog.items.flatMap((item) =>
       item.variations.map((variation) => ({
         id: `${item.provider}:${variation.providerVariationId}`,
@@ -50,7 +62,7 @@ export async function GET(req: NextRequest) {
         sku: variation.sku,
         category: item.itemType === "menu" || item.itemType === "service" ? "Cafe" : "Merch",
         stock: variation.trackInventory ? stockFromRaw(variation.raw) : null,
-        threshold: thresholdFor(item.categoryName, item.itemType),
+        threshold: thresholdForRow("square", variation.providerVariationId, thresholdFor(item.categoryName, item.itemType)),
         trackInventory: variation.trackInventory,
         source: "Square",
         lastUpdated: variation.raw?.kyndaInventory?.synced_at ?? variation.syncedAt ?? null,
@@ -76,7 +88,7 @@ export async function GET(req: NextRequest) {
       sku: null,
       category: String(product.category).startsWith("coffee") ? "Cafe" : "Merch",
       stock: product.track_inventory ? product.inventory_count ?? 0 : null,
-      threshold: String(product.category).startsWith("coffee") ? 10 : 5,
+      threshold: thresholdForRow("online", product.id, String(product.category).startsWith("coffee") ? 10 : 5),
       trackInventory: Boolean(product.track_inventory),
       source: "Online",
       lastUpdated: product.updated_at ?? null,
@@ -87,6 +99,55 @@ export async function GET(req: NextRequest) {
     console.error("Inventory fetch error", error);
     return NextResponse.json(
       { error: "Failed to fetch inventory", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PATCH /api/admin/inventory
+ * Body: { id, source, provider_variation_id, threshold }
+ * Upserts a saved threshold override for one item.
+ */
+export async function PATCH(req: NextRequest) {
+  const team = await requireTier(req, "manager");
+  if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const body = await req.json();
+    const source: "square" | "online" = body.source === "online" ? "online" : "square";
+    const providerVariationId = String(body.provider_variation_id ?? body.id ?? "").trim();
+    const threshold = Number(body.threshold);
+
+    if (!providerVariationId) {
+      return NextResponse.json({ error: "provider_variation_id is required" }, { status: 400 });
+    }
+    if (!Number.isFinite(threshold) || threshold < 0) {
+      return NextResponse.json({ error: "threshold must be a non-negative number" }, { status: 400 });
+    }
+
+    const { data, error } = await supabaseAdmin()
+      .from("inventory_thresholds")
+      .upsert(
+        {
+          source,
+          provider_variation_id: providerVariationId,
+          threshold,
+          item_name: String(body.item_name ?? "").slice(0, 200) || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "source,provider_variation_id" }
+      )
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ threshold: data });
+  } catch (error) {
+    console.error("Inventory threshold PATCH error", error);
+    return NextResponse.json(
+      { error: "Failed to save threshold", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

@@ -43,10 +43,14 @@ export default function ParCountsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/staff/par-counts?days=7", { cache: "no-store" });
       const data = await res.json();
       if (res.ok) setCounts(data.counts ?? []);
+      else setError(data.error || "Failed to load counts");
+    } catch {
+      setError("Could not load counts — check your connection.");
     } finally {
       setLoading(false);
     }

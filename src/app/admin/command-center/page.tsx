@@ -186,13 +186,6 @@ export default function CommandCenterPage() {
       critical: (stats?.new_b2b_leads ?? 0) > 0,
     },
     {
-      label: "Schedule requests",
-      count: stats?.pending_schedule_requests ?? 0,
-      href: "/admin/schedule",
-      icon: CalendarDays,
-      critical: (stats?.pending_schedule_requests ?? 0) > 0,
-    },
-    {
       label: "Live specials",
       count: liveSpecials,
       href: "/admin/specials",
@@ -206,7 +199,6 @@ export default function CommandCenterPage() {
     { href: "/admin/marketing", label: "Marketing", icon: Share2 },
     { href: "/admin/strategist", label: "AI Strategist", icon: Brain },
     { href: "/admin/inventory", label: "Inventory", icon: Package },
-    { href: "/admin/schedule", label: "Schedule", icon: CalendarDays },
     { href: "/admin/b2b", label: "B2B / Wholesale", icon: Building2 },
     { href: "/admin/specials", label: "Specials", icon: Sparkles },
     { href: "/admin/designs/studio", label: "Design Studio", icon: Zap },

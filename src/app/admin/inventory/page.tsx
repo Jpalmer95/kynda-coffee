@@ -32,6 +32,42 @@ export default function AdminInventoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState<"All" | "Cafe" | "Merch" | "Low" | "Untracked">("All");
+  // Inline threshold editing
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [savingThreshold, setSavingThreshold] = useState(false);
+
+  async function saveThreshold(item: InventoryItem) {
+    const num = Number(editValue);
+    if (!Number.isFinite(num) || num < 0) {
+      setError("Threshold must be a non-negative number.");
+      return;
+    }
+    setSavingThreshold(true);
+    setError(null);
+    try {
+      const source = item.source === "Online" ? "online" : "square";
+      const providerVariationId = item.id.split(":").pop() ?? item.id;
+      const res = await fetch("/api/admin/inventory", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source,
+          provider_variation_id: providerVariationId,
+          item_name: item.name,
+          threshold: num,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.details || "Failed to save threshold");
+      setItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, threshold: num } : it)));
+      setEditId(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save threshold");
+    } finally {
+      setSavingThreshold(false);
+    }
+  }
 
   async function loadInventory() {
     setError(null);
@@ -175,7 +211,42 @@ export default function AdminInventoryPage() {
                     <td className="px-6 py-4 text-mocha">{item.category}</td>
                     <td className="px-6 py-4 font-mono text-xs text-espresso/80">{item.sku || "—"}</td>
                     <td className="px-6 py-4 text-center font-semibold text-espresso">{item.trackInventory ? item.stock ?? "Unknown" : "Not tracked"}</td>
-                    <td className="px-6 py-4 text-center text-mocha">{item.trackInventory ? item.threshold : "—"}</td>
+                    <td className="px-6 py-4 text-center text-mocha">
+                      {item.trackInventory ? (
+                        editId === item.id ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              autoFocus
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveThreshold(item);
+                                if (e.key === "Escape") setEditId(null);
+                              }}
+                              className="w-16 rounded-md border border-forest/40 bg-background px-1.5 py-0.5 text-center text-sm text-espresso focus:outline-none"
+                            />
+                            <button onClick={() => saveThreshold(item)} disabled={savingThreshold} className="text-xs font-medium text-forest hover:underline" title="Save threshold">
+                              {savingThreshold ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
+                            </button>
+                            <button onClick={() => setEditId(null)} className="text-xs text-mocha hover:text-red-600" title="Cancel">✕</button>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => { setEditId(item.id); setEditValue(String(item.threshold)); }}
+                            className="group inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-mocha hover:bg-latte/20 hover:text-espresso"
+                            title="Edit threshold"
+                          >
+                            {item.threshold}
+                            <span className="text-[10px] opacity-0 transition-opacity group-hover:opacity-100">✎</span>
+                          </button>
+                        )
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-center">
                       {isLow ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-bronze/15 px-3 py-1 text-xs font-medium text-espresso">

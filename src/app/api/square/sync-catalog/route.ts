@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireTier } from "@/lib/auth/team";
 import { fetchInventoryCounts, fetchSquareCatalogSnapshot, rawForJsonb } from "@/lib/square/catalog";
 import { toNumber, type SquareObjectLike } from "@/lib/square/catalog-transform";
 import { cacheAllSquareImages } from "@/lib/square/image-cache";
@@ -154,14 +155,16 @@ async function upsertModifiers(supabase: ReturnType<typeof getSupabase>, objects
 export async function POST(req: NextRequest) {
   try {
     // Expensive privileged op (full Square resync + image caching): require the
-    // CRON_SECRET bearer or X-Agent-Key (same as the other sync/cron endpoints).
+    // CRON_SECRET bearer or X-Agent-Key (same as the other sync/cron endpoints),
+    // OR a signed-in manager/owner session (browser path from /admin/image-sync).
     const cronSecret = process.env.CRON_SECRET;
     const agentKey = process.env.AGENT_API_KEY;
     const authHeader = req.headers.get("authorization");
     const headerAgentKey = req.headers.get("x-agent-key");
     const cronOk = cronSecret ? authHeader === `Bearer ${cronSecret}` : false;
     const agentOk = agentKey ? headerAgentKey === agentKey : false;
-    if ((cronSecret || agentKey) && !cronOk && !agentOk) {
+    const sessionOk = (await requireTier(req, "manager")) !== null;
+    if ((cronSecret || agentKey) && !cronOk && !agentOk && !sessionOk) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

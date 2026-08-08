@@ -245,11 +245,6 @@ export default function StrategistPage() {
                 {s.operations.new_b2b_leads} new B2B leads →
               </Link>
             )}
-            {s.operations.pending_schedule_requests > 0 && (
-              <Link href="/admin/schedule" className="rounded-lg bg-bronze/10 px-3 py-1.5 text-espresso hover:bg-bronze/20">
-                {s.operations.pending_schedule_requests} schedule requests →
-              </Link>
-            )}
           </div>
         </div>
       )}

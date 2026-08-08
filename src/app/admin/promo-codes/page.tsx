@@ -90,6 +90,9 @@ export default function PromoCodesPage() {
     if (res.ok) {
       toast(current ? "Promo code deactivated" : "Promo code activated", "info");
       loadCodes();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      toast(data.error || "Failed to update promo code", "error");
     }
   }
 
@@ -101,6 +104,9 @@ export default function PromoCodesPage() {
     if (res.ok) {
       toast("Promo code deleted", "info");
       loadCodes();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      toast(data.error || "Failed to delete promo code", "error");
     }
   }
 

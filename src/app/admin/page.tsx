@@ -207,11 +207,6 @@ export default function AdminPage() {
   const attention = stats
     ? ([
         {
-          count: stats.pending_schedule_requests ?? 0,
-          label: "schedule request",
-          href: "/admin/schedule",
-        },
-        {
           count: stats.pending_marketing_approvals ?? 0,
           label: "marketing draft awaiting approval",
           href: "/admin/marketing/approvals",

@@ -1,11 +1,29 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, BookOpen, CheckCircle2, ArrowRight } from "lucide-react";
-import { TrainingWrapper } from "./TrainingWrapper";
+import { GraduationCap } from "lucide-react";
 import { normalizeRole, isTeamMember } from "@/lib/auth/roles";
+import TrainingModulesClient from "@/components/staff/TrainingModulesClient";
+import { TrainingWrapper } from "@/app/training/TrainingWrapper";
 
-export default async function TrainingDashboard() {
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+  title: "Team Training | Kynda Coffee",
+};
+
+interface TrainingModule {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  content: string;
+  order_index: number;
+  is_required: boolean;
+  updated_at: string;
+}
+
+export default async function TrainingPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -23,211 +41,58 @@ export default async function TrainingDashboard() {
     redirect("/");
   }
 
-  const { data: courses } = await supabase
-    .from("courses")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order")
-    .limit(1);
-
-  const course = courses?.[0];
-  if (!course) {
-    return (
-      <section className="section-padding">
-        <div className="container-max text-center">
-          <GraduationCap className="mx-auto h-16 w-16 text-mocha/40" />
-          <h1 className="mt-4 font-heading text-2xl font-bold text-espresso">
-            Training Coming Soon
-          </h1>
-          <p className="mt-2 text-mocha">No courses available yet.</p>
-        </div>
-      </section>
-    );
+  // Training modules are the single source (admin-managed in /admin/training).
+  let modules: TrainingModule[] = [];
+  let completedMap: Record<string, string> = {};
+  try {
+    const [modsRes, compRes] = await Promise.all([
+      supabase
+        .from("training_modules")
+        .select("id, title, description, category, content, order_index, is_required, updated_at")
+        .order("category", { ascending: true })
+        .order("order_index", { ascending: true }),
+      supabase
+        .from("training_completions")
+        .select("module_id, completed_at")
+        .eq("user_id", user.id),
+    ]);
+    if (!modsRes.error) modules = (modsRes.data ?? []) as TrainingModule[];
+    if (!compRes.error) {
+      for (const c of compRes.data ?? []) completedMap[c.module_id] = c.completed_at;
+    }
+  } catch {
+    // fall through with empty state
   }
-
-  const { data: modules } = await supabase
-    .from("modules")
-    .select("*")
-    .eq("course_id", course.id)
-    .order("sort_order");
-
-  const { data: progressData } = await supabase
-    .from("module_progress")
-    .select("*")
-    .eq("user_id", user.id);
-
-  const progressMap = new Map(
-    progressData?.map((p) => [p.module_id, p]) || []
-  );
-
-  const completedModules = progressData?.filter((p) => p.is_complete).length || 0;
-  const totalModules = modules?.length || 0;
-  const progressPercent =
-    totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0;
-
-  const { data: completion } = await supabase
-    .from("course_completions")
-    .select("*")
-    .eq("user_id", user.id)
-    .eq("course_id", course.id)
-    .single();
-
-  const isComplete = !!completion;
 
   return (
     <TrainingWrapper>
       <section className="section-padding">
         <div className="container-max">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <GraduationCap className="h-8 w-8 text-forest" />
-          <div>
-            <h1 className="font-heading text-3xl font-bold text-espresso">
-              Team Training
-            </h1>
-            <p className="text-sm text-mocha">
-              Welcome, {profile?.full_name || "Team Member"}
-            </p>
-          </div>
-          {profile?.role === "admin" && (
-            <Link
-              href="/admin/training"
-              className="ml-auto text-sm font-medium text-forest hover:underline"
-            >
-              Admin View →
-            </Link>
-          )}
-        </div>
-
-        {/* Progress Card */}
-        <div className="mb-8 rounded-xl border border-latte/20 bg-card p-6">
-          <div className="flex items-center justify-between">
+          {/* Header */}
+          <div className="mb-8 flex items-center gap-3">
+            <GraduationCap className="h-8 w-8 text-forest" />
             <div>
-              <h2 className="font-heading text-xl font-semibold text-espresso">
-                {course.title}
-              </h2>
-              <p className="mt-1 text-sm text-mocha">{course.description}</p>
+              <h1 className="font-heading text-3xl font-bold text-espresso">
+                Team Training
+              </h1>
+              <p className="text-sm text-mocha">
+                Welcome, {profile.full_name || "Team Member"} — work through the
+                required modules and track your progress.
+              </p>
             </div>
-            <div className="text-right">
-              <div className="font-heading text-3xl font-bold text-forest">
-                {progressPercent}%
-              </div>
-              <div className="text-sm text-mocha">
-                {completedModules}/{totalModules} modules
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-latte/30">
-            <div
-              className="h-3 rounded-full bg-bronze transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          {isComplete && (
-            <div className="mt-4 flex items-center gap-3 rounded-lg bg-green-50 border border-green-200 p-4">
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
-              <div>
-                <p className="font-semibold text-green-700">
-                  Training Complete!
-                </p>
-                <p className="text-sm text-green-600">
-                  Completed on{" "}
-                  {new Date(completion.completed_at).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Module List */}
-        <h2 className="mb-4 font-heading text-xl font-semibold text-espresso">
-          Modules
-        </h2>
-        <div className="grid gap-3">
-          {modules?.map((module, index) => {
-            const progress = progressMap.get(module.id);
-            const isModuleComplete = progress?.is_complete || false;
-            const lessonsDone = progress?.lessons_completed || 0;
-            const lessonsTotal = progress?.total_lessons || 0;
-
-            return (
+            {(normalizeRole(profile.role) === "owner" || normalizeRole(profile.role) === "manager") && (
               <Link
-                key={module.id}
-                href={`/training/module/${module.id}`}
-                className={`group flex items-center gap-4 rounded-xl border p-5 transition-all hover:shadow-md ${
-                  isModuleComplete
-                    ? "border-green-200 bg-green-50/50"
-                    : "border-latte/20 bg-card hover:-translate-y-0.5"
-                }`}
+                href="/admin/training"
+                className="ml-auto text-sm font-medium text-forest hover:underline"
               >
-                <div
-                  className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-lg font-bold ${
-                    isModuleComplete
-                      ? "bg-green-500 text-white"
-                      : "bg-latte/30 text-mocha"
-                  }`}
-                >
-                  {isModuleComplete ? (
-                    <CheckCircle2 className="h-6 w-6" />
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-espresso truncate">
-                      {module.title}
-                    </h3>
-                    {module.is_required && (
-                      <span className="flex-shrink-0 rounded-full bg-latte/20 px-2 py-0.5 text-xs text-mocha">
-                        Required
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-mocha truncate">
-                    {module.description}
-                  </p>
-                  {progress && (
-                    <div className="mt-1 text-xs text-mocha/70">
-                      {lessonsDone}/{lessonsTotal} lessons completed
-                    </div>
-                  )}
-                </div>
-                <ArrowRight className="h-5 w-5 flex-shrink-0 text-latte transition-colors group-hover:text-forest" />
+                Admin View →
               </Link>
-            );
-          })}
-        </div>
-
-        {/* Resources */}
-        <div className="mt-12 rounded-xl border border-latte/20 bg-card p-6">
-          <h3 className="flex items-center gap-2 font-heading text-lg font-semibold text-espresso">
-            <BookOpen className="h-5 w-5 text-forest" />
-            Quick Reference Guides
-          </h3>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <a
-              href="https://www.sca.coffee"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-latte/10 bg-card p-4 transition-colors hover:bg-latte/5"
-            >
-              <p className="font-medium text-espresso">SCA Resources</p>
-              <p className="text-sm text-mocha">Specialty Coffee Association</p>
-            </a>
-            <a
-              href="https://www.baristahustle.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-latte/10 bg-card p-4 transition-colors hover:bg-latte/5"
-            >
-              <p className="font-medium text-espresso">Barista Hustle</p>
-              <p className="text-sm text-mocha">Online coffee education</p>
-            </a>
+            )}
           </div>
+
+          <TrainingModulesClient initialModules={modules} initialCompleted={completedMap} />
         </div>
-      </div>
-    </section>
+      </section>
     </TrainingWrapper>
   );
 }

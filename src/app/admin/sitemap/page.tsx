@@ -35,7 +35,6 @@ const GROUPS: RouteGroup[] = [
       { path: "/admin/orders", label: "Orders", note: "all orders, click into details" },
       { path: "/admin/inbox", label: "Inbox", note: "contact messages + catering requests (NOT in sidebar)" },
       { path: "/admin/careers", label: "Careers", note: "job openings + applications" },
-      { path: "/admin/schedule", label: "Schedule", note: "staff shifts + requests (NOT in sidebar)" },
       { path: "/admin/inventory", label: "Inventory", note: "MenuMetrics stock + pars (NOT in sidebar)" },
       { path: "/admin/team", label: "Team & Access", note: "roles + invite new members" },
       { path: "/admin/notifications", label: "Notifications", note: "push/alert settings (NOT in sidebar)" },
