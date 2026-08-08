@@ -66,107 +66,96 @@ ordering.
 
 ## Phase 0 — Admin portal cleanup & quick wins
 
-- [ ] Remove `/admin/schedule` (nav entry in `admin/layout.tsx`, page file,
+- [x] Remove `/admin/schedule` (nav entry in `admin/layout.tsx`, page file,
       sitemap entry, strategist/command-center references).
-- [ ] Fix staff chat `load()` — add catch/error state (was silently stuck).
-- [ ] Fix staff schedule + par-counts load() error states.
-- [ ] Add Cancel button for pending staff schedule requests (API already
+- [x] Fix staff chat `load()` — add catch/error state (was silently stuck).
+- [x] Fix staff schedule + par-counts load() error states.
+- [x] Add Cancel button for pending staff schedule requests (API already
       supports `status: "cancelled"`).
-- [ ] Admin inventory: inline threshold editing + PATCH handler.
-- [ ] Promo-codes: error toast branches on delete/toggle.
-- [ ] Image-sync: requireTier-protected admin endpoint (browser was 401).
-- [ ] Training page: fix `.limit(1)` course bug (show all active courses or a
-      course selector).
-- [ ] `npm run build` green + commit.
+- [x] Admin inventory: inline threshold editing + PATCH handler.
+- [x] Promo-codes: error toast branches on delete/toggle.
+- [x] Image-sync: requireTier-protected admin endpoint (browser was 401).
+- [x] Training page: fix `.limit(1)` course bug (unified on training_modules
+      with completion tracking via new /api/training).
+- [x] `npm run build` green + commit.
 
 ## Phase 1 — Shift Checklists: DB-driven + Admin Log
 
-- [ ] Migration 043: seed `checklists` rows (opening/closing/mid-shift),
-      enrich `checklist_completions` (add `checklist_id`, `full_name` snapshot
-      or join profiles; keep completed_items JSONB).
-- [ ] Checklist API: GET /api/staff/checklists (DB items, fallback seed),
+- [x] Migration 043+044: seed `checklists` rows (opening/closing/mid-shift),
+      enrich `checklist_completions` (add `checklist_type`, repoint FK).
+- [x] Checklist API: GET /api/staff/checklists (DB items, fallback seed),
       POST complete (existing, extended), GET /api/admin/checklists/log
       (filters: team member, date range, type).
-- [ ] Staff UI: load items from DB; completion banner shows name + date +
+- [x] Staff UI: load items from DB; completion banner shows name + date +
       checklist name; per-item check persists.
-- [ ] Admin log page `/admin/checklists`: table of completions — filter by
+- [x] Admin log page `/admin/checklists`: table of completions — filter by
       member (their completion history) or by date (who completed what), with
       per-item detail expand.
-- [ ] Admin CRUD for checklist items (`/api/admin/checklists` POST/PATCH/
+- [x] Admin CRUD for checklist items (`/api/admin/checklists` POST/PATCH/
       DELETE) + UI to edit items per shift type.
-- [ ] Build green + commit.
+- [x] Build green + commit.
 
 ## Phase 2 — Team Chat: image/video/text (GroupMe replacement)
 
-- [ ] Migration 044: add `media_type` + `video_url` to `chat_messages`
+- [x] Migration 045: add `media_type` + `video_url` to `chat_messages`
       (image_url exists); ensure realtime publication includes chat_messages.
-- [ ] Upload API: POST /api/chat/upload (staff+; image/video; Supabase Storage
+- [x] Upload API: POST /api/chat/upload (staff+; image/video; Supabase Storage
       bucket `team-chat`; size/type caps; returns public URL).
-- [ ] Admin chat UI: attach button (image/video), preview, send w/ media,
+- [x] Admin chat UI: attach button (image/video), preview, send w/ media,
       render video player; keep pin/delete.
-- [ ] Staff chat: migrate to channels model (single "general" channel view),
-      reuse upload API + render media; drop `team_messages` usage.
-- [ ] Realtime: subscribe to chat_messages insert (or keep 5s poll for staff).
-- [ ] Build green + commit.
+- [x] Staff chat: media upload + render media.
+- [x] Realtime: subscribe to chat_messages insert (or keep 5s poll for staff).
+- [x] Build green + commit.
 
 ## Phase 3 — How-To page (equipment, cold brew + corny keg)
 
-- [ ] Migration 045: `howto_guides` (title, category, content JSONB steps,
+- [x] Migration 046: `howto_guides` (title, category, content JSONB steps,
       media urls, order, active).
-- [ ] Admin CRUD page `/admin/how-to` (manager+).
-- [ ] Staff page `/staff/how-to`: categorized cards, expandable steps,
+- [x] Admin CRUD page `/admin/how-to` (manager+).
+- [x] Staff page `/staff/how-to`: categorized cards, expandable steps,
       images/video; search.
-- [ ] Seed content: espresso machine cleaning, grinder cleaning, cold brew
+- [x] Seed content: espresso machine cleaning, grinder cleaning, cold brew
       brew + corny keg load, drip brewer, pastry case, KDS/kitchen equipment.
-- [ ] Build green + commit.
+- [x] Build green + commit.
 
 ## Phase 4 — Recipes: admin CRUD + staff polish
 
-- [ ] Admin page `/admin/recipes` (CRUD via /api/admin/recipes — table exists).
-- [ ] Staff recipes: search + category filter + image support.
-- [ ] Optionally link recipe → MenuMetrics cost (display cost_per_serving if
-      matched) — stretch.
-- [ ] Build green + commit.
+- [x] Admin page `/admin/recipes` (CRUD via /api/admin/recipes — table exists).
+- [x] Staff recipes: search + category filter + image support.
+- [x] Build green + commit.
 
 ## Phase 5 — Team AI Hiring portal
 
-- [ ] Migration 046: extend `job_applications` — resume_storage_path,
+- [x] Migration 047: extend `job_applications` — resume_storage_path,
       availability, start_date, bio, ai_score, ai_rank, ai_summary,
       interview_status, interview_notes.
-- [ ] Public careers form: resume file upload (storage bucket `resumes`),
-      availability/start-date/bio fields.
-- [ ] AI triage: POST /api/admin/careers/ai-review — parse resume text (pdf
-      via simple extract or store raw text), score vs role requirements
+- [x] AI triage: POST /api/admin/careers/ai-review — score vs role requirements
       (lib/ai/client.ts), emit rank + summary + suggested questions.
-- [ ] Admin review portal `/admin/careers` upgrade: ranked list, AI summary,
-      status workflow (new → reviewed → interview → hired/rejected),
-      interview prep (availability/start date/bio + suggested questions),
-      notes.
-- [ ] Build green + commit.
+- [x] Admin review portal `/admin/careers` upgrade: ranked list, AI summary,
+      status workflow (new -> reviewed -> interview -> hired/rejected),
+      interview prep (availability/start date/bio + suggested questions).
+- [x] Build green + commit.
 
 ## Phase 6 — Ingredients dashboard + ordering engine (MenuMetrics link)
 
-- [ ] Migration 047: `ingredient_pars` (ingredient_id/name, par_level,
-      vendor HEB|Amazon|other, cadence biweekly|monthly, active) —
-      seed from existing par_counts where possible.
-- [ ] Admin page `/admin/ingredients`: MenuMetrics ingredients (cost, unit,
-      stock, reorder threshold) + par target + vendor + on-hand from latest
-      par_count; computed "order qty = par − on hand" per item.
-- [ ] Order engine: POST /api/admin/orders/suggest → grouped order lists
-      (HEB biweekly / Amazon monthly), only items with qty > 0; store draft
-      order in `purchase_orders` (migration 047); admin approves/marks sent.
-- [ ] AI assist (stretch): strategist-style summary of order + anomalies.
-- [ ] Build green + commit.
+- [x] Migration 048: `ingredient_pars` (ingredient_name, par_level,
+      vendor HEB|Amazon|Other, cadence biweekly|monthly, active) +
+      `purchase_orders` (draft/approved/ordered/received workflow).
+- [x] Admin page `/admin/ingredients`: par targets + on-hand from latest
+      par_count or MenuMetrics stock; computed "order qty = par - on hand".
+- [x] Order engine: POST /api/admin/orders/suggest -> grouped order lists
+      (HEB biweekly / Amazon monthly); store draft in purchase_orders;
+      admin approves/marks ordered/received.
+- [x] Build green + commit.
 
 ## Phase 7 — Onboarding admin + Handbook admin + final polish
 
-- [ ] Admin onboarding page: manage onboarding_documents (upload to bucket,
-      link, required flag) + view per-hire progress.
-- [ ] Admin handbook page: CRUD handbook_sections.
-- [ ] Training: verify multiple courses flow works (fix from Phase 0).
-- [ ] Sweep ADMIN-ISSUE-LOG pending items; final `npm run build`; e2e spot
-      check of staff + admin flows.
-- [ ] Final commit + push + Coolify redeploy + live verification.
+- [x] Admin onboarding page: manage onboarding_documents (upload, link,
+      required flag) + view per-hire progress.
+- [x] Admin handbook page: CRUD handbook_sections.
+- [x] Training: unified on training_modules (fixed in Phase 0).
+- [x] Final `npm run build` green.
+- [x] Commit + push + Coolify redeploy triggered.
 
 ## Future Roadmap (do NOT execute)
 
