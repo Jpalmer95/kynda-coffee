@@ -75,8 +75,9 @@ type KdsOrder = Order & KdsOrderLike;
 
 const SOUND_PREF_KEY = "kynda-kds-sound";
 const POLL_FALLBACK_MS = 30_000;
-const REPEAT_ALERT_MS = 120_000; // 2 minutes between repeated alerts
+const REPEAT_ALERT_MS = 20_000; // 20 seconds — aggressive repeat until acknowledged
 const SNOOZE_MS = 300_000; // 5 minutes
+const MAX_REPEAT_COUNT = 15; // Stop after ~5 min of unacknowledged repeating (safety)
 
 /** The forward "bump" action for each active status. */
 function nextStatus(status: OrderStatus): OrderStatus | null {
@@ -126,15 +127,17 @@ function playChime(ctx: AudioContext) {
  * kitchen team has enough time to hear the alert even when busy or across
  * the room. Only used for incoming non-POS orders (POS orders are filtered
  * out by detectNewKdsOrders before we ever get here).
+ *
+ * Uses "triangle" wave for a bell-like timbre and higher volume (0.7).
  */
 function playNewOrderAlert(ctx: AudioContext) {
   const play = (freq: number, start: number, duration: number) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = "sine";
+    osc.type = "triangle"; // bell-like timbre
     osc.frequency.value = freq;
     gain.gain.setValueAtTime(0.0001, ctx.currentTime + start);
-    gain.gain.exponentialRampToValueAtTime(0.5, ctx.currentTime + start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.7, ctx.currentTime + start + 0.02); // louder
     gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + duration);
     osc.connect(gain).connect(ctx.destination);
     osc.start(ctx.currentTime + start);
@@ -147,7 +150,7 @@ function playNewOrderAlert(ctx: AudioContext) {
   const burstDuration = 0.63;
   for (let i = 0; i < 4; i++) {
     const offset = i * (burstDuration + burstGap);
-    play(880, offset, 0.35);
+    play(880, offset, 0.35);    // A5
     play(1174.66, offset + 0.18, 0.45); // D6
   }
 }
@@ -170,6 +173,8 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   const [soundOn, setSoundOn] = useState(false);
   const [live, setLive] = useState(false);
   const [announcement, setAnnouncement] = useState<string | null>(null);
+  // Track whether we've shown the "enable alerts" prompt to the user
+  const [audioPromptDismissed, setAudioPromptDismissed] = useState(false);
   // Unacknowledged orders = pending/confirmed (not yet started). The alert
   // repeats every 2 min until staff starts the order or snoozes all alerts.
   const [unacknowledgedIds, setUnacknowledgedIds] = useState<Set<string>>(new Set());
@@ -274,11 +279,47 @@ export function KdsClient({ backHref }: { backHref?: string }) {
       if (localStorage.getItem(SOUND_PREF_KEY) === "on") {
         setSoundOn(true);
         soundOnRef.current = true;
+        // Create the AudioContext immediately — it starts in "suspended" state
+        // on iOS/Safari but can be resumed on the first user interaction.
+        if (!audioCtxRef.current) {
+          const Ctx =
+            window.AudioContext ||
+            (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          if (Ctx) {
+            audioCtxRef.current = new Ctx();
+            // Try to resume immediately (works on non-iOS browsers)
+            audioCtxRef.current.resume().catch(() => {
+              /* iOS needs a user gesture — will be unlocked on first tap */
+            });
+          }
+        }
       }
     } catch {
       /* private mode */
     }
   }, []);
+
+  // Global first-interaction handler: if sound is on but AudioContext is
+  // suspended (iOS/Safari after page reload), resume on ANY tap/click on the
+  // page. This ensures audio works even if staff taps anywhere on the KDS
+  // before a new order arrives.
+  useEffect(() => {
+    if (!soundOn) return;
+    const unlockAudio = () => {
+      if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
+        audioCtxRef.current.resume().catch(() => {});
+      }
+    };
+    // Listen for any interaction
+    document.addEventListener("click", unlockAudio, { once: false });
+    document.addEventListener("touchstart", unlockAudio, { once: false });
+    document.addEventListener("keydown", unlockAudio, { once: false });
+    return () => {
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
+      document.removeEventListener("keydown", unlockAudio);
+    };
+  }, [soundOn]);
 
   function toggleSound() {
     const next = !soundOn;
@@ -344,21 +385,34 @@ export function KdsClient({ backHref }: { backHref?: string }) {
   }, [searchParams]);
 
   // ─── Repeating alert for unacknowledged orders ──────────────────────────
-  // Every 2 minutes, if there are unacknowledged (pending/confirmed) non-POS
+  // Every 20 seconds, if there are unacknowledged (pending/confirmed) non-POS
   // orders that haven't been snoozed, replay the alert sound. This handles
   // the case where staff are away from the tablet or too busy to hear the
   // first alert. The cycle stops automatically once orders move to
   // "processing" (Start Preparing = acknowledged) because they're removed
   // from unacknowledgedIds by handleIncomingOrders.
+  const repeatCountRef = useRef(0);
   useEffect(() => {
     const tick = () => {
       if (!soundOnRef.current || !audioCtxRef.current) return;
-      if (unacknowledgedIds.size === 0) return;
+      if (unacknowledgedIds.size === 0) {
+        repeatCountRef.current = 0;
+        return;
+      }
 
       const nowMs = Date.now();
 
       // Global snooze?
       if (globalSnoozeUntilRef.current !== null && globalSnoozeUntilRef.current > nowMs) return;
+
+      // Safety: stop repeating after MAX_REPEAT_COUNT cycles (~5 min)
+      if (repeatCountRef.current >= MAX_REPEAT_COUNT) return;
+      repeatCountRef.current += 1;
+
+      // If AudioContext is suspended, try to resume (best-effort on non-iOS)
+      if (audioCtxRef.current.state === "suspended") {
+        audioCtxRef.current.resume().catch(() => {});
+      }
 
       try {
         playNewOrderAlert(audioCtxRef.current);
@@ -530,6 +584,33 @@ export function KdsClient({ backHref }: { backHref?: string }) {
             <div className="text-2xl font-semibold">{now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
           </div>
         </div>
+
+        {/* Enable alerts prompt — shown when sound is off and not dismissed */}
+        {!soundOn && !audioPromptDismissed && (
+          <div className="mb-4 flex items-center justify-between rounded-2xl border-2 border-red-500/60 bg-red-500/20 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <BellOff className="h-6 w-6 text-red-400" />
+              <div>
+                <p className="text-lg font-bold text-red-300">Sound alerts are OFF</p>
+                <p className="text-sm text-red-300/80">Tap to enable audible order notifications on this device</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleSound}
+                className="flex items-center gap-2 rounded-2xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-600 active:scale-[0.98]"
+              >
+                <Bell className="h-5 w-5" /> Enable Alerts
+              </button>
+              <button
+                onClick={() => setAudioPromptDismissed(true)}
+                className="rounded-2xl border border-red-400/30 px-4 py-2.5 text-sm text-red-300/70 hover:text-red-300"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* New-order banner + screen-reader announcement */}
         <div aria-live="assertive" role="status">
