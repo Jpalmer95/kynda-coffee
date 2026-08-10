@@ -15,6 +15,7 @@ import {
   Coffee,
   MonitorCheck,
   Wrench,
+  Gift,
 } from "lucide-react";
 import { normalizeRole, isTeamMember, TIER_LABELS } from "@/lib/auth/roles";
 
@@ -33,6 +34,7 @@ const STAFF_NAV = [
   { href: "/staff/par-counts", label: "Par Counts", icon: ClipboardCheck },
   { href: "/staff/recipes", label: "Recipes", icon: Coffee },
   { href: "/staff/how-to", label: "How-To", icon: Wrench },
+  { href: "/staff/gift-cards", label: "Gift Cards", icon: Gift },
   { href: "/staff/checklists", label: "Checklists", icon: ClipboardList },
   { href: "/staff/waste-log", label: "Waste Log", icon: Trash2 },
   { href: "/staff/handbook", label: "Handbook", icon: FileText },
