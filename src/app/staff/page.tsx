@@ -10,6 +10,8 @@ import {
   BookOpen,
   CheckCircle2,
   AlertTriangle,
+  Gift,
+  MessageCircle,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -131,6 +133,20 @@ export default async function StaffDashboard() {
       desc: "New-hire forms (I-9, W-4), handbook & training packet",
       color: "bg-amber-600 text-white",
     },
+    {
+      href: "/staff/gift-cards",
+      icon: Gift,
+      title: "Gift Cards",
+      desc: "Look up and redeem digital gift cards",
+      color: "bg-pink-600 text-white",
+    },
+    {
+      href: "/staff/chat",
+      icon: MessageCircle,
+      title: "Team Chat",
+      desc: "Group chat with the whole team",
+      color: "bg-teal-600 text-white",
+    },
   ];
 
   return (
@@ -214,7 +230,7 @@ export default async function StaffDashboard() {
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="h-4 w-4 text-forest shrink-0 mt-0.5" />
-            Complete your opening checklist before serving the first customer.
+            Complete your opening checklist to set up the shop for a smooth shift.
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="h-4 w-4 text-forest shrink-0 mt-0.5" />
@@ -222,7 +238,7 @@ export default async function StaffDashboard() {
           </li>
           <li className="flex items-start gap-2">
             <CheckCircle2 className="h-4 w-4 text-forest shrink-0 mt-0.5" />
-            If something feels off with equipment, report it via waste log with reason &quot;damaged&quot;.
+            If something feels off with equipment, report it to team leadership and mention it in the Team Chat so everyone is aware.
           </li>
         </ul>
       </div>
