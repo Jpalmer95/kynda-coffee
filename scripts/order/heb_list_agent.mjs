@@ -163,21 +163,41 @@ async function main() {
   console.log(`Updated ${setCount} quantities.`);
 
   if (!DRY && setCount) {
-    console.log("\n→ Select all items and click 'Add to cart' on the list...");
+    console.log("\n→ Selecting ONLY the order items, then Add to cart...");
     try {
-      const selectAll = page.locator("input[aria-label='select all items']").first();
-      if (await selectAll.count()) {
-        const checked = await selectAll.isChecked();
-        if (!checked) await selectAll.check();
-        await page.waitForTimeout(500);
+      // FIX: do NOT use "select all items" — that carts every item on the list
+      // (including unneeded ones at qty 1). Instead check only the matched
+      // order items' own checkboxes, and uncheck anything we didn't order.
+      for (const m of matches) {
+        const orderName = m.list.label.replace(/^product amount\s+/i, "");
+        // The per-item checkbox uses aria-label "Select <name>"
+        const cb = page.locator(`input[aria-label="Select ${orderName}"], input[aria-label="Select ${m.list.name}"]`).first();
+        if (await cb.count()) {
+          if (!(await cb.isChecked())) { await cb.check(); await page.waitForTimeout(250); }
+        } else {
+          // Fallback: the checkbox is the sibling input of the qty control
+          const qtyInput = page.locator(`input[aria-label="${m.list.label}"]`).first();
+          if (await qtyInput.count()) {
+            const box = qtyInput.evaluateHandle((el) => {
+              const sib = el.closest("li")?.querySelector('input[type="checkbox"]');
+              return sib?.getAttribute("aria-label") || sib?.id || "";
+            });
+            const sel = await box.jsonValue();
+            if (sel) {
+              const cb2 = page.locator(`input[aria-label="${sel}"], #${CSS.escape(sel)}`).first();
+              if (await cb2.count() && !(await cb2.isChecked())) { await cb2.check(); await page.waitForTimeout(250); }
+            }
+          }
+        }
       }
+      await page.waitForTimeout(600);
       const addToCart = page.locator("button:has-text('Add to cart'), button:has-text('Add List to Cart')").first();
       if (await addToCart.count()) await addToCart.click();
       await page.waitForTimeout(1500);
-      console.log("✅ Clicked Add to Cart. Verify in the browser, then check out.");
+      console.log("✅ Clicked Add to Cart (order items only). Verify in the browser, then check out.");
     } catch (e) {
       console.error(`Add-to-cart step: ${e.message.slice(0, 80)}`);
-      console.log("Quantities are set on the list — click Add to Cart manually.");
+      console.log("Quantities are set on the list — click Add to Cart manually (select only the order items).");
     }
   }
 
