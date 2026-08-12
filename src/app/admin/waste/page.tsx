@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, Loader2, Trash2, TrendingDown, AlertTriangle, CalendarDays,
+  Save, History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,10 +32,15 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 export default function AdminWasteReportPage() {
+  const [tab, setTab] = useState<"live" | "reports">("live");
   const [period, setPeriod] = useState("week");
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reports, setReports] = useState<any[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [savingReport, setSavingReport] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   const load = useCallback(async (p: string) => {
     setLoading(true); setError(null);
@@ -49,6 +55,31 @@ export default function AdminWasteReportPage() {
   }, []);
 
   useEffect(() => { load(period); }, [period, load]);
+
+  const loadReports = useCallback(async () => {
+    setReportsLoading(true);
+    try {
+      const res = await fetch("/api/admin/waste/reports", { cache: "no-store" });
+      const json = await res.json();
+      if (res.ok) setReports(json.reports ?? []);
+    } catch { /* ignore */ } finally { setReportsLoading(false); }
+  }, []);
+
+  const saveReport = async (month?: string) => {
+    setSavingReport(true); setSaveMsg(null);
+    try {
+      const q = month ? `?month=${month}` : "";
+      const res = await fetch(`/api/admin/waste/reports${q}`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed to save");
+      setSaveMsg(`Saved report for ${json.report.month_label} ($${(json.report.summary.total_cents / 100).toFixed(2)} wasted).`);
+      await loadReports();
+    } catch (e) {
+      setSaveMsg(e instanceof Error ? e.message : "Failed to save report");
+    } finally { setSavingReport(false); }
+  };
+
+  useEffect(() => { if (tab === "reports") loadReports(); }, [tab, loadReports]);
 
   const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -68,6 +99,60 @@ export default function AdminWasteReportPage() {
 
       {error && <div className="mb-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
 
+      {/* Live vs Saved reports */}
+      <div className="mb-6 flex gap-2">
+        <button onClick={() => setTab("live")} className={cn("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium", tab === "live" ? "border-surface bg-surface text-sand" : "border-latte/40 bg-card text-espresso hover:bg-latte/10")}>
+          <TrendingDown className="h-4 w-4" /> Live Report
+        </button>
+        <button onClick={() => setTab("reports")} className={cn("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium", tab === "reports" ? "border-surface bg-surface text-sand" : "border-latte/40 bg-card text-espresso hover:bg-latte/10")}>
+          <History className="h-4 w-4" /> Monthly Reports
+        </button>
+      </div>
+
+      {tab === "reports" ? (
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-latte/20 bg-card p-5">
+            <div className="flex-1">
+              <h2 className="font-heading text-lg font-bold text-espresso">Saved Monthly Reports</h2>
+              <p className="text-sm text-mocha">Snapshot each month's waste cost. Browse the history here — no email needed.</p>
+            </div>
+            <button onClick={() => saveReport()} disabled={savingReport} className="btn-primary text-sm">
+              {savingReport ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Save current month
+            </button>
+          </div>
+          {saveMsg && <div className="rounded-xl border border-forest/30 bg-forest/10 p-3 text-sm text-forest">{saveMsg}</div>}
+          {reportsLoading ? (
+            <div className="flex items-center justify-center py-12 text-mocha"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading...</div>
+          ) : reports.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-latte/40 p-10 text-center text-mocha">
+              No saved reports yet. Click "Save current month" to create your first snapshot.
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {reports.map((r) => {
+                const s = r.summary ?? {};
+                return (
+                  <div key={r.id} className="rounded-xl border border-latte/20 bg-card p-5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-heading text-lg font-bold text-espresso">{r.month_label}</h3>
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">{fmt(s.total_cents ?? 0)}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-mocha">{s.total_entries ?? 0} entries</p>
+                    {s.by_reason?.[0] && (
+                      <p className="mt-3 text-sm text-espresso">Top: <span className="font-medium">{s.by_reason[0].label}</span> · {fmt(s.by_reason[0].total_cents)}</p>
+                    )}
+                    {s.top_items?.[0] && (
+                      <p className="mt-1 truncate text-sm text-mocha" title={s.top_items[0].name}>{s.top_items[0].name} — {fmt(s.top_items[0].total_cents)}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+      <>
       {/* Period toggle */}
       <div className="mb-6 flex gap-2">
         {["week", "month", "all"].map((p) => (
@@ -183,6 +268,8 @@ export default function AdminWasteReportPage() {
           </div>
         </div>
       ) : null}
+      </>
+      )}
     </div>
   );
 }
