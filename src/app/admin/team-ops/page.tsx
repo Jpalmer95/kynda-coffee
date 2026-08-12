@@ -240,6 +240,33 @@ export default function AdminTeamOpsPage() {
                     External URL
                     <input value={editing?.external_url ?? ""} onChange={(e) => setEditing({ ...editing, external_url: e.target.value })} className="input-field mt-1" placeholder="https://..." />
                   </label>
+                  <label className="block text-sm font-medium text-espresso">
+                    Upload file (PDF/DOCX — stored in onboarding bucket)
+                    <input
+                      type="file"
+                      accept=".pdf,.docx,.doc,.txt,application/pdf"
+                      className="input-field mt-1 text-sm"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        setSaving(true);
+                        try {
+                          const fd = new FormData();
+                          fd.append("file", f);
+                          const res = await fetch("/api/admin/onboarding/upload", { method: "POST", body: fd });
+                          const data = await res.json();
+                          if (!res.ok) throw new Error(data.error ?? "Upload failed");
+                          setEditing({ ...editing, storage_path: data.storage_path, file_type: data.file_type, external_url: data.url ?? editing?.external_url ?? "" });
+                          setError(null);
+                        } catch (err) {
+                          setError(err instanceof Error ? err.message : "Upload failed");
+                        } finally { setSaving(false); }
+                      }}
+                    />
+                    {editing?.storage_path && (
+                      <span className="mt-1 block text-xs text-forest">✓ {editing.storage_path.split("/").pop()} uploaded</span>
+                    )}
+                  </label>
                   <label className="flex items-center gap-2 text-sm font-medium text-espresso">
                     <input type="checkbox" checked={editing?.is_required ?? false} onChange={(e) => setEditing({ ...editing, is_required: e.target.checked })} className="h-4 w-4 rounded border-latte/40" />
                     Required

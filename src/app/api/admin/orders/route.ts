@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       if (!latestCountMap[c.item_name]) latestCountMap[c.item_name] = Number(c.counted_qty);
     }
 
-    // Also fetch MM stock
+    // Fetch MM stock
     const { data: mmStock } = await supabaseAdmin()
       .from("menumetrics_stock")
       .select("name, on_hand");
@@ -56,13 +56,30 @@ export async function POST(req: NextRequest) {
       mmMap[s.name?.toLowerCase() ?? ""] = Number(s.on_hand);
     }
 
+    // NEW: Fetch recent waste (last 7 days) to factor into reorder quantity.
+    // If we wasted 2 units of an ingredient this week, we need to order extra
+    // beyond par − on_hand to cover the loss (par is "enough for normal sales").
+    const { data: recentWaste } = await supabaseAdmin()
+      .from("waste_entries")
+      .select("product_name, quantity")
+      .gte("created_at", sevenDaysAgo.toISOString());
+    const wasteMap: Record<string, number> = {};
+    for (const w of recentWaste ?? []) {
+      const key = (w.product_name ?? "").toLowerCase();
+      wasteMap[key] = (wasteMap[key] ?? 0) + Number(w.quantity ?? 0);
+    }
+
     // Group items by vendor, only those needing order
     const byVendor: Record<string, any[]> = {};
     for (const p of pars ?? []) {
       const onHand = latestCountMap[p.ingredient_name] ??
         mmMap[p.ingredient_name?.toLowerCase()] ??
         null;
-      const orderQty = onHand != null ? Math.max(0, Number(p.par_level) - onHand) : null;
+      const wasteQty = wasteMap[p.ingredient_name?.toLowerCase()] ?? 0;
+      // order qty = (par − on_hand) + waste lost this week (safety stock bump)
+      const orderQty = onHand != null
+        ? Math.max(0, Number(p.par_level) - onHand + Math.ceil(wasteQty))
+        : null;
       if (orderQty != null && orderQty > 0) {
         const v = p.vendor;
         if (!byVendor[v]) byVendor[v] = [];
@@ -72,6 +89,7 @@ export async function POST(req: NextRequest) {
           unit: p.unit,
           par: Number(p.par_level),
           on_hand: onHand,
+          waste_7d: wasteQty,
         });
       }
     }
