@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, Boxes, Loader2, Package, Plus, Save, ShoppingCart, Trash2, X,
+  ArrowLeft, Boxes, Loader2, Package, Pencil, Plus, Save, ShoppingCart, Trash2, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +43,8 @@ export default function AdminIngredientsPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [parDraft, setParDraft] = useState("");
 
   const [form, setForm] = useState({ ingredient_name: "", par_level: "", vendor: "HEB", cadence: "biweekly", unit: "each", area: "general", notes: "" });
 
@@ -103,6 +105,32 @@ export default function AdminIngredientsPage() {
       await fetch(`/api/admin/ingredients?id=${id}`, { method: "DELETE" });
       await load();
     } catch { /* best-effort */ }
+  }
+
+  function startEdit(item: IngredientItem) {
+    setEditingId(item.id);
+    setParDraft(String(item.par_level ?? ""));
+  }
+
+  async function savePar(id: string) {
+    const par = Number(parDraft);
+    if (!Number.isFinite(par) || par < 0) { setEditingId(null); return; }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/ingredients", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, par_level: par }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update");
+      }
+      setEditingId(null);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update");
+    } finally { setSaving(false); }
   }
 
   async function generateOrders() {
@@ -205,7 +233,37 @@ export default function AdminIngredientsPage() {
                   </td>
                   <td className="px-4 py-3 text-mocha">{item.vendor}</td>
                   <td className="px-4 py-3 text-mocha capitalize">{item.cadence}</td>
-                  <td className="px-4 py-3 text-center text-espresso">{item.par_level}</td>
+                  <td className="px-4 py-3 text-center text-espresso">
+                    {editingId === item.id ? (
+                      <div className="flex items-center justify-center gap-1">
+                        <input
+                          autoFocus
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          value={parDraft}
+                          onChange={(e) => setParDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") savePar(item.id);
+                            if (e.key === "Escape") setEditingId(null);
+                          }}
+                          className="w-16 rounded-lg border border-forest/50 bg-background px-2 py-1 text-center text-sm text-espresso"
+                        />
+                        <button onClick={() => savePar(item.id)} disabled={saving} className="rounded-md bg-forest p-1 text-sand disabled:opacity-50" aria-label="Save par">
+                          <Save className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-espresso hover:bg-latte/10 hover:text-forest"
+                        title="Edit par"
+                      >
+                        {item.par_level}
+                        <Pencil className="h-3 w-3 text-mocha" />
+                      </button>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-center text-mocha">{item.on_hand ?? "—"}</td>
                   <td className="px-4 py-3 text-center font-semibold text-espresso">{item.order_qty ?? "—"}</td>
                   <td className="px-4 py-3 text-center">
