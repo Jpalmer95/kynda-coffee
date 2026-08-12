@@ -260,7 +260,7 @@ export default function AdminIngredientsPage() {
                   <td className="px-4 py-3 text-mocha">{item.vendor}</td>
                   <td className="px-4 py-3 text-mocha capitalize">{item.cadence}</td>
                   <td className="px-4 py-3 text-center text-espresso">
-                    {editingId === item.id ? (
+                    {editingId === item.id && editField === "par" ? (
                       <div className="flex items-center justify-center gap-1">
                         <input
                           autoFocus
@@ -271,22 +271,24 @@ export default function AdminIngredientsPage() {
                           onChange={(e) => setParDraft(e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") savePar(item.id);
-                            if (e.key === "Escape") setEditingId(null);
+                            if (e.key === "Escape") { setEditingId(null); setEditField(null); }
                           }}
-                          className="w-16 rounded-lg border border-forest/50 bg-background px-2 py-1 text-center text-sm text-espresso"
+                          onBlur={() => savePar(item.id)}
+                          className="w-16 rounded-lg border border-forest/50 bg-background px-2 py-1 text-center text-sm text-foreground"
                         />
-                        <button onClick={() => savePar(item.id)} disabled={saving} className="rounded-md bg-forest p-1 text-sand disabled:opacity-50" aria-label="Save par">
+                        <button type="button" onClick={() => savePar(item.id)} disabled={saving} className="rounded-md bg-forest p-1 text-sand disabled:opacity-50" aria-label="Save par">
                           <Save className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => startEdit(item, "par")}
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-espresso hover:bg-latte/10 hover:text-forest"
+                        className="group inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-foreground hover:bg-latte/10 hover:text-forest"
                         title="Edit par"
                       >
                         {item.par_level}
-                        <Pencil className="h-3 w-3 text-mocha" />
+                        <Pencil className="h-3 w-3 text-mocha opacity-0 transition-opacity group-hover:opacity-100" />
                       </button>
                     )}
                   </td>
@@ -304,20 +306,22 @@ export default function AdminIngredientsPage() {
                             if (e.key === "Enter") saveOnHand(item.id);
                             if (e.key === "Escape") { setEditingId(null); setEditField(null); }
                           }}
-                          className="w-16 rounded-lg border border-forest/50 bg-background px-2 py-1 text-center text-sm text-espresso"
+                          onBlur={() => saveOnHand(item.id)}
+                          className="w-16 rounded-lg border border-forest/50 bg-background px-2 py-1 text-center text-sm text-foreground"
                         />
-                        <button onClick={() => saveOnHand(item.id)} disabled={saving} className="rounded-md bg-forest p-1 text-sand disabled:opacity-50" aria-label="Save on-hand">
+                        <button type="button" onClick={() => saveOnHand(item.id)} disabled={saving} className="rounded-md bg-forest p-1 text-sand disabled:opacity-50" aria-label="Save on-hand">
                           <Save className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => startEdit(item, "on_hand")}
-                        className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-mocha hover:bg-latte/10 hover:text-forest"
+                        className="group inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-mocha hover:bg-latte/10 hover:text-foreground"
                         title={item.on_hand != null ? "Edit on-hand count" : "Enter on-hand count"}
                       >
                         {item.on_hand ?? "—"}
-                        {item.on_hand != null && <Pencil className="h-3 w-3 text-mocha/60" />}
+                        <Pencil className="h-3 w-3 text-mocha opacity-0 transition-opacity group-hover:opacity-100" />
                       </button>
                     )}
                   </td>
