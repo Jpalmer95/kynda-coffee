@@ -2,7 +2,7 @@
 """
 Seed ingredient_pars from the canonical HEB/Amazon ordering list.
 
-Reads scripts/order/heb_canonical_list.tsv (HEB exact name | par | vendor | cat)
+Reads scripts/order/kynda_canonical_list.tsv (HEB exact name | par | vendor | cat)
 and upserts rows into `ingredient_pars` with EXACT HEB names + par + vendor.
 This is the source of truth for the admin Master Par List.
 
@@ -20,20 +20,22 @@ def parse_canonical(path):
             if not line or line.startswith("#"):
                 continue
             parts = [p.strip() for p in line.split("|")]
-            if len(parts) < 2 or not parts[0]:
+            if len(parts) < 3 or not parts[0]:
                 continue
+            # Master format: name | par | vendor | category | cadence | asin
             items.append({
                 "ingredient_name": parts[0],
                 "par_level": float(parts[1]) if parts[1] else 0,
                 "vendor": parts[2] if len(parts) > 2 and parts[2] else "HEB",
                 "category": parts[3] if len(parts) > 3 else "",
-                "asin": parts[4] if len(parts) > 4 else None,
+                "cadence": parts[4] if len(parts) > 4 and parts[4] else "biweekly",
+                "asin": parts[5] if len(parts) > 5 else None,
             })
     return items
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--canonical", default="scripts/order/heb_canonical_list.tsv")
+    ap.add_argument("--canonical", default="scripts/order/kynda_canonical_list.tsv")
     ap.add_argument("--vendor", default=None)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
@@ -71,7 +73,7 @@ def main():
             "par_level": it["par_level"],
             "vendor": it["vendor"],
             "unit": "each",
-            "cadence": "biweekly",
+            "cadence": it["cadence"],
             "area": it["category"],
             "is_active": True,
         }

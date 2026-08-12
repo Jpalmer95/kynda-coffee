@@ -91,7 +91,7 @@ def to_order_list(items):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("file", nargs="?", default="scripts/order/counts/2026-08-11-heb.txt")
-    ap.add_argument("--canonical", default="scripts/order/heb_canonical_list.tsv",
+    ap.add_argument("--canonical", default="scripts/order/kynda_canonical_list.tsv",
                     help="canonical list (HEB exact names + par). If given, par comes from here.")
     ap.add_argument("--vendor", default="HEB")
     ap.add_argument("--json", action="store_true", help="emit order list as JSON")
