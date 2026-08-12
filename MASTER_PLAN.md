@@ -275,6 +275,16 @@ in the DB and the owner can pull signed docs.
       on-hand counts. `/api/staff/par-counts?sheet=<vendor>`.
 - [x] Build green, committed, pushed (d9ddaf8).
 
+### Phase 11b — Single Master Ordering List (2026-08-12)
+- [x] `kynda_canonical_list.tsv`: ONE 108-item master list (54 HEB + 54 Amazon),
+      unified format `name|par|vendor|category|cadence|asin`.
+- [x] `build_master_list.py` merges HEB + Amazon lists, dedups, and flags
+      non-inventory items into `amazon_order_review.txt` (7 electronics excluded;
+      36 Amazon items still need owner-set par values).
+- [x] seed_pars + order_calculator now default to the master list.
+- [x] Re-seeded DB: 108 pars (54 HEB + 54 Amazon with ASINs), cadence set.
+- [x] Committed, pushed (84f2870).
+
 ### Phase 11 remaining (future)
 - [ ] Amazon cart agent (mirror heb_list_agent.mjs) — search by ASIN for exact match.
 - [ ] Reconcile par-sheet items not found in the live Amazon lists (some manual
