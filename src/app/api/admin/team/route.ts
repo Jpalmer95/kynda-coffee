@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { normalizeRole, hasTier, type RoleTier } from "@/lib/auth/roles";
+import { sendEmail } from "@/lib/email/send";
+import {
+  staffOnboardingEmailHtml,
+  STAFF_ONBOARDING_SUBJECT,
+} from "@/lib/email/templates/staff-onboarding";
 
 export const dynamic = "force-dynamic";
 
@@ -125,6 +130,54 @@ export async function POST(req: NextRequest) {
         { error: "Invite sent, but setting the role failed — set it manually below." },
         { status: 500 }
       );
+    }
+
+    // ── Automated onboarding: email the starter kit + seed progress tracker ──
+    const isStaffRole = ["staff", "employee", "team", "barista", "manager", "lead", "team_lead"].includes(role);
+    if (isStaffRole) {
+      // 1. Send the onboarding starter-kit email (handbook, training, recipes, checklists)
+      try {
+        await sendEmail({
+          to: email,
+          subject: STAFF_ONBOARDING_SUBJECT(fullName || undefined),
+          html: staffOnboardingEmailHtml({
+            name: fullName || email.split("@")[0],
+            role,
+            appUrl,
+            handbookUrl: "/staff/handbook",
+            trainingUrl: "/training",
+            recipesUrl: "/staff/recipes",
+            checklistsUrl: "/staff/checklists",
+          }),
+          tags: [{ name: "type", value: "staff_onboarding" }],
+        });
+      } catch (e) {
+        // Don't fail the invite if the email is temporarily unavailable — log it.
+        console.error("Staff onboarding email send error", e);
+      }
+
+      // 2. Seed onboarding_progress rows so /admin/team-ops tracks this hire.
+      const defaultTasks: { key: string; label: string }[] = [
+        { key: "i9", label: "Form I-9 (Employment Eligibility Verification)" },
+        { key: "w4", label: "Form W-4 (Withholding Certificate)" },
+        { key: "handbook_ack", label: "Read & acknowledge the Employee Handbook" },
+        { key: "training_complete", label: "Complete Barista & Baker training" },
+        { key: "shift_checklists", label: "Learn opening / mid / closing checklists" },
+      ];
+      const progressRows = defaultTasks.map((t) => ({
+        hire_user_id: invited.user.id,
+        hire_email: email,
+        hire_name: fullName || null,
+        task_key: t.key,
+        task_label: t.label,
+        status: "pending",
+      }));
+      const { error: progressErr } = await admin
+        .from("onboarding_progress")
+        .upsert(progressRows, { onConflict: "hire_email,task_key" });
+      if (progressErr) {
+        console.error("Onboarding progress seed error", progressErr);
+      }
     }
 
     return NextResponse.json({ ok: true, user_id: invited.user.id, email, role });
