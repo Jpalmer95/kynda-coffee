@@ -155,7 +155,7 @@ export async function PATCH(req: NextRequest) {
     if ("on_hand" in body && body.on_hand != null) {
       const onHand = Number(body.on_hand);
       if (Number.isFinite(onHand) && onHand >= 0 && data) {
-        await supabaseAdmin()
+        const { error: countErr } = await supabaseAdmin()
           .from("par_counts")
           .insert({
             item_name: data.ingredient_name,
@@ -165,6 +165,10 @@ export async function PATCH(req: NextRequest) {
             counted_qty: onHand,
             counted_by: team.user.id,
           });
+        if (countErr) {
+          console.error("On-hand count insert error", countErr);
+          return NextResponse.json({ error: `Saved par but failed to save on-hand count: ${countErr.message}` }, { status: 500 });
+        }
       }
     }
 
