@@ -255,7 +255,9 @@ in the DB and the owner can pull signed docs.
 
 ### Phase 10 remaining (future)
 - [ ] Fill remaining ingredient_pars prices (28/55 priced) so all waste costs are real.
-- [ ] Weekly/monthly waste report email to owner (Hermes cron).
+- [x] Weekly/monthly waste report → **replaced with saved monthly reports in the
+      admin dashboard** (`/admin/waste` → Monthly Reports tab). No email cron.
+      Migration 053 + `/api/admin/waste/reports` (GET/POST) + snapshot cards.
 - [ ] Theft/expiration anomaly detection once >8 weeks of waste data exists.
 - [ ] Amazon canonical list + Amazon order agent (mirror the HEB flow).
 
