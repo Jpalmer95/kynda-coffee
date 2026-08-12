@@ -22,13 +22,25 @@ Human reviews cart → checks out
 
 ## The Brain — compute the order
 
+The order is keyed to **HEB's exact product names** (from the canonical list
+`heb_canonical_list.tsv`, which mirrors your live "Kynda Master Shopping List 2").
+No fuzzy matching needed.
+
 ```bash
 cd /home/jonathan/dev/kynda-coffee
-# From a count file (product | current_stock | par)
-python3 scripts/order/order_calculator.py scripts/order/counts/2026-08-11-heb.txt
-# → prints need-to-order, writes TSV with --out
-python3 scripts/order/order_calculator.py --out /tmp/heb_order.tsv
+# 1. (Optional, if the HEB list changed) refresh exact names from the live list
+node scripts/order/heb_fetch_list.mjs
+
+# 2. Record your count using EXACT HEB names in counts/<date>-heb.txt
+#    Format: <exact HEB name> | <current stock>
+
+# 3. Compute the order (par from canonical, stock from your count)
+python3 scripts/order/order_calculator.py scripts/order/counts/2026-08-11-heb-exact.txt \
+  --out /tmp/heb_order.tsv
 ```
+
+The order TSV now contains HEB's exact names, so the browser agent matches them
+1:1 (verified: 29/29).
 
 Seeding par targets (so `/admin/ingredients` has real pars too):
 ```bash

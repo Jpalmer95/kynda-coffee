@@ -20,6 +20,25 @@ from datetime import date
 
 ROUND_CATEGORIES = {"milk", "gal", "pack", "case", "loaf", "bag", "jar", "can", "ct", "box", "oz"}
 
+def parse_canonical_list(path):
+    """Parse the canonical HEB/Amazon list: 'HEB exact name | par | vendor | category'."""
+    items = []
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = [p.strip() for p in line.split("|")]
+            if len(parts) < 2 or not parts[0]:
+                continue
+            items.append({
+                "product": parts[0],
+                "par": float(parts[1]) if parts[1] else None,
+                "vendor": parts[2] if len(parts) > 2 and parts[2] else "HEB",
+                "category": parts[3] if len(parts) > 3 else "",
+            })
+    return items
+
 def parse_count_file(path):
     """Parse 'product | current_stock | par' lines. Skips comments/blank."""
     items = []
@@ -72,12 +91,28 @@ def to_order_list(items):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("file", nargs="?", default="scripts/order/counts/2026-08-11-heb.txt")
+    ap.add_argument("--canonical", default="scripts/order/heb_canonical_list.tsv",
+                    help="canonical list (HEB exact names + par). If given, par comes from here.")
     ap.add_argument("--vendor", default="HEB")
     ap.add_argument("--json", action="store_true", help="emit order list as JSON")
     ap.add_argument("--out", help="write order list TSV to this path")
     args = ap.parse_args()
 
-    items = parse_count_file(args.file)
+    if args.canonical:
+        # Merge: canonical gives exact HEB names + par; count file gives current stock.
+        canon = parse_canonical_list(args.canonical)
+        counts = {it["product"].lower(): it["current_stock"] for it in parse_count_file(args.file)}
+        items = []
+        for c in canon:
+            items.append({
+                "product": c["product"],
+                "par": c["par"],
+                "current_stock": counts.get(c["product"].lower()),
+                "vendor": c["vendor"],
+            })
+    else:
+        items = parse_count_file(args.file)
+
     computed = compute(items, args.vendor)
     order = to_order_list(computed)
 

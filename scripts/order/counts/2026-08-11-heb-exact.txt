@@ -1,0 +1,32 @@
+# Kynda HEB Count — 2026-08-11 (stock counts keyed to HEB EXACT list names)
+# Product (exact HEB Shopping List 2 name) | current stock | (par auto from canonical)
+# Only items where you took a count today; blank = not counted (assume at par).
+H-E-B Fresh Spinach, 9 oz|1
+Fresh Roma Tomato, Avg. 0.29 lb|0
+Fresh Bunch of Bananas, 4-7 Bananas, Avg. 2.4 lbs|1
+H-E-B Fresh Lemons, 2 lb bag|0
+H-E-B Bakery Scratch Sourdough Bread, 22 oz|9
+H-E-B More Fruit Peach & Mango Fruit Spread, 15.5 oz|8
+Hill Country Fare Strawberry Jam, 32 oz|5
+Thomas' Plain Bagels, 6 ct|0
+Thomas' Everything Bagels, 6 ct|0
+H-E-B Marinara Pasta Sauce, 24 oz|8
+H-E-B Basil Pesto, 6.7 oz|7
+Hill Country Fare Mild Cheddar Shredded Cheese, 32 oz|1
+Hill Country Fare Mild Cheddar Sliced Cheese, 10 ct|7
+Hill Country Fare Low Moisture Part-Skim Mozzarella Sliced Cheese, 10 ct|4
+H-E-B Oven-Roasted Turkey Breast Lunch Meat - Mega Pack, 22 oz|2
+H-E-B Texas Heritage Pork & Beef Smoked Sausage - Original, 12 oz|2
+H-E-B Brown Sugar, 2 lbs|4
+Libby's 100% Pure All-Natural Canned Pumpkin, 15 oz|4
+H-E-B Organics 100% Unsweetened Cocoa Powder, 8 oz|0
+Waterloo Lemon Lime Sparkling Water 12 pk Cans, 12 oz|1
+H-E-B Heavy Whipping Cream, 32 oz|10
+H-E-B Whipped Dairy Topping – Original, 13 oz|3
+Higher Harvest by H-E-B Non-Dairy Original Oat Milk, 1/2 gal|5
+Higher Harvest by H-E-B Non-Dairy Original Coconut Milk, 1/2 gal|1
+Hill Country Fare Whole Milk, 1 gal|2
+Hill Country Fare Fat Free Milk, 1 gal|0
+H-E-B Frozen Blueberries, 5 lbs|2
+H-E-B Creamy Creations 1905 Vanilla Ice Cream, 1/2 gal|3
+H-E-B Regular Cream Cheese, 8 oz|0
