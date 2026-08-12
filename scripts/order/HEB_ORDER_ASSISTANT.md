@@ -38,20 +38,30 @@ python3 scripts/order/seed_pars.py --vendor HEB
 ## The Hands — add to HEB cart
 
 HEB requires a **login code** even for the account owner (email OTP), so login is
-interactive. Once logged in, the session persists in the Brave CDP profile
-(`~/.hermes/chrome-debug`), so you only re-enter a code when HEB expires it.
+interactive. Two separate steps — log in at your own pace, then fill the cart.
 
-Login flow:
-1. Open `https://www.heb.com/my-account/login`
-2. Enter email → Continue → choose "Email OTP" → HEB sends a code
-3. **Pause** — enter the code from your inbox
-4. Once in, you're set for the session.
+### Step 1 — Log in (you, once, ~1 min)
 
-Cart-fill flow (runs automatically after login):
-1. Open your **"Kynda"** saved list (`/my-account/lists`)
-2. For each item in the order TSV, search HEB → open the product → set quantity
-3. Click **Add to Cart** (or use the saved-list "Add List to Cart" button)
-4. Report which items were found / added / need manual review
+```bash
+cd /home/jonathan/dev/kynda-coffee
+node scripts/order/heb_order_agent.mjs --login
+```
+- Opens HEB login in the automation browser (Brave CDP :9222).
+- Enter your email, choose **"Email me a one-time code"**, enter the code.
+- The session is then saved in the persistent profile — you won't need the code
+  again until HEB expires it.
+
+### Step 2 — Fill the cart (automatic)
+
+```bash
+cd /home/jonathan/dev/kynda-coffee
+node scripts/order/heb_order_agent.mjs --fill /tmp/heb_order.tsv
+```
+- Searches each order item, sets the quantity, clicks **Add to Cart**.
+- Reports added vs. need-review; browser stays open so you can review/check out.
+
+> One command does both if you're already logged in:
+> `node scripts/order/heb_order_agent.mjs /tmp/heb_order.tsv`
 
 ## Files
 
