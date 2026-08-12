@@ -30,3 +30,5 @@ yarn-error.log*
 
 # local workspace
 .local/
+__pycache__/
+
