@@ -27,6 +27,7 @@ def parse_canonical(path):
                 "par_level": float(parts[1]) if parts[1] else 0,
                 "vendor": parts[2] if len(parts) > 2 and parts[2] else "HEB",
                 "category": parts[3] if len(parts) > 3 else "",
+                "asin": parts[4] if len(parts) > 4 else None,
             })
     return items
 
@@ -74,6 +75,9 @@ def main():
             "area": it["category"],
             "is_active": True,
         }
+        if it["asin"]:
+            payload["asin"] = it["asin"]
+            payload["source"] = "amazon-live" if it["vendor"] == "Amazon" else "heb-live"
         resp = requests.post(f"{url}/rest/v1/ingredient_pars?on_conflict=ingredient_name",
                              json=payload, headers=h)
         if resp.status_code in (200, 201):

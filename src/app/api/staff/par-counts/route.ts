@@ -5,15 +5,32 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/staff/par-counts?days=7 — recent counts (team).
- * POST — submit a count (any team member). Multiple items per call supported:
- *   { counts: [{ item_name, area?, unit?, par_level?, counted_qty, notes? }] }
+ * GET /api/staff/par-counts
+ *   ?days=7         — recent submitted counts (team history)
+ *   ?sheet=HEB      — return the ingredient count sheet (read-only items + pars
+ *                     from ingredient_pars, filtered by vendor) so staff just
+ *                     fill in current stock. Names & pars are locked.
+ *   ?sheet=all      — all vendors
  */
 export async function GET(req: NextRequest) {
   const team = await requireTier(req, "staff");
   if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
+  const sheet = searchParams.get("sheet");
+  if (sheet !== null) {
+    const vendors = sheet === "all" ? ["HEB", "Amazon", "Other"] : [sheet];
+    const { data, error } = await supabaseAdmin()
+      .from("ingredient_pars")
+      .select("id, ingredient_name, par_level, unit, vendor, area, brand")
+      .eq("is_active", true)
+      .in("vendor", vendors)
+      .order("vendor")
+      .order("ingredient_name");
+    if (error) return NextResponse.json({ error: "Failed to load sheet" }, { status: 500 });
+    return NextResponse.json({ sheet: data ?? [] });
+  }
+
   const days = Math.min(Math.max(parseInt(searchParams.get("days") ?? "7", 10) || 7, 1), 90);
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
