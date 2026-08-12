@@ -149,6 +149,25 @@ export async function PATCH(req: NextRequest) {
       .single();
 
     if (error) throw error;
+
+    // If an on_hand count was provided, write it to par_counts so it feeds the
+    // order engine (order_qty = max(0, par - on_hand)).
+    if ("on_hand" in body && body.on_hand != null) {
+      const onHand = Number(body.on_hand);
+      if (Number.isFinite(onHand) && onHand >= 0 && data) {
+        await supabaseAdmin()
+          .from("par_counts")
+          .insert({
+            item_name: data.ingredient_name,
+            area: data.area ?? "general",
+            unit: data.unit ?? "each",
+            par_level: Number(data.par_level) || null,
+            counted_qty: onHand,
+            counted_by: team.user.id,
+          });
+      }
+    }
+
     return NextResponse.json({ par: data });
   } catch (error) {
     return NextResponse.json({ error: "Failed to update par" }, { status: 500 });

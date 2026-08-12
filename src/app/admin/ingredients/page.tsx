@@ -45,6 +45,8 @@ export default function AdminIngredientsPage() {
   const [generating, setGenerating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [parDraft, setParDraft] = useState("");
+  const [onHandDraft, setOnHandDraft] = useState("");
+  const [editField, setEditField] = useState<"par" | "on_hand" | null>(null);
 
   const [form, setForm] = useState({ ingredient_name: "", par_level: "", vendor: "HEB", cadence: "biweekly", unit: "each", area: "general", notes: "" });
 
@@ -107,9 +109,11 @@ export default function AdminIngredientsPage() {
     } catch { /* best-effort */ }
   }
 
-  function startEdit(item: IngredientItem) {
+  function startEdit(item: IngredientItem, field: "par" | "on_hand") {
     setEditingId(item.id);
-    setParDraft(String(item.par_level ?? ""));
+    setEditField(field);
+    if (field === "par") setParDraft(String(item.par_level ?? ""));
+    else setOnHandDraft(item.on_hand != null ? String(item.on_hand) : "");
   }
 
   async function savePar(id: string) {
@@ -126,7 +130,29 @@ export default function AdminIngredientsPage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Failed to update");
       }
-      setEditingId(null);
+      setEditingId(null); setEditField(null);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update");
+    } finally { setSaving(false); }
+  }
+
+  async function saveOnHand(id: string) {
+    if (onHandDraft.trim() === "") { setEditingId(null); setEditField(null); return; }
+    const qty = Number(onHandDraft);
+    if (!Number.isFinite(qty) || qty < 0) { setEditingId(null); setEditField(null); return; }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/ingredients", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, on_hand: qty }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update");
+      }
+      setEditingId(null); setEditField(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update");
@@ -255,7 +281,7 @@ export default function AdminIngredientsPage() {
                       </div>
                     ) : (
                       <button
-                        onClick={() => startEdit(item)}
+                        onClick={() => startEdit(item, "par")}
                         className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-espresso hover:bg-latte/10 hover:text-forest"
                         title="Edit par"
                       >
@@ -264,7 +290,37 @@ export default function AdminIngredientsPage() {
                       </button>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-center text-mocha">{item.on_hand ?? "—"}</td>
+                  <td className="px-4 py-3 text-center text-mocha">
+                    {editingId === item.id && editField === "on_hand" ? (
+                      <div className="flex items-center justify-center gap-1">
+                        <input
+                          autoFocus
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          value={onHandDraft}
+                          onChange={(e) => setOnHandDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveOnHand(item.id);
+                            if (e.key === "Escape") { setEditingId(null); setEditField(null); }
+                          }}
+                          className="w-16 rounded-lg border border-forest/50 bg-background px-2 py-1 text-center text-sm text-espresso"
+                        />
+                        <button onClick={() => saveOnHand(item.id)} disabled={saving} className="rounded-md bg-forest p-1 text-sand disabled:opacity-50" aria-label="Save on-hand">
+                          <Save className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEdit(item, "on_hand")}
+                        className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-mocha hover:bg-latte/10 hover:text-forest"
+                        title={item.on_hand != null ? "Edit on-hand count" : "Enter on-hand count"}
+                      >
+                        {item.on_hand ?? "—"}
+                        {item.on_hand != null && <Pencil className="h-3 w-3 text-mocha/60" />}
+                      </button>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-center font-semibold text-espresso">{item.order_qty ?? "—"}</td>
                   <td className="px-4 py-3 text-center">
                     {item.needs_order ? (
