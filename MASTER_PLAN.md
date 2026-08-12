@@ -182,11 +182,61 @@ folder. This is the "make the site the source of truth" phase.
 - [x] `npm run build` green, committed, pushed, Coolify redeploy triggered.
 
 ### Phase 8 remaining (future)
-- [ ] Upload onboarding handbook/i-9/w-4 PDFs to the `onboarding` Storage bucket
-      (currently the docs link to /staff pages + official federal URLs).
+- [x] Upload onboarding handbook/i-9/w-4 PDFs to the `onboarding` Storage bucket
+      → **DONE 2026-08-12** (migration 050 created bucket + policies;
+      `/api/admin/onboarding/upload` + file-upload UI in `/admin/team-ops`).
 - [ ] Auto-link a new hire's completed onboarding docs into their
       `Current Employee Folders` record.
-- [ ] Digitize waste log + par sheets → reorder suggestions (MenuMetrics link).
+- [x] Digitize waste log + par sheets → reorder suggestions (MenuMetrics link).
+      → **DONE 2026-08-12** — `/api/admin/orders/suggest` now factors last-7-days
+      waste into reorder qty (`order = par − on_hand + waste`), exposes `waste_7d`.
+
+## Phase 9 — Growth, checklist depth, onboarding polish (2026-08-12)
+
+Deferred from the 2026-08-11 "next phase" list — built to robust spec here so a
+fresh session can execute without re-discovery. Split into 3 self-contained items.
+
+### 9.1 Monthly Marketing / Growth Review cron (Hermes, human-approved)
+**Goal:** owner gets a monthly email/SMS digest of growth + a ranked list of
+recommended actions; nothing publishes automatically.
+- Existing pieces already done: marketing loop (`kynda-marketing-loop.sh`),
+  publish-due (`kynda-publish-due.sh`), submissions watchdog, approval queue
+  (`/admin/marketing/approvals`), growth insights (`/admin/insights`),
+  `GET /api/admin/agent?action=insights` + `marketing_summary`.
+- **Build:** a monthly (1st of month, ~8am) Hermes cron that calls the agent
+  bridge `insights` + `marketing_summary` + `price_watch`, composes a
+  "Kynda Growth Report" (revenue, top sellers, peaks, growth vs last period,
+  new customers, low-stock + vendor price alerts), and sends it to the owner
+  via email (Resend) + Telegram (deliver target). Human reviews; the report is
+  a recommendation, not an action.
+- **Deliver:** `telegram` + email to owner. Never auto-posts.
+- Files to touch: add cron job (Hermes `cronjob`), reuse `src/lib/email/templates`
+  pattern for the report HTML. Reference `kynda-marketing-agent` skill.
+
+### 9.2 Interactive time-stamped shift checklists
+**Current:** `/staff/checklists` has per-item checkboxes; completion persists as
+`checklist_completions` (whole-checklist `completed_at` + `completed_items`
+array). `/admin/checklists` has a filtered log.
+**Gap:** no per-item timestamp, and staff can't see "who did what & when" inline.
+- **Build (low risk):** store per-item timestamps. Add `completed_item_ts
+  JSONB` (or upgrade `completed_items` to `[{text, checked_at}]`) to
+  `checklist_completions`; the `complete` API records `checked_at: ISO` per item.
+  Staff card shows "✓ {item} — {time}" for items checked in the last completion.
+  Admin log row expands to show each item's checked time.
+- Migration `051`: `ALTER TABLE checklist_completions ADD COLUMN IF NOT EXISTS
+  completed_item_ts JSONB DEFAULT '[]'::jsonb;`
+- Files: `src/app/api/staff/checklists/complete/route.ts`,
+  `src/components/staff/ChecklistClient.tsx`,
+  `src/app/admin/checklists/page.tsx`.
+
+### 9.3 Onboarding → Current Employee Folder auto-link
+When a hire completes all `onboarding_progress` tasks (status `complete`),
+auto-create/refresh a row in a `current_employee_folders`-style table (or a
+`hire_documents` table) so the Drive's per-employee folder pattern is mirrored
+in the DB and the owner can pull signed docs.
+- **Build:** a cron or an `onboarding_progress` UPDATE trigger that, when all
+  tasks for a `hire_email` are complete, inserts a folder record with links to
+  their signed docs (storage_paths). Keep it a draft for owner confirmation.
 
 ## Future Roadmap (do NOT execute)
 
