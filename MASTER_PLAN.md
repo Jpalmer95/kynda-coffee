@@ -157,6 +157,37 @@ ordering.
 - [x] Final `npm run build` green.
 - [x] Commit + push + Coolify redeploy triggered.
 
+## Phase 8 — Drive Export → Platform Content Pipeline (2026-08-11)
+
+Connects the Kynda Google-Drive export (reorganized under
+`/mnt/flex/Kynda 2026 Drive Download 8.10.2026/KYNDA COFFEE 2026/`) to the
+live staff/admin portal by seeding the private DB from the curated `_PLATFORM/`
+folder. This is the "make the site the source of truth" phase.
+
+- [x] Migration 049: create missing `recipes`, `waste_entries`, `handbook_sections`
+      tables (the original staff-portal migration was only partially applied).
+- [x] Seed 91 canonical recipes (drinks + food + seasonal) from
+      `_PLATFORM/recipes` into `recipes`. Removed the filler `SEED_RECIPES`
+      fallback from `/staff/recipes` — the DB is now the single source.
+      Script: `scripts/seed_recipes_from_platform.py`.
+- [x] Seed 8 real handbook sections from `_PLATFORM/handbook` into
+      `handbook_sections` (real Kynda policy, not generic placeholders).
+      Script: `scripts/seed_handbook_from_platform.py`.
+- [x] Upgrade `checklists` with real Shift Duties 2025 items (13 opening /
+      10 mid-shift / 17 closing). Script: `scripts/seed_checklists_from_platform.py`.
+- [x] Automated onboarding: adding a staff/manager/lead via POST `/api/admin/team`
+      now sends a staff-onboarding email (handbook/training/recipes/checklists)
+      and seeds `onboarding_progress` rows tracked in `/admin/team-ops`.
+      Template: `src/lib/email/templates/staff-onboarding.tsx`.
+- [x] `npm run build` green, committed, pushed, Coolify redeploy triggered.
+
+### Phase 8 remaining (future)
+- [ ] Upload onboarding handbook/i-9/w-4 PDFs to the `onboarding` Storage bucket
+      (currently the docs link to /staff pages + official federal URLs).
+- [ ] Auto-link a new hire's completed onboarding docs into their
+      `Current Employee Folders` record.
+- [ ] Digitize waste log + par sheets → reorder suggestions (MenuMetrics link).
+
 ## Future Roadmap (do NOT execute)
 
 - Customer-facing design studio re-enable (Epic 8 amendment).
