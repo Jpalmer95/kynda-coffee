@@ -238,6 +238,27 @@ in the DB and the owner can pull signed docs.
   tasks for a `hire_email` are complete, inserts a folder record with links to
   their signed docs (storage_paths). Keep it a draft for owner confirmation.
 
+## Phase 10 — Master Par List + Cost-aware Waste Log (2026-08-12)
+
+- [x] `ingredient_pars` seeded from the canonical HEB list (55 exact HEB website
+      names) with real per-unit prices (28 priced). `/admin/ingredients` is the
+      editable Master Par List (par, brand, vendor, cadence, cost).
+- [x] Migration 052: `unit_cost_cents`/`brand`/`area` on ingredient_pars;
+      `ingredient_id` + `unit_cost_cents` on waste_entries. Dropped restrictive
+      area CHECK.
+- [x] Staff waste-log sources HEB exact names + real costs from ingredient_pars
+      (falls back to POS products). POST resolves ingredient vs product and
+      computes real cost = qty × unit cost.
+- [x] New `/admin/waste` cost report page + `/api/admin/waste/report`:
+      weekly/monthly totals, by reason, top wasted items, and trend.
+- [x] Build green, committed, pushed (4ad728c).
+
+### Phase 10 remaining (future)
+- [ ] Fill remaining ingredient_pars prices (28/55 priced) so all waste costs are real.
+- [ ] Weekly/monthly waste report email to owner (Hermes cron).
+- [ ] Theft/expiration anomaly detection once >8 weeks of waste data exists.
+- [ ] Amazon canonical list + Amazon order agent (mirror the HEB flow).
+
 ## Future Roadmap (do NOT execute)
 
 - Customer-facing design studio re-enable (Epic 8 amendment).
