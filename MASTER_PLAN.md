@@ -261,6 +261,26 @@ in the DB and the owner can pull signed docs.
 - [ ] Theft/expiration anomaly detection once >8 weeks of waste data exists.
 - [ ] Amazon canonical list + Amazon order agent (mirror the HEB flow).
 
+## Phase 11 — Amazon Ordering Mirror + Fixed Staff Count Sheet (2026-08-12)
+
+- [x] Extracted EXACT item titles + ASINs from live Amazon "Kynda Food List"
+      (29 items) + "Kynda Packaging + Supplies List" (34 items) via CDP
+      (amazon_fetch_list.mjs).
+- [x] amazon_canonical_list.tsv: 63 exact Amazon items (exact name | par | Amazon | cat | asin).
+- [x] merge_amazon_list.py merges exact Amazon names with par-sheet pars (fuzzy).
+- [x] Migration 054: asin + source columns on ingredient_pars.
+- [x] Seeded 61 Amazon pars with exact names + ASINs (source='amazon-live').
+- [x] `/staff/par-counts` rebuilt as a FIXED count sheet: vendor tabs
+      (HEB/Amazon/All), items + pars read-only & locked, staff only enter
+      on-hand counts. `/api/staff/par-counts?sheet=<vendor>`.
+- [x] Build green, committed, pushed (d9ddaf8).
+
+### Phase 11 remaining (future)
+- [ ] Amazon cart agent (mirror heb_list_agent.mjs) — search by ASIN for exact match.
+- [ ] Reconcile par-sheet items not found in the live Amazon lists (some manual
+      entries map to products not currently on either list).
+- [ ] Optionally combine the two Amazon lists into one in Amazon, or keep both.
+
 ## Future Roadmap (do NOT execute)
 
 - Customer-facing design studio re-enable (Epic 8 amendment).
