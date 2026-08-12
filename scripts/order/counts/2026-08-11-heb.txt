@@ -1,0 +1,57 @@
+# Kynda HEB / Amazon Count — 2026-08-11 (raw from owner)
+# Columns: Product \t Buy \t Current # in stock \t Par Number
+# Source: WEEKLY Inventory sheet + live count 08/11/26
+DATE=2026-08-11
+# Format: product | current_stock | par  (par comes from the master par sheet)
+
+HEB Spinach (9oz Bag)|1|5
+HEB Fresh Granny Smith Apples (3 lb Bag)|4|3
+Fresh Roma Tomato|0|5
+Fresh Bunch of Bananas|1|6
+HEB Fresh Lemons (2 lb bag)|0|5
+HEB Sourdough Bread (sliced)|9|15
+HEB More Fruit Peach & Mango Fruit Spread (15.5oz)|8|10
+Hill Country Fare Strawberry Jam (32 oz)|5|6
+Thomas Plain Bagels (6 ct)|0|4
+Thomas Everything Pre-sliced Bagels (6 ct)|0|4
+Canyon Bakehouse Gluten Free Country White Bread (18oz)|2|2
+HEB Real Mayonnaise (30oz)|4|4
+HEB Organic Tomato Basil Soup (17.3oz box)|13|10
+HEB Marinara Pasta Sauce (24oz)|8|9
+HEB Creamy Tomato Basil Soup (31.4oz jar)|9|9
+HEB Basil Pesto (6.7oz)|7|8
+Hill Country Fare Shredded Cheddar Cheese (32oz)|1|3
+Hill Country Fare Sliced Cheddar Cheese (10 slices)|7|12
+Hill Country Fare Sliced Mozzarella Cheese (10 slices)|4|10
+HEB Oven Roasted Turkey Breast - Mega Pack (22oz)|2|4
+HCF Original Pepperoni Slices - Texas Size Pack (21oz bag)|3|2
+HEB Texas Heritage Original Smoked Sausage (13oz)|2|7
+Hill Country Fare Cornstarch (1lb)|2|2
+Hill Country Fare Baking Soda (64oz)|2|2
+Hill Country Fare Double Acting Baking Powder (8.1oz)|4|4
+Hill Country Fare Yellow Cornmeal (5lb)||2
+HEB Brown Sugar (2lb bag)|4|5
+Libby's 100% Pure Pumpkin (15oz can)|4|6
+HEB Unsweetened Cocoa Powder (8 oz)|0|8
+HEB Iodized salt (26oz)|3|2
+Hill Country Fare Canola Cooking Spray (17oz)|3|3
+Waterloo Sparkling Water - Lemon Lime (12 Pack)|1|3
+Waterloo Sparkling Water - Watermelon (12 Pack)|2|2
+Waterloo Sparkling Water - Black Cherry (12 Pack)|4|2
+Topo Chico (12 pack - 12oz bottles)|2.5|2
+HEB Heavy Whipping Cream (32oz)|10|12
+HEB Real Original Dairy Whip Cream (13oz)|3|6
+HEB Half & Half (64oz)|10|10
+HEB Original Oat Milk (64oz)|5|6
+Higher Harvest by HEB Original Coconut Milk (64oz)|1|8
+Hill Country Fare Whole Milk (1 gallon)|2|20
+Hill Country Fare Fat Free Milk (1 gallon)|0|3
+Hill Country Fare Liquid Egg Whites (32oz)|10|10
+Hill Country Fare Large White Eggs (36 pack)|3|3
+HEB Frozen Mango Chunks (12oz)|9|8
+HEB Whole Frozen Blueberries (5lb)|2|3
+HEB Whole Frozen Strawberries (5lb)|3|3
+HEB Creamy Creations Vanilla Bean Ice Cream (1/2 gallon)|3|4
+HEB Cream Cheese Block|0|6
+HEB Sliced Hot Jalapeños Jar (12oz)|4|3
+Red Star Active Dry Yeast (4oz)|7|4
