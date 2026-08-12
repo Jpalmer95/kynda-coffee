@@ -21,28 +21,58 @@ export async function POST(req: NextRequest) {
 
     const admin = supabaseAdmin();
 
-    // Get product name
+    // Resolve the item name + real cost. Prefer ingredient_pars (HEB exact
+    // names + unit_cost_cents); fall back to products (menu items).
     let product_name = "";
+    let unit_cost_cents = Number(cost_cents) || 0;
+    let ingredient_id: string | null = null;
+    let product_id_fk: string | null = null;
+
     try {
-      const { data: product } = await admin
-        .from("products")
-        .select("name")
+      const { data: ing } = await admin
+        .from("ingredient_pars")
+        .select("ingredient_name, unit_cost_cents")
         .eq("id", product_id)
         .single();
-      product_name = product?.name || "";
-    } catch {
-      product_name = "Unknown product";
+      if (ing) {
+        product_name = ing.ingredient_name;
+        ingredient_id = product_id;
+        product_id_fk = null;
+        if (!unit_cost_cents) unit_cost_cents = Number(ing.unit_cost_cents) || 0;
+      }
+    } catch { /* not an ingredient */ }
+
+    if (!product_name) {
+      try {
+        const { data: product } = await admin
+          .from("products")
+          .select("name")
+          .eq("id", product_id)
+          .single();
+        product_name = product?.name || "";
+        product_id_fk = product ? product_id : null;
+        ingredient_id = null;
+      } catch {
+        product_name = "Unknown product";
+      }
     }
+
+    // Effective cost = qty × unit cost (real HEB price when available)
+    const effectiveCostCents = unit_cost_cents > 0
+      ? Math.round(parseFloat(quantity) * unit_cost_cents)
+      : unit_cost_cents;
 
     const { data: entry, error } = await admin
       .from("waste_entries")
       .insert({
-        product_id,
+        product_id: product_id_fk,
         product_name,
         quantity: parseFloat(quantity),
         unit: unit || "each",
         reason,
-        cost_cents: cost_cents || 0,
+        cost_cents: effectiveCostCents,
+        unit_cost_cents,
+        ingredient_id,
         notes,
         reported_by: user.id,
       })

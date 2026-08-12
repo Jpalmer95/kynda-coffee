@@ -36,6 +36,7 @@ import {
   Brain,
   Palette,
   Coffee,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +50,7 @@ const ADMIN_LINKS = [
   { href: "/admin/how-to", label: "How-To", icon: Wrench },
   { href: "/admin/recipes", label: "Recipes", icon: Coffee },
   { href: "/admin/ingredients", label: "Ingredients", icon: Boxes },
+  { href: "/admin/waste", label: "Waste Report", icon: Trash2 },
   { href: "/admin/inventory", label: "Inventory", icon: Package },
   { href: "/admin/chat", label: "Team Chat", icon: BotMessageSquare },
   { href: "/admin/media", label: "Team Media", icon: ImageIcon },

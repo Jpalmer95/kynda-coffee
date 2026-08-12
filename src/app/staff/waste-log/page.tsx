@@ -43,22 +43,41 @@ export default async function StaffWasteLogPage() {
     // Table may not exist yet
   }
 
-  // Fetch product options for dropdown
+  // Fetch product options for dropdown — prefer HEB exact names + real costs
+  // from ingredient_pars, fall back to POS products.
   let productOptions = SEED_PRODUCTS;
   try {
-    const { data, error } = await supabase
-      .from("products")
-      .select("id, name, price_cents")
+    const { data: pars, error: parsErr } = await supabase
+      .from("ingredient_pars")
+      .select("id, ingredient_name, unit_cost_cents, unit")
       .eq("is_active", true)
-      .limit(50);
+      .order("ingredient_name")
+      .limit(200);
 
-    if (!error && data && data.length > 0) {
-      productOptions = data.map((p) => ({
+    if (!parsErr && pars && pars.length > 0) {
+      productOptions = pars.map((p) => ({
         id: p.id,
-        name: p.name,
-        cost_cents: Math.round(p.price_cents * 0.3), // Estimate 30% cost
-        unit: "each",
+        name: p.ingredient_name,
+        cost_cents: p.unit_cost_cents ?? 0,
+        unit: p.unit ?? "each",
+        is_ingredient: true,
       }));
+    } else {
+      // Fall back to POS products
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, price_cents")
+        .eq("is_active", true)
+        .limit(50);
+      if (!error && data && data.length > 0) {
+        productOptions = data.map((p) => ({
+          id: p.id,
+          name: p.name,
+          cost_cents: Math.round(p.price_cents * 0.3),
+          unit: "each",
+          is_ingredient: false,
+        }));
+      }
     }
   } catch {
     // Use seed products
