@@ -278,7 +278,7 @@ export default function TrainingModulesClient({
                                 disabled={savingId === m.id}
                                 className={cn(
                                   "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition disabled:opacity-60",
-                                  done ? "border border-latte/30 text-mocha hover:border-red-300 hover:text-red-600" : "bg-forest text-sand hover:opacity-90"
+                                  done ? "border border-latte/30 text-mocha hover:border-red-300 hover:text-red-600" : "bg-primary text-primary-foreground hover:opacity-90"
                                 )}
                               >
                                 {savingId === m.id ? <Loader2 className="h-4 w-4 animate-spin" /> : done ? <RefreshCw className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
