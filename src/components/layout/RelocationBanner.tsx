@@ -16,7 +16,7 @@ import { MapPin, X } from "lucide-react";
 const DISMISS_KEY = "kynda-relocation-banner-dismissed-2026";
 
 const NEW_LOCATION_MAPS_URL =
-  "https://maps.google.com/?q=4909+FM+2147,+Horseshoe+Bay,+TX+78657";
+  "https://maps.google.com/?q=4909+RM+2147,+Horseshoe+Bay,+TX+78657";
 
 export function RelocationBanner() {
   const [mounted, setMounted] = useState(false);
@@ -63,7 +63,7 @@ export function RelocationBanner() {
               rel="noopener noreferrer"
               className="underline underline-offset-2 transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary-foreground/60 rounded-sm"
             >
-              4909 FM 2147, Horseshoe Bay, TX 78657
+              4909 RM 2147, Horseshoe Bay, TX 78657
             </a>
             .
           </span>
