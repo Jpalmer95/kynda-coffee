@@ -54,9 +54,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {/* Toast container */}
+      {/* Toast container — pointer-events-none so the empty viewport never
+          swallows clicks on the page header (announcement bar / cart / menu). */}
       <div
-        className="fixed right-0 top-0 z-[100] flex flex-col gap-2 p-4 sm:p-6"
+        className="pointer-events-none fixed right-0 top-0 z-[100] flex flex-col gap-2 p-4 sm:p-6"
         role="region"
         aria-live="polite"
         aria-label="Notifications"
@@ -83,7 +84,7 @@ function ToastItem({ toast: t, onRemove }: { toast: Toast; onRemove: (id: string
   return (
     <div
       className={cn(
-        "flex w-[calc(100vw-2rem)] max-w-sm items-start gap-3 rounded-xl border p-4 shadow-lg backdrop-blur-sm",
+        "pointer-events-auto flex w-[calc(100vw-2rem)] max-w-sm items-start gap-3 rounded-xl border p-4 shadow-lg backdrop-blur-sm",
         STYLES[t.type],
         exiting ? "animate-toast-out" : "animate-toast-in"
       )}

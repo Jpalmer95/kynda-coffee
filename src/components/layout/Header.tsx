@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
 import Image from "next/image";
+import { RelocationBanner } from "@/components/layout/RelocationBanner";
 import { useCartStore } from "@/hooks/useCart";
 import { useMenuCartStore } from "@/hooks/useMenuCart";
 import { useCartDrawer } from "@/hooks/useCartDrawer";
@@ -21,6 +22,10 @@ const NAV_LINKS = [
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  // Measured height of the fixed header stack (announcement bar + nav row).
+  // null until measured → fall back to the static class defaults below.
+  const [headerHeight, setHeaderHeight] = useState<number | null>(null);
   const pathname = usePathname();
   const shopItemCount = useCartStore((s) => s.item_count);
   const menuItemCount = useMenuCartStore((s) => s.item_count);
@@ -57,11 +62,36 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Keep the header offset in sync with the real header height. This covers the
+  // announcement bar appearing/disappearing (dismissal) and its text wrapping
+  // to two or three lines on narrow viewports.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+
+    function measure() {
+      if (!headerRef.current) return;
+      setHeaderHeight(headerRef.current.getBoundingClientRect().height);
+    }
+
+    measure();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", measure);
+      return () => window.removeEventListener("resize", measure);
+    }
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   if (hideChrome) return null;
 
   return (
     <>
       <header
+        ref={headerRef}
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
           scrolled || mobileOpen
@@ -70,6 +100,7 @@ export function Header() {
         )}
         role="banner"
       >
+        <RelocationBanner />
         <div className="container-max flex items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link
@@ -178,7 +209,7 @@ export function Header() {
           "fixed inset-0 z-40 bg-cream transition-transform duration-300 lg:hidden",
           mobileOpen ? "translate-x-0" : "translate-x-full"
         )}
-        style={{ top: "85px" }}
+        style={{ top: headerHeight !== null ? `${headerHeight}px` : "85px" }}
         aria-hidden={!mobileOpen}
       >
         <nav className="flex h-full flex-col gap-1 overflow-y-auto px-4 py-6" aria-label="Mobile navigation">
@@ -245,8 +276,12 @@ export function Header() {
         </nav>
       </div>
 
-      {/* Spacer for fixed header */}
-      <div className="h-[85px] sm:h-[95px]" aria-hidden="true" />
+      {/* Spacer for fixed header — measured height wins once available */}
+      <div
+        className="h-[85px] sm:h-[95px]"
+        style={headerHeight !== null ? { height: `${headerHeight}px` } : undefined}
+        aria-hidden="true"
+      />
     </>
   );
 }
