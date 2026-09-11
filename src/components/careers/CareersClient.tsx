@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Coffee,
   MapPin,
@@ -101,9 +102,14 @@ export function CareersClient({ openings }: { openings: JobOpening[] }) {
           backgroundImage: "radial-gradient(circle at 20% 50%, rgb(var(--primary)) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgb(var(--primary)) 0%, transparent 50%)",
         }} />
         <div className="relative mx-auto max-w-3xl">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-800">
-            <Coffee className="h-8 w-8 text-sand" />
-          </div>
+          <Image
+            src="/images/logos/kynda-logo-cream.png"
+            alt="Kynda Coffee"
+            width={200}
+            height={155}
+            priority
+            className="mx-auto mb-6 h-16 w-auto sm:h-20"
+          />
           <h1 className="font-heading text-4xl font-semibold text-sand sm:text-6xl">
             Join the Kynda Team
           </h1>

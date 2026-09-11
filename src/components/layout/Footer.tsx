@@ -53,11 +53,11 @@ export function Footer() {
           <div className="lg:col-span-4">
             <Link href="/" className="inline-flex items-center gap-2 rounded-lg focus-visible:ring-2 focus-visible:ring-forest" aria-label="Kynda Coffee Home">
               <Image
-                src="/images/logos/kynda-logo-black.png"
+                src="/images/logos/kynda-logo-cream.png"
                 alt="Kynda Coffee"
-                width={120}
-                height={93}
-                className="h-12 w-auto dark:invert"
+                width={200}
+                height={155}
+                className="h-14 w-auto sm:h-20"
                 aria-hidden="true"
               />
             </Link>

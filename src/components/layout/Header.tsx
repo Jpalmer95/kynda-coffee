@@ -101,7 +101,7 @@ export function Header() {
         role="banner"
       >
         <RelocationBanner />
-        <div className="container-max flex items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+        <div className="container-max flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           {/* Logo */}
           <Link
             href="/"
@@ -111,9 +111,9 @@ export function Header() {
             <Image
               src="/images/logos/kynda-logo-black.png"
               alt="Kynda Coffee"
-              width={120}
-              height={93}
-              className="h-12 sm:h-14 w-auto dark:invert"
+              width={200}
+              height={155}
+              className="h-14 sm:h-20 w-auto dark:invert"
               priority
             />
           </Link>
