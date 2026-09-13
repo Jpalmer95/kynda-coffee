@@ -60,6 +60,33 @@ an explicit "may not be reproduced in any form without expressed permission from
 the Architect" notice. Get written permission from Living Architecture before
 posting drawings, plan excerpts, or dimensions.
 
+## Running the e2e spec locally
+
+`npx playwright test e2e/moving.spec.ts` fails on this workstation: the repo's
+pinned Playwright build wants `chromium_headless_shell-1223`, which cannot be
+installed on Ubuntu 26.04. Point a throwaway config at the Chromium already in
+`~/.cache/ms-playwright` instead (delete the config afterwards):
+
+```ts
+// pw.verify.config.ts
+import { defineConfig, devices } from "@playwright/test";
+export default defineConfig({
+  testDir: "./e2e",
+  use: {
+    baseURL: "http://localhost:3000",
+    launchOptions: {
+      executablePath: "/home/jonathan/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome",
+      args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    },
+  },
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+});
+```
+
+`npx playwright test e2e/moving.spec.ts -c pw.verify.config.ts` (reuses a dev
+server already on :3000). Note `getByRole("dialog")` needs a name filter here —
+the site chrome mounts a cart drawer with `role="dialog"`.
+
 ## Deliberately not claimed (needs owner confirmation before publishing)
 
 - An exact opening date (page says "Winter 2026" / "exact dates announced").
