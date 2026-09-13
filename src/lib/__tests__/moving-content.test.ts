@@ -1,21 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   GALLERY_SLOTS,
-  MOVE_FAQS,
   NEW_LOCATION,
-  NEW_LOCATION_FEATURES,
+  ORDERING_LINKS,
   resolveGallerySlots,
 } from "@/lib/moving/content";
 
 /**
  * Relocation page (/moving) content guards.
  *
- * The page publishes a real address and real construction claims, so these
- * tests lock the contract: four render slots, slot files that live where the
- * docs say they live, and placeholder/image resolution that always agrees with
- * what is actually on disk.
+ * The page publishes a real address and real render file paths, so these tests
+ * lock the contract: four slots, files where the docs say they live, and
+ * placeholder/image resolution that always agrees with what is on disk.
  */
 
 const ROOT = join(__dirname, "..", "..", "..");
@@ -37,8 +35,16 @@ describe("moving page: render slots", () => {
     for (const slot of GALLERY_SLOTS) {
       expect(slot.file.startsWith("/images/moving/")).toBe(true);
       expect(slot.label.length).toBeGreaterThan(0);
-      expect(slot.caption.length).toBeGreaterThan(0);
       expect(slot.alt.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("ships all four render files on disk", () => {
+    for (const slot of GALLERY_SLOTS) {
+      expect(
+        existsSync(join(PUBLIC_DIR, slot.file.replace(/^\//, ""))),
+        `${slot.file} is missing`
+      ).toBe(true);
     }
   });
 
@@ -47,11 +53,8 @@ describe("moving page: render slots", () => {
     expect(resolved).toHaveLength(GALLERY_SLOTS.length);
 
     for (const slot of resolved) {
-      const onDisk = existsSync(
-        join(PUBLIC_DIR, slot.file.replace(/^\//, ""))
-      );
+      const onDisk = existsSync(join(PUBLIC_DIR, slot.file.replace(/^\//, "")));
       expect(slot.src === null).toBe(!onDisk);
-      if (!onDisk) expect(slot.src).toBeNull();
     }
   });
 
@@ -76,10 +79,36 @@ describe("moving page: published facts", () => {
     expect(NEW_LOCATION.lng).toBeLessThan(-98.3);
   });
 
-  it("has non-empty features and FAQs", () => {
-    expect(NEW_LOCATION_FEATURES.length).toBeGreaterThanOrEqual(3);
-    expect(MOVE_FAQS.length).toBeGreaterThanOrEqual(4);
-    for (const f of NEW_LOCATION_FEATURES) expect(f.body.length).toBeGreaterThan(20);
-    for (const q of MOVE_FAQS) expect(q.a.length).toBeGreaterThan(20);
+  it("links online ordering surfaces that exist in the app", () => {
+    const hrefs = ORDERING_LINKS.map((l) => l.href);
+    expect(hrefs).toContain("/shop/coffee-beans");
+    expect(hrefs).toContain("/shop/merch");
+    expect(hrefs).toContain("/order");
+
+    // Direct routes (e.g. /order, /shop/merch) must have their own page.tsx.
+    for (const href of ["/order", "/shop/merch"]) {
+      const seg = href.replace(/^\//, "");
+      const candidates = [
+        join(ROOT, "src", "app", seg, "page.tsx"),
+        join(ROOT, "src", "app", "(marketing)", seg, "page.tsx"),
+      ];
+      expect(candidates.some((c) => existsSync(c)), `no page.tsx for ${href}`).toBe(
+        true
+      );
+    }
+
+    // Category links (e.g. /shop/coffee-beans) resolve through the dynamic
+    // /shop/[category] route, and the slug must be advertised in the shop's
+    // own category list or the link lands on an empty category page.
+    expect(existsSync(join(ROOT, "src", "app", "shop", "[category]", "page.tsx"))).toBe(
+      true
+    );
+    const shopSource = readFileSync(join(ROOT, "src", "app", "shop", "page.tsx"), "utf8");
+    for (const href of hrefs.filter((h) => h.startsWith("/shop/"))) {
+      const slug = href.split("/")[2];
+      // Slugs with their own route (e.g. /shop/merch) skip the category check.
+      if (existsSync(join(ROOT, "src", "app", "shop", slug, "page.tsx"))) continue;
+      expect(shopSource).toContain(`slug: "${slug}"`);
+    }
   });
 });

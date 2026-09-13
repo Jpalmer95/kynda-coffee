@@ -28,11 +28,12 @@
 ### ✅ Completed
 
 **Relocation Page (2026-09-13)**
-- [x] Public `/moving` page — owned new location at 4909 RM 2147, Horseshoe Bay TX 78657 (opening Winter 2026); hero, "why we're moving", verified site features (7 parking spaces incl. ADA, dedicated driveway, deck), progress timeline, map + directions, moving FAQ
-- [x] Four render slots with branded "render coming soon" placeholders + accessible lightbox; artwork is drop-in (`public/images/moving/01-exterior-entry.jpg` … `04-deck-parking.jpg`) and picked up automatically at build time
-- [x] Move-updates email capture on the page (`source: moving_page` → existing newsletter endpoint)
-- [x] Header announcement bar now links to `/moving`; footer "We're Moving" link; `/moving` added to sitemap.xml
-- [x] Guards: `src/lib/__tests__/moving-content.test.ts` (8 tests) + `e2e/moving.spec.ts` (4 Playwright tests: address copy, banner link, lightbox Esc, form field)
+- [x] Public `/moving` page — owned new location at 4909 RM 2147, Horseshoe Bay TX 78657 (grand opening Winter 2026)
+- [x] **Simplified to four sections per owner directive:** moving announcement (address + "same coffee, pastries, team, owners" + first owned location), the four new-location renders, map with the new location, and links back to online ordering (beans/merch stay available through the Winter 2026 grand opening)
+- [x] Removed for now: features grid, timeline, FAQ, brand photo strip, updates signup — copy is with the marketing lead for refinement
+- [x] Four real renders in place (`public/images/moving/01-front-view.jpg` … `04-lounge-from-rear-bar.jpg`), converted from `_Kynda/4909 Rebuild/Renders/`; slot files are drop-in (build-time existence check)
+- [x] Header announcement bar links to `/moving`; footer "We're Moving" link; `/moving` in sitemap.xml
+- [x] Guards: `src/lib/__tests__/moving-content.test.ts` + `e2e/moving.spec.ts` (sections, render files present, lightbox Esc, banner link)
 
 **Ops & Forms Hardening (2026-06-12)**
 - [x] Admin Site Map (`/admin/sitemap`) — master legend of every route incl. previously hidden pages; sidebar now surfaces Inbox, Schedule, Inventory, B2B
