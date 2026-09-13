@@ -31,6 +31,8 @@
 - [x] Public `/moving` page — owned new location at 4909 RM 2147, Horseshoe Bay TX 78657 (grand opening Winter 2026)
 - [x] **Simplified to four sections per owner directive:** moving announcement (address + "same coffee, pastries, team, owners" + first owned location), the four new-location renders, map with the new location, and links back to online ordering (beans/merch stay available through the Winter 2026 grand opening)
 - [x] Removed for now: features grid, timeline, FAQ, brand photo strip, updates signup — copy is with the marketing lead for refinement
+- [x] Ordering block: coffee beans + merch shipping links only; café food & beverage stated as temporarily unavailable during the transition (no `/order` link)
+- [x] Hero line: "…Only the address changes — to our new specialty coffee house."
 - [x] Four real renders in place (`public/images/moving/01-front-view.jpg` … `04-lounge-from-rear-bar.jpg`), converted from `_Kynda/4909 Rebuild/Renders/`; slot files are drop-in (build-time existence check)
 - [x] Header announcement bar links to `/moving`; footer "We're Moving" link; `/moving` in sitemap.xml
 - [x] Guards: `src/lib/__tests__/moving-content.test.ts` + `e2e/moving.spec.ts` (sections, render files present, lightbox Esc, banner link)

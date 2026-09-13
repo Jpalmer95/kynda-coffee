@@ -109,11 +109,6 @@ export const ORDERING_LINKS = [
   {
     href: "/shop/merch",
     label: "Kynda merch",
-    detail: "Mugs, apparel, and gear.",
-  },
-  {
-    href: "/order",
-    label: "Order for pickup",
-    detail: "Our current shop on RM 2147.",
+    detail: "Mugs, apparel, and gear, shipped to your door.",
   },
 ] as const;

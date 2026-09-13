@@ -13,10 +13,14 @@ without their input.
 
 1. **We're moving** — address, "same coffee, same pastries, same team, same
    owners", first-ever owned location, grand-opening season, Get directions.
+   Closing line: "Same coffee, same pastries, same team, same owners. Only the
+   address changes — to our new specialty coffee house."
 2. **The new shop** — the four renders (lightbox on click).
 3. **Where we're going** — OpenStreetMap embed + address + directions.
-4. **Order online while we build** — `/shop/coffee-beans`, `/shop/merch`,
-   `/order`; online shop stays open through the Winter 2026 grand opening.
+4. **Order online while we build** — `/shop/coffee-beans` and `/shop/merch` only
+   (shipping). Café food & beverage is **temporarily unavailable** during the
+   transition, so there is deliberately **no** `/order` (pickup/menu) link here.
+   Online shop stays open through the Winter 2026 grand opening.
 
 ## Files
 

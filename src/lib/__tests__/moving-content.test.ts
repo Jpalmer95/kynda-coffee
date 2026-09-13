@@ -83,10 +83,12 @@ describe("moving page: published facts", () => {
     const hrefs = ORDERING_LINKS.map((l) => l.href);
     expect(hrefs).toContain("/shop/coffee-beans");
     expect(hrefs).toContain("/shop/merch");
-    expect(hrefs).toContain("/order");
+    // Café food & beverage is offline during the transition — no menu ordering link.
+    expect(hrefs).not.toContain("/order");
+    expect(hrefs).toHaveLength(2);
 
-    // Direct routes (e.g. /order, /shop/merch) must have their own page.tsx.
-    for (const href of ["/order", "/shop/merch"]) {
+    // Direct routes (e.g. /shop/merch) must have their own page.tsx.
+    for (const href of ["/shop/merch"]) {
       const seg = href.replace(/^\//, "");
       const candidates = [
         join(ROOT, "src", "app", seg, "page.tsx"),

@@ -15,6 +15,9 @@ test.describe("/moving relocation page", () => {
     await expect(page.locator("body")).toContainText("4909 RM 2147");
     await expect(page.locator("body")).toContainText("Winter 2026");
     await expect(page.locator("body")).toContainText(/same coffee/i);
+    await expect(page.locator("body")).toContainText(
+      /address changes — to our new specialty coffee house/i
+    );
   });
 
   test("shows the four renders", async ({ page }) => {
@@ -44,7 +47,9 @@ test.describe("/moving relocation page", () => {
       "href",
       "/shop/merch"
     );
-    await expect(page.locator("body")).toContainText(/online shop stays open/i);
+    await expect(page.locator("body")).toContainText(/food and beverage will be temporarily unavailable/i);
+    // Café ordering is offline during the transition — no pickup/menu link here.
+    await expect(page.locator('a[href="/order"]')).toHaveCount(0);
   });
 
   test("lightbox opens on a render and closes on Escape", async ({ page }) => {

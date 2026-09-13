@@ -49,7 +49,7 @@ export default function MovingPage() {
             </p>
             <p className="mt-4 text-base text-sand/75">
               Same coffee, same pastries, same team, same owners. Only the address
-              changes.
+              changes — to our new specialty coffee house.
             </p>
 
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -153,10 +153,10 @@ export default function MovingPage() {
             </h2>
             <p className="mt-3 text-base text-mocha">
               Our online shop stays open the whole time — {ONLINE_ORDERING_WINDOW} — so
-              you can keep ordering coffee beans and merch until we open the doors at
-              the new shop.
+              you can keep ordering coffee beans and merch to ship to your door. Café
+              food and beverage will be temporarily unavailable during the transition.
             </p>
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {ORDERING_LINKS.map((link) => (
                 <Link
                   key={link.href}
