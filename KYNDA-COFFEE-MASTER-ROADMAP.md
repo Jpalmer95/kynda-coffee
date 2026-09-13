@@ -27,6 +27,13 @@
 
 ### ✅ Completed
 
+**Relocation Page (2026-09-13)**
+- [x] Public `/moving` page — owned new location at 4909 RM 2147, Horseshoe Bay TX 78657 (opening Winter 2026); hero, "why we're moving", verified site features (7 parking spaces incl. ADA, dedicated driveway, deck), progress timeline, map + directions, moving FAQ
+- [x] Four render slots with branded "render coming soon" placeholders + accessible lightbox; artwork is drop-in (`public/images/moving/01-exterior-entry.jpg` … `04-deck-parking.jpg`) and picked up automatically at build time
+- [x] Move-updates email capture on the page (`source: moving_page` → existing newsletter endpoint)
+- [x] Header announcement bar now links to `/moving`; footer "We're Moving" link; `/moving` added to sitemap.xml
+- [x] Guards: `src/lib/__tests__/moving-content.test.ts` (8 tests) + `e2e/moving.spec.ts` (4 Playwright tests: address copy, banner link, lightbox Esc, form field)
+
 **Ops & Forms Hardening (2026-06-12)**
 - [x] Admin Site Map (`/admin/sitemap`) — master legend of every route incl. previously hidden pages; sidebar now surfaces Inbox, Schedule, Inventory, B2B
 - [x] Team & Access: invite new members by email (Supabase invite + pre-set role)

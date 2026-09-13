@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapPin, X } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, MapPin, X } from "lucide-react";
 
 /**
  * Site-wide relocation announcement bar.
@@ -65,7 +66,14 @@ export function RelocationBanner() {
             >
               4909 RM 2147, Horseshoe Bay, TX 78657
             </a>
-            .
+            .{" "}
+            <Link
+              href="/moving"
+              className="inline-flex items-center gap-1 font-semibold underline underline-offset-2 transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary-foreground/60 rounded-sm"
+            >
+              See what&apos;s coming
+              <ArrowRight className="h-3 w-3" aria-hidden="true" />
+            </Link>
           </span>
         </p>
         <button

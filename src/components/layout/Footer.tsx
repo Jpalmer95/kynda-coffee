@@ -100,6 +100,7 @@ export function Footer() {
               <li><Link href="/track-order" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Track Order</Link></li>
               <li><Link href="/contact" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Contact</Link></li>
               <li><Link href="/location" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Find Us</Link></li>
+              <li><Link href="/moving" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">We&apos;re Moving</Link></li>
               <li><Link href="/careers" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">Careers</Link></li>
               <li><Link href="/faq" className="inline-block rounded transition-colors hover:text-sand focus-visible:ring-2 focus-visible:ring-forest">FAQ</Link></li>
             </ul>
