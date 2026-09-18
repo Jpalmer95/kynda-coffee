@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Truck, Coffee, Heart, ChevronDown, Star, MapPin, Mail, Loader2, CheckCircle } from "lucide-react";
+import { ArrowRight, Sparkles, Truck, Coffee, Heart, Star, MapPin, Mail, Loader2, CheckCircle } from "lucide-react";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { useProducts } from "@/hooks/useProducts";
 import { RecentlyViewedStrip } from "@/components/shop/RecentlyViewed";
@@ -154,16 +154,11 @@ export default function HomePage() {
                 Shop Coffee Beans
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
-              <Link href="/moving" className="w-full sm:w-auto rounded-[24px] border-2 border-white bg-card px-8 py-4 text-base font-medium text-espresso shadow-sm transition-all hover:bg-cream hover:border-cream">
+              <Link href="/moving" className="inline-flex w-full sm:w-auto items-center justify-center gap-2 whitespace-nowrap rounded-[24px] border-2 border-white bg-card px-9 py-4 text-base font-medium text-espresso shadow-sm transition-all hover:bg-cream hover:border-cream">
                 See what&apos;s coming
-                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
               </Link>
             </div>
-          </div>
-
-          {/* Scroll indicator */}
-          <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-            <ChevronDown className="h-6 w-6 text-sand/60" aria-hidden="true" />
           </div>
         </div>
       </section>
