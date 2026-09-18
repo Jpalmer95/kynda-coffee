@@ -143,24 +143,20 @@ export default function HomePage() {
               Organic Specialty Coffee · Est. 2020 · Horseshoe Bay, TX
             </p>
             <h1 className="font-heading text-4xl font-bold leading-[1.1] text-sand sm:text-6xl lg:text-7xl">
-              Every Cup
-              <br />
-              <span className="relative inline-block">
-                <span className="relative z-10 text-forest">Tells a Story</span>
-                <span className="absolute -bottom-1 left-0 h-2 sm:h-3 w-full bg-bronze/20" />
-              </span>
+              We&apos;re moving
             </h1>
             <p className="mx-auto mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-sand/90">
-              Hand-selected micro-lot roasts using only the top 5% of coffee beans
-              from around the world. Locally roasted, organic, and crafted with care.
+              But not far, just 1 minute away. Visit us at the new location just
+              down the road Winter 2026.
             </p>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
               <Link href="/shop" className="btn-primary w-full sm:w-auto text-base px-8 py-4">
                 Shop Coffee Beans
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
-              <Link href="/menu" className="w-full sm:w-auto rounded-[24px] border-2 border-white bg-card px-8 py-4 text-base font-medium text-espresso shadow-sm transition-all hover:bg-cream hover:border-cream">
-                View Our Menu
+              <Link href="/moving" className="w-full sm:w-auto rounded-[24px] border-2 border-white bg-card px-8 py-4 text-base font-medium text-espresso shadow-sm transition-all hover:bg-cream hover:border-cream">
+                See what&apos;s coming
+                <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
             </div>
           </div>
