@@ -11,7 +11,14 @@ import { discountPct, type Special } from "@/lib/marketing/specials";
  * the owner has curated at least one live special. When empty, the menu falls
  * back to the heuristic MenuSpecials carousel inside MenuClient.
  */
-export function CuratedSpecials({ specials }: { specials: Special[] }) {
+export function CuratedSpecials({
+  specials,
+  orderingEnabled = true,
+}: {
+  specials: Special[];
+  /** When false the CTA sends customers to /moving instead of the ordering flow. */
+  orderingEnabled?: boolean;
+}) {
   if (specials.length === 0) return null;
 
   return (
@@ -81,10 +88,19 @@ export function CuratedSpecials({ specials }: { specials: Special[] }) {
                 )}
                 <div className="mt-auto pt-3">
                   <Link
-                    href={special.provider_item_id ? `/order?item=${special.provider_item_id}` : "/order"}
+                    href={
+                      orderingEnabled
+                        ? special.provider_item_id
+                          ? `/order?item=${special.provider_item_id}`
+                          : "/order"
+                        : "/moving"
+                    }
                     className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-forest hover:underline"
                   >
-                    {special.cta_label || "Order now"} →
+                    {orderingEnabled
+                      ? special.cta_label || "Order now"
+                      : "See what's coming"}{" "}
+                    →
                   </Link>
                 </div>
               </div>

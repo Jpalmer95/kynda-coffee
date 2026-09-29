@@ -37,6 +37,16 @@
 - [x] Header announcement bar links to `/moving`; footer "We're Moving" link; `/moving` in sitemap.xml
 - [x] Guards: `src/lib/__tests__/moving-content.test.ts` + `e2e/moving.spec.ts` (sections, render files present, lightbox Esc, banner link)
 
+**Café Ordering Pause — original shop closed (2026-09-29)**
+- [x] Single switch: `src/lib/ordering/availability.ts` (`CAFE_ORDERING_ENABLED`, read server-side at runtime, fails closed when unset)
+- [x] `/menu` is browse-only while paused: same menu + photos, cards inert (no dialog, no `+ ADD`), Build Your Own + delivery links hidden, "Ordering paused" badge per item, pause notice with a link to `/moving`
+- [x] `/order` renders the pause notice instead of the ordering client (covers `/qr-order`, which redirects there)
+- [x] Server-side guard: `POST /api/orders/submit` returns 403 while paused (stale carts / direct API calls)
+- [x] Cart drawer shows "Café ordering is paused → See the relocation details" instead of Review & Pay for menu items
+- [x] Shipping channels untouched on purpose: `/shop`, `/shop/merch`, coffee beans still orderable through the relocation
+- [x] Reopen for Winter 2026: set env `CAFE_ORDERING_ENABLED=true` and restart — no rebuild or code change needed
+- [x] Guards: `src/lib/__tests__/ordering-availability.test.ts`
+
 **Ops & Forms Hardening (2026-06-12)**
 - [x] Admin Site Map (`/admin/sitemap`) — master legend of every route incl. previously hidden pages; sidebar now surfaces Inbox, Schedule, Inventory, B2B
 - [x] Team & Access: invite new members by email (Supabase invite + pre-set role)

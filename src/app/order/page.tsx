@@ -2,12 +2,15 @@ import Link from "next/link";
 import { Coffee } from "lucide-react";
 import { getPosCatalog } from "@/lib/pos/catalog";
 import { OrderPageClient } from "@/components/order/OrderPageClient";
+import { OrderingPausedNotice } from "@/components/order/OrderingPausedNotice";
+import { CAFE_ORDERING_ENABLED } from "@/lib/ordering/availability";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Order | Kynda Coffee",
-  description: "Order for lobby pickup or curbside. Fast, simple, and powered by our real-time menu.",
+  description:
+    "Café online ordering is paused while Kynda Coffee relocates to 4909 RM 2147, Horseshoe Bay — reopening Winter 2026. Coffee beans and merch ship year-round from our shop.",
 };
 
 export default async function OrderPage({
@@ -16,6 +19,42 @@ export default async function OrderPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
+
+  // Café ordering is paused for the relocation — never render the ordering
+  // client (or hit the POS catalog) while the switch is off. See
+  // src/lib/ordering/availability.ts.
+  if (!CAFE_ORDERING_ENABLED) {
+    return (
+      <section className="section-padding">
+        <div className="container-max">
+          <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-[12px] bg-surface border border-latte/30 text-forest shadow-soft">
+              <Coffee className="h-8 w-8" aria-hidden="true" />
+            </div>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.28em] text-forest">
+              Fresh • Local • Handcrafted
+            </p>
+            <h1 className="font-heading text-4xl font-bold text-espresso tracking-tight sm:text-5xl">
+              Ordering is paused
+            </h1>
+          </div>
+
+          <OrderingPausedNotice />
+
+          <div className="mt-10 flex flex-col items-center gap-4 text-center">
+            <Link href="/menu" className="btn-secondary">
+              Browse the full menu
+            </Link>
+            <p className="max-w-md text-xs tracking-wide text-mocha">
+              Coffee beans and merch still ship to your door throughout the
+              relocation.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   const catalog = await getPosCatalog({ channel: "qr", includeModifiers: true, limit: 500 });
   const categories = catalog.categories.filter((c) => c.items.length > 0);
   const itemCount = catalog.items.length;

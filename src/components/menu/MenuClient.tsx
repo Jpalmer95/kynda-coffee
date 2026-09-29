@@ -11,6 +11,12 @@ import { BuildYourOwn } from "@/components/menu/BuildYourOwn";
 interface MenuClientProps {
   categories: PosCatalogCategoryGroup[];
   generatedAt: string;
+  /**
+   * Café ordering switch (see src/lib/ordering/availability.ts). When false the
+   * menu renders as a static, browse-only catalog: no dialog, no add-to-cart,
+   * no cart writes.
+   */
+  orderingEnabled: boolean;
 }
 
 // Heuristic dietary tag detection — derived from item name/description.
@@ -44,7 +50,7 @@ function getDietaryTags(item: PosCatalogItem): Set<DietaryTag> {
   return tags;
 }
 
-export function MenuClient({ categories, generatedAt }: MenuClientProps) {
+export function MenuClient({ categories, generatedAt, orderingEnabled }: MenuClientProps) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDietary, setActiveDietary] = useState<Set<DietaryTag>>(new Set());
@@ -153,11 +159,19 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
 
   return (
     <div className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    {/* Menu Specials — surfaced featured items */}
-    <MenuSpecials items={allItems} onSelectItem={setSelectedItem} />
+    {orderingEnabled ? (
+      <>
+        {/* Menu Specials — surfaced featured items */}
+        <MenuSpecials items={allItems} onSelectItem={setSelectedItem} />
 
-    {/* Build Your Own — custom drink builder */}
-    <BuildYourOwn items={allItems} />
+        {/* Build Your Own — custom drink builder */}
+        <BuildYourOwn items={allItems} />
+      </>
+    ) : (
+      <p className="mb-8 rounded-[12px] border border-latte/30 bg-card px-4 py-3 text-center text-sm text-mocha">
+        Browsing only — nothing can be added to a cart while we relocate.
+      </p>
+    )}
 
       {/* Search Bar */}
       <div className="relative mb-5 max-w-xl mx-auto">
@@ -304,7 +318,13 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                 <button
                   key={item.providerItemId}
                   onClick={() => setSelectedItem(item)}
-                  className="group relative flex flex-col h-full overflow-hidden rounded-[12px] border border-latte/70 bg-card text-left shadow-sm transition-transform duration-300 hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 focus:outline-none focus:ring-1 focus:border-forest focus:ring-forest dark:border-latte dark:bg-surface-sidebar dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
+                  disabled={!orderingEnabled}
+                  aria-disabled={!orderingEnabled}
+                  className={`group relative flex flex-col h-full overflow-hidden rounded-[12px] border border-latte/70 bg-card text-left shadow-sm duration-300 dark:border-latte dark:bg-surface-sidebar ${
+                    orderingEnabled
+                      ? "transition-transform hover:shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1 focus:outline-none focus:ring-1 focus:border-forest focus:ring-forest dark:hover:shadow-[0_0_20px_rgba(74,222,128,0.15)]"
+                      : "cursor-default"
+                  }`}
                 >
                   {item.imageUrls.length > 0 ? (
                     <div className="relative aspect-square overflow-hidden bg-surface-deep">
@@ -352,9 +372,15 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
                               <span className="text-[11px] font-body uppercase tracking-[0.05em] text-latte-500">Customizable</span>
                              ) : <span className="text-[11px] font-body uppercase tracking-[0.05em] text-transparent select-none">Fixed</span>}
                              
-                             <span className="rounded-[4px] border border-forest/80 px-4 py-1.5 text-sm font-bold text-forest transition-colors group-hover:bg-forest/10 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.2)]">
-                               + ADD
-                             </span>
+                             {orderingEnabled ? (
+                              <span className="rounded-[4px] border border-forest/80 px-4 py-1.5 text-sm font-bold text-forest transition-colors group-hover:bg-forest/10 dark:hover:shadow-[0_0_15px_rgba(74,222,128,0.2)]">
+                                + ADD
+                              </span>
+                             ) : (
+                              <span className="rounded-[4px] border border-latte/40 px-3 py-1.5 text-[11px] font-body uppercase tracking-[0.08em] text-mocha">
+                                Ordering paused
+                              </span>
+                             )}
                           </div>
                         </div>
                     </div>
@@ -382,7 +408,9 @@ export function MenuClient({ categories, generatedAt }: MenuClientProps) {
         </div>
       )}
 
-      <MenuItemDialog item={selectedItem} onClose={() => setSelectedItem(null)} />
+      {orderingEnabled && (
+        <MenuItemDialog item={selectedItem} onClose={() => setSelectedItem(null)} />
+      )}
 
       {/*
         Floating cart button and cart drawer are handled globally by

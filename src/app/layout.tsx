@@ -14,6 +14,7 @@ import { OfflineBanner } from "@/components/ui/OfflineBanner";
 import { SWUpdater } from "@/components/ui/SWUpdater";
 import { ThemeProvider } from "@/lib/theme/context";
 import { PostHogProvider } from "@/lib/posthog/PostHogProvider";
+import { CAFE_ORDERING_ENABLED } from "@/lib/ordering/availability";
 // TODO: Re-enable Sentry once client config import path is fixed for SSR
 // import "@/sentry.client.config";
 
@@ -173,7 +174,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
             <Footer />
             <BottomNav />
-            <CartDrawer />
+            <CartDrawer cafeOrderingEnabled={CAFE_ORDERING_ENABLED} />
             <FloatingCheckout />
             <BackToTop />
             <InstallPrompt />

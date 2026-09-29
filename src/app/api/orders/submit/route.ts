@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/send";
 import { pickupConfirmationHtml, pickupConfirmationSubject } from "@/lib/email/templates/pickup-confirmation";
 import { pushOrderToSquare, isSquareOrderPushEnabled } from "@/lib/square/orders";
+import { CAFE_ORDERING_ENABLED, ORDERING_PAUSED_API_MESSAGE } from "@/lib/ordering/availability";
 
 export const runtime = "nodejs";
 
@@ -80,6 +81,16 @@ function serializeOrder(draft: QrOrderDraft) {
 
 export async function POST(request: Request) {
   try {
+    // Hard server-side guard: café ordering is paused while the shop relocates.
+    // The UI is browse-only for the same window, so this only ever fires for
+    // stale carts, cached pages, or direct API calls.
+    if (!CAFE_ORDERING_ENABLED) {
+      return NextResponse.json(
+        { error: ORDERING_PAUSED_API_MESSAGE, orderingPaused: true },
+        { status: 403 }
+      );
+    }
+
     const body = (await request.json()) as QrOrderRequest;
     const catalog = await getPosCatalog({ channel: "qr", includeModifiers: true, limit: 500 });
     const draftResult = buildQrOrderDraft(body, catalog.items);

@@ -12,7 +12,7 @@ import { formatPrice } from "@/lib/utils";
 import { X, Minus, Plus, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 import { useMenuCartStore } from "@/hooks/useMenuCart";
 
-export function CartDrawer() {
+export function CartDrawer({ cafeOrderingEnabled = true }: { cafeOrderingEnabled?: boolean }) {
   const { open, setOpen } = useCartDrawer();
   const { items: shopItems, subtotal_cents: shopSubtotal, item_count: shopCount, updateQuantity: updateShopQty, removeItem: removeShopItem } = useCartStore();
   const { items: menuItems, subtotal_cents: menuSubtotal, item_count: menuCount, updateQuantity: updateMenuQty, removeItem: removeMenuItem } = useMenuCartStore();
@@ -294,6 +294,7 @@ export function CartDrawer() {
               )}
 
               {menuItems.length > 0 && (
+                cafeOrderingEnabled ? (
                   <Link
                   href="/order"
                   onClick={() => setOpen(false)}
@@ -306,6 +307,18 @@ export function CartDrawer() {
                   Review &amp; Pay
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
+                ) : (
+                  <Link
+                    href="/moving"
+                    onClick={() => setOpen(false)}
+                    className="mt-3 flex w-full flex-col items-center justify-center gap-1 rounded-[4px] border border-latte/40 bg-card py-3 text-sm font-bold uppercase tracking-[0.05em] text-mocha transition-colors hover:border-forest/40 hover:text-espresso"
+                  >
+                    Café ordering is paused
+                    <span className="text-[11px] font-semibold normal-case tracking-normal text-forest">
+                      See the relocation details →
+                    </span>
+                  </Link>
+                )
               )}
             </div>
           )}
