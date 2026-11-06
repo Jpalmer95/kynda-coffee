@@ -47,7 +47,8 @@ type AgentAction =
   | "insights"
   | "menu_costing"
   | "price_watch"
-  | "propose_recipe";
+  | "propose_recipe"
+  | "kaizen_summary";
 
 export async function GET(req: NextRequest) {
   // GET handler for convenience — same auth, action via ?action= query param.
@@ -76,6 +77,8 @@ export async function GET(req: NextRequest) {
         return await handleInsights(db);
       case "catalog_overview":
         return await handleCatalogOverview(db);
+      case "kaizen_summary":
+        return await handleKaizenSummary(db);
       default:
         return NextResponse.json(
           { error: `Action ${action} not available via GET. Use POST.` },
@@ -124,6 +127,8 @@ export async function POST(req: NextRequest) {
         return await handlePriceWatch(db, body.params ?? {});
       case "propose_recipe":
         return await handleProposeRecipe(body.params ?? {});
+      case "kaizen_summary":
+        return await handleKaizenSummary(db);
       default:
         return NextResponse.json(
           {
@@ -139,6 +144,7 @@ export async function POST(req: NextRequest) {
               "menu_costing",
               "price_watch",
               "propose_recipe",
+              "kaizen_summary",
             ],
           },
           { status: 400 }
@@ -613,5 +619,27 @@ async function handleMarketingDashboard(db: ReturnType<typeof supabaseAdmin>) {
       text: p.text,
       published_at: p.published_at,
     })),
+  });
+}
+
+async function handleKaizenSummary(db: ReturnType<typeof supabaseAdmin>) {
+  const [
+    { data: proposals },
+    { data: equip },
+    { count: unreadWhispers },
+    { data: dialIns },
+  ] = await Promise.all([
+    db.from("kaizen_proposals").select("id, title, category, ai_impact_score, ai_target_system, status, bounty_cents").order("ai_impact_score", { ascending: false }).limit(10),
+    db.from("equipment_tickets").select("id, equipment_name, area, severity, status").neq("status", "resolved").limit(10),
+    db.from("owner_whispers").select("*", { count: "exact", head: true }).eq("status", "unread"),
+    db.from("espresso_dial_ins").select("bean_name, dose_grams, yield_grams, time_seconds, is_in_spec, created_at").order("created_at", { ascending: false }).limit(5),
+  ]);
+
+  return NextResponse.json({
+    pending_kaizen_proposals: (proposals ?? []).filter((p: any) => p.status === "pending_review"),
+    all_recent_proposals: proposals ?? [],
+    open_equipment_tickets: equip ?? [],
+    unread_owner_whispers_count: unreadWhispers ?? 0,
+    recent_dial_ins: dialIns ?? [],
   });
 }

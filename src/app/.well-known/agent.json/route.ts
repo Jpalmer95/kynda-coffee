@@ -87,6 +87,18 @@ export async function GET(req: NextRequest) {
             response: "{ url } — present the Stripe Checkout url to the customer to complete payment + shipping address.",
           },
         },
+        mcp_server: {
+          description:
+            "Model Context Protocol (MCP) JSON-RPC 2.0 endpoint for customer AI agents (initialize, tools/list, tools/call).",
+          url: `${origin}/api/mcp`,
+          methods: ["GET", "POST"],
+        },
+        vendor_and_event_intake: {
+          description:
+            "Scoped intake endpoint for suppliers (delivery ETAs, price notices) and local event/music partners.",
+          url: `${origin}/api/vendor/intake`,
+          method: "POST",
+        },
       },
       policies: {
         rate_limits: "Menu: 30 req/min/IP. Order placement: 10 req/min/IP.",

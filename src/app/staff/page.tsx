@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Gift,
   MessageCircle,
+  Sparkles,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -91,6 +92,13 @@ export default async function StaffDashboard() {
   }
 
   const quickLinks = [
+    {
+      href: "/staff/copilot",
+      icon: Sparkles,
+      title: "Co-Pilot & Kaizen",
+      desc: "Voice shift brief, ask recipes, log dial-in, earn $5–$50 Kaizen bounties & Owner Whisper",
+      color: "bg-forest text-sand",
+    },
     {
       href: "/staff/recipes",
       icon: Coffee,

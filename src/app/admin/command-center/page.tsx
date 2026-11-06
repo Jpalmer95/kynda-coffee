@@ -195,6 +195,7 @@ export default function CommandCenterPage() {
   ];
 
   const quickActions = [
+    { href: "/admin/kaizen", label: "Kaizen & C2 Brain", icon: Sparkles },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { href: "/admin/marketing", label: "Marketing", icon: Share2 },
     { href: "/admin/strategist", label: "AI Strategist", icon: Brain },

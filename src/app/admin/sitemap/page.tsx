@@ -30,6 +30,7 @@ const GROUPS: RouteGroup[] = [
     title: "Admin — Daily Operations",
     routes: [
       { path: "/admin", label: "Dashboard", note: "stats overview" },
+      { path: "/admin/kaizen", label: "Kaizen & C2 Brain", note: "decentralized Kaizen RSI, Owner Whispers, Surge Forecaster, Shrinkage & XR Lab" },
       { path: "/admin/kds", label: "KDS (in portal)", note: "kitchen display inside admin" },
       { path: "/kds", label: "KDS (full-screen)", note: "tablet surface, no site chrome; ?board=parking etc." },
       { path: "/admin/orders", label: "Orders", note: "all orders, click into details" },
@@ -142,6 +143,7 @@ const GROUPS: RouteGroup[] = [
     title: "Staff Portal (staff tier+)",
     routes: [
       { path: "/staff", label: "Staff Home" },
+      { path: "/staff/copilot", label: "Co-Pilot & Kaizen Hub", note: "voice shift brief, recipes Q&A, Kaizen bounties, dial-in & Owner Whisper" },
       { path: "/staff/schedule", label: "My Schedule" },
       { path: "/staff/chat", label: "Team Chat" },
       { path: "/staff/checklists", label: "Checklists", note: "opening/closing" },

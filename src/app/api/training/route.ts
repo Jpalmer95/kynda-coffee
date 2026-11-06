@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { KYNDA_CO_PILOT_QUICKSTART_MODULE } from "@/lib/kaizen/engine";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +35,18 @@ export async function GET(req: NextRequest) {
       completedMap[c.module_id] = c.completed_at;
     }
 
+    const rawModules = modulesRes.data ?? [];
+    const hasQuickstart = rawModules.some(
+      (m: any) =>
+        m.id === KYNDA_CO_PILOT_QUICKSTART_MODULE.id ||
+        String(m.title ?? "").includes("Co-Pilot & Kaizen Quickstart")
+    );
+    const modules = hasQuickstart
+      ? rawModules
+      : [KYNDA_CO_PILOT_QUICKSTART_MODULE, ...rawModules];
+
     return NextResponse.json({
-      modules: modulesRes.data ?? [],
+      modules,
       completed: completedMap,
     });
   } catch (error) {
@@ -62,6 +73,10 @@ export async function POST(req: NextRequest) {
     const completed = body.completed !== false;
 
     if (!moduleId) return NextResponse.json({ error: "module_id is required" }, { status: 400 });
+
+    if (moduleId === KYNDA_CO_PILOT_QUICKSTART_MODULE.id) {
+      return NextResponse.json({ success: true, completed });
+    }
 
     // Verify the module exists
     const { data: mod, error: modErr } = await supabaseAdmin()

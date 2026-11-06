@@ -5,6 +5,7 @@ import { GraduationCap } from "lucide-react";
 import { normalizeRole, isTeamMember } from "@/lib/auth/roles";
 import TrainingModulesClient from "@/components/staff/TrainingModulesClient";
 import { TrainingWrapper } from "@/app/training/TrainingWrapper";
+import { KYNDA_CO_PILOT_QUICKSTART_MODULE } from "@/lib/kaizen/engine";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function TrainingPage() {
 
   // Training modules are the single source (admin-managed in /admin/training).
   let modules: TrainingModule[] = [];
-  let completedMap: Record<string, string> = {};
+  const completedMap: Record<string, string> = {};
   try {
     const [modsRes, compRes] = await Promise.all([
       supabase
@@ -62,6 +63,10 @@ export default async function TrainingPage() {
     }
   } catch {
     // fall through with empty state
+  }
+
+  if (!modules.some((m) => m.id === KYNDA_CO_PILOT_QUICKSTART_MODULE.id || m.title.includes("Co-Pilot & Kaizen Quickstart"))) {
+    modules = [KYNDA_CO_PILOT_QUICKSTART_MODULE, ...modules];
   }
 
   return (

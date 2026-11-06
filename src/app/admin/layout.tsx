@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 
 const ADMIN_LINKS = [
   { href: "/admin/command-center", label: "Command Center", icon: Zap },
+  { href: "/admin/kaizen", label: "Kaizen & C2 Brain", icon: Sparkles },
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/inbox", label: "Inbox", icon: Inbox },
   { href: "/admin/kds", label: "KDS", icon: MonitorCheck },

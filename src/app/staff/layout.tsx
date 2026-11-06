@@ -16,6 +16,7 @@ import {
   MonitorCheck,
   Wrench,
   Gift,
+  Sparkles,
 } from "lucide-react";
 import { normalizeRole, isTeamMember, TIER_LABELS } from "@/lib/auth/roles";
 
@@ -28,6 +29,7 @@ export const dynamic = "force-dynamic";
 
 const STAFF_NAV = [
   { href: "/staff", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/staff/copilot", label: "Co-Pilot & Kaizen", icon: Sparkles },
   { href: "/kds", label: "Kitchen Display", icon: MonitorCheck },
   { href: "/staff/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/staff/chat", label: "Team Chat", icon: MessageCircle },

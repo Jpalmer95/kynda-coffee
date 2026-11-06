@@ -61,6 +61,11 @@ ordering.
 | 3 | 2026-08-08 | Checklist items move to DB (`checklists` table, one row per shift type). Completion records gain `completed_items` + we add an admin log page with filters (member / date / type). |
 | 4 | 2026-08-08 | AI Hiring: extend `job_applications` (resume storage_path, availability, start_date, bio, ai_score, ai_rank, ai_summary) + new admin review page. AI via existing `lib/ai/client.ts` (OpenAI-compatible). |
 | 5 | 2026-08-08 | Ingredients: MenuMetrics stays source of truth for costs. Kynda adds `ingredient_pars` (par target, vendor, cadence) + order-list engine. Order lists are generated suggestions, human approves before sending. |
+| 6 | 2026-11-06 | Data Brain Topology: 4-Layer Hybrid Brain — Supabase PostgreSQL + `pgvector` for RLS-protected structured/semantic data; Git (`_PLATFORM` + `knowledge`) as canonical SOP/rule store; Supabase Storage buckets (`employee-vault`, `company-docs`, `marketing-images`, `marketing-videos`, `menu-assets`, `team-chat`, `security-clips`) for media/docs; MenuMetrics + `kynda-books` + Square via versioned contract. |
+| 7 | 2026-11-06 | Dual-Owner Sacred Gate: Jonathan & Briseida Korstad share equal root `owner` authority. Any tier may submit Kaizen proposals, waste logs, equipment tickets, or media drops, but trajectory changes (SOP compilation, menu pricing, public posts, vendor POs > manager micro-cap, and reading `owner_whispers`) require explicit Owner gate. |
+| 8 | 2026-11-06 | Standing Operating Rules encoded in `src/lib/kaizen/engine.ts`: (1) unfinished opening checklist never blocks serving guests; (2) equipment issues auto-route to `equipment_tickets` + Team Leadership/Chat, never `waste_entries`; (3) waste log is strictly food, drink, and inventory items. |
+| 9 | 2026-11-06 | Public Customer MCP (`/api/mcp`) + Scoped Vendor Intake (`/api/vendor/intake`) run strictly BYOC with rate-limiting and zero internal PII/margin exposure. |
+| 10 | 2026-11-06 | Non-technical onboarding via Module 0 (`KYNDA_CO_PILOT_QUICKSTART_MODULE`) prepended to `/training` + hands-free Web Speech voice brief & dictation in `/staff/copilot`. |
 
 ---
 
@@ -290,6 +295,52 @@ in the DB and the owner can pull signed docs.
 - [ ] Reconcile par-sheet items not found in the live Amazon lists (some manual
       entries map to products not currently on either list).
 - [ ] Optionally combine the two Amazon lists into one in Amazon, or keep both.
+
+## Phase 12 — Decentralized Kaizen RSI & Command and Control Core (2026-11-06)
+
+- [x] Migration 057 (`057_kaizen_command_and_control.sql`): `kaizen_proposals`,
+      `owner_whispers` (RLS-locked to Jonathan & Briseida), `equipment_tickets`,
+      `espresso_dial_ins`, `agent_budgets` (5-tier quotas + Kaizen XP & skill
+      ranks), `vendor_intakes`, and storage buckets (`employee-vault`,
+      `company-docs`, `menu-assets`, `security-clips`).
+- [x] Pure tested Kaizen & C2 engine (`src/lib/kaizen/engine.ts` +
+      `src/lib/kaizen/engine.test.ts` — 13 unit tests): smart intake router
+      enforcing Kynda Operating Rules, espresso dial-in parser & coach, Kaizen
+      impact/bounty scorer, 5-Tier RBAC + Manager micro-spend enforcer,
+      Barista Skill Tree rank calculator, Predictive Schedule Surge & Labor
+      Forecaster, and Theoretical-vs-Actual Shrinkage mass-balance detector.
+- [x] Staff Co-Pilot & Kaizen Hub (`/staff/copilot` + `/api/staff/copilot`):
+      1-tap 60-second TTS Audio Shift Brief, Push-to-Talk voice dictation,
+      5 intent channels (Smart Auto-Route, Kaizen Idea w/ $5–$50 bounty,
+      Morning Espresso Dial-In, Equipment Ticket, and encrypted Owner Whisper),
+      plus inline 2-minute AI Quickstart bar card.
+- [x] Admin Kaizen Command & Control Deck (`/admin/kaizen` + `/api/admin/kaizen`):
+      Dual-Owner Kaizen Approval & 1-click SOP compiler, Owner Whispers inbox,
+      Predictive Schedule & 4909 Grand Opening Surge simulator, Shrinkage
+      Watchdog & Dial-In telemetry, 5-Tier Budgets, and interactive 2D Virtual
+      Latte Art Physics Trainer + Orbital Café Readiness checklist.
+- [x] Module 0 Onboarding Quickstart (`KYNDA_CO_PILOT_QUICKSTART_MODULE`)
+      wired directly into `/training` and `/api/training`.
+
+## Phase 13 — Automated Shipping Labels & Self-Healing Packaging Resupply (2026-11-06)
+
+- [x] Pure shipping parcel & packaging decrement engine
+      (`src/lib/shipping/auto-label.ts` + `src/lib/shipping/auto-label.test.ts`):
+      auto-selects poly mailer vs corrugated box, carrier service (USPS Ground
+      Advantage vs UPS Ground), generates 4x6 ZPL thermal label preview, and
+      emits packaging SKU decrements (`PKG-LABEL-4X6`, `PKG-MAILER-10X13`,
+      `PKG-BOX-8X6X4`, `PKG-BAG-12OZ-VALVE`).
+- [x] Admin / Staff auto-label endpoint (`POST /api/admin/shipping/auto-label`).
+
+## Phase 14 — Public Customer MCP Server & Scoped Vendor Agent Line (2026-11-06)
+
+- [x] Public Customer MCP JSON-RPC 2.0 endpoint (`/api/mcp`): `initialize`,
+      `tools/list`, and `tools/call` (`kynda_store_status`, `kynda_browse_menu`,
+      `kynda_ask_concierge`), rate-limited and BYOC-safe.
+- [x] Scoped Vendor & Event Partner intake endpoint (`POST /api/vendor/intake`):
+      captures `delivery_eta`, `invoice_price_update`, `event_proposal`, and
+      `stock_alert` into `vendor_intakes`.
+- [x] Advertised `/api/mcp` and `/api/vendor/intake` in `/.well-known/agent.json`.
 
 ## Future Roadmap (do NOT execute)
 
