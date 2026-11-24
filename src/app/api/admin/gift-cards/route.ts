@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { generateSecureCode } from "@/lib/auth/security";
 
 export const dynamic = "force-dynamic";
 
@@ -45,10 +46,9 @@ export async function POST(req: NextRequest) {
     const recipientEmail = body.recipient_email ? String(body.recipient_email).trim() : null;
     const message = body.message ? String(body.message).trim() : null;
 
-    // Generate a unique code
+    // Generate a high-entropy CSPRNG code (12 chars = ~60 bits of entropy)
     const year = new Date().getFullYear();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const code = `KYND-${year}-${random}`;
+    const code = generateSecureCode(`KYND-${year}-`, 12);
 
     const { data, error } = await supabaseAdmin()
       .from("gift_cards")

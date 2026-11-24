@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   // Rate limit: 10 lookups per IP per hour
-  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
+  const ip = getClientIp(req);
   const { allowed, remaining } = checkRateLimit(`order-track:${ip}`, 10, 60 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json(
@@ -27,9 +27,11 @@ export async function POST(req: NextRequest) {
 
     const { data: order, error } = await supabaseAdmin()
       .from("orders")
-      .select("*")
-      .eq("order_number", orderNumber.trim().toUpperCase())
-      .eq("email", email.trim().toLowerCase())
+      .select(
+        "id, order_number, status, payment_status, fulfillment_status, items, subtotal_cents, tax_cents, shipping_cents, total_cents, created_at, updated_at"
+      )
+      .eq("order_number", String(orderNumber).trim().toUpperCase())
+      .eq("email", String(email).trim().toLowerCase())
       .single();
 
     if (error || !order) {

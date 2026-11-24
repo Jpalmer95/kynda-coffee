@@ -3,6 +3,13 @@ Allow: /
 
 Disallow: /admin
 Disallow: /account
+Disallow: /staff
+Disallow: /kds
+Disallow: /dashboard
+Disallow: /training
+Disallow: /device-login
+Disallow: /kiosk
+Disallow: /tmp
 Disallow: /api/
 Disallow: /studio/generate
 Disallow: /checkout

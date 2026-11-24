@@ -23,7 +23,7 @@ const PUBLIC_ACCOUNT_PATHS = new Set([
 ]);
 
 export async function middleware(request: NextRequest) {
-  const { supabase, response } = createClient(request);
+  const { supabase, getResponse } = createClient(request);
   const pathname = request.nextUrl.pathname;
 
   // Refresh auth session if expired
@@ -78,7 +78,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return response;
+  return getResponse();
 }
 
 export const config = {

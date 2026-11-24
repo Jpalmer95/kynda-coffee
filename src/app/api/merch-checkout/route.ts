@@ -1,18 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { stripe } from "@/lib/stripe/client";
+import { stripe, STORE_CONFIG } from "@/lib/stripe/client";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { PRINTFUL_CATALOG, calculateRetailPrice } from "@/lib/printful/catalog";
+import { calculatePrice } from "@/lib/pricing/engine";
+import { getEffectivePricingProfile } from "@/lib/pricing/rules";
 
 export const dynamic = "force-dynamic";
 
+const PRINTFUL_TO_PRICING_PROFILE: Record<string, string> = {
+  apparel: "merch-apparel",
+  drinkware: "merch-mugs",
+  accessories: "merch-accessories",
+  "wall-art": "design-studio",
+  "home-living": "design-studio",
+};
+
 interface MerchCheckoutItem {
   product_id: string;
-  printful_product_id: number;
+  printful_product_id?: number;
   printful_variant_id: number;
-  name: string;
+  name?: string;
   quantity: number;
-  price_cents: number;
+  price_cents?: number;
   size?: string;
   color?: string;
   layers?: unknown[];
@@ -40,14 +51,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { items, recipient, shipping_rate_cents } = body as {
+    const { items, recipient } = body as {
       items: MerchCheckoutItem[];
       recipient?: Recipient; // OPTIONAL — Stripe collects the address (wallet-friendly)
-      shipping_rate_cents: number;
     };
 
-    if (!items?.length) {
-      return NextResponse.json({ error: "Missing items" }, { status: 400 });
+    if (!Array.isArray(items) || items.length === 0 || items.length > 25) {
+      return NextResponse.json({ error: "Invalid items" }, { status: 400 });
     }
 
     // Validate email only when explicitly provided (legacy form path)
@@ -55,57 +65,87 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
 
-    // Step 1: Create a draft Printful order — ONLY when the caller supplied a
-    // full address (legacy form path). The default wallet-first flow skips
-    // this; the Stripe webhook creates the Printful order from the Stripe-
-    // verified shipping address after payment succeeds.
-    let printfulOrderId: number | null = null;
+    // Step 1: Resolve every item against PRINTFUL_CATALOG and compute
+    // authoritative server-side pricing (never trust client price_cents or shipping).
+    const verifiedItems: Array<{
+      product_id: string;
+      printful_product_id: number;
+      printful_variant_id: number;
+      name: string;
+      quantity: number;
+      price_cents: number;
+      size?: string;
+      color?: string;
+      design_data?: Record<string, unknown>;
+    }> = [];
 
-    const hasFullAddress =
-      recipient?.line1 && recipient?.city && recipient?.state && recipient?.zip;
-
-    if (process.env.PRINTFUL_API_KEY && hasFullAddress && recipient) {
-      try {
-        const pfRes = await fetch("https://api.printful.com/orders", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.PRINTFUL_API_KEY}`,
-          },
-          body: JSON.stringify({
-            confirm: false,
-            recipient: {
-              name: recipient.name,
-              email: recipient.email,
-              address1: recipient.line1,
-              address2: recipient.line2 || "",
-              city: recipient.city,
-              state_code: recipient.state,
-              zip: recipient.zip,
-              country_code: recipient.country || "US",
-            },
-            items: items.map((item) => ({
-              variant_id: item.printful_variant_id,
-              quantity: item.quantity,
-              retail_price: (item.price_cents / 100).toFixed(2),
-            })),
-          }),
-        });
-
-        if (pfRes.ok) {
-          const pfData = await pfRes.json();
-          printfulOrderId = pfData.result?.id || null;
-        } else {
-          console.error("[Merch Checkout] Printful draft failed:", await pfRes.text());
-        }
-      } catch (pfErr) {
-        console.error("[Merch Checkout] Printful draft error:", pfErr);
+    for (const raw of items) {
+      const qty = Number(raw.quantity);
+      if (!Number.isInteger(qty) || qty < 1 || qty > 20) {
+        return NextResponse.json({ error: "Each item quantity must be between 1 and 20." }, { status: 400 });
       }
+
+      // Look up product by catalog id, printfulId, or variant id
+      const catalogProduct =
+        PRINTFUL_CATALOG.find((p) => p.id === raw.product_id) ||
+        PRINTFUL_CATALOG.find((p) => raw.printful_product_id && p.printfulId === raw.printful_product_id) ||
+        PRINTFUL_CATALOG.find((p) => p.variants.some((v) => v.id === raw.printful_variant_id));
+
+      if (!catalogProduct) {
+        return NextResponse.json(
+          { error: "One or more merch items are no longer available. Please refresh your cart." },
+          { status: 400 }
+        );
+      }
+
+      const catalogVariant =
+        catalogProduct.variants.find((v) => v.id === raw.printful_variant_id) ||
+        catalogProduct.variants[0];
+
+      if (!catalogVariant) {
+        return NextResponse.json({ error: "Invalid product variant." }, { status: 400 });
+      }
+
+      // Compute authoritative retail price using pricing engine (fallback to catalog markup)
+      const baseCost = catalogProduct.basePriceCents + (catalogVariant.additionalPriceCents || 0);
+      let unitPriceCents = calculateRetailPrice(catalogProduct, catalogVariant);
+      try {
+        const profileKey = PRINTFUL_TO_PRICING_PROFILE[catalogProduct.category] ?? "design-studio";
+        const profile = await getEffectivePricingProfile(profileKey);
+        const quote = calculatePrice({
+          costCents: baseCost,
+          shippingCents: profile.shippingBufferCents,
+          targetMarginPct: profile.targetMarginPct,
+          minProfitCents: profile.minProfitCents,
+          rounding: profile.rounding,
+        });
+        if (quote.retailCents > 0) {
+          unitPriceCents = quote.retailCents;
+        }
+      } catch {
+        // Fallback to deterministic catalog retail price
+      }
+
+      verifiedItems.push({
+        product_id: catalogProduct.id,
+        printful_product_id: catalogProduct.printfulId,
+        printful_variant_id: catalogVariant.id,
+        name: catalogProduct.name,
+        quantity: qty,
+        price_cents: unitPriceCents,
+        size: catalogVariant.size || raw.size,
+        color: catalogVariant.colorName || raw.color,
+        design_data: raw.design_data,
+      });
     }
 
-    // Step 2: Calculate totals
-    const subtotal_cents = items.reduce((sum, i) => sum + i.price_cents * i.quantity, 0);
-    const shipping_cents = shipping_rate_cents || 0;
+    // Step 2: Calculate server-authoritative totals (Printful order is created
+    // and confirmed ONLY inside the verified Stripe webhook after payment succeeds).
+    const subtotal_cents = verifiedItems.reduce((sum, i) => sum + i.price_cents * i.quantity, 0);
+    const shipping_cents =
+      subtotal_cents >= STORE_CONFIG.free_shipping_threshold_cents
+        ? 0
+        : STORE_CONFIG.flat_shipping_cents;
     const total_cents = subtotal_cents + shipping_cents;
 
     // Step 3: Build Stripe line items
@@ -118,7 +158,7 @@ export async function POST(req: NextRequest) {
       quantity: number;
     };
 
-    const lineItems: StripeLineItem[] = items.map((item) => ({
+    const lineItems: StripeLineItem[] = verifiedItems.map((item) => ({
       price_data: {
         currency: "usd",
         product_data: {
@@ -162,16 +202,16 @@ export async function POST(req: NextRequest) {
       phone_number_collection: { enabled: true },
       metadata: {
         source: "merch-checkout",
-        printful_draft_id: printfulOrderId ? String(printfulOrderId) : "",
+        printful_draft_id: "",
         order_type: "design_studio_merch",
         subtotal_cents: String(subtotal_cents),
         shipping_cents: String(shipping_cents),
-        item_count: String(items.reduce((s, i) => s + i.quantity, 0)),
-        item_names: items.map((i) => i.name).join(", ").slice(0, 480),
-        // Compact variant list so the webhook can create the Printful order
-        // post-payment (wallet-first flow has no draft yet).
+        item_count: String(verifiedItems.reduce((s, i) => s + i.quantity, 0)),
+        item_names: verifiedItems.map((i) => i.name).join(", ").slice(0, 480),
+        // Compact variant list so the webhook creates + confirms the Printful
+        // order strictly post-payment from Stripe's verified shipping address.
         printful_items: JSON.stringify(
-          items.map((i) => ({ v: i.printful_variant_id, q: i.quantity, p: i.price_cents }))
+          verifiedItems.map((i) => ({ v: i.printful_variant_id, q: i.quantity, p: i.price_cents }))
         ).slice(0, 480),
       },
     } as any);
@@ -187,7 +227,7 @@ export async function POST(req: NextRequest) {
         customer_email: recipient?.email || "pending@stripe.checkout",
         customer_name: recipient?.name || "Pending (Stripe checkout)",
         order_type: "merch",
-        items: items.map((i) => ({
+        items: verifiedItems.map((i) => ({
           name: i.name,
           quantity: i.quantity,
           price_cents: i.price_cents,
@@ -200,11 +240,11 @@ export async function POST(req: NextRequest) {
         total_cents,
         status: "pending",
         payment_status: "pending",
-        fulfillment_status: printfulOrderId ? "draft" : "pending",
+        fulfillment_status: "pending",
         stripe_session_id: session.id,
         metadata: {
-          printful_order_id: printfulOrderId,
-          items,
+          printful_order_id: null,
+          items: verifiedItems,
           shipping_address: recipient,
         },
         ...(user ? { customer_id: user.id } : {}),
@@ -224,10 +264,9 @@ export async function POST(req: NextRequest) {
       url: session.url,
       session_id: session.id,
       order_id: orderId,
-      printful_order_id: printfulOrderId,
     });
   } catch (err: any) {
     console.error("[Merch Checkout]", err);
-    return NextResponse.json({ error: err.message || "Checkout failed" }, { status: 500 });
+    return NextResponse.json({ error: "Checkout failed. Please try again." }, { status: 500 });
   }
 }

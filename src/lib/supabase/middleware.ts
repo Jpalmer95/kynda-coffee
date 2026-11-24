@@ -27,5 +27,8 @@ export const createClient = (request: NextRequest) => {
     },
   });
 
-  return { supabase, response: supabaseResponse };
+  return {
+    supabase,
+    getResponse: () => supabaseResponse,
+  };
 };

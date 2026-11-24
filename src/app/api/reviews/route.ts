@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { getTeamUser } from "@/lib/auth/team";
 
 export const dynamic = "force-dynamic";
 
@@ -9,15 +10,16 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get("product_id");
-    const limit = parseInt(searchParams.get("limit") ?? "50");
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "50", 10) || 50));
 
     if (!productId) {
       return NextResponse.json({ error: "product_id required" }, { status: 400 });
     }
 
+    // Never expose reviewer email addresses publicly
     const { data: reviews, error } = await supabaseAdmin()
       .from("reviews")
-      .select("*")
+      .select("id, product_id, name, rating, title, body, is_verified_purchase, helpful_count, created_at")
       .eq("product_id", productId)
       .eq("is_approved", true)
       .order("created_at", { ascending: false })
@@ -72,37 +74,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json({ error: "Rating must be 1-5" }, { status: 400 });
+    if (typeof rating !== "number" || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return NextResponse.json({ error: "Rating must be an integer 1-5" }, { status: 400 });
     }
 
-    // Check if user has purchased this product (verified purchase)
-    const { data: orders } = await supabaseAdmin()
-      .from("orders")
-      .select("items")
-      .eq("email", email)
-      .in("status", ["confirmed", "processing", "shipped", "delivered"]);
+    const normalizedEmail = String(email).trim().toLowerCase();
+    // Only mark verified purchase when the caller is authenticated as that email
+    // (prevents unauthenticated purchase-history oracle & spoofing).
+    const sessionUser = await getTeamUser(req);
+    const authedEmail = sessionUser?.user.email?.trim().toLowerCase();
+    let hasPurchased = false;
+    if (authedEmail && authedEmail === normalizedEmail) {
+      const { data: orders } = await supabaseAdmin()
+        .from("orders")
+        .select("items")
+        .eq("email", authedEmail)
+        .in("status", ["confirmed", "processing", "shipped", "delivered"]);
 
-    const hasPurchased =
-      orders?.some((order: any) =>
-        (order.items ?? []).some(
-          (item: any) => item.product_id === product_id
-        )
-      ) ?? false;
+      hasPurchased =
+        orders?.some((order: any) =>
+          (order.items ?? []).some((item: any) => item.product_id === product_id)
+        ) ?? false;
+    }
 
     const { data: review, error } = await supabaseAdmin()
       .from("reviews")
       .insert({
         product_id,
-        email,
-        name: name || "Anonymous",
+        user_id: sessionUser?.user.id ?? null,
+        email: normalizedEmail,
+        name: String(name || "Anonymous").trim().slice(0, 80),
         rating,
-        title: title || null,
-        body: reviewBody,
+        title: title ? String(title).trim().slice(0, 120) : null,
+        body: String(reviewBody).trim().slice(0, 2000),
         is_verified_purchase: hasPurchased,
-        is_approved: true, // Auto-approve for now; can be moderated later
+        // Force moderation on all new submissions (matches migration 056)
+        is_approved: false,
       })
-      .select()
+      .select("id, product_id, name, rating, title, body, is_verified_purchase, is_approved, created_at")
       .single();
 
     if (error) {

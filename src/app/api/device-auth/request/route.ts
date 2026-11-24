@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { normalizeRole, hasTier } from "@/lib/auth/roles";
 import { sendSms } from "@/lib/sms/twilio";
 import { sendEmail } from "@/lib/email/send";
+import { escapeHtml } from "@/lib/auth/security";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ function ownerInbox(): string[] {
  * device. The device gets back a one-time secret it uses to redeem the code.
  */
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ip = getClientIp(req);
   const rl = checkRateLimit(`device-auth:${ip}`, 3, 15 * 60 * 1000);
   if (!rl.allowed) {
     return NextResponse.json(
@@ -57,22 +58,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Whitelist check: env allowlist OR a staff+ profile ──
-    let allowed = ADMIN_EMAILS.includes(email);
-    if (!allowed) {
-      const { data: profile } = await supabaseAdmin()
-        .from("profiles")
-        .select("role")
-        .eq("email", email)
-        .maybeSingle();
-      const role = normalizeRole((profile as { role?: string } | null)?.role);
-      allowed = hasTier(role, "staff");
+    // ── Whitelist check: shared café tablets may ONLY sign in to non-owner team
+    //    accounts (staff or manager). Never mint owner sessions via device codes. ──
+    if (ADMIN_EMAILS.includes(email)) {
+      return NextResponse.json(
+        { error: "Owner accounts cannot use tablet device sign-in. Use a dedicated staff account instead." },
+        { status: 403 }
+      );
     }
 
+    const { data: profile } = await supabaseAdmin()
+      .from("profiles")
+      .select("role")
+      .eq("email", email)
+      .maybeSingle();
+    const role = normalizeRole((profile as { role?: string } | null)?.role);
+    const allowed = hasTier(role, "staff") && role !== "owner";
+
     if (!allowed) {
-      // Same message as success would imply — don't leak which emails are whitelisted.
       return NextResponse.json(
-        { error: "This account is not authorized for device sign-in. Ask the owner to add it under Admin → Team & Access." },
+        { error: "This account is not authorized for device sign-in. Ask the owner to add a staff account under Admin → Team & Access." },
         { status: 403 }
       );
     }
@@ -115,8 +120,8 @@ export async function POST(req: NextRequest) {
         to: emailRecipients,
         subject: `Device sign-in approval code: ${approvalCode}`,
         html: `<div style="font-family:Georgia,serif;color:#2b2b2b;max-width:480px;margin:0 auto">
-          <h2 style="color:#b5572f">Device sign-in request</h2>
-          <p><strong>${deviceName}</strong> wants to sign in as <strong>${email}</strong>.</p>
+          <h2 style="color:#1B3022">Device sign-in request</h2>
+          <p><strong>${escapeHtml(deviceName)}</strong> wants to sign in as <strong>${escapeHtml(email)}</strong>.</p>
           <p style="font-size:28px;letter-spacing:6px"><strong>${approvalCode}</strong></p>
           <p>Enter this code on the device within 10 minutes to approve it.</p>
           <p style="color:#888;font-size:13px">If you didn't expect this request, you can safely ignore this email.</p>
@@ -152,7 +157,6 @@ export async function POST(req: NextRequest) {
       device_secret: deviceSecret,
       expires_at: expiresAt,
       notified_via: channel,
-      notified_inboxes: emailRecipients,
     });
   } catch (err) {
     console.error("[device-auth] request error:", err);

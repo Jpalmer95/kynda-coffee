@@ -1,18 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { confirmOrder } from "@/lib/printful/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { requireTier } from "@/lib/auth/team";
 
 export const dynamic = "force-dynamic";
 
 /**
  * POST /api/printful/confirm-order
  *
- * Confirms a draft Printful order after Stripe payment succeeds.
- * Called from Stripe webhook handler or merch checkout success flow.
+ * Confirms a draft Printful order (owner-only manual override; normal
+ * fulfillment confirms exclusively inside the verified Stripe webhook).
  *
  * Body: { printful_order_id: number, kynda_order_id?: string }
  */
 export async function POST(req: NextRequest) {
+  const team = await requireTier(req, "owner");
+  if (!team) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const { printful_order_id, kynda_order_id } = body;

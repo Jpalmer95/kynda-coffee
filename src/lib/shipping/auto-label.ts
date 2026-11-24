@@ -128,7 +128,7 @@ export function buildShippingLabelPlan(params: {
     `^FO40,155^FDSHIP TO: ${recipientName.replace(/[\^~]/g, "")}^FS`,
     `^FO40,190^FD${cityStateZip.replace(/[\^~]/g, "")}^FS`,
     `^FO40,245^FDService: ${carrierServiceRecommendation} (${totalWeightOz} oz)^FS`,
-    `^FO40,280^FDOrder: #${orderId.slice(0, 12)}^FS`,
+    `^FO40,280^FDOrder: #${orderId.replace(/[\^~]/g, "").slice(0, 12)}^FS`,
     "^XZ",
   ].join("\n");
 

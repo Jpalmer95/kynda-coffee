@@ -161,10 +161,11 @@ export async function POST(req: NextRequest) {
     const agentKey = process.env.AGENT_API_KEY;
     const authHeader = req.headers.get("authorization");
     const headerAgentKey = req.headers.get("x-agent-key");
-    const cronOk = cronSecret ? authHeader === `Bearer ${cronSecret}` : false;
-    const agentOk = agentKey ? headerAgentKey === agentKey : false;
-    const sessionOk = (await requireTier(req, "manager")) !== null;
-    if ((cronSecret || agentKey) && !cronOk && !agentOk && !sessionOk) {
+    const { timingSafeStringEqual } = await import("@/lib/auth/security");
+    const cronOk = Boolean(cronSecret && timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`));
+    const agentOk = Boolean(agentKey && timingSafeStringEqual(headerAgentKey, agentKey));
+    const sessionOk = !cronOk && !agentOk ? (await requireTier(req, "manager")) !== null : false;
+    if (!cronOk && !agentOk && !sessionOk) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -362,7 +363,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const team = await requireTier(req, "manager");
+  if (!team) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const supabase = getSupabase();
 
   const { data } = await supabase

@@ -34,6 +34,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  // Idempotency guard: ignore duplicate Stripe event deliveries once
+  // stripe_webhook_events table (migration 058) is present.
+  try {
+    const { error: dedupErr } = await supabaseAdmin()
+      .from("stripe_webhook_events")
+      .insert({ event_id: event.id, event_type: event.type });
+    if (dedupErr) {
+      // Postgres unique violation (23505) = already processed
+      if (dedupErr.code === "23505") {
+        console.log(`[Stripe Webhook] Duplicate event ${event.id} ignored`);
+        return NextResponse.json({ received: true, duplicate: true });
+      }
+      // If table doesn't exist yet (42P01), log and continue gracefully
+      if (dedupErr.code !== "42P01") {
+        console.warn("[Stripe Webhook] Idempotency insert warning:", dedupErr.message);
+      }
+    }
+  } catch {
+    // Non-fatal fallback
+  }
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     if (session.mode === "subscription") {

@@ -4,9 +4,22 @@ import { requireTier } from "@/lib/auth/team";
 
 export const dynamic = "force-dynamic";
 
-// GET current settings
+const ALLOWED_STORE_SETTINGS_KEYS = [
+  "store_name",
+  "support_email",
+  "phone",
+  "address",
+  "free_shipping_threshold_cents",
+  "flat_shipping_cents",
+  "tax_rate_percent",
+  "enable_reviews",
+  "enable_loyalty",
+  "enable_sms",
+] as const;
+
+// GET current settings (owner-only; strips internal VLM secrets)
 export async function GET(req: NextRequest) {
-  const team = await requireTier(req, "manager");
+  const team = await requireTier(req, "owner");
   if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
@@ -16,28 +29,47 @@ export async function GET(req: NextRequest) {
       .eq("id", 1)
       .single();
 
-    if (error) {
-      // Return defaults if no settings row exists
+    if (error || !data?.settings_json) {
       return NextResponse.json({ settings: null });
     }
 
-    return NextResponse.json({ settings: data?.settings_json ?? null });
+    const raw = data.settings_json as Record<string, unknown>;
+    const safeSettings: Record<string, unknown> = {};
+    for (const key of ALLOWED_STORE_SETTINGS_KEYS) {
+      if (key in raw) safeSettings[key] = raw[key];
+    }
+
+    return NextResponse.json({ settings: safeSettings });
   } catch {
     return NextResponse.json({ settings: null });
   }
 }
 
-// POST save settings
+// POST save settings (owner-only; allowlisted merge preserves nested vlm config)
 export async function POST(req: NextRequest) {
-  const team = await requireTier(req, "manager");
+  const team = await requireTier(req, "owner");
   if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const body = await req.json();
+    const body = (await req.json()) as Record<string, unknown>;
+    const db = supabaseAdmin();
 
-    const { error } = await supabaseAdmin()
+    const { data: existing } = await db
       .from("store_settings")
-      .upsert({ id: 1, settings_json: body, updated_at: new Date().toISOString() });
+      .select("settings_json")
+      .eq("id", 1)
+      .maybeSingle();
+
+    const merged: Record<string, unknown> = {
+      ...((existing?.settings_json as Record<string, unknown>) ?? {}),
+    };
+    for (const key of ALLOWED_STORE_SETTINGS_KEYS) {
+      if (key in body) merged[key] = body[key];
+    }
+
+    const { error } = await db
+      .from("store_settings")
+      .upsert({ id: 1, settings_json: merged, updated_at: new Date().toISOString() });
 
     if (error) throw error;
 

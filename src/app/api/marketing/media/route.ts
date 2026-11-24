@@ -15,8 +15,8 @@ export async function DELETE(req: NextRequest) {
   const path = searchParams.get("path");
   const type = searchParams.get("type") || "image";
 
-  if (!path) {
-    return NextResponse.json({ error: "path query param is required." }, { status: 400 });
+  if (!path || !/^(originals|raw)\/[a-zA-Z0-9._-]+$/.test(path) || path.includes("..")) {
+    return NextResponse.json({ error: "Invalid media path." }, { status: 400 });
   }
 
   const bucket = type === "video" ? "marketing-videos" : "marketing-images";

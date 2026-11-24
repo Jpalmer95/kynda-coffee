@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { publishDuePosts } from "@/lib/marketing/social/publisher";
+import { timingSafeStringEqual } from "@/lib/auth/security";
 
 // Cron endpoint - called by Coolify cron or external scheduler
-// Secured by CRON_SECRET environment variable
+// Secured by CRON_SECRET environment variable (fails closed if unset)
 
 export async function POST(req: NextRequest) {
   try {
-    // Verify cron secret for security
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    // If a secret is configured, require it; if not set, rely on Coolify network isolation (log warning once per deploy)
-    if (cronSecret) {
-      if (!authHeader || authHeader !== `Bearer ${cronSecret}`) {
-        console.error(`[publish-due] rejected request: bad or missing authorization`);
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    } else {
-      console.warn("[publish-due] CRON_SECRET not set — endpoint is unauthenticated. Set it in Coolify for production.");
+    if (!cronSecret) {
+      console.error("[publish-due] CRON_SECRET not configured — failing closed");
+      return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 500 });
+    }
+
+    if (!timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
+      console.error(`[publish-due] rejected request: bad or missing authorization`);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     console.log("Running publish-due cron job...");

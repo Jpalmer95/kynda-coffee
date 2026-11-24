@@ -26,6 +26,13 @@ describe("csvCell", () => {
     expect(csvCell([1, 2])).toBe('"[1,2]"');
     expect(csvCell([5])).toBe("[5]"); // no comma -> no quoting needed
   });
+
+  it("neutralizes spreadsheet formula injection prefixes on strings", () => {
+    expect(csvCell("=CMD|' /C calc'!A0")).toBe("'=CMD|' /C calc'!A0");
+    expect(csvCell("+1+1")).toBe("'+1+1");
+    expect(csvCell("-2+3")).toBe("'-2+3");
+    expect(csvCell("@SUM(A1:A2)")).toBe("'@SUM(A1:A2)");
+  });
 });
 
 describe("toCsv", () => {

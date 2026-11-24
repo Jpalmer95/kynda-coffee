@@ -5,7 +5,7 @@ import { requireTier } from "@/lib/auth/team";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const team = await requireTier(req, "manager");
+  const team = await requireTier(req, "owner");
   if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {

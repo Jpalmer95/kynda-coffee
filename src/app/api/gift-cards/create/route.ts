@@ -2,15 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
-
-function generateCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "KYN-";
-  for (let i = 0; i < 12; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
+import { generateSecureCode } from "@/lib/auth/security";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,11 +17,29 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { amount_cents, recipient_email, message } = body;
 
-    if (!amount_cents || amount_cents < 500) {
-      return NextResponse.json({ error: "Minimum gift card amount is $5" }, { status: 400 });
+    if (
+      typeof amount_cents !== "number" ||
+      !Number.isInteger(amount_cents) ||
+      amount_cents < 500 ||
+      amount_cents > 50000
+    ) {
+      return NextResponse.json(
+        { error: "Gift card amount must be a whole-cent amount between $5 and $500" },
+        { status: 400 }
+      );
     }
 
-    const code = generateCode();
+    const cleanRecipientEmail =
+      typeof recipient_email === "string" && recipient_email.trim()
+        ? recipient_email.trim().slice(0, 160)
+        : null;
+    if (cleanRecipientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanRecipientEmail)) {
+      return NextResponse.json({ error: "Invalid recipient email" }, { status: 400 });
+    }
+    const cleanMessage =
+      typeof message === "string" && message.trim() ? message.trim().slice(0, 500) : null;
+
+    const code = generateSecureCode("KYN-", 12);
     const siteUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
       process.env.NEXT_PUBLIC_SITE_URL ||
@@ -43,8 +53,8 @@ export async function POST(req: NextRequest) {
         code,
         amount_cents,
         balance_cents: amount_cents,
-        recipient_email,
-        message,
+        recipient_email: cleanRecipientEmail,
+        message: cleanMessage,
         status: "pending_payment",
       })
       .select()

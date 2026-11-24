@@ -4,6 +4,8 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { getPosCatalog, mapPosCatalogItemToProduct } from "@/lib/pos/catalog";
 import { computeOrderTotals } from "@/lib/checkout/totals";
+import { getTeamUser } from "@/lib/auth/team";
+import { sanitizeSameOriginUrl } from "@/lib/auth/security";
 import { z } from "zod";
 
 // Force dynamic — don't try to build statically (needs env vars at runtime)
@@ -145,6 +147,98 @@ export async function POST(req: NextRequest) {
       return sum + (product ? product.price_cents * item.quantity : 0);
     }, 0);
 
+    // ── Server-authoritative discount & loyalty verification ──
+    // Never trust client-supplied discount_cents or loyalty_points_value_cents.
+    let verifiedDiscountCents = 0;
+    let verifiedPromoCode: string | undefined;
+    let verifiedGiftCardId: string | undefined;
+    let freeShippingFromPromo = false;
+
+    const normalizedCode = parsed.promo_code?.trim().toUpperCase();
+    if (normalizedCode) {
+      const { data: promo } = await supabaseAdmin()
+        .from("promo_codes")
+        .select("*")
+        .eq("code", normalizedCode)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (promo) {
+        const expired = promo.expires_at && new Date(promo.expires_at) < new Date();
+        const maxed = promo.max_uses !== null && promo.uses_count >= promo.max_uses;
+        const underMin = promo.min_order_cents && subtotal < promo.min_order_cents;
+        if (!expired && !maxed && !underMin) {
+          verifiedPromoCode = promo.code;
+          if (promo.type === "percentage") {
+            verifiedDiscountCents = Math.round((subtotal * Math.min(100, Math.max(0, promo.value))) / 100);
+          } else if (promo.type === "fixed_amount") {
+            verifiedDiscountCents = Math.min(Math.max(0, promo.value), subtotal);
+          } else if (promo.type === "free_shipping") {
+            freeShippingFromPromo = true;
+          }
+        }
+      } else {
+        const { data: giftCard } = await supabaseAdmin()
+          .from("gift_cards")
+          .select("id, code, balance_cents, status")
+          .eq("code", normalizedCode)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (giftCard && giftCard.balance_cents > 0) {
+          verifiedGiftCardId = giftCard.id;
+          verifiedPromoCode = giftCard.code;
+          verifiedDiscountCents = Math.min(giftCard.balance_cents, subtotal);
+        }
+      }
+    } else if (parsed.gift_card_id) {
+      const { data: giftCard } = await supabaseAdmin()
+        .from("gift_cards")
+        .select("id, code, balance_cents, status")
+        .eq("id", parsed.gift_card_id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (giftCard && giftCard.balance_cents > 0) {
+        verifiedGiftCardId = giftCard.id;
+        verifiedPromoCode = giftCard.code;
+        verifiedDiscountCents = Math.min(giftCard.balance_cents, subtotal);
+      }
+    }
+
+    // Loyalty redemption: only verified against DB balance for an authenticated
+    // user whose verified email matches customer_email (100 pts = $5 / 5 cents per pt).
+    let verifiedLoyaltyPoints = 0;
+    let verifiedLoyaltyValueCents = 0;
+    const requestedLoyaltyPoints = parsed.loyalty_points_redeemed ?? 0;
+    if (requestedLoyaltyPoints > 0 && verifiedDiscountCents === 0) {
+      const sessionUser = await getTeamUser(req);
+      const authedEmail = sessionUser?.user.email?.trim().toLowerCase();
+      if (!authedEmail || authedEmail !== parsed.customer_email.trim().toLowerCase()) {
+        return NextResponse.json(
+          { error: "Please sign in to redeem loyalty points." },
+          { status: 401 }
+        );
+      }
+
+      const { data: customer } = await supabaseAdmin()
+        .from("customers")
+        .select("loyalty_points")
+        .eq("email", authedEmail)
+        .maybeSingle();
+
+      const availablePoints = Math.max(0, customer?.loyalty_points ?? 0);
+      if (requestedLoyaltyPoints > availablePoints) {
+        return NextResponse.json(
+          { error: "Insufficient loyalty points balance." },
+          { status: 400 }
+        );
+      }
+
+      verifiedLoyaltyPoints = requestedLoyaltyPoints;
+      verifiedLoyaltyValueCents = verifiedLoyaltyPoints * 5;
+    }
+
     // Money path: clamp discount + loyalty so the order can never go negative or
     // over-redeem (validated pure module — see src/lib/checkout/totals.ts).
     const totals = computeOrderTotals({
@@ -154,10 +248,10 @@ export async function POST(req: NextRequest) {
           return product ? { unitPriceCents: product.price_cents, quantity: item.quantity } : null;
         })
         .filter((l): l is { unitPriceCents: number; quantity: number } => l !== null),
-      discountCents: parsed.discount_cents ?? 0,
-      loyaltyValueCents: parsed.loyalty_points_value_cents ?? 0,
-      freeShippingThresholdCents: STORE_CONFIG.free_shipping_threshold_cents,
-      flatShippingCents: STORE_CONFIG.flat_shipping_cents,
+      discountCents: verifiedDiscountCents,
+      loyaltyValueCents: verifiedLoyaltyValueCents,
+      freeShippingThresholdCents: freeShippingFromPromo ? 1 : STORE_CONFIG.free_shipping_threshold_cents,
+      flatShippingCents: freeShippingFromPromo ? 0 : STORE_CONFIG.flat_shipping_cents,
     });
 
     const discount_cents = totals.appliedDiscountCents;
@@ -170,7 +264,7 @@ export async function POST(req: NextRequest) {
         price_data: {
           currency: STORE_CONFIG.currency,
           product_data: {
-            name: parsed.promo_code ? `Promo: ${parsed.promo_code}` : "Discount",
+            name: verifiedPromoCode ? `Promo: ${verifiedPromoCode}` : "Discount",
             description: "Applied at checkout",
           },
           unit_amount: -discount_cents,
@@ -179,9 +273,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const loyaltyPointsRedeemed = parsed.loyalty_points_redeemed ?? 0;
     // Use the CLAMPED loyalty value so discount + loyalty can't exceed subtotal.
     const loyaltyValueCents = totals.appliedLoyaltyCents;
+    const loyaltyPointsRedeemed =
+      loyaltyValueCents > 0 ? Math.min(verifiedLoyaltyPoints, Math.ceil(loyaltyValueCents / 5)) : 0;
     if (loyaltyValueCents > 0) {
       finalLineItems.push({
         price_data: {
@@ -200,12 +295,12 @@ export async function POST(req: NextRequest) {
       source: "kynda-website",
       subtotal_cents: String(subtotal),
     };
-    if (parsed.promo_code) metadata.promo_code = parsed.promo_code;
-    if (parsed.gift_card_id) {
+    if (verifiedPromoCode) metadata.promo_code = verifiedPromoCode;
+    if (verifiedGiftCardId) {
       // Gift card redemption: deduct balance after payment succeeds.
       // (Gift card PURCHASES go through /api/gift-cards/create which sets
       // its own metadata — this is for USING a gift card at checkout.)
-      metadata.gift_card_redeem_id = parsed.gift_card_id;
+      metadata.gift_card_redeem_id = verifiedGiftCardId;
       metadata.discount_cents = String(discount_cents);
     }
     if (loyaltyPointsRedeemed > 0) {
@@ -213,14 +308,20 @@ export async function POST(req: NextRequest) {
       metadata.loyalty_value_cents = String(loyaltyValueCents);
     }
 
+    // Lock Stripe redirects strictly to our canonical origin (prevents open redirects).
+    const safeSuccessBase = sanitizeSameOriginUrl(parsed.success_url, "/shop/checkout?success=true");
+    const successSeparator = safeSuccessBase.includes("?") ? "&" : "?";
+    const safeSuccessUrl = `${safeSuccessBase}${successSeparator}session_id={CHECKOUT_SESSION_ID}`;
+    const safeCancelUrl = sanitizeSameOriginUrl(parsed.cancel_url, "/shop/cart");
+
     // Create Stripe Checkout Session
     const stripeClient = stripe();
     const session = await stripeClient.checkout.sessions.create({
       mode: "payment",
       customer_email: parsed.customer_email,
       line_items: finalLineItems,
-      success_url: `${parsed.success_url}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: parsed.cancel_url,
+      success_url: safeSuccessUrl,
+      cancel_url: safeCancelUrl,
       // Apple Pay / Google Pay / Link / card are enabled automatically for
       // Checkout Sessions via the Stripe Dashboard payment-method settings.
       // (automatic_payment_methods is a PaymentIntent-only param — passing it

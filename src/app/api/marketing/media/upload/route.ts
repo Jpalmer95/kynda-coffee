@@ -22,12 +22,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const isVideo = file.type.startsWith("video/");
-    const isImage = file.type.startsWith("image/");
+    const ALLOWED_VIDEO: Record<string, string> = {
+      "video/mp4": "mp4",
+      "video/webm": "webm",
+      "video/quicktime": "mov",
+    };
+    const ALLOWED_IMAGE: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+    };
+
+    const isVideo = file.type in ALLOWED_VIDEO;
+    const isImage = file.type in ALLOWED_IMAGE;
 
     if (!isVideo && !isImage) {
       return NextResponse.json(
-        { error: `File type ${file.type} not allowed. Use video (MP4, MOV, WebM) or image (JPEG, PNG, WebP).` },
+        { error: `File type ${file.type} not allowed. Use video (MP4, MOV, WebM) or image (JPEG, PNG, WebP, GIF).` },
         { status: 400 }
       );
     }
@@ -43,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const timestamp = Date.now();
-    const ext = file.name.split(".").pop() || (isVideo ? "mp4" : "jpg");
+    const ext = isVideo ? ALLOWED_VIDEO[file.type] : ALLOWED_IMAGE[file.type];
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/\.[^/.]+$/, "");
     const fileName = `${timestamp}_${sanitizedName}.${ext}`;
     const bucket = isVideo ? "marketing-videos" : "marketing-images";

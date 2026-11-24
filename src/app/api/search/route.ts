@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sanitizePostgrestSearch } from "@/lib/auth/security";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const q = searchParams.get("q")?.trim().toLowerCase();
+    const rawQ = searchParams.get("q")?.trim().toLowerCase() ?? "";
+    const q = sanitizePostgrestSearch(rawQ);
 
     if (!q || q.length < 2) {
       return NextResponse.json(

@@ -6,6 +6,7 @@
 
 type LimitEntry = { count: number; resetAt: number };
 
+const MAX_STORE_ENTRIES = 50_000;
 const store = new Map<string, LimitEntry>();
 
 function getKey(ip: string, identifier: string): string {
@@ -37,6 +38,14 @@ export function rateLimit(
   const entry = store.get(key);
 
   if (!entry || entry.resetAt < now) {
+    // Prevent unbounded memory growth under spoofed-IP floods
+    if (store.size >= MAX_STORE_ENTRIES) {
+      cleanExpired();
+      if (store.size >= MAX_STORE_ENTRIES) {
+        const oldestKey = store.keys().next().value;
+        if (oldestKey !== undefined) store.delete(oldestKey);
+      }
+    }
     const resetAt = now + windowMs;
     store.set(key, { count: 1, resetAt });
     return { success: true, limit: maxRequests, remaining: maxRequests - 1, resetAt };

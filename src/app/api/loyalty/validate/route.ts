@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { z } from "zod";
-import { STORE_CONFIG } from "@/lib/stripe/client";
+import { getTeamUser } from "@/lib/auth/team";
+import { hasTier } from "@/lib/auth/roles";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -12,41 +14,45 @@ const validateSchema = z.object({
 });
 
 // Redemption rate: 100 points = $5 (500 cents)
-const POINTS_PER_CENT = 100 / 500; // 0.2 points per cent
 const CENTS_PER_POINT = 500 / 100; // 5 cents per point
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rl = rateLimit(ip, { identifier: "loyalty-validate", windowMs: 60_000, maxRequests: 20 });
+    if (!rl.success) {
+      return NextResponse.json({ error: "Too many requests. Please try again shortly." }, { status: 429 });
+    }
+
+    const sessionUser = await getTeamUser(req);
+    if (!sessionUser) {
+      return NextResponse.json(
+        { valid: false, message: "Please sign in to your account to check and redeem loyalty points." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const parsed = validateSchema.parse(body);
 
-    // Find or create customer by email
-    let { data: customer } = await supabaseAdmin()
-      .from("customers")
-      .select("id, loyalty_points, loyalty_tier, total_spent_cents")
-      .eq("email", parsed.email)
-      .single();
-
-    if (!customer) {
-      // Create a new customer record for loyalty tracking
-      const { data: newCustomer, error: insertError } = await supabaseAdmin()
-        .from("customers")
-        .insert({
-          email: parsed.email,
-          loyalty_points: 0,
-          loyalty_tier: "bronze",
-        })
-        .select("id, loyalty_points, loyalty_tier, total_spent_cents")
-        .single();
-
-      if (insertError) {
-        return NextResponse.json({ error: "Failed to create customer record" }, { status: 500 });
-      }
-      customer = newCustomer;
+    const requestedEmail = parsed.email.trim().toLowerCase();
+    const sessionEmail = sessionUser.user.email?.trim().toLowerCase();
+    if (!hasTier(sessionUser.role, "staff") && requestedEmail !== sessionEmail) {
+      return NextResponse.json(
+        { valid: false, message: "Email must match your signed-in account." },
+        { status: 403 }
+      );
     }
 
-    const availablePoints = customer.loyalty_points ?? 0;
-    const tier = customer.loyalty_tier ?? "bronze";
+    // Look up existing customer without creating rows on validation probes
+    const { data: customer } = await supabaseAdmin()
+      .from("customers")
+      .select("id, loyalty_points, loyalty_tier, total_spent_cents")
+      .eq("email", requestedEmail)
+      .maybeSingle();
+
+    const availablePoints = customer?.loyalty_points ?? 0;
+    const tier = customer?.loyalty_tier ?? "bronze";
 
     // Max redeemable is the lesser of: available points, or subtotal in points equivalent
     const maxRedeemableCents = parsed.subtotal_cents ?? Infinity;
@@ -83,7 +89,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Loyalty validation error:", err);
     if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: err.errors }, { status: 400 });
+      return NextResponse.json({ error: "Invalid loyalty validation request." }, { status: 400 });
     }
     return NextResponse.json({ error: "Validation failed" }, { status: 500 });
   }

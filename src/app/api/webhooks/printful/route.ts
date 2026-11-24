@@ -1,24 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { timingSafeStringEqual } from "@/lib/auth/security";
 
 export const dynamic = "force-dynamic";
+
+function sanitizeTrackingUrl(raw: unknown): string | null {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  try {
+    const parsed = new URL(raw.trim());
+    if (parsed.protocol !== "https:") return null;
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
 
 /**
  * POST /api/webhooks/printful
  *
  * Receives Printful webhook notifications:
- * - package_shipped: update order status, optionally send shipping email
+ * - package_shipped: update order status, send shipping email
  * - order_failed: alert admin, flag order for manual review
  *
- * Webhook setup: Add this URL in Printful Dashboard → Settings → Webhooks
- * or via API: POST /webhooks with events: ["package_shipped", "order_failed"]
- *
- * Printful sends: POST with { type, data } JSON payload.
- * No signature verification (Printful doesn't support HMAC signing).
- * Instead, validate the order exists in our DB.
+ * Requires PRINTFUL_WEBHOOK_SECRET via `x-printful-webhook-secret` header or
+ * `?secret=` query parameter (configure the secret URL in Printful Dashboard).
  */
 export async function POST(req: NextRequest) {
   try {
+    const expectedSecret = process.env.PRINTFUL_WEBHOOK_SECRET;
+    if (!expectedSecret) {
+      console.error("[Printful Webhook] PRINTFUL_WEBHOOK_SECRET not configured");
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+    }
+
+    const providedSecret =
+      req.headers.get("x-printful-webhook-secret") ||
+      req.nextUrl.searchParams.get("secret");
+
+    if (!timingSafeStringEqual(providedSecret, expectedSecret)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { type, data } = body;
 
@@ -31,7 +53,7 @@ export async function POST(req: NextRequest) {
         const orderId = data?.order_id; // Printful's internal order ID
         const externalId = data?.external_id; // Our order ID if set
         const trackingNumber = data?.shipment?.tracking_number || null;
-        const trackingUrl = data?.shipment?.tracking_url || null;
+        const trackingUrl = sanitizeTrackingUrl(data?.shipment?.tracking_url);
         const carrier = data?.shipment?.carrier_name || data?.shipment?.service_name || null;
         const reshipment = data?.reshipment || false;
 

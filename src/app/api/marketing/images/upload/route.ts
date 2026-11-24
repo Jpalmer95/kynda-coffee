@@ -23,9 +23,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (!allowedTypes.includes(file.type)) {
+    // Validate file type (strict raster allowlist; derive extension from MIME)
+    const ALLOWED_EXT: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+    };
+    const ext = ALLOWED_EXT[file.type];
+    if (!ext) {
       return NextResponse.json(
         { error: `File type ${file.type} not allowed. Use JPEG, PNG, WebP, or GIF.` },
         { status: 400 }
@@ -43,7 +49,6 @@ export async function POST(req: NextRequest) {
 
     // Generate unique filename
     const timestamp = Date.now();
-    const ext = file.name.split(".").pop() || "jpg";
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/\.[^/.]+$/, "");
     const fileName = `${timestamp}_${sanitizedName}.${ext}`;
     const storagePath = `originals/${fileName}`;

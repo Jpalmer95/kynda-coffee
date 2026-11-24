@@ -184,7 +184,7 @@ export default function AdminNewslettersPage() {
               </button>
             </div>
             {preview ? (
-              <iframe title="preview" srcDoc={editing.body_html} className="h-[600px] w-full rounded-xl border border-latte/30 bg-white" />
+              <iframe title="preview" sandbox="" srcDoc={editing.body_html} className="h-[600px] w-full rounded-xl border border-latte/30 bg-white" />
             ) : (
               <textarea value={editing.body_html} onChange={(e) => setEditing({ ...editing, body_html: e.target.value })} className="input-field min-h-[300px] font-mono text-xs" />
             )}

@@ -137,12 +137,15 @@ function buildVideoFilter(spec: ShortsSpec, title?: string): string {
     `crop=${spec.width}:${spec.height}`,
   ];
 
-  // Add subtle watermark text at bottom-right
-  // Using drawtext with a fallback font path
-  const watermarkText = title ? title.slice(0, 30) : "Kynda Coffee";
+  // Add subtle watermark text at bottom-right (strict allowlist prevents FFmpeg filtergraph injection)
+  const safeWatermark = (title || "Kynda Coffee")
+    .replace(/[^a-zA-Z0-9 .\-!&]/g, "")
+    .trim()
+    .slice(0, 30) || "Kynda Coffee";
   const drawtext = [
     "drawtext=",
-    `text='${watermarkText.replace(/'/g, "\\'")}'`,
+    `text='${safeWatermark}'`,
+    ":expansion=none",
     ":fontcolor=white@0.5",
     ":fontsize=28",
     ":x=w-text_w-20",
@@ -153,13 +156,43 @@ function buildVideoFilter(spec: ShortsSpec, title?: string): string {
   return [...scaleCrop, drawtext].join(",");
 }
 
+const MAX_VIDEO_DOWNLOAD_BYTES = 150 * 1024 * 1024; // 150MB
+
 /**
- * Download a file from a URL to a temp path.
+ * Download a file from our Supabase Storage bucket to a temp path (SSRF-safe).
  */
 async function downloadToTemp(url: string, destPath: string): Promise<void> {
-  const res = await fetch(url);
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("Invalid sourceUrl");
+  }
+
+  const allowedOrigin = supabaseUrl ? new URL(supabaseUrl).origin : null;
+  if (
+    parsed.protocol !== "https:" ||
+    !allowedOrigin ||
+    parsed.origin !== allowedOrigin ||
+    !parsed.pathname.startsWith("/storage/v1/object/")
+  ) {
+    throw new Error("sourceUrl must point to Kynda Supabase Storage");
+  }
+
+  const res = await fetch(parsed.toString(), { redirect: "error" });
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+
+  const contentLength = Number(res.headers.get("content-length") || "0");
+  if (contentLength > MAX_VIDEO_DOWNLOAD_BYTES) {
+    throw new Error("Source video exceeds maximum allowed size (150MB)");
+  }
+
   const buffer = Buffer.from(await res.arrayBuffer());
+  if (buffer.byteLength > MAX_VIDEO_DOWNLOAD_BYTES) {
+    throw new Error("Source video exceeds maximum allowed size (150MB)");
+  }
+
   const { writeFile } = await import("fs/promises");
   await writeFile(destPath, buffer);
 }

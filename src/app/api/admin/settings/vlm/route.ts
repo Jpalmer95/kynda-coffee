@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getVlmConfig, type VlmConfig } from "@/lib/marketing/vlm";
+import { validateExternalApiBase } from "@/lib/auth/security";
 
 export const dynamic = "force-dynamic";
 
@@ -45,11 +46,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "model and api_base are required" }, { status: 400 });
     }
 
+    const baseCheck = validateExternalApiBase(config.api_base, config.provider === "local");
+    if (!baseCheck.ok) {
+      return NextResponse.json({ error: baseCheck.error }, { status: 400 });
+    }
+    config.api_base = baseCheck.url.toString().replace(/\/+$/, "");
+
+    // Load existing config so blank/masked api_key preserves saved secret
+    const db = supabaseAdmin();
+    const { data: existing } = await db
+      .from("store_settings")
+      .select("settings_json")
+      .eq("id", 1)
+      .maybeSingle();
+
+    const settingsJson = (existing?.settings_json as Record<string, unknown>) || {};
+    const existingVlm = (settingsJson.vlm as Partial<VlmConfig> | undefined) ?? {};
+    if (!config.api_key || config.api_key === "***") {
+      config.api_key = existingVlm.api_key || "";
+    }
+
     // Test mode: try a minimal chat completion to verify connectivity
     if (isTest) {
       try {
         const res = await fetch(config.api_base + "/chat/completions", {
           method: "POST",
+          redirect: "error",
+          signal: AbortSignal.timeout(10_000),
           headers: {
             "Content-Type": "application/json",
             Authorization: "Bearer " + config.api_key,
@@ -65,9 +88,8 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ ok: true, message: "Model responded successfully" });
         }
 
-        const errText = await res.text().catch(() => "");
         return NextResponse.json(
-          { ok: false, error: `HTTP ${res.status}: ${errText.slice(0, 300)}` },
+          { ok: false, error: `Model endpoint returned HTTP ${res.status}` },
           { status: 200 }
         );
       } catch (e) {
@@ -79,14 +101,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Save mode: merge into existing settings_json
-    const db = supabaseAdmin();
-    const { data: existing } = await db
-      .from("store_settings")
-      .select("settings_json")
-      .eq("id", 1)
-      .single();
-
-    const settingsJson = (existing?.settings_json as Record<string, unknown>) || {};
     settingsJson.vlm = config;
 
     const { error } = await db

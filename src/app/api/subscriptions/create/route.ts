@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, STORE_CONFIG } from "@/lib/stripe/client";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { sanitizeSameOriginUrl } from "@/lib/auth/security";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +18,12 @@ const subscribeSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const limit = rateLimit(ip, { identifier: "subscriptions-create", windowMs: 60_000, maxRequests: 10 });
+    if (!limit.success) {
+      return NextResponse.json({ error: "Too many requests. Please try again shortly." }, { status: 429 });
+    }
+
     const body = await req.json();
     const parsed = subscribeSchema.parse(body);
 
@@ -76,6 +84,10 @@ export async function POST(req: NextRequest) {
       },
     } as any);
 
+    const safeSuccessBase = sanitizeSameOriginUrl(parsed.success_url, "/account/subscriptions?subscribed=true");
+    const successSep = safeSuccessBase.includes("?") ? "&" : "?";
+    const safeCancelUrl = sanitizeSameOriginUrl(parsed.cancel_url, "/shop");
+
     // Create checkout session in subscription mode
     const session = await stripe().checkout.sessions.create({
       mode: "subscription",
@@ -86,8 +98,8 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${parsed.success_url}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: parsed.cancel_url,
+      success_url: `${safeSuccessBase}${successSep}session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: safeCancelUrl,
       metadata: {
         kynda_product_id: parsed.product_id,
         kynda_customer_id: customer.id,
@@ -109,7 +121,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("Subscription checkout error:", err);
     if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: err.errors }, { status: 400 });
+      return NextResponse.json({ error: "Invalid subscription request." }, { status: 400 });
     }
     return NextResponse.json({ error: "Subscription creation failed" }, { status: 500 });
   }

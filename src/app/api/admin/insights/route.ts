@@ -15,7 +15,7 @@ const DAY_MS = 86_400_000;
  * to produce prioritized, actionable recommendations for the owner. Read-only.
  */
 export async function GET(req: NextRequest) {
-  const team = await requireTier(req, "manager");
+  const team = await requireTier(req, "owner");
   if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const supabase = getSupabaseAdmin();

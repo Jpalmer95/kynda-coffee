@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { normalizeRole, hasTier, type RoleTier } from "@/lib/auth/roles";
+import { sanitizePostgrestSearch } from "@/lib/auth/security";
 import { sendEmail } from "@/lib/email/send";
 import {
   staffOnboardingEmailHtml,
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
   if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const q = (searchParams.get("q") ?? "").trim();
+  const q = sanitizePostgrestSearch(searchParams.get("q") ?? "");
 
   let query = supabaseAdmin()
     .from("profiles")

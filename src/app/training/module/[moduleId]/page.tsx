@@ -103,9 +103,31 @@ export default async function TrainingModulePage({ params }: Props) {
   async function markLessonComplete(formData: FormData) {
     "use server";
     const supabase = await createClient();
-    const lessonId = formData.get("lessonId") as string;
+    const lessonId = String(formData.get("lessonId") ?? "").trim();
+    if (!lessonId) return;
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Verify staff+ role inside the Server Action (defense in depth beyond middleware)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    const { normalizeRole, isTeamMember } = await import("@/lib/auth/roles");
+    if (!isTeamMember(normalizeRole((profile as { role?: string } | null)?.role))) {
+      return;
+    }
+
+    // Verify lesson belongs to this module
+    const { data: validLesson } = await supabase
+      .from("lessons")
+      .select("id")
+      .eq("id", lessonId)
+      .eq("module_id", moduleId)
+      .maybeSingle();
+    if (!validLesson) return;
 
     await supabase.from("lesson_progress").upsert(
       {
@@ -126,18 +148,33 @@ export default async function TrainingModulePage({ params }: Props) {
   async function submitQuiz(formData: FormData) {
     "use server";
     const supabase = await createClient();
-    const quizId = formData.get("quizId") as string;
-    const selectedIndex = parseInt(formData.get("selectedIndex") as string);
+    const quizId = String(formData.get("quizId") ?? "").trim();
+    const selectedIndex = Number(formData.get("selectedIndex"));
+    if (!quizId || !Number.isInteger(selectedIndex) || selectedIndex < 0) return;
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Verify staff+ role inside the Server Action
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    const { normalizeRole, isTeamMember } = await import("@/lib/auth/roles");
+    if (!isTeamMember(normalizeRole((profile as { role?: string } | null)?.role))) {
+      return;
+    }
 
     const { data: quiz } = await supabase
       .from("quizzes")
       .select("correct_index")
       .eq("id", quizId)
-      .single();
+      .eq("module_id", moduleId)
+      .maybeSingle();
+    if (!quiz) return;
 
-    const isCorrect = quiz?.correct_index === selectedIndex;
+    const isCorrect = quiz.correct_index === selectedIndex;
     await supabase.from("quiz_attempts").insert({
       user_id: user.id,
       quiz_id: quizId,

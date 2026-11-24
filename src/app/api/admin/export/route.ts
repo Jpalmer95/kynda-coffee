@@ -49,7 +49,7 @@ async function fetchEntity(name: string): Promise<CsvRow[]> {
 }
 
 export async function GET(req: NextRequest) {
-  const team = await requireTier(req, "manager");
+  const team = await requireTier(req, "owner");
   if (!team) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const params = new URL(req.url).searchParams;

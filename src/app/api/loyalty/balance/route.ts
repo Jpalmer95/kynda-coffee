@@ -1,13 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getTeamUser } from "@/lib/auth/team";
+import { hasTier } from "@/lib/auth/roles";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    const email = req.nextUrl.searchParams.get("email");
+    const sessionUser = await getTeamUser(req);
+    if (!sessionUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const requestedEmail = req.nextUrl.searchParams.get("email")?.trim().toLowerCase();
+    const sessionEmail = sessionUser.user.email?.trim().toLowerCase();
+    const email = requestedEmail || sessionEmail;
+
     if (!email) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
+    }
+
+    // Customers may only view their own loyalty balance; staff+ may look up any customer.
+    if (!hasTier(sessionUser.role, "staff") && email !== sessionEmail) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Find customer

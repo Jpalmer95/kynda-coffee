@@ -223,7 +223,16 @@ export async function POST(req: NextRequest) {
         : null;
 
     let updated: any = null;
+    let wasAlreadyRewarded = false;
     try {
+      const { data: prior } = await db
+        .from("kaizen_proposals")
+        .select("status")
+        .eq("id", id)
+        .maybeSingle();
+      wasAlreadyRewarded =
+        prior?.status === "approved" || prior?.status === "compiled";
+
       const { data, error } = await db
         .from("kaizen_proposals")
         .update({
@@ -265,8 +274,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Credit submitter bounty & bonus XP if submitted_by exists
+    // Credit submitter bounty & bonus XP once (prevent double-credit on repeat approvals)
     if (
+      !wasAlreadyRewarded &&
       updated?.submitted_by &&
       (finalStatus === "approved" || finalStatus === "compiled")
     ) {

@@ -22,6 +22,14 @@ const ALLOWED_HOSTS = new Set([
   "printful-upload.s3-accelerate.amazonaws.com",
 ]);
 
+const ALLOWED_IMAGE_MIME = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+const MAX_PROXY_BYTES = 10 * 1024 * 1024; // 10MB
+
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");
   if (!url) {
@@ -41,9 +49,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const upstream = await fetch(parsed.toString(), {
-      // Printful CDN sits behind Cloudflare; plain fetch is fine.
+      redirect: "error",
       headers: { "User-Agent": "KyndaCoffee-ImageProxy/1.0" },
-      // Cache upstream fetches on the server for a day
       next: { revalidate: 86400 },
     });
 
@@ -54,18 +61,28 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const contentType = upstream.headers.get("content-type") || "image/jpeg";
-    if (!contentType.startsWith("image/")) {
-      return NextResponse.json({ error: "Not an image" }, { status: 415 });
+    const rawContentType = (upstream.headers.get("content-type") || "image/jpeg").split(";")[0].trim().toLowerCase();
+    if (!ALLOWED_IMAGE_MIME.has(rawContentType)) {
+      return NextResponse.json({ error: "Unsupported image format" }, { status: 415 });
+    }
+
+    const contentLength = Number(upstream.headers.get("content-length") || "0");
+    if (contentLength > MAX_PROXY_BYTES) {
+      return NextResponse.json({ error: "Image too large" }, { status: 413 });
     }
 
     const buf = await upstream.arrayBuffer();
+    if (buf.byteLength > MAX_PROXY_BYTES) {
+      return NextResponse.json({ error: "Image too large" }, { status: 413 });
+    }
 
     return new NextResponse(buf, {
       status: 200,
       headers: {
-        "Content-Type": contentType,
+        "Content-Type": rawContentType,
         "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Security-Policy": "sandbox",
+        "X-Content-Type-Options": "nosniff",
         "Access-Control-Allow-Origin": "*",
       },
     });

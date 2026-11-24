@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
+import { hasTier } from "@/lib/auth/roles";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,21 @@ export async function GET(req: NextRequest) {
   const channelId = searchParams.get("channel");
 
   try {
+    const isManager = hasTier(team.role, "manager");
+
     if (channelId) {
+      // Prevent non-managers from accessing the management channel
+      if (!isManager) {
+        const { data: chMeta } = await supabaseAdmin()
+          .from("chat_channels")
+          .select("name")
+          .eq("id", channelId)
+          .maybeSingle();
+        if (chMeta?.name === "management") {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+      }
+
       // Fetch messages for a channel
       const { data: messages, error } = await supabaseAdmin()
         .from("chat_messages")
@@ -37,7 +52,7 @@ export async function GET(req: NextRequest) {
 
       // Fetch user profiles for the messages
       const userIds = [...new Set((messages ?? []).map((m: any) => m.user_id))];
-      let profilesMap: Record<string, { name: string; role: string }> = {};
+      const profilesMap: Record<string, { name: string; role: string }> = {};
       if (userIds.length > 0) {
         const { data: profiles } = await supabaseAdmin()
           .from("profiles")
@@ -67,15 +82,19 @@ export async function GET(req: NextRequest) {
     // Channel list — ensure default channels exist, then return all
     await ensureDefaultChannels(team.user.id);
 
-    const { data: channels, error } = await supabaseAdmin()
+    const { data: allChannels, error } = await supabaseAdmin()
       .from("chat_channels")
       .select("id, name, description, icon, type, sort_order, created_at")
       .order("sort_order", { ascending: true });
 
     if (error) throw error;
 
-    // Ensure current user is a member of all channels
-    for (const ch of channels ?? []) {
+    const channels = (allChannels ?? []).filter(
+      (ch: any) => isManager || ch.name !== "management"
+    );
+
+    // Ensure current user is a member of visible channels only
+    for (const ch of channels) {
       await supabaseAdmin()
         .from("chat_channel_members")
         .upsert({ channel_id: ch.id, user_id: team.user.id }, { onConflict: "channel_id,user_id" });
@@ -83,7 +102,7 @@ export async function GET(req: NextRequest) {
 
     // Get unread counts (messages after last_read_at)
     const channelIds = (channels ?? []).map((c: any) => c.id);
-    let unreadMap: Record<string, number> = {};
+    const unreadMap: Record<string, number> = {};
 
     if (channelIds.length > 0) {
       const { data: memberships } = await supabaseAdmin()

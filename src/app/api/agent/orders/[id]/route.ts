@@ -51,9 +51,11 @@ export async function GET(
     }
 
     const fm = (order.fulfillment_metadata ?? {}) as { customer_phone?: string; mode?: string };
-    const emailMatches = email && order.email?.toLowerCase() === email;
+    const emailMatches = Boolean(email && order.email && order.email.trim().toLowerCase() === email);
+    const storedDigits = (fm.customer_phone ?? "").replace(/\D/g, "");
+    const inputDigits = phone.replace(/\D/g, "");
     const phoneMatches =
-      phone && fm.customer_phone && fm.customer_phone.replace(/\D/g, "") === phone.replace(/\D/g, "");
+      storedDigits.length >= 7 && inputDigits.length >= 7 && storedDigits === inputDigits;
 
     if (!emailMatches && !phoneMatches) {
       // Same response as not-found: don't confirm the order exists.

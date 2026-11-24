@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sanitizeRedirectPath, getCanonicalAppUrl } from "@/lib/auth/security";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
-  const redirectTo = searchParams.get("redirectTo");
-  const next = redirectTo || searchParams.get("next") || "/account";
+  const rawNext = searchParams.get("redirectTo") || searchParams.get("next");
+  const next = sanitizeRedirectPath(rawNext, "/account");
 
   // Always use the production/app URL for redirects (prevents 0.0.0.0 issues from Supabase)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://kyndacoffee.com";
+  const appUrl = getCanonicalAppUrl();
 
   if (code) {
     const supabase = await createClient();

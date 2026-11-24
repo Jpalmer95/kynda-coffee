@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -12,10 +13,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
     }
 
-    const { subscription, user_id } = await req.json();
-    if (!subscription?.endpoint) {
+    const { subscription } = await req.json();
+    if (!subscription?.endpoint || typeof subscription.endpoint !== "string") {
       return NextResponse.json({ error: "Invalid subscription" }, { status: 400 });
     }
+
+    // Derive user_id strictly from authenticated session (never trust body.user_id)
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
     // Upsert push subscription
     const { error } = await supabaseAdmin()
@@ -25,7 +30,7 @@ export async function POST(req: NextRequest) {
           endpoint: subscription.endpoint,
           p256dh: subscription.keys?.p256dh,
           auth: subscription.keys?.auth,
-          user_id: user_id || null,
+          user_id: user?.id ?? null,
           created_at: new Date().toISOString(),
         },
         { onConflict: "endpoint" }

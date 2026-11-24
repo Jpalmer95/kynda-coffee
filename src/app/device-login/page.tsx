@@ -78,7 +78,9 @@ function DeviceLoginInner() {
       });
       if (otpError) throw new Error(otpError.message);
 
-      router.push(next.startsWith("/") ? next : "/kds");
+      const safeNext =
+        next.startsWith("/") && !next.startsWith("//") && !next.includes("\\") ? next : "/kds";
+      router.push(safeNext);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

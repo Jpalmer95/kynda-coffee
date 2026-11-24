@@ -66,6 +66,7 @@ export function minTierForPath(pathname: string): RoleTier | null {
   if (pathname.startsWith("/kds")) return "staff";
   if (pathname.startsWith("/staff")) return "staff";
   if (pathname.startsWith("/training")) return "staff";
+  if (pathname.startsWith("/dashboard")) return "manager";
   if (pathname.startsWith("/admin")) return "manager"; // page-level gates tighten owner-only areas
   return null;
 }

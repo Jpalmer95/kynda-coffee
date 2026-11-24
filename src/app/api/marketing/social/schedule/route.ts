@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireTier } from "@/lib/auth/team";
+import { hasTier } from "@/lib/auth/roles";
 import { createSocialPost } from "@/lib/marketing/social/publisher";
 
 export async function POST(req: NextRequest) {
@@ -24,9 +25,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (status && !["draft", "scheduled"].includes(status)) {
+    if (status && !["draft", "scheduled", "pending_approval"].includes(status)) {
       return NextResponse.json(
-        { error: "Invalid status. Must be draft or scheduled" },
+        { error: "Invalid status. Must be draft, pending_approval, or scheduled" },
         { status: 400 }
       );
     }
@@ -38,12 +39,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Staff-tier users cannot bypass the approval gate; only manager+ may schedule directly.
+    const effectiveStatus =
+      status === "scheduled" && !hasTier(team.role, "manager")
+        ? "pending_approval"
+        : status;
+
     const result = await createSocialPost({
       platform,
       text,
       image_urls,
       scheduled_at,
-      status,
+      status: effectiveStatus,
       created_by: team.user.id,
     });
 

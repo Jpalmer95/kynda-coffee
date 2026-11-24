@@ -1,8 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createOrder, estimateShipping } from "@/lib/printful/client";
+import { requireTier } from "@/lib/auth/team";
 import type { PrintfulCreateOrderPayload } from "@/lib/printful/types";
 
-export async function POST(req: Request) {
+export const dynamic = "force-dynamic";
+
+export async function POST(req: NextRequest) {
+  const team = await requireTier(req, "owner");
+  if (!team) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body: PrintfulCreateOrderPayload = await req.json();
 

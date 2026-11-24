@@ -20,7 +20,7 @@ function needsQuoting(s: string): boolean {
   return /[",\r\n]/.test(s);
 }
 
-/** Serialize one cell to a CSV-safe string. */
+/** Serialize one cell to a CSV-safe string (neutralizes spreadsheet formula injection). */
 export function csvCell(value: CsvCell): string {
   if (value === null || value === undefined) return "";
   let s: string;
@@ -28,6 +28,10 @@ export function csvCell(value: CsvCell): string {
     s = JSON.stringify(value);
   } else {
     s = String(value);
+  }
+  // Neutralize formula injection (=, +, -, @, tab, CR) on string cells
+  if (typeof value === "string" && /^[=+\-@\t\r]/.test(s)) {
+    s = `'${s}`;
   }
   if (needsQuoting(s)) {
     return `"${s.replace(/"/g, '""')}"`;

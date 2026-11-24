@@ -14,8 +14,8 @@ export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const path = searchParams.get("path");
 
-  if (!path) {
-    return NextResponse.json({ error: "path query param is required." }, { status: 400 });
+  if (!path || !/^originals\/[a-zA-Z0-9._-]+$/.test(path) || path.includes("..")) {
+    return NextResponse.json({ error: "Invalid image path." }, { status: 400 });
   }
 
   const adminClient = supabaseAdmin();

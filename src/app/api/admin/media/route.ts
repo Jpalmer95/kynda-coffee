@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
   // Fetch uploader names
   const uploaderIds = [...new Set((data ?? []).map((u: any) => u.uploaded_by))];
-  let uploaderMap: Record<string, string> = {};
+  const uploaderMap: Record<string, string> = {};
   if (uploaderIds.length > 0) {
     const { data: profiles } = await supabaseAdmin()
       .from("profiles")
@@ -95,12 +95,16 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "confirm") {
+      // Never accept client-supplied storage_path or public_url (prevents
+      // arbitrary storage file deletion on subsequent DELETE).
+      const fileSize =
+        typeof body.file_size_bytes === "number" && body.file_size_bytes > 0
+          ? Math.trunc(body.file_size_bytes)
+          : null;
       const { data, error } = await supabaseAdmin()
         .from("team_uploads")
         .update({
-          storage_path: body.storage_path,
-          public_url: body.public_url,
-          file_size_bytes: body.file_size_bytes ?? null,
+          ...(fileSize !== null ? { file_size_bytes: fileSize } : {}),
         })
         .eq("id", body.upload_id)
         .eq("uploaded_by", team.user.id)
@@ -111,20 +115,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ upload: data });
     }
 
-    // action === "upload" — create the record and return a signed upload URL
-    const fileName = (body.file_name ?? "upload").trim();
-    const mimeType = body.mime_type ?? "image/jpeg";
-    const mediaType = body.media_type ?? (mimeType.startsWith("video/") ? "video" : "image");
+    // action === "upload" — strict MIME allowlist (blocks SVG/HTML XSS)
+    const ALLOWED_MIME_EXT: Record<string, { ext: string; mediaType: "image" | "video" }> = {
+      "image/jpeg": { ext: "jpg", mediaType: "image" },
+      "image/png": { ext: "png", mediaType: "image" },
+      "image/webp": { ext: "webp", mediaType: "image" },
+      "image/gif": { ext: "gif", mediaType: "image" },
+      "video/mp4": { ext: "mp4", mediaType: "video" },
+      "video/webm": { ext: "webm", mediaType: "video" },
+      "video/quicktime": { ext: "mov", mediaType: "video" },
+    };
+
+    const fileName = String(body.file_name ?? "upload").trim().slice(0, 180);
+    const mimeType = String(body.mime_type ?? "image/jpeg").trim().toLowerCase();
+    const mimeSpec = ALLOWED_MIME_EXT[mimeType];
+    if (!mimeSpec) {
+      return NextResponse.json(
+        { error: "Unsupported file type. Allowed: JPEG, PNG, WebP, GIF, MP4, WebM, MOV." },
+        { status: 400 }
+      );
+    }
+
+    const mediaType = mimeSpec.mediaType;
     const bucket = mediaType === "video" ? "marketing-videos" : "marketing-images";
     const tags = Array.isArray(body.tags) ? body.tags.filter((t: string) => TAG_OPTIONS.includes(t)) : [];
 
-    // Create the upload record first
+    // Generate server-authoritative storage path & public URL up front
+    const uploadUuid = crypto.randomUUID();
+    const storagePath = `team/${new Date().toISOString().slice(0, 10)}/${uploadUuid}.${mimeSpec.ext}`;
+    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${storagePath}`;
+
     const { data: upload, error: insertErr } = await supabaseAdmin()
       .from("team_uploads")
       .insert({
+        id: uploadUuid,
         uploaded_by: team.user.id,
-        storage_path: "",  // will be updated on confirm
-        public_url: "",    // will be updated on confirm
+        storage_path: storagePath,
+        public_url: publicUrl,
         media_type: mediaType,
         file_name: fileName,
         mime_type: mimeType,
@@ -137,19 +164,13 @@ export async function POST(req: NextRequest) {
 
     if (insertErr) throw insertErr;
 
-    // Generate the storage path
-    const ext = fileName.includes(".") ? fileName.split(".").pop() : (mediaType === "video" ? "mp4" : "jpg");
-    const storagePath = `team/${new Date().toISOString().slice(0, 10)}/${upload.id}.${ext}`;
-
-    // Create a signed upload URL
+    // Create a signed upload URL for the server-assigned path
     const { data: signedData, error: signedErr } = await supabaseAdmin()
       .storage
       .from(bucket)
       .createSignedUploadUrl(storagePath);
 
     if (signedErr) throw signedErr;
-
-    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${storagePath}`;
 
     return NextResponse.json({
       upload_id: upload.id,

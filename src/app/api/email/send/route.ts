@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/send";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { requireTier } from "@/lib/auth/team";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
+    const team = await requireTier(req, "owner");
+    if (!team) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const ip = getClientIp(req);
     const limit = rateLimit(ip, { identifier: "email-send", windowMs: 60_000, maxRequests: 5 });
     if (!limit.success) {

@@ -1,7 +1,7 @@
 // Kynda Coffee PWA Service Worker v3
 // Caches app shell, pages, images, and menu data for offline access
 
-const CACHE_NAME = "kynda-v5";
+const CACHE_NAME = "kynda-v6";
 const DATA_CACHE = "kynda-data-v1";
 const IMAGE_CACHE = "kynda-images-v1";
 
@@ -49,16 +49,30 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(event.request.url);
 
-  // Skip self, manifest, API mutations, auth, admin, and external requests.
+  // Skip self, manifest, API mutations, auth, and ALL authenticated/internal
+  // portals so sensitive responses are never cached on shared café devices.
   // /sw.js MUST always go to network so the browser can detect new versions.
+  const SENSITIVE_PREFIXES = [
+    "/api",
+    "/auth",
+    "/admin",
+    "/staff",
+    "/account",
+    "/kds",
+    "/dashboard",
+    "/training",
+    "/device-login",
+    "/checkout",
+  ];
+  const isSensitivePath = SENSITIVE_PREFIXES.some(
+    (p) => url.pathname === p || url.pathname.startsWith(p + "/")
+  );
+
   if (
     url.pathname === "/sw.js" ||
     url.pathname === "/manifest.json" ||
     url.pathname === "/manifest.webmanifest" ||
-    url.pathname.startsWith("/api/") ||
-    url.pathname.startsWith("/auth/") ||
-    url.pathname.startsWith("/admin/") ||
-    url.pathname.startsWith("/staff/") ||
+    isSensitivePath ||
     url.origin !== self.location.origin
   ) {
     return;
@@ -172,8 +186,17 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url ?? "/";
-  event.waitUntil(self.clients.openWindow(url));
+  const rawUrl = event.notification.data?.url ?? "/";
+  let safeUrl = "/";
+  try {
+    const parsed = new URL(rawUrl, self.location.origin);
+    if (parsed.origin === self.location.origin) {
+      safeUrl = parsed.pathname + parsed.search + parsed.hash;
+    }
+  } catch {
+    safeUrl = "/";
+  }
+  event.waitUntil(self.clients.openWindow(safeUrl));
 });
 
 // Listen for skip-waiting message from the install prompt or update flow

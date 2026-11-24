@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/service";
+import { requireTier } from "@/lib/auth/team";
+import { timingSafeStringEqual } from "@/lib/auth/security";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const cronSecret = process.env.CRON_SECRET;
+  const agentKey = process.env.AGENT_API_KEY;
+  const authHeader = req.headers.get("authorization");
+  const headerAgentKey = req.headers.get("x-agent-key");
+
+  const cronOk = Boolean(cronSecret && timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`));
+  const agentOk = Boolean(agentKey && timingSafeStringEqual(headerAgentKey, agentKey));
+  const sessionOk = !cronOk && !agentOk ? (await requireTier(req, "manager")) !== null : false;
+
+  if (!cronOk && !agentOk && !sessionOk) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { trigger } = await req.json();
 
